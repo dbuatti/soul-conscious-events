@@ -79,6 +79,11 @@ const Index = () => {
     }));
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSelectedEventType('All');
+  };
+
   return (
     <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
       <h1 className="text-4xl font-bold mb-4 text-gray-800 text-center">Welcome to SoulFlow</h1>
@@ -105,7 +110,7 @@ const Index = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Select onValueChange={setSelectedEventType} defaultValue={selectedEventType}>
+        <Select onValueChange={setSelectedEventType} value={selectedEventType}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
@@ -117,6 +122,11 @@ const Index = () => {
             ))}
           </SelectContent>
         </Select>
+        {(searchTerm || selectedEventType !== 'All') && (
+          <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+            Clear Filters
+          </Button>
+        )}
       </div>
 
       {loading ? (
