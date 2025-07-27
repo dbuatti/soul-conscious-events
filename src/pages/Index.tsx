@@ -17,8 +17,6 @@ interface Event {
   event_time?: string;
   location?: string; // Keep for backward compatibility if old data exists, but prefer full_address
   full_address?: string; // New full address field
-  latitude?: number;
-  longitude?: number;
   description?: string;
   ticket_link?: string;
   price?: string;

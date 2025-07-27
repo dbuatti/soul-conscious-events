@@ -44,15 +44,7 @@ const eventFormSchema = z.object({
     required_error: 'A date is required.',
   }),
   eventTime: z.string().optional(),
-  fullAddress: z.string().optional(), // Changed from 'location' to 'fullAddress'
-  latitude: z.preprocess(
-    (val) => (val === "" ? undefined : Number(val)),
-    z.number().optional()
-  ),
-  longitude: z.preprocess(
-    (val) => (val === "" ? undefined : Number(val)),
-    z.number().optional()
-  ),
+  fullAddress: z.string().optional(), // Keep 'fullAddress'
   description: z.string().optional(),
   ticketLink: z.string().optional(),
   price: z.string().optional(),
@@ -83,9 +75,7 @@ const SubmitEvent = () => {
     defaultValues: {
       eventName: '',
       eventTime: '',
-      fullAddress: '', // Changed from 'location'
-      latitude: undefined,
-      longitude: undefined,
+      fullAddress: '',
       description: '',
       ticketLink: '',
       price: '',
@@ -107,9 +97,7 @@ const SubmitEvent = () => {
         event_name: values.eventName,
         event_date: values.eventDate.toISOString().split('T')[0], // Format date to YYYY-MM-DD
         event_time: values.eventTime,
-        full_address: values.fullAddress, // Changed from 'location'
-        latitude: values.latitude,
-        longitude: values.longitude,
+        full_address: values.fullAddress,
         description: values.description,
         ticket_link: formattedTicketLink,
         price: values.price,
@@ -207,7 +195,7 @@ const SubmitEvent = () => {
 
           <FormField
             control={form.control}
-            name="fullAddress" // New field for full address
+            name="fullAddress"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Full Address</FormLabel>
@@ -218,35 +206,6 @@ const SubmitEvent = () => {
               </FormItem>
             )}
           />
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="latitude"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Latitude (Optional)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="any" placeholder="e.g., -37.8136" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="longitude"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Longitude (Optional)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="any" placeholder="e.g., 144.9631" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
 
           <FormField
             control={form.control}
@@ -408,22 +367,10 @@ const SubmitEvent = () => {
                     <p className="col-span-3">{previewData.eventTime}</p>
                   </div>
                 )}
-                {previewData.fullAddress && ( // Display full address in preview
+                {previewData.fullAddress && (
                   <div className="grid grid-cols-4 items-center gap-4">
                     <p className="text-right font-medium">Address:</p>
                     <p className="col-span-3">{previewData.fullAddress}</p>
-                  </div>
-                )}
-                {previewData.latitude !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Latitude:</p>
-                    <p className="col-span-3">{previewData.latitude}</p>
-                  </div>
-                )}
-                {previewData.longitude !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Longitude:</p>
-                    <p className="col-span-3">{previewData.longitude}</p>
                   </div>
                 )}
                 {previewData.state && (
