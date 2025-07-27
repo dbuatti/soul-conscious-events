@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe } from 'lucide-react';
 
 // Fix for default Leaflet icon issue with Webpack/Vite
-delete (L.Icon.Default.prototype as any)._get='iconUrl';
+// The problematic line has been removed. The mergeOptions below correctly handles the icon paths.
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
