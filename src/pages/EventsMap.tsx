@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, MapContainerProps, TileLayerProps } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Import Leaflet CSS
 import { supabase } from '@/integrations/supabase/client';
