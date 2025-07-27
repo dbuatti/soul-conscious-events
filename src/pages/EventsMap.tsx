@@ -3,13 +3,12 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Import Leaflet CSS
 import { supabase } from '@/integrations/supabase/client';
-import { toast }ner';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe } from 'lucide-react';
 
 // Fix for default Leaflet icon issue with Webpack/Vite
-// The problematic line has been removed. The mergeOptions below correctly handles the icon paths.
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
@@ -71,6 +70,19 @@ const EventsMap = () => {
     );
   }
 
+  // Define props objects without explicit type annotations
+  const mapContainerProps = {
+    center: defaultCenter,
+    zoom: defaultZoom,
+    scrollWheelZoom: true,
+    className: "h-full w-full",
+  };
+
+  const tileLayerProps = {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  };
+
   return (
     <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Events Map</h2>
@@ -78,11 +90,8 @@ const EventsMap = () => {
         Explore SoulFlow events across Australia on the map.
       </p>
       <div className="h-[600px] w-full rounded-lg overflow-hidden shadow-md border border-gray-300">
-        <MapContainer center={defaultCenter} zoom={defaultZoom} scrollWheelZoom={true} className="h-full w-full">
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+        <MapContainer {...mapContainerProps}>
+          <TileLayer {...tileLayerProps} />
           {events.map((event) => (
             event.latitude && event.longitude ? (
               <Marker key={event.id} position={[event.latitude, event.longitude]}>
