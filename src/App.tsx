@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import { SessionContextProvider } from "./components/SessionContextProvider";
+import Layout from "./components/Layout";
 
 const queryClient = new QueryClient();
 
@@ -17,13 +18,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <SessionContextProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/submit-event" element={<SubmitEvent />} />
-            {/* The /events route is no longer needed as events are displayed on the home page */}
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/submit-event" element={<SubmitEvent />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
         </SessionContextProvider>
       </BrowserRouter>
     </TooltipProvider>

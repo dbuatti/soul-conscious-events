@@ -22,7 +22,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-// Removed: import { useSession } from '@/components/SessionContextProvider';
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, {
@@ -54,7 +53,6 @@ const eventTypes = [
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
-  // Removed: const { user, isLoading } = useSession();
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -72,15 +70,6 @@ const SubmitEvent = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
-    // Removed: if (isLoading) {
-    // Removed:   toast.info("Loading user session, please wait...");
-    // Removed:   return;
-    // Removed: }
-    // Removed: if (!user) {
-    // Removed:   toast.error("You must be logged in to submit an event.");
-    // Removed:   return;
-    // Removed: }
-
     const { data, error } = await supabase.from('events').insert([
       {
         event_name: values.eventName,
@@ -115,192 +104,190 @@ const SubmitEvent = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 via-blue-100 to-green-100 p-4">
-      <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Submit a SoulFlow Event</h2>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="eventName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Event Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Sensory SOAK" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Submit a SoulFlow Event</h2>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="eventName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Event Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Sensory SOAK" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="eventDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={'outline'}
-                          className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="eventTime"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Time</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 7-10 PM" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Centre of You, Prahran" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Purpose, vibe, activities..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="ticketLink"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ticket/Booking Link</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., https://www.eventbrite.com.au/e/..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Price</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="specialNotes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Special Notes</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="e.g., discount code: community, bring a blanket" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="organizerContact"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Organizer Name/Contact</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="eventType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Event Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <FormField
+            control={form.control}
+            name="eventDate"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Date</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an event type" />
-                      </SelectTrigger>
+                      <Button
+                        variant={'outline'}
+                        className={cn(
+                          'w-full pl-3 text-left font-normal',
+                          !field.value && 'text-muted-foreground'
+                        )}
+                      >
+                        {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
                     </FormControl>
-                    <SelectContent>
-                      {eventTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={handlePreview}>
-                Preview
-              </Button>
-              <Button type="submit">Submit Event</Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+          <FormField
+            control={form.control}
+            name="eventTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Time</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., 7-10 PM" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Centre of You, Prahran" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Purpose, vibe, activities..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="ticketLink"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Ticket/Booking Link</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., https://www.eventbrite.com.au/e/..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="specialNotes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Special Notes</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="e.g., discount code: community, bring a blanket" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="organizerContact"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Organizer Name/Contact</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="eventType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Event Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an event type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {eventTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={handlePreview}>
+              Preview
+            </Button>
+            <Button type="submit">Submit Event</Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 };

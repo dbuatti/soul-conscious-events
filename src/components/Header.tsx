@@ -1,0 +1,29 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+
+const Header = () => {
+  return (
+    <header className="w-full bg-white shadow-sm py-4 px-6 md:px-8 flex justify-center">
+      <div className="w-full max-w-4xl flex justify-between items-center">
+        <Link to="/" className="text-2xl font-bold text-purple-700 hover:text-purple-800 transition-colors">
+          SoulFlow
+        </Link>
+        <nav className="space-x-4">
+          <Link to="/">
+            <Button variant="ghost" className="text-gray-700 hover:text-purple-700">
+              Events
+            </Button>
+          </Link>
+          <Link to="/submit-event">
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+              Add Event
+            </Button>
+          </Link>
+        </nav>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
