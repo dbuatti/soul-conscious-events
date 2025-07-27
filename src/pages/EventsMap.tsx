@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, MapContainerProps, TileLayerProps } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Import Leaflet CSS
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { toast }ner';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe } from 'lucide-react';
