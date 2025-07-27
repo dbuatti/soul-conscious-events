@@ -16,6 +16,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Mail } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client'; // Import supabase client
 
 const contactFormSchema = z.object({
   name: z.string().optional(),
@@ -36,12 +37,22 @@ const Contact = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof contactFormSchema>) => {
-    // In a real application, you would send this data to a backend service
-    // (e.g., an email service, a database, or a serverless function).
-    // For now, we'll just simulate success with a toast.
-    console.log('Contact form submitted:', values);
-    toast.success('Thank you for your feedback! We will get back to you if needed.');
-    form.reset();
+    const { error } = await supabase.from('contact_submissions').insert([
+      {
+        name: values.name || null,
+        email: values.email || null,
+        subject: values.subject,
+        message: values.message,
+      },
+    ]);
+
+    if (error) {
+      console.error('Error submitting contact form:', error);
+      toast.error('Failed to send message. Please try again.');
+    } else {
+      toast.success('Thank you for your feedback! Your message has been sent.');
+      form.reset();
+    }
   };
 
   return (
@@ -130,11 +141,11 @@ const Contact = () => {
       <div className="mt-10 text-center text-gray-700">
         <p className="flex items-center justify-center text-lg font-medium">
           <Mail className="mr-2 h-5 w-5 text-purple-600" />
-          You can also reach us directly at:
+          For direct inquiries, you can reach us at:
         </p>
-        <a href="mailto:daniele.buatti@gmail.com" className="text-blue-600 hover:underline text-xl font-semibold">
+        <p className="text-xl font-semibold">
           daniele.buatti@gmail.com
-        </a>
+        </p>
       </div>
     </div>
   );
