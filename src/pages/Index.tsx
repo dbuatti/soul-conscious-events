@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton component
 
 interface Event {
   id: string;
@@ -119,7 +120,26 @@ const Index = () => {
       </div>
 
       {loading ? (
-        <p className="text-center text-xl text-gray-700">Loading events...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => ( // Render 4 skeleton cards
+            <Card key={i} className="flex flex-col justify-between shadow-md">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-2/3 mt-1" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Skeleton className="h-8 w-24" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       ) : events.length === 0 ? (
         <p className="text-center text-gray-600">No events found matching your criteria.</p>
       ) : (

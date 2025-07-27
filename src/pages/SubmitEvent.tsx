@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react'; // Import Loader2 for loading spinner
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, {
@@ -53,6 +62,8 @@ const eventTypes = [
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -103,9 +114,8 @@ const SubmitEvent = () => {
 
   const handlePreview = () => {
     const data = form.getValues();
-    alert(
-      `Preview:\nEvent Name: ${data.eventName}\nDate: ${data.eventDate ? format(data.eventDate, 'PPP') : 'N/A'}\nTime: ${data.eventTime}\nLocation: ${data.location}\nDescription: ${data.description}\nTicket Link: ${data.ticketLink}\nPrice: ${data.price}\nSpecial Notes: ${data.specialNotes}\nOrganizer: ${data.organizerContact}\nEvent Type: ${data.eventType}`
-    );
+    setPreviewData(data);
+    setIsPreviewOpen(true);
   };
 
   return (
@@ -286,8 +296,11 @@ const SubmitEvent = () => {
           />
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => form.reset()}>
-              Clear Form
+            <Button type="button" variant="outline" onClick={() => navigate('/')}>
+              Back to Events
+            </Button>
+            <Button type="button" variant="outline" onClick={handlePreview}>
+              Preview
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -296,6 +309,88 @@ const SubmitEvent = () => {
           </div>
         </form>
       </Form>
+
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Event Preview</DialogTitle>
+            <DialogDescription>
+              Review your event details before submitting.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {previewData && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <p className="text-right font-medium">Event Name:</p>
+                  <p className="col-span-3">{previewData.eventName}</p>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <p className="text-right font-medium">Date:</p>
+                  <p className="col-span-3">{previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}</p>
+                </div>
+                {previewData.eventTime && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium">Time:</p>
+                    <p className="col-span-3">{previewData.eventTime}</p>
+                  </div>
+                )}
+                {previewData.location && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium">Location:</p>
+                    <p className="col-span-3">{previewData.location}</p>
+                  </div>
+                )}
+                {previewData.description && (
+                  <div className="grid grid-cols-4 items-start gap-4">
+                    <p className="text-right font-medium">Description:</p>
+                    <p className="col-span-3 break-words">{previewData.description}</p>
+                  </div>
+                )}
+                {previewData.ticketLink && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium">Ticket Link:</p>
+                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-blue-600 hover:underline break-all">
+                      {previewData.ticketLink}
+                    </a>
+                  </div>
+                )}
+                {previewData.price && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium">Price:</p>
+                    <p className="col-span-3">{previewData.price}</p>
+                  </div>
+                )}
+                {previewData.specialNotes && (
+                  <div className="grid grid-cols-4 items-start gap-4">
+                    <p className="text-right font-medium">Special Notes:</p>
+                    <p className="col-span-3 break-words">{previewData.specialNotes}</p>
+                  </div>
+                )}
+                {previewData.organizerContact && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium">Organizer:</p>
+                    <p className="col-span-3">{previewData.organizerContact}</p>
+                  </div>
+                )}
+                {previewData.eventType && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium">Event Type:</p>
+                    <p className="col-span-3">{previewData.eventType}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
