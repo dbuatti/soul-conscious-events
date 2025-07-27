@@ -23,9 +23,8 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       setUser(currentSession?.user || null);
       setIsLoading(false);
 
-      if (event === 'SIGNED_OUT') {
-        navigate('/login');
-      } else if (currentSession && location.pathname === '/login') {
+      // Removed redirection logic for unauthenticated users
+      if (currentSession && location.pathname === '/login') {
         navigate('/');
       }
     });
@@ -34,9 +33,8 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       setSession(currentSession);
       setUser(currentSession?.user || null);
       setIsLoading(false);
-      if (!currentSession && location.pathname !== '/login') {
-        navigate('/login');
-      } else if (currentSession && location.pathname === '/login') {
+      // Removed redirection logic for unauthenticated users
+      if (currentSession && location.pathname === '/login') {
         navigate('/');
       }
     });
