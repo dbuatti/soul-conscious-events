@@ -90,27 +90,40 @@ const SubmitEvent = () => {
   });
 
   const fetchAddressSuggestions = async (query: string) => {
-    if (query.length < 3) { // Only search for queries longer than 2 characters
+    const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error("Google Maps API Key is not set. Please set VITE_GOOGLE_MAPS_API_KEY in your .env.local file.");
+      toast.error("Address suggestions are unavailable. API key missing.");
+      return;
+    }
+
+    if (query.length < 3) {
       setAddressSuggestions([]);
       return;
     }
 
-    // Public Nominatim URL - IMPORTANT: Read their usage policy!
-    // For production, consider self-hosting Nominatim or using a paid provider.
-    const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`;
+    const googlePlacesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}&components=country:au`;
 
     try {
-      const response = await fetch(nominatimUrl, {
-        headers: {
-          'User-Agent': 'SoulFlowApp/1.0 (daniele.buatti@gmail.com)' // Identify your application
-        }
-      });
+      const response = await fetch(googlePlacesUrl);
       const data = await response.json();
-      const suggestions = data.map((item: any) => item.display_name);
-      setAddressSuggestions(suggestions);
-      setShowAddressSuggestions(true);
+
+      if (data.status === 'OK') {
+        const suggestions = data.predictions.map((prediction: any) => prediction.description);
+        setAddressSuggestions(suggestions);
+        setShowAddressSuggestions(true);
+      } else if (data.status === 'ZERO_RESULTS') {
+        setAddressSuggestions([]);
+        setShowAddressSuggestions(false);
+      } else {
+        console.error('Google Places API error:', data.status, data.error_message);
+        toast.error(`Error fetching address suggestions: ${data.status}`);
+        setAddressSuggestions([]);
+        setShowAddressSuggestions(false);
+      }
     } catch (error) {
       console.error('Error fetching address suggestions:', error);
+      toast.error('Failed to fetch address suggestions. Please check your network.');
       setAddressSuggestions([]);
       setShowAddressSuggestions(false);
     }
@@ -118,7 +131,7 @@ const SubmitEvent = () => {
 
   const handleAddressInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    form.setValue('fullAddress', value); // Update form field immediately
+    form.setValue('fullAddress', value);
 
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
@@ -126,7 +139,7 @@ const SubmitEvent = () => {
 
     debounceTimeoutRef.current = setTimeout(() => {
       fetchAddressSuggestions(value);
-    }, 300); // Debounce for 300ms to reduce API calls
+    }, 300);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -144,7 +157,7 @@ const SubmitEvent = () => {
     const { data, error } = await supabase.from('events').insert([
       {
         event_name: values.eventName,
-        event_date: values.eventDate.toISOString().split('T')[0], // Format date to YYYY-MM-DD
+        event_date: values.eventDate.toISOString().split('T')[0],
         event_time: values.eventTime,
         full_address: values.fullAddress,
         description: values.description,
@@ -164,7 +177,7 @@ const SubmitEvent = () => {
     } else {
       toast.success('Event submitted successfully!');
       form.reset();
-      navigate('/'); // Redirect to home or event list after submission
+      navigate('/');
     }
   };
 
@@ -253,9 +266,9 @@ const SubmitEvent = () => {
                     <Input
                       placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                       {...field}
-                      onChange={handleAddressInputChange} // Use custom handler for suggestions
+                      onChange={handleAddressInputChange}
                       onFocus={() => setShowAddressSuggestions(addressSuggestions.length > 0)}
-                      onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 100)} // Delay to allow click on suggestion
+                      onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 100)}
                     />
                     {showAddressSuggestions && addressSuggestions.length > 0 && (
                       <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
@@ -263,7 +276,7 @@ const SubmitEvent = () => {
                           <li
                             key={index}
                             className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                            onMouseDown={() => handleSuggestionClick(suggestion)} // Use onMouseDown to prevent onBlur from firing first
+                            onMouseDown={() => handleSuggestionClick(suggestion)}
                           >
                             {suggestion}
                           </li>
