@@ -6,9 +6,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe } from 'lucide-react'; // Added Globe icon
 import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton component
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Event {
   id: string;
@@ -22,6 +22,7 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
+  state?: string; // New state field
 }
 
 const eventTypes = [
@@ -36,12 +37,18 @@ const eventTypes = [
   'Other',
 ];
 
+const australianStates = [
+  'All',
+  'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
+];
+
 const Index = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEventType, setSelectedEventType] = useState('All');
+  const [selectedState, setSelectedState] = useState('All'); // New state for filter
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -50,6 +57,10 @@ const Index = () => {
 
       if (selectedEventType !== 'All') {
         query = query.eq('event_type', selectedEventType);
+      }
+
+      if (selectedState !== 'All') { // Add state filtering
+        query = query.eq('state', selectedState);
       }
 
       if (searchTerm) {
@@ -70,7 +81,7 @@ const Index = () => {
     };
 
     fetchEvents();
-  }, [selectedEventType, searchTerm]);
+  }, [selectedEventType, selectedState, searchTerm]); // Add selectedState to dependencies
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -82,6 +93,7 @@ const Index = () => {
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedEventType('All');
+    setSelectedState('All'); // Clear state filter
   };
 
   return (
@@ -122,7 +134,19 @@ const Index = () => {
             ))}
           </SelectContent>
         </Select>
-        {(searchTerm || selectedEventType !== 'All') && (
+        <Select onValueChange={setSelectedState} value={selectedState}> {/* New state filter */}
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by state" />
+          </SelectTrigger>
+          <SelectContent>
+            {australianStates.map((state) => (
+              <SelectItem key={state} value={state}>
+                {state}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {(searchTerm || selectedEventType !== 'All' || selectedState !== 'All') && ( // Update clear filters condition
           <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
             Clear Filters
           </Button>
@@ -131,7 +155,7 @@ const Index = () => {
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[...Array(4)].map((_, i) => ( // Render 4 skeleton cards
+          {[...Array(4)].map((_, i) => (
             <Card key={i} className="flex flex-col justify-between shadow-md">
               <CardHeader>
                 <Skeleton className="h-6 w-3/4 mb-2" />
@@ -172,6 +196,12 @@ const Index = () => {
                   <CardDescription className="flex items-center text-gray-600 mt-1">
                     <MapPin className="mr-2 h-4 w-4 text-red-500" />
                     {event.location}
+                  </CardDescription>
+                )}
+                {event.state && ( // Display state on card
+                  <CardDescription className="flex items-center text-gray-600 mt-1">
+                    <Globe className="mr-2 h-4 w-4 text-orange-500" />
+                    {event.state}
                   </CardDescription>
                 )}
               </CardHeader>

@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Fixed: Changed '=>' to 'from'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +31,10 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+
+const australianStates = [
+  'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
+];
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, {
@@ -47,6 +51,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional(),
   organizerContact: z.string().optional(),
   eventType: z.string().optional(),
+  state: z.string().optional(), // New state field
 });
 
 const eventTypes = [
@@ -77,6 +82,7 @@ const SubmitEvent = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
+      state: '', // Default value for new state field
     },
   });
 
@@ -98,6 +104,7 @@ const SubmitEvent = () => {
         special_notes: values.specialNotes,
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
+        state: values.state, // Include state in the insert
         user_id: null,
       },
     ]);
@@ -195,6 +202,31 @@ const SubmitEvent = () => {
                 <FormControl>
                   <Input placeholder="e.g., Centre of You, Prahran" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="state" // New state field
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>State</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a state" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {australianStates.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -339,6 +371,12 @@ const SubmitEvent = () => {
                   <div className="grid grid-cols-4 items-center gap-4">
                     <p className="text-right font-medium">Location:</p>
                     <p className="col-span-3">{previewData.location}</p>
+                  </div>
+                )}
+                {previewData.state && ( // Display state in preview
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium">State:</p>
+                    <p className="col-span-3">{previewData.state}</p>
                   </div>
                 )}
                 {previewData.description && (
