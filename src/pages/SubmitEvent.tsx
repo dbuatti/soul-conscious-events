@@ -33,7 +33,8 @@ const eventFormSchema = z.object({
   eventTime: z.string().optional(),
   location: z.string().optional(),
   description: z.string().optional(),
-  ticketLink: z.string().url({ message: 'Invalid URL' }).optional().or(z.literal('')),
+  // Modified ticketLink validation: now allows any string, will be prefixed later
+  ticketLink: z.string().optional(),
   price: z.string().optional(),
   specialNotes: z.string().optional(),
   organizerContact: z.string().optional(),
@@ -70,6 +71,11 @@ const SubmitEvent = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
+    let formattedTicketLink = values.ticketLink;
+    if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
+      formattedTicketLink = `https://${formattedTicketLink}`;
+    }
+
     const { data, error } = await supabase.from('events').insert([
       {
         event_name: values.eventName,
@@ -77,12 +83,12 @@ const SubmitEvent = () => {
         event_time: values.eventTime,
         location: values.location,
         description: values.description,
-        ticket_link: values.ticketLink,
+        ticket_link: formattedTicketLink, // Use the formatted link
         price: values.price,
         special_notes: values.specialNotes,
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
-        user_id: null, // Set user_id to null as submission is now anonymous
+        user_id: null,
       },
     ]);
 
@@ -206,7 +212,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Ticket/Booking Link</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., https://www.eventbrite.com.au/e/..." {...field} />
+                  <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
