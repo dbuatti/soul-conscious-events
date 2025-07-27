@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -44,7 +44,7 @@ const eventFormSchema = z.object({
     required_error: 'A date is required.',
   }),
   eventTime: z.string().optional(),
-  fullAddress: z.string().optional(), // Keep 'fullAddress'
+  fullAddress: z.string().optional(),
   description: z.string().optional(),
   ticketLink: z.string().optional(),
   price: z.string().optional(),
@@ -69,6 +69,9 @@ const SubmitEvent = () => {
   const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
+  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -85,6 +88,52 @@ const SubmitEvent = () => {
       state: '',
     },
   });
+
+  const fetchAddressSuggestions = async (query: string) => {
+    if (query.length < 3) { // Only search for queries longer than 2 characters
+      setAddressSuggestions([]);
+      return;
+    }
+
+    // Public Nominatim URL - IMPORTANT: Read their usage policy!
+    // For production, consider self-hosting Nominatim or using a paid provider.
+    const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`;
+
+    try {
+      const response = await fetch(nominatimUrl, {
+        headers: {
+          'User-Agent': 'SoulFlowApp/1.0 (daniele.buatti@gmail.com)' // Identify your application
+        }
+      });
+      const data = await response.json();
+      const suggestions = data.map((item: any) => item.display_name);
+      setAddressSuggestions(suggestions);
+      setShowAddressSuggestions(true);
+    } catch (error) {
+      console.error('Error fetching address suggestions:', error);
+      setAddressSuggestions([]);
+      setShowAddressSuggestions(false);
+    }
+  };
+
+  const handleAddressInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    form.setValue('fullAddress', value); // Update form field immediately
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      fetchAddressSuggestions(value);
+    }, 300); // Debounce for 300ms to reduce API calls
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    form.setValue('fullAddress', suggestion);
+    setAddressSuggestions([]);
+    setShowAddressSuggestions(false);
+  };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     let formattedTicketLink = values.ticketLink;
@@ -200,7 +249,28 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Full Address</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., 123 Main St, Suburb, State, Postcode" {...field} />
+                  <div className="relative">
+                    <Input
+                      placeholder="e.g., 123 Main St, Suburb, State, Postcode"
+                      {...field}
+                      onChange={handleAddressInputChange} // Use custom handler for suggestions
+                      onFocus={() => setShowAddressSuggestions(addressSuggestions.length > 0)}
+                      onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 100)} // Delay to allow click on suggestion
+                    />
+                    {showAddressSuggestions && addressSuggestions.length > 0 && (
+                      <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+                        {addressSuggestions.map((suggestion, index) => (
+                          <li
+                            key={index}
+                            className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                            onMouseDown={() => handleSuggestionClick(suggestion)} // Use onMouseDown to prevent onBlur from firing first
+                          >
+                            {suggestion}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
