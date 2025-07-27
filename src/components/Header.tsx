@@ -15,6 +15,11 @@ const Header = () => {
               Events
             </Button>
           </Link>
+          <Link to="/events-map"> {/* New Events Map link */}
+            <Button variant="ghost" className="text-gray-700 hover:text-purple-700">
+              Map
+            </Button>
+          </Link>
           <Link to="/submit-event">
             <Button variant="ghost" className="text-gray-700 hover:text-purple-700">
               Add Event
@@ -25,7 +30,7 @@ const Header = () => {
               Contact
             </Button>
           </Link>
-          <Link to="/admin/submissions"> {/* New Admin Submissions link */}
+          <Link to="/admin/submissions">
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               Admin
             </Button>

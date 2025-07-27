@@ -7,7 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
-import AdminContactSubmissions from "./pages/AdminContactSubmissions"; // Import the new Admin page
+import AdminContactSubmissions from "./pages/AdminContactSubmissions";
+import EventsMap from "./pages/EventsMap"; // Import the new EventsMap page
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 
@@ -25,7 +26,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/admin/submissions" element={<AdminContactSubmissions />} /> {/* Add the new admin route */}
+              <Route path="/admin/submissions" element={<AdminContactSubmissions />} />
+              <Route path="/events-map" element={<EventsMap />} /> {/* Add the new map route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
