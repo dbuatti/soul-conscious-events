@@ -11,7 +11,7 @@ const Login = () => {
         <p className="text-center text-gray-600 mb-8">Connect with soulful events in your community.</p>
         <Auth
           supabaseClient={supabase}
-          providers={[]} // Only email/password for now, can add social providers later
+          providers={['google']} // Added Google as a provider
           appearance={{
             theme: ThemeSupa,
             variables: {
