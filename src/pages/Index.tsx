@@ -1,11 +1,8 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
-// Removed useSession import as it's no longer needed for conditional rendering
-// Removed Button and Link imports as they are no longer used for auth actions
-// Removed supabase import as sign-out is no longer an option
+import { Button } from "@/components/ui/button"; // Import Button
+import { Link } from "react-router-dom"; // Import Link
 
 const Index = () => {
-  // Removed isLoading and user state as login is temporarily disabled
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 via-blue-100 to-green-100 p-4">
       <div className="text-center bg-white p-8 rounded-lg shadow-xl border border-gray-200 max-w-2xl w-full">
@@ -13,8 +10,11 @@ const Index = () => {
         <p className="text-xl text-gray-600 mb-6">
           Connect with soulful events in your community.
         </p>
-        {/* Removed conditional rendering for user and login/logout buttons */}
-        {/* Removed event submission/browsing links */}
+        <Link to="/submit-event">
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
+            Add New Event
+          </Button>
+        </Link>
       </div>
       <MadeWithDyad />
     </div>
