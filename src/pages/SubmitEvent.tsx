@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react'; // Import Loader2 for loading spinner
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,6 @@ const eventFormSchema = z.object({
   eventTime: z.string().optional(),
   location: z.string().optional(),
   description: z.string().optional(),
-  // Modified ticketLink validation: now allows any string, will be prefixed later
   ticketLink: z.string().optional(),
   price: z.string().optional(),
   specialNotes: z.string().optional(),
@@ -287,10 +286,13 @@ const SubmitEvent = () => {
           />
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={handlePreview}>
-              Preview
+            <Button type="button" variant="outline" onClick={() => form.reset()}>
+              Clear Form
             </Button>
-            <Button type="submit">Submit Event</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {form.formState.isSubmitting ? 'Submitting...' : 'Submit Event'}
+            </Button>
           </div>
         </form>
       </Form>
