@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input'; // Import Input for search
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select for filtering
 import { format } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search } from 'lucide-react'; // Import Search icon
 import { toast } from 'sonner';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 
@@ -21,18 +23,41 @@ interface Event {
   event_type?: string;
 }
 
+const eventTypes = [
+  'All', // Option to show all event types
+  'Music',
+  'Workshop',
+  'Meditation',
+  'Open Mic',
+  'Sound Bath',
+  'Foraging',
+  'Community Gathering',
+  'Other',
+];
+
 const EventList = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEventType, setSelectedEventType] = useState('All');
 
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('event_date', { ascending: true });
+      let query = supabase.from('events').select('*');
+
+      if (selectedEventType !== 'All') {
+        query = query.eq('event_type', selectedEventType);
+      }
+
+      if (searchTerm) {
+        query = query.or(
+          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%`
+        );
+      }
+
+      const { data, error } = await query.order('event_date', { ascending: true });
 
       if (error) {
         console.error('Error fetching events:', error);
@@ -44,7 +69,7 @@ const EventList = () => {
     };
 
     fetchEvents();
-  }, []);
+  }, [selectedEventType, searchTerm]); // Re-fetch when filters change
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -65,8 +90,33 @@ const EventList = () => {
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-purple-100 via-blue-100 to-green-100 p-4">
       <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200 mt-8 mb-8">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Upcoming SoulFlow Events</h2>
+
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Search events..."
+              className="pl-9 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Select onValueChange={setSelectedEventType} defaultValue={selectedEventType}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              {eventTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {events.length === 0 ? (
-          <p className="text-center text-gray-600">No events found. Be the first to add one!</p>
+          <p className="text-center text-gray-600">No events found matching your criteria.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {events.map((event) => (
@@ -123,6 +173,12 @@ const EventList = () => {
                     <p className="flex items-start text-gray-700">
                       <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
                       Special Notes: {event.special_notes}
+                    </p>
+                  )}
+                  {event.organizer_contact && (
+                    <p className="flex items-center text-gray-700">
+                      <User className="mr-2 h-4 w-4 text-indigo-500" />
+                      Organizer: {event.organizer_contact}
                     </p>
                   )}
                   {event.event_type && (
