@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe } from 'lucide-react'; // Added Globe icon
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -15,14 +15,17 @@ interface Event {
   event_name: string;
   event_date: string;
   event_time?: string;
-  location?: string;
+  location?: string; // Original location input
+  full_address?: string; // New field for selected full address
+  latitude?: number;     // New field for latitude
+  longitude?: number;    // New field for longitude
   description?: string;
   ticket_link?: string;
   price?: string;
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string; // New state field
+  state?: string;
 }
 
 const eventTypes = [
@@ -48,7 +51,7 @@ const Index = () => {
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEventType, setSelectedEventType] = useState('All');
-  const [selectedState, setSelectedState] = useState('All'); // New state for filter
+  const [selectedState, setSelectedState] = useState('All');
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -59,13 +62,13 @@ const Index = () => {
         query = query.eq('event_type', selectedEventType);
       }
 
-      if (selectedState !== 'All') { // Add state filtering
+      if (selectedState !== 'All') {
         query = query.eq('state', selectedState);
       }
 
       if (searchTerm) {
         query = query.or(
-          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%`
+          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%` // Include full_address in search
         );
       }
 
@@ -81,7 +84,7 @@ const Index = () => {
     };
 
     fetchEvents();
-  }, [selectedEventType, selectedState, searchTerm]); // Add selectedState to dependencies
+  }, [selectedEventType, selectedState, searchTerm]);
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -93,7 +96,7 @@ const Index = () => {
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedEventType('All');
-    setSelectedState('All'); // Clear state filter
+    setSelectedState('All');
   };
 
   return (
@@ -134,7 +137,7 @@ const Index = () => {
             ))}
           </SelectContent>
         </Select>
-        <Select onValueChange={setSelectedState} value={selectedState}> {/* New state filter */}
+        <Select onValueChange={setSelectedState} value={selectedState}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by state" />
           </SelectTrigger>
@@ -146,7 +149,7 @@ const Index = () => {
             ))}
           </SelectContent>
         </Select>
-        {(searchTerm || selectedEventType !== 'All' || selectedState !== 'All') && ( // Update clear filters condition
+        {(searchTerm || selectedEventType !== 'All' || selectedState !== 'All') && (
           <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
             Clear Filters
           </Button>
@@ -192,13 +195,25 @@ const Index = () => {
                     </>
                   )}
                 </CardDescription>
-                {event.location && (
+                {event.full_address ? ( // Display full_address if available
+                  <CardDescription className="flex items-center text-gray-600 mt-1">
+                    <MapPin className="mr-2 h-4 w-4 text-red-500" />
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {event.full_address}
+                    </a>
+                  </CardDescription>
+                ) : event.location && ( // Fallback to original location if full_address not available
                   <CardDescription className="flex items-center text-gray-600 mt-1">
                     <MapPin className="mr-2 h-4 w-4 text-red-500" />
                     {event.location}
                   </CardDescription>
                 )}
-                {event.state && ( // Display state on card
+                {event.state && (
                   <CardDescription className="flex items-center text-gray-600 mt-1">
                     <Globe className="mr-2 h-4 w-4 text-orange-500" />
                     {event.state}

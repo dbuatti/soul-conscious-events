@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -44,14 +44,17 @@ const eventFormSchema = z.object({
     required_error: 'A date is required.',
   }),
   eventTime: z.string().optional(),
-  location: z.string().optional(),
+  location: z.string().optional(), // This will be the user's typed input
+  fullAddress: z.string().optional(), // New field for selected full address
+  latitude: z.number().optional(),    // New field for latitude
+  longitude: z.number().optional(),   // New field for longitude
   description: z.string().optional(),
   ticketLink: z.string().optional(),
   price: z.string().optional(),
   specialNotes: z.string().optional(),
   organizerContact: z.string().optional(),
   eventType: z.string().optional(),
-  state: z.string().optional(), // New state field
+  state: z.string().optional(),
 });
 
 const eventTypes = [
@@ -65,10 +68,21 @@ const eventTypes = [
   'Other',
 ];
 
+// Debounce function to limit API calls
+const debounce = (func: (...args: any[]) => void, delay: number) => {
+  let timeout: ReturnType<typeof setTimeout>;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+};
+
 const SubmitEvent = () => {
   const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
+  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -76,15 +90,57 @@ const SubmitEvent = () => {
       eventName: '',
       eventTime: '',
       location: '',
+      fullAddress: '', // Initialize new fields
+      latitude: undefined,
+      longitude: undefined,
       description: '',
       ticketLink: '',
       price: '',
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      state: '', // Default value for new state field
+      state: '',
     },
   });
+
+  const fetchAddressSuggestions = useCallback(debounce(async (query: string) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    try {
+      // Using OpenStreetMap Nominatim API for geocoding
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=au`
+      );
+      const data = await response.json();
+      setAddressSuggestions(data);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Error fetching address suggestions:', error);
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, 500), []); // Debounce by 500ms
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    form.setValue('location', e.target.value);
+    // Clear previously selected address details if user types again
+    form.setValue('fullAddress', '');
+    form.setValue('latitude', undefined);
+    form.setValue('longitude', undefined);
+    fetchAddressSuggestions(e.target.value);
+  };
+
+  const handleSelectAddress = (suggestion: any) => {
+    form.setValue('location', suggestion.display_name); // Display full name in input
+    form.setValue('fullAddress', suggestion.display_name);
+    form.setValue('latitude', parseFloat(suggestion.lat));
+    form.setValue('longitude', parseFloat(suggestion.lon));
+    setShowSuggestions(false); // Hide suggestions after selection
+    setAddressSuggestions([]); // Clear suggestions
+  };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     let formattedTicketLink = values.ticketLink;
@@ -95,16 +151,19 @@ const SubmitEvent = () => {
     const { data, error } = await supabase.from('events').insert([
       {
         event_name: values.eventName,
-        event_date: values.eventDate.toISOString().split('T')[0], // Format date to YYYY-MM-DD
+        event_date: values.eventDate.toISOString().split('T')[0],
         event_time: values.eventTime,
-        location: values.location,
+        location: values.location, // Keep original location input value
+        full_address: values.fullAddress, // Store the selected full address
+        latitude: values.latitude,       // Store latitude
+        longitude: values.longitude,     // Store longitude
         description: values.description,
-        ticket_link: formattedTicketLink, // Use the formatted link
+        ticket_link: formattedTicketLink,
         price: values.price,
         special_notes: values.specialNotes,
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
-        state: values.state, // Include state in the insert
+        state: values.state,
         user_id: null,
       },
     ]);
@@ -115,7 +174,7 @@ const SubmitEvent = () => {
     } else {
       toast.success('Event submitted successfully!');
       form.reset();
-      navigate('/'); // Redirect to home or event list after submission
+      navigate('/');
     }
   };
 
@@ -200,7 +259,28 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Location</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Centre of You, Prahran" {...field} />
+                  <div className="relative">
+                    <Input
+                      placeholder="e.g., Centre of You, Prahran"
+                      {...field}
+                      onChange={handleLocationChange}
+                      onFocus={() => form.getValues('location').length >= 3 && setAddressSuggestions.length > 0 && setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 100)} // Delay hiding to allow click
+                    />
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
+                        {addressSuggestions.map((suggestion) => (
+                          <li
+                            key={suggestion.place_id}
+                            className="p-2 cursor-pointer hover:bg-gray-100"
+                            onMouseDown={() => handleSelectAddress(suggestion)} // Use onMouseDown to prevent blur before click
+                          >
+                            {suggestion.display_name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -209,7 +289,7 @@ const SubmitEvent = () => {
 
           <FormField
             control={form.control}
-            name="state" // New state field
+            name="state"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>State</FormLabel>
@@ -367,13 +447,13 @@ const SubmitEvent = () => {
                     <p className="col-span-3">{previewData.eventTime}</p>
                   </div>
                 )}
-                {previewData.location && (
+                {previewData.fullAddress && ( // Display full address if available
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Location:</p>
-                    <p className="col-span-3">{previewData.location}</p>
+                    <p className="text-right font-medium">Full Address:</p>
+                    <p className="col-span-3">{previewData.fullAddress}</p>
                   </div>
                 )}
-                {previewData.state && ( // Display state in preview
+                {previewData.state && (
                   <div className="grid grid-cols-4 items-center gap-4">
                     <p className="text-right font-medium">State:</p>
                     <p className="col-span-3">{previewData.state}</p>
