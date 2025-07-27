@@ -1,6 +1,6 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { Button } from "@/components/ui/button"; // Import Button
-import { Link } from "react-router-dom"; // Import Link
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -10,11 +10,18 @@ const Index = () => {
         <p className="text-xl text-gray-600 mb-6">
           Connect with soulful events in your community.
         </p>
-        <Link to="/submit-event">
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
-            Add New Event
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+          <Link to="/submit-event">
+            <Button className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
+              Add New Event
+            </Button>
+          </Link>
+          <Link to="/events">
+            <Button variant="outline" className="w-full sm:w-auto border-purple-600 text-purple-600 hover:bg-purple-50 hover:text-purple-700 font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
+              Browse Events
+            </Button>
+          </Link>
+        </div>
       </div>
       <MadeWithDyad />
     </div>
