@@ -14,4 +14,7 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    'import.meta.env.VITE_GOOGLE_MAPS_API_KEY': JSON.stringify("AIzaSyBIAYKFIlCYLkU2qb9k1svA7rLKvAve71I"),
+  },
 }));
