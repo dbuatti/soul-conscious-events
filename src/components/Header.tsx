@@ -16,8 +16,13 @@ const Header = () => {
             </Button>
           </Link>
           <Link to="/submit-event">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button variant="ghost" className="text-gray-700 hover:text-purple-700">
               Add Event
+            </Button>
+          </Link>
+          <Link to="/contact"> {/* New Contact link */}
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+              Contact
             </Button>
           </Link>
         </nav>
