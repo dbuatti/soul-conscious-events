@@ -91,6 +91,7 @@ const SubmitEvent = () => {
 
   const fetchAddressSuggestions = async (query: string) => {
     const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    console.log("Google Maps API Key:", GOOGLE_MAPS_API_KEY ? "Present" : "Missing"); // Added log
     if (!GOOGLE_MAPS_API_KEY) {
       console.error("Google Maps API Key is not set. Please set VITE_GOOGLE_MAPS_API_KEY in your .env.local file.");
       toast.error("Address suggestions are unavailable. API key missing.");
@@ -103,6 +104,7 @@ const SubmitEvent = () => {
     }
 
     const googlePlacesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}&components=country:au`;
+    console.log("Google Places URL:", googlePlacesUrl); // Added log
 
     try {
       const response = await fetch(googlePlacesUrl);
