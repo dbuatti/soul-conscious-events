@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useSession } from '@/components/SessionContextProvider'; // Import useSession
+// Removed: import { useSession } from '@/components/SessionContextProvider';
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, {
@@ -54,7 +54,7 @@ const eventTypes = [
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
-  const { user, isLoading } = useSession(); // Get user and loading state from session context
+  // Removed: const { user, isLoading } = useSession();
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -72,16 +72,14 @@ const SubmitEvent = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
-    if (isLoading) {
-      toast.info("Loading user session, please wait...");
-      return;
-    }
-    if (!user) {
-      toast.error("You must be logged in to submit an event.");
-      // Optionally redirect to login if login was enabled
-      // navigate('/login');
-      return;
-    }
+    // Removed: if (isLoading) {
+    // Removed:   toast.info("Loading user session, please wait...");
+    // Removed:   return;
+    // Removed: }
+    // Removed: if (!user) {
+    // Removed:   toast.error("You must be logged in to submit an event.");
+    // Removed:   return;
+    // Removed: }
 
     const { data, error } = await supabase.from('events').insert([
       {
@@ -95,7 +93,7 @@ const SubmitEvent = () => {
         special_notes: values.specialNotes,
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
-        user_id: user.id, // Associate event with the submitting user
+        user_id: null, // Set user_id to null as submission is now anonymous
       },
     ]);
 
