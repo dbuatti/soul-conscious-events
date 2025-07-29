@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge'; // Import Badge component
 
 interface Event {
   id: string;
@@ -225,15 +226,20 @@ const Index = () => {
                   <p className="flex items-center text-gray-700">
                     <DollarSign className="mr-2 h-4 w-4 text-green-600" />
                     Price: {event.price}
+                    {event.price.toLowerCase() === 'free' && (
+                      <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
+                    )}
                   </p>
                 )}
                 {event.ticket_link && (
-                  <p className="flex items-center text-gray-700">
+                  <div className="flex items-center">
                     <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
-                    <a href={event.ticket_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      Ticket/Booking Link
-                    </a>
-                  </p>
+                    <Button asChild variant="link" className="p-0 h-auto text-blue-600">
+                      <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
+                        Ticket/Booking Link
+                      </a>
+                    </Button>
+                  </div>
                 )}
                 {event.special_notes && (
                   <p className="flex items-start text-gray-700">
