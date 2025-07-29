@@ -58,7 +58,7 @@ const Header = () => {
         </Button>
       </Link>
       {/* Admin button is always visible, ProtectedRoute handles access */}
-      <Link to="/admin/submissions">
+      <Link to="/admin/panel"> {/* Updated link path */}
         <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
           Admin
         </Button>

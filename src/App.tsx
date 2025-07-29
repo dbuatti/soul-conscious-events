@@ -7,11 +7,11 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
-import AdminContactSubmissions from "./pages/AdminContactSubmissions";
+import AdminPanel from "./pages/AdminPanel"; // Updated import
 import EventDetail from "./pages/EventDetail";
 import MapPage from "./pages/MapPage";
-import Login from "./pages/Login"; // Import the new Login component
-import ProtectedRoute from "./components/ProtectedRoute"; // Import the new ProtectedRoute component
+import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
@@ -31,15 +31,15 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/login" element={<Login />} /> {/* New route for the login page */}
+              <Route path="/login" element={<Login />} />
               <Route
-                path="/admin/submissions"
+                path="/admin/panel" // Updated route path
                 element={
                   <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
-                    <AdminContactSubmissions />
+                    <AdminPanel />
                   </ProtectedRoute>
                 }
-              /> {/* Protected route for admin submissions */}
+              />
               <Route path="/events/:id" element={<EventDetail />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="*" element={<NotFound />} />
