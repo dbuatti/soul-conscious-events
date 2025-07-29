@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Image as ImageIcon } from 'lucide-react'; // Removed Search icon
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon } from 'lucide-react'; // Added Search icon back
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -246,11 +246,11 @@ const Index = () => {
           {/* Search Input */}
           <div className="relative col-span-full">
             <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
-            {/* Removed Search icon here */}
+            <Search className="absolute inset-y-0 left-0 flex items-center pl-3 h-full w-4 text-gray-500" /> {/* Re-added Search icon with proper alignment */}
             <Input
               id="search-events"
               placeholder="Search events..."
-              className="w-full" // Removed pl-9 as icon is gone
+              className="pl-10 w-full" // Adjusted padding-left for the icon
               value={draftSearchTerm}
               onChange={(e) => setDraftSearchTerm(e.target.value)}
             />

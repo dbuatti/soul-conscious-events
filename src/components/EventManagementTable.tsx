@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { Edit, Trash2, PlusCircle, ExternalLink } from 'lucide-react';
+import { Edit, Trash2, PlusCircle, ExternalLink, CheckCircle, Clock } from 'lucide-react'; // Added CheckCircle and Clock icons
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription, // Added FormDescription import
+  FormDescription,
 } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -41,6 +41,7 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge'; // Imported Badge
 
 interface Event {
   id: string;
@@ -231,6 +232,7 @@ const EventManagementTable = () => {
                 <TableHead>Time</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead> {/* New Status Header */}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -242,6 +244,25 @@ const EventManagementTable = () => {
                   <TableCell>{event.event_time || 'N/A'}</TableCell>
                   <TableCell>{event.place_name || event.full_address || 'N/A'}</TableCell>
                   <TableCell>{event.event_type || 'N/A'}</TableCell>
+                  <TableCell> {/* New Status Cell */}
+                    {event.state === 'approved' ? (
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center w-fit">
+                        <CheckCircle className="h-3 w-3 mr-1" /> Approved
+                      </Badge>
+                    ) : event.state === 'pending' ? (
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center w-fit">
+                        <Clock className="h-3 w-3 mr-1" /> Pending
+                      </Badge>
+                    ) : event.state === 'draft' ? (
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center w-fit">
+                        Draft
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-800 flex items-center w-fit">
+                        N/A
+                      </Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right flex justify-end space-x-2">
                     <Link to={`/events/${event.id}`} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm" title="View Event">
