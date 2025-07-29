@@ -1,8 +1,18 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // Import useLocation
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils'; // Import cn for conditional class names
 
 const Header = () => {
+  const location = useLocation(); // Get current location
+
+  const getButtonClass = (path: string) => {
+    return cn(
+      "text-gray-700 hover:text-purple-700",
+      location.pathname === path && "font-bold text-purple-700" // Apply bold and purple if active
+    );
+  };
+
   return (
     <header className="w-full bg-white shadow-sm py-4 px-6 md:px-8 flex justify-center">
       <div className="w-full max-w-4xl flex justify-between items-center">
@@ -11,22 +21,22 @@ const Header = () => {
         </Link>
         <nav className="space-x-4">
           <Link to="/">
-            <Button variant="ghost" className="text-gray-700 hover:text-purple-700">
+            <Button variant="ghost" className={getButtonClass("/")}>
               Events
             </Button>
           </Link>
           <Link to="/submit-event">
-            <Button variant="ghost" className="text-gray-700 hover:text-purple-700">
+            <Button variant="ghost" className={getButtonClass("/submit-event")}>
               Add Event
             </Button>
           </Link>
           <Link to="/contact">
-            <Button variant="ghost" className="text-gray-700 hover:text-purple-700">
+            <Button variant="ghost" className={getButtonClass("/contact")}>
               Contact
             </Button>
           </Link>
-          <Link to="/admin/submissions"> {/* New Admin Submissions link */}
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Link to="/admin/submissions">
+            <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
               Admin
             </Button>
           </Link>
