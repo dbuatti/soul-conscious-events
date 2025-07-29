@@ -19,7 +19,7 @@ const Header = () => {
 
   const getButtonClass = (path: string) => {
     return cn(
-      "text-foreground hover:text-purple-700", // Changed from text-gray-700
+      "text-foreground hover:text-purple-700 transition-all duration-300 ease-in-out transform hover:scale-105", // Added transition and transform
       location.pathname === path && "font-bold text-purple-700"
     );
   };
@@ -66,12 +66,12 @@ const Header = () => {
       </Link>
       {/* Admin button is always visible, ProtectedRoute handles access */}
       <Link to="/admin/panel">
-        <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
+        <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105", location.pathname.startsWith("/admin") && "bg-blue-700")}>
           Admin
         </Button>
       </Link>
       {user ? (
-        <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700">
+        <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105">
           <LogOut className="mr-2 h-4 w-4" /> Logout
         </Button>
       ) : null}
@@ -79,7 +79,7 @@ const Header = () => {
   );
 
   return (
-    <header className="w-full bg-white shadow-md border-b border-gray-200 py-4 px-6 md:px-8 flex justify-center">
+    <header className="w-full bg-white shadow-md border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center">
       <div className="w-full max-w-4xl flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold text-purple-700 hover:text-purple-800 transition-colors">
           SoulFlow
