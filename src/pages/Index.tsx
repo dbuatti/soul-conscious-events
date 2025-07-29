@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon } from 'lucide-react'; // Added ImageIcon
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +28,7 @@ interface Event {
   organizer_contact?: string;
   event_type?: string;
   state?: string;
-  image_url?: string; // Added image_url
+  image_url?: string;
 }
 
 const eventTypes = [
@@ -49,104 +49,7 @@ const australianStates = [
 ];
 
 const Index = () => {
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: '1',
-      event_name: 'Mindful Meditation & Sound Bath',
-      event_date: '2024-09-15',
-      event_time: '6:00 PM - 7:30 PM',
-      place_name: 'Art of Living Centre',
-      full_address: '123 Wellness Way, Fitzroy, VIC 3065, Australia',
-      description: 'Join us for an evening of deep relaxation and inner peace with guided meditation followed by a soothing sound bath. All levels welcome.',
-      ticket_link: 'https://example.com/meditation-soundbath',
-      price: '$35',
-      special_notes: 'Bring a yoga mat and blanket.',
-      organizer_contact: 'Soulful Events',
-      event_type: 'Meditation',
-      state: 'VIC',
-      image_url: 'https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/event-images/placeholder.jpg', // Placeholder image
-    },
-    {
-      id: '2',
-      event_name: 'Community Garden Harvest Festival',
-      event_date: '2024-10-05',
-      event_time: '10:00 AM - 3:00 PM',
-      place_name: 'Brunswick Community Gardens',
-      full_address: '456 Green Lane, Brunswick, VIC 3056, Australia',
-      description: 'Celebrate the bounty of our community garden! Enjoy fresh produce, live music, workshops on sustainable living, and activities for kids.',
-      ticket_link: '',
-      price: 'Free',
-      special_notes: 'Family-friendly event. Donations welcome.',
-      organizer_contact: 'Brunswick Community Gardens',
-      event_type: 'Community Gathering',
-      state: 'VIC',
-      image_url: 'https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/event-images/placeholder2.jpg', // Placeholder image
-    },
-    {
-      id: '3',
-      event_name: 'Acoustic Open Mic Night',
-      event_date: '2024-09-20',
-      event_time: '7:00 PM - 10:00 PM',
-      place_name: 'The St Kilda Cafe',
-      full_address: '789 Harmony Street, St Kilda, VIC 3182, Australia',
-      description: 'Showcase your talent or simply enjoy an evening of local acoustic music and poetry. Sign-ups start at 6:30 PM.',
-      ticket_link: '',
-      price: 'Donation',
-      special_notes: 'Drinks and snacks available for purchase.',
-      organizer_contact: 'The St Kilda Cafe',
-      event_type: 'Open Mic',
-      state: 'VIC',
-      image_url: 'https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/event-images/placeholder3.jpg', // Placeholder image
-    },
-    {
-      id: '4',
-      event_name: 'Urban Foraging Workshop: Edible Weeds',
-      event_date: '2024-10-12',
-      event_time: '9:00 AM - 12:00 PM',
-      place_name: 'Royal Botanic Gardens Victoria',
-      full_address: 'Royal Botanic Gardens Victoria, Birdwood Ave, Melbourne, VIC 3004, Australia',
-      description: 'Learn to identify and safely forage for edible weeds in urban environments. Discover their nutritional benefits and how to incorporate them into your diet.',
-      ticket_link: 'https://example.com/foraging-workshop',
-      price: '$60',
-      special_notes: 'Wear comfortable shoes and bring a basket.',
-      organizer_contact: 'Green Thumbs Collective',
-      event_type: 'Foraging',
-      state: 'VIC',
-      image_url: 'https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/event-images/placeholder4.jpg', // Placeholder image
-    },
-    {
-      id: '5',
-      event_name: 'Sunset Yoga & Live Music',
-      event_date: '2024-09-25',
-      event_time: '5:30 PM - 6:45 PM',
-      place_name: 'Southbank Promenade',
-      full_address: 'Southbank Promenade, Melbourne, VIC 3006, Australia',
-      description: 'Experience a rejuvenating yoga flow accompanied by live acoustic music as the sun sets over the Yarra River. All levels welcome.',
-      ticket_link: 'https://example.com/sunset-yoga',
-      price: '$25',
-      special_notes: 'Bring your own yoga mat. Limited spots available.',
-      organizer_contact: 'Flow State Yoga',
-      event_type: 'Meditation',
-      state: 'VIC',
-      image_url: 'https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/event-images/placeholder5.jpg', // Placeholder image
-    },
-    {
-      id: '6',
-      event_name: 'Beginner Pottery Workshop',
-      event_date: '2024-11-02',
-      event_time: '1:00 PM - 4:00 PM',
-      place_name: 'Northcote Arts Studio',
-      full_address: '88 Clay Street, Northcote, VIC 3070, Australia',
-      description: 'Get your hands dirty and learn the basics of pottery. Create your own unique ceramic piece to take home.',
-      ticket_link: 'https://example.com/pottery-workshop',
-      price: '$95',
-      special_notes: 'All materials provided. Wear old clothes.',
-      organizer_contact: 'Northcote Arts Studio',
-      event_type: 'Workshop',
-      state: 'VIC',
-      image_url: 'https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/event-images/placeholder6.jpg', // Placeholder image
-    },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]); // Initialize with empty array to load from Supabase
   const [loading, setLoading] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
@@ -230,14 +133,12 @@ const Index = () => {
         console.error('Error fetching events:', error);
         toast.error('Failed to load events.');
       } else {
-        if (data && data.length > 0) {
-          setEvents(data as Event[]);
-        }
+        setEvents(data || []); // Set events to fetched data
       }
       setLoading(false);
     };
 
-    // fetchEvents(); // Uncomment this line if you want to fetch from Supabase
+    fetchEvents(); // Uncommented this line
   }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]);
 
   const toggleDescription = (id: string) => {
@@ -322,7 +223,7 @@ const Index = () => {
           {/* Search Input */}
           <div className="relative col-span-full">
             <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
-            <Search className="absolute left-3 top-[0.75rem] h-4 w-4 text-gray-500" /> {/* Adjusted top value */}
+            <Search className="absolute left-3 top-[0.75rem] h-4 w-4 text-gray-500" />
             <Input
               id="search-events"
               placeholder="Search by name, description, organizer, address, or place name..."
