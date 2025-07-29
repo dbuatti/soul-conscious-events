@@ -4,16 +4,16 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, LogOut } from 'lucide-react'; // Import LogOut icon
+import { Menu, LogOut } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSession } from '@/components/SessionContextProvider'; // Import useSession
-import { supabase } from '@/integrations/supabase/client'; // Import supabase client
+import { useSession } from '@/components/SessionContextProvider';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const Header = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { user } = useSession(); // Get user from session context
+  const { user } = useSession();
 
   const getButtonClass = (path: string) => {
     return cn(
@@ -57,7 +57,7 @@ const Header = () => {
           Contact
         </Button>
       </Link>
-      {user && user.email === 'daniele.buatti@gmail.com' && ( // Only show Admin button if logged in as admin
+      {user && user.email === 'daniele.buatti@gmail.com' && (
         <Link to="/admin/submissions">
           <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
             Admin
@@ -68,13 +68,7 @@ const Header = () => {
         <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700">
           <LogOut className="mr-2 h-4 w-4" /> Logout
         </Button>
-      ) : (
-        <Link to="/login">
-          <Button variant="ghost" className={getButtonClass("/login")}>
-            Login
-          </Button>
-        </Link>
-      )}
+      ) : null /* No login button for public users */}
     </>
   );
 
