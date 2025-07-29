@@ -150,14 +150,7 @@ const EventDetail = () => {
                   </a>
                 </div>
               )}
-              {event.state && (
-                <div className="flex items-center mt-1">
-                  <Globe className="mr-2 h-4 w-4 text-orange-500" />
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-base py-1 px-2">
-                    {event.state}
-                  </Badge>
-                </div>
-              )}
+              {/* Removed event.state display */}
             </CardDescription>
           )}
         </CardHeader>

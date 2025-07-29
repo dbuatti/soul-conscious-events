@@ -51,7 +51,7 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string; // Added state to interface
+  state?: string;
   image_url?: string;
 }
 

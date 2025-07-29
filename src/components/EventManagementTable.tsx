@@ -77,7 +77,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  state: z.string().optional().or(z.literal('')),
+  // Removed state from schema
   image_url: z.string().optional().or(z.literal('')),
 });
 
@@ -109,7 +109,7 @@ const EventManagementTable = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      state: '',
+      // Removed state from defaultValues
       image_url: '',
     },
   });
@@ -163,7 +163,7 @@ const EventManagementTable = () => {
       specialNotes: event.special_notes || '',
       organizerContact: event.organizer_contact || '',
       eventType: event.event_type || '',
-      state: event.state || '',
+      // Removed state from form reset
       image_url: event.image_url || '',
     });
     setIsEditDialogOpen(true);
@@ -189,7 +189,7 @@ const EventManagementTable = () => {
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
         event_type: values.eventType || null,
-        state: values.state || null,
+        state: currentEvent?.state || 'approved', // Use existing state or default to 'approved'
       })
       .eq('id', values.id);
 
@@ -361,6 +361,8 @@ const EventManagementTable = () => {
                   </FormItem>
                 )}
               />
+              {/* Removed state field from the form */}
+              {/*
               <FormField
                 control={form.control}
                 name="state"
@@ -385,6 +387,7 @@ const EventManagementTable = () => {
                   </FormItem>
                 )}
               />
+              */}
               <FormField
                 control={form.control}
                 name="description"

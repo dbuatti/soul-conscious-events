@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { format, isSameDay, isAfter, parseISO } from 'date-fns'; // Added parseISO and isAfter
+import { format, isSameDay, isAfter, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -13,7 +13,7 @@ interface Event {
   event_name: string;
   event_date: string;
   event_time?: string;
-  place_name?: string; // Added place_name
+  place_name?: string;
   full_address?: string;
   description?: string;
   ticket_link?: string;
@@ -22,7 +22,7 @@ interface Event {
   organizer_contact?: string;
   event_type?: string;
   state?: string;
-  image_url?: string; // Added image_url
+  image_url?: string;
 }
 
 interface EventCalendarProps {
@@ -32,6 +32,10 @@ interface EventCalendarProps {
 }
 
 const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onDateSelect }) => {
+  // Debugging logs
+  console.log('EventCalendar Debug: All events passed:', events);
+  console.log('EventCalendar Debug: Selected date:', selectedDate);
+
   const eventsByDate = events.reduce((acc, event) => {
     const dateKey = format(new Date(event.event_date), 'yyyy-MM-dd');
     if (!acc[dateKey]) {
@@ -42,7 +46,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
   }, {} as Record<string, Event[]>);
 
   const modifiers = {
-    events: events.map(event => parseISO(event.event_date)), // Use parseISO
+    events: events.map(event => parseISO(event.event_date)),
   };
 
   const modifiersStyles = {
@@ -66,12 +70,15 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           if (dateA.getTime() !== dateB.getTime()) {
             return dateA.getTime() - dateB.getTime();
           }
-          // Fallback to time if dates are the same
           const timeA = a.event_time || '';
           const timeB = b.event_time || '';
           return timeA.localeCompare(timeB);
         })
     : [];
+
+  // Debugging logs for filtered events
+  console.log('EventCalendar Debug: Events on selected date:', eventsOnSelectedDate);
+  console.log('EventCalendar Debug: More upcoming events:', moreUpcomingEvents);
 
   const renderEventCard = (event: Event) => {
     const googleMapsLink = event.full_address
@@ -112,14 +119,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
                   </a>
                 </div>
               )}
-              {event.state && (
-                <div className="flex items-center mt-1">
-                  <Globe className="mr-2 h-4 w-4 text-orange-500" />
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                    {event.state}
-                  </Badge>
-                </div>
-              )}
+              {/* Removed event.state display */}
             </CardDescription>
           )}
         </CardHeader>
