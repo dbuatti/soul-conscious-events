@@ -468,7 +468,7 @@ const Index = () => {
                       : formattedDate;
 
                   return (
-                    <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform group-hover:scale-102">
+                    <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102">
                       {event.image_url && (
                         <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
                           <img
@@ -481,6 +481,16 @@ const Index = () => {
                       )}
                       <CardHeader>
                         <CardTitle className="text-xl font-semibold text-purple-700">{event.event_name}</CardTitle>
+                        <CardDescription className="flex items-center text-gray-600 mt-2">
+                          <Calendar className="mr-2 h-4 w-4 text-blue-500" />
+                          {dateDisplay}
+                          {event.event_time && (
+                            <>
+                              <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
+                              {event.event_time}
+                            </>
+                          )}
+                        </CardDescription>
                         {(event.place_name || event.full_address) && (
                           <div className="flex flex-col items-start text-gray-600 mt-1">
                             {event.place_name && (
@@ -510,7 +520,7 @@ const Index = () => {
                       <CardContent className="space-y-2">
                         {event.description && (
                           <div>
-                            <p className="text-foreground"> {/* Changed from text-gray-700 */}
+                            <p className="text-foreground">
                               {expandedDescriptions[event.id] || event.description.length < 150
                                 ? event.description
                                 : `${event.description.substring(0, 150)}...`}
@@ -523,7 +533,7 @@ const Index = () => {
                           </div>
                         )}
                         {event.price && (
-                          <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
+                          <p className="flex items-center text-foreground">
                             <DollarSign className="mr-2 h-4 w-4 text-green-600" />
                             Price: {event.price}
                             {event.price.toLowerCase() === 'free' && (
@@ -542,35 +552,25 @@ const Index = () => {
                           </div>
                         )}
                         {event.special_notes && (
-                          <p className="flex items-start text-foreground"> {/* Changed from text-gray-700 */}
+                          <p className="flex items-start text-foreground">
                             <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
                             Special Notes: {event.special_notes}
                           </p>
                         )}
                         {event.organizer_contact && (
-                          <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
+                          <p className="flex items-center text-foreground">
                             <User className="mr-2 h-4 w-4 text-indigo-500" />
                             Organizer: {event.organizer_contact}
                           </p>
                         )}
                         {event.event_type && (
-                          <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
+                          <p className="flex items-center text-foreground">
                             <Tag className="mr-2 h-4 w-4 text-pink-500" />
                             Type: {event.event_type}
                           </p>
                         )}
                       </CardContent>
                       <CardFooter className="flex flex-col items-start pt-4">
-                        <div className="flex items-center text-gray-600 mb-2">
-                          <Calendar className="mr-2 h-4 w-4 text-blue-500" />
-                          {dateDisplay}
-                          {event.event_time && (
-                            <>
-                              <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
-                              {event.event_time}
-                            </>
-                          )}
-                        </div>
                         <div className="flex justify-end w-full space-x-2">
                           <Button variant="outline" size="sm" onClick={() => handleShare(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                             <Share2 className="mr-2 h-4 w-4" /> Share

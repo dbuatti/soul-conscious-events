@@ -99,7 +99,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         : formattedStartDate;
 
     return (
-      <Card key={event.id} className="group shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform group-hover:scale-102">
+      <Card key={event.id} className="group shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
           <CardDescription className="flex items-center text-gray-600 mt-2">
@@ -142,11 +142,11 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         <CardContent className="space-y-2">
           {event.description && (
             <div>
-              <p className="text-foreground line-clamp-3">{event.description}</p> {/* Changed from text-gray-700 */}
+              <p className="text-foreground line-clamp-3">{event.description}</p>
             </div>
           )}
           {event.price && (
-            <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
+            <p className="flex items-center text-foreground">
               <DollarSign className="mr-2 h-4 w-4 text-green-600" />
               Price: {event.price}
               {event.price.toLowerCase() === 'free' && (
@@ -165,19 +165,19 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             </div>
           )}
           {event.special_notes && (
-            <p className="flex items-start text-foreground"> {/* Changed from text-gray-700 */}
+            <p className="flex items-start text-foreground">
               <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
               Special Notes: {event.special_notes}
             </p>
           )}
           {event.organizer_contact && (
-            <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
+            <p className="flex items-center text-foreground">
               <User className="mr-2 h-4 w-4 text-indigo-500" />
               Organizer: {event.organizer_contact}
             </p>
           )}
           {event.event_type && (
-            <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
+            <p className="flex items-center text-foreground">
               <Tag className="mr-2 h-4 w-4 text-pink-500" />
               Type: {event.event_type}
             </p>
