@@ -225,6 +225,20 @@ const SubmitEvent = () => {
 
           <FormField
             control={form.control}
+            name="placeName" // New field for place name
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Place Name (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Art of Living Centre" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="fullAddress"
             render={({ field }) => (
               <FormItem>
@@ -236,20 +250,6 @@ const SubmitEvent = () => {
                     ref={addressInputRef}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="placeName" // New field for place name
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Place Name (Optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., Art of Living Centre" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
