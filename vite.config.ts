@@ -15,6 +15,6 @@ import { defineConfig } from "vite";
         },
       },
       define: {
-        'import.meta.env.VITE_GOOGLE_MAPS_API_KEY': JSON.stringify("AIzaSyBIAYKFIlCYLkU2qb9k1svA7rLKvAve71I"),
+        'import.meta.env.VITE_GOOGLE_MAPS_API_KEY': JSON.stringify("AIzaSyBOhxn3A2qu5e9VJHamFCRdwAZzV9r4424"),
       },
     }));
