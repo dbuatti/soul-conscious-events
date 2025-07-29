@@ -299,7 +299,7 @@ const Index = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-end mt-4 md:mt-0">
+          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4 md:mt-0">
             {(
               draftEventType !== appliedEventType ||
               draftState !== appliedState ||
