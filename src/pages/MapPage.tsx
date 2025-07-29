@@ -132,6 +132,11 @@ const MapPage = () => {
         Explore soulful events near you on the map.
       </p>
       <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-gray-300" />
+      <p className="text-center text-sm text-gray-500 mt-4">
+        <span className="font-semibold">Note:</span> This map functionality, including address lookups, relies on the Google Maps API.
+        It is currently operating on free Google API credits, which means its availability and performance may vary
+        and could stop working unexpectedly if usage limits are exceeded. This is a new feature and an ongoing learning experience!
+      </p>
       {events.length === 0 && (
         <p className="text-center text-gray-600 mt-6">No events with addresses found to display on the map.</p>
       )}
