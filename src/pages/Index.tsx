@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, Bell, Timer as TimerIcon } from 'lucide-react'; // Added TimerIcon
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -14,17 +14,13 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import EventCalendar from '@/components/EventCalendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useSession } from '@/components/SessionContextProvider';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import MeditationTimer from '@/components/MeditationTimer';
-import PomodoroTimer from '@/components/PomodoroTimer'; // Import the new PomodoroTimer
-import { playClickSound } from '@/utils/audio'; // Import playClickSound
+import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 
 interface Event {
   id: string;
   event_name: string;
   event_date: string;
-  end_date?: string;
+  end_date?: string; // Added end_date
   event_time?: string;
   location?: string;
   place_name?: string;
@@ -37,7 +33,7 @@ interface Event {
   event_type?: string;
   state?: string;
   image_url?: string;
-  user_id?: string;
+  user_id?: string; // Added user_id to interface
 }
 
 const eventTypes = [
@@ -71,14 +67,12 @@ const Index = () => {
   const [appliedEventType, setAppliedEventType] = useState('All');
   const [appliedState, setAppliedState] = useState('All');
   const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
+  // const [showHiddenEvents, setShowHiddenEvents] = useState(false); // Removed state for the checkbox
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
-  const [isMeditationTimerOpen, setIsMeditationTimerOpen] = useState(false);
-  const [isPomodoroTimerOpen, setIsPomodoroTimerOpen] = useState(false); // New state for Pomodoro timer dialog
 
-
-  const { user, isLoading: isSessionLoading } = useSession();
+  const { user, isLoading: isSessionLoading } = useSession(); // Get user from context
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
 
   useEffect(() => {
@@ -132,6 +126,7 @@ const Index = () => {
         query = query.eq('state', appliedState);
       }
 
+      // Always filter for 'approved' events for public view
       query = query.eq('state', 'approved');
 
       if (appliedSearchTerm) {
@@ -156,7 +151,7 @@ const Index = () => {
     };
 
     fetchEvents();
-  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]);
+  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]); // Removed showHiddenEvents, isAdmin, isViewingAsPublic from dependencies
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -180,9 +175,10 @@ const Index = () => {
     setAppliedState('All');
     setDraftDateFilter('All Upcoming');
     setAppliedDateFilter('All Upcoming');
+    // setShowHiddenEvents(false); // Removed this
   };
 
-  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => {
+  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => { // Removed 'hiddenEvents'
     switch (filterType) {
       case 'search':
         setDraftSearchTerm('');
@@ -209,7 +205,7 @@ const Index = () => {
     appliedSearchTerm !== '' ||
     appliedEventType !== 'All' ||
     appliedState !== 'All' ||
-    appliedDateFilter !== 'All Upcoming';
+    appliedDateFilter !== 'All Upcoming'; // Removed showHiddenEvents logic
 
   const handleShare = (event: Event) => {
     const eventUrl = `${window.location.origin}/events/${event.id}`;
@@ -227,7 +223,7 @@ const Index = () => {
         toast.error('Failed to delete event.');
       } else {
         toast.success('Event deleted successfully!');
-        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId)); // Optimistically update UI
       }
     }
   };
@@ -239,6 +235,7 @@ const Index = () => {
         Connect with soulful events in your community.
       </p>
 
+      {/* New App Description Clause */}
       <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center">
         <p className="text-gray-700 text-base leading-relaxed">
           SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
@@ -247,16 +244,19 @@ const Index = () => {
         </p>
       </div>
 
+      {/* Filter and View Options Section */}
       <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-lg">
         <h2 className="text-2xl font-bold text-foreground mb-6">Filter Events</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start">
+          {/* Search Input */}
           <div className="relative col-span-full">
             <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
+            {/* Removed Search icon */}
             <Input
               id="search-events"
               placeholder="Search events..."
-              className="w-full focus-visible:ring-purple-500"
+              className="w-full focus-visible:ring-purple-500" // Removed pl-10 class
               value={draftSearchTerm}
               onChange={(e) => setDraftSearchTerm(e.target.value)}
             />
@@ -275,6 +275,7 @@ const Index = () => {
             )}
           </div>
 
+          {/* Event Type Select */}
           <div className="flex flex-col gap-1">
             <label htmlFor="event-type" className="text-sm font-medium text-gray-700">Event Type</label>
             <Select onValueChange={setDraftEventType} value={draftEventType}>
@@ -291,6 +292,7 @@ const Index = () => {
             </Select>
           </div>
 
+          {/* State Select */}
           <div className="flex flex-col gap-1">
             <label htmlFor="event-state" className="text-sm font-medium text-gray-700">State</label>
             <Select onValueChange={setDraftState} value={draftState}>
@@ -307,6 +309,7 @@ const Index = () => {
             </Select>
           </div>
 
+          {/* Date Range Select */}
           <div className="flex flex-col gap-1">
             <label htmlFor="date-range" className="text-sm font-medium text-gray-700">Date Range</label>
             <Select onValueChange={setDraftDateFilter} value={draftDateFilter}>
@@ -325,55 +328,18 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Action Buttons and View Mode Controls */}
         <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-4 justify-between items-center">
+          {/* Left side: Add New Event Button */}
           <Link to="/submit-event">
             <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
               Add New Event
             </Button>
           </Link>
 
+          {/* Right side: Apply, Clear, View Mode */}
           <div className="flex flex-col sm:flex-row gap-4 items-center">
-            {/* Meditation Timer Button */}
-            <Dialog open={isMeditationTimerOpen} onOpenChange={(open) => {
-              setIsMeditationTimerOpen(open);
-              playClickSound(); // Play sound on open/close
-            }}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
-                  <Bell className="mr-2 h-4 w-4" /> Meditation Timer
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Meditation Timer</DialogTitle>
-                </DialogHeader>
-                <MeditationTimer onClose={() => {
-                  setIsMeditationTimerOpen(false);
-                  playClickSound(); // Play sound on close
-                }} />
-              </DialogContent>
-            </Dialog>
-
-            {/* Pomodoro Timer Button */}
-            <Dialog open={isPomodoroTimerOpen} onOpenChange={(open) => {
-              setIsPomodoroTimerOpen(open);
-              playClickSound(); // Play sound on open/close
-            }}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
-                  <TimerIcon className="mr-2 h-4 w-4" /> Pomodoro Timer
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Pomodoro Timer</DialogTitle>
-                </DialogHeader>
-                <PomodoroTimer onClose={() => {
-                  setIsPomodoroTimerOpen(false);
-                  playClickSound(); // Play sound on close
-                }} />
-              </DialogContent>
-            </Dialog>
+            {/* Removed isAdmin && !isViewingAsPublic checkbox */}
 
             {(
               draftEventType !== appliedEventType ||
@@ -390,6 +356,7 @@ const Index = () => {
               </Button>
             )}
 
+            {/* View Mode Toggle */}
             <div className="flex flex-col gap-1 w-full sm:w-auto">
               <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
               <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
@@ -404,6 +371,7 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Active Filters Display */}
         {hasActiveFilters && (
           <div className="mt-6 flex flex-wrap gap-2 items-center">
             <span className="text-sm font-medium text-gray-700">Active Filters:</span>
@@ -439,11 +407,13 @@ const Index = () => {
                 </Button>
               </Badge>
             )}
+            {/* Removed showHiddenEvents badge */}
           </div>
         )}
       </div>
 
-      <div className="text-center text-gray-700 mb-4">
+      {/* Event Count Display */}
+      <div className="text-center text-gray-700 mb-4"> {/* Changed p to div */}
         {loading ? (
           <Skeleton className="h-5 w-48 mx-auto" />
         ) : events.length === 0 ? (

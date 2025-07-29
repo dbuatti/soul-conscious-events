@@ -53,7 +53,6 @@ import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { playSuccessSound, playErrorSound, playClickSound } from '@/utils/audio'; // Import sound functions
 
 interface Event {
   id: string;
@@ -139,7 +138,6 @@ const EventManagementTable = () => {
     if (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events.');
-      playErrorSound(); // Play error sound
     } else {
       setEvents(data || []);
     }
@@ -156,10 +154,8 @@ const EventManagementTable = () => {
     if (error) {
       console.error('Error deleting event:', error);
       toast.error('Failed to delete event.');
-      playErrorSound(); // Play error sound
     } else {
       toast.success('Event deleted successfully!');
-      playSuccessSound(); // Play success sound
       fetchEvents(); // Re-fetch events to update the list
     }
   };
@@ -184,7 +180,6 @@ const EventManagementTable = () => {
       image_url: event.image_url || '',
     });
     setIsEditDialogOpen(true);
-    playClickSound(); // Play sound on edit dialog open
   };
 
   const onEditSubmit = async (values: z.infer<typeof eventFormSchema>) => {
@@ -215,10 +210,8 @@ const EventManagementTable = () => {
     if (error) {
       console.error('Error updating event:', error);
       toast.error('Failed to update event.');
-      playErrorSound(); // Play error sound
     } else {
       toast.success('Event updated successfully!');
-      playSuccessSound(); // Play success sound
       setIsEditDialogOpen(false);
       fetchEvents();
     }
@@ -332,10 +325,7 @@ const EventManagementTable = () => {
       )}
 
       {/* Edit Event Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
-        setIsEditDialogOpen(open);
-        playClickSound(); // Play sound on close
-      }}>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Event</DialogTitle>

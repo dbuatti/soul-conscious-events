@@ -17,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client'; // Import supabase client
-import { playSuccessSound, playErrorSound } from '@/utils/audio'; // Import sound functions
 
 const contactFormSchema = z.object({
   name: z.string().optional(),
@@ -50,10 +49,8 @@ const Contact = () => {
     if (error) {
       console.error('Error submitting contact form:', error);
       toast.error('Failed to send message. Please try again.');
-      playErrorSound(); // Play error sound
     } else {
       toast.success('Thank you for your feedback! Your message has been sent.');
-      playSuccessSound(); // Play success sound
       form.reset();
     }
   };
