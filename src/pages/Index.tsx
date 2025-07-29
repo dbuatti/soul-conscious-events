@@ -66,7 +66,7 @@ const Index = () => {
   const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
   const [showHiddenEvents, setShowHiddenEvents] = useState(false); // New state for the checkbox
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar'); // Changed default to 'calendar'
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
