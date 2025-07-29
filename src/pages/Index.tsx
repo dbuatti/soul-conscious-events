@@ -47,8 +47,93 @@ const australianStates = [
 ];
 
 const Index = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<Event[]>([
+    {
+      id: '1',
+      event_name: 'Mindful Meditation & Sound Bath',
+      event_date: '2024-09-15',
+      event_time: '6:00 PM - 7:30 PM',
+      full_address: '123 Wellness Way, Fitzroy, VIC 3065, Australia',
+      description: 'Join us for an evening of deep relaxation and inner peace with guided meditation followed by a soothing sound bath. All levels welcome.',
+      ticket_link: 'https://example.com/meditation-soundbath',
+      price: '$35',
+      special_notes: 'Bring a yoga mat and blanket.',
+      organizer_contact: 'Soulful Events',
+      event_type: 'Meditation',
+      state: 'VIC',
+    },
+    {
+      id: '2',
+      event_name: 'Community Garden Harvest Festival',
+      event_date: '2024-10-05',
+      event_time: '10:00 AM - 3:00 PM',
+      full_address: '456 Green Lane, Brunswick, VIC 3056, Australia',
+      description: 'Celebrate the bounty of our community garden! Enjoy fresh produce, live music, workshops on sustainable living, and activities for kids.',
+      ticket_link: '',
+      price: 'Free',
+      special_notes: 'Family-friendly event. Donations welcome.',
+      organizer_contact: 'Brunswick Community Gardens',
+      event_type: 'Community Gathering',
+      state: 'VIC',
+    },
+    {
+      id: '3',
+      event_name: 'Acoustic Open Mic Night',
+      event_date: '2024-09-20',
+      event_time: '7:00 PM - 10:00 PM',
+      full_address: '789 Harmony Street, St Kilda, VIC 3182, Australia',
+      description: 'Showcase your talent or simply enjoy an evening of local acoustic music and poetry. Sign-ups start at 6:30 PM.',
+      ticket_link: '',
+      price: 'Donation',
+      special_notes: 'Drinks and snacks available for purchase.',
+      organizer_contact: 'The St Kilda Cafe',
+      event_type: 'Open Mic',
+      state: 'VIC',
+    },
+    {
+      id: '4',
+      event_name: 'Urban Foraging Workshop: Edible Weeds',
+      event_date: '2024-10-12',
+      event_time: '9:00 AM - 12:00 PM',
+      full_address: 'Royal Botanic Gardens Victoria, Birdwood Ave, Melbourne, VIC 3004, Australia',
+      description: 'Learn to identify and safely forage for edible weeds in urban environments. Discover their nutritional benefits and how to incorporate them into your diet.',
+      ticket_link: 'https://example.com/foraging-workshop',
+      price: '$60',
+      special_notes: 'Wear comfortable shoes and bring a basket.',
+      organizer_contact: 'Green Thumbs Collective',
+      event_type: 'Foraging',
+      state: 'VIC',
+    },
+    {
+      id: '5',
+      event_name: 'Sunset Yoga & Live Music',
+      event_date: '2024-09-25',
+      event_time: '5:30 PM - 6:45 PM',
+      full_address: 'Southbank Promenade, Melbourne, VIC 3006, Australia',
+      description: 'Experience a rejuvenating yoga flow accompanied by live acoustic music as the sun sets over the Yarra River. All levels welcome.',
+      ticket_link: 'https://example.com/sunset-yoga',
+      price: '$25',
+      special_notes: 'Bring your own yoga mat. Limited spots available.',
+      organizer_contact: 'Flow State Yoga',
+      event_type: 'Meditation',
+      state: 'VIC',
+    },
+    {
+      id: '6',
+      event_name: 'Beginner Pottery Workshop',
+      event_date: '2024-11-02',
+      event_time: '1:00 PM - 4:00 PM',
+      full_address: '88 Clay Street, Northcote, VIC 3070, Australia',
+      description: 'Get your hands dirty and learn the basics of pottery. Create your own unique ceramic piece to take home.',
+      ticket_link: 'https://example.com/pottery-workshop',
+      price: '$95',
+      special_notes: 'All materials provided. Wear old clothes.',
+      organizer_contact: 'Northcote Arts Studio',
+      event_type: 'Workshop',
+      state: 'VIC',
+    },
+  ]);
+  const [loading, setLoading] = useState(false); // Set to false as we have initial data
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
   // States for filter inputs (draft values)
@@ -136,12 +221,19 @@ const Index = () => {
         console.error('Error fetching events:', error);
         toast.error('Failed to load events.');
       } else {
-        setEvents(data || []);
+        // Only update if data is different from dummy data to avoid overwriting
+        // In a real app, you'd always fetch from Supabase and not use dummy data here.
+        // For this exercise, we'll keep the dummy data as a fallback/initial state.
+        if (data && data.length > 0) {
+          setEvents(data as Event[]);
+        }
       }
       setLoading(false);
     };
 
-    fetchEvents();
+    // Commenting out fetchEvents for now to rely on dummy data,
+    // but keeping the function for future use if Supabase is populated.
+    // fetchEvents();
   }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]);
 
   const toggleDescription = (id: string) => {
