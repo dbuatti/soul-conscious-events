@@ -232,7 +232,7 @@ const Index = () => {
 
       {/* Filter and View Options Section */}
       <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start"> {/* Changed items-end to items-start */}
           {/* Search Input */}
           <div className="relative col-span-full">
             <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
@@ -311,25 +311,25 @@ const Index = () => {
             </Select>
           </div>
 
-          {/* New Checkbox for Hidden Events */}
-          <div className="col-span-full flex items-center gap-2 mt-4">
-            <Checkbox
-              id="show-hidden-events"
-              checked={showHiddenEvents}
-              onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
-            />
-            <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700">
-              Show hidden/draft events
-            </Label>
-          </div>
-
-          {/* Action Buttons */}
+          {/* Action Buttons and View Mode */}
           <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4 md:mt-0">
+            {/* Checkbox for Hidden Events - moved here */}
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="show-hidden-events"
+                checked={showHiddenEvents}
+                onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
+              />
+              <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Show hidden/draft events
+              </Label>
+            </div>
+
             {(
               draftEventType !== appliedEventType ||
               draftState !== appliedState ||
               draftDateFilter !== appliedDateFilter ||
-              showHiddenEvents !== false // Check if the new filter is active
+              showHiddenEvents !== false
             ) && (
                 <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
                   Apply Filters
@@ -341,7 +341,7 @@ const Index = () => {
               </Button>
             )}
             <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label htmlFor="view-mode" className="text-sm font-medium text-gray-700 sr-only sm:not-sr-only">View Mode</label>
+              <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label> {/* Removed sr-only */}
               <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
                 <ToggleGroupItem value="list" aria-label="Toggle list view">
                   <List className="h-4 w-4" />
