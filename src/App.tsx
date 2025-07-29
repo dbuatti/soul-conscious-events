@@ -9,7 +9,9 @@ import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
 import AdminContactSubmissions from "./pages/AdminContactSubmissions";
 import EventDetail from "./pages/EventDetail";
-import MapPage from "./pages/MapPage"; // Import the new MapPage component
+import MapPage from "./pages/MapPage";
+import Login from "./pages/Login"; // Import the new Login component
+import ProtectedRoute from "./components/ProtectedRoute"; // Import the new ProtectedRoute component
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
@@ -29,9 +31,17 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/admin/submissions" element={<AdminContactSubmissions />} />
+              <Route path="/login" element={<Login />} /> {/* New route for the login page */}
+              <Route
+                path="/admin/submissions"
+                element={
+                  <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                    <AdminContactSubmissions />
+                  </ProtectedRoute>
+                }
+              /> {/* Protected route for admin submissions */}
               <Route path="/events/:id" element={<EventDetail />} />
-              <Route path="/map" element={<MapPage />} /> {/* New route for the map page */}
+              <Route path="/map" element={<MapPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>

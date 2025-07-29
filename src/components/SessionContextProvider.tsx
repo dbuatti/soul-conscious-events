@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface SessionContextType {
   session: Session | null;
@@ -16,6 +16,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
@@ -23,7 +24,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       setUser(currentSession?.user || null);
       setIsLoading(false);
 
-      // Removed redirection logic for unauthenticated users
+      // Redirect authenticated users from login page to home
       if (currentSession && location.pathname === '/login') {
         navigate('/');
       }
@@ -33,14 +34,14 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       setSession(currentSession);
       setUser(currentSession?.user || null);
       setIsLoading(false);
-      // Removed redirection logic for unauthenticated users
+      // Redirect authenticated users from login page to home on initial load
       if (currentSession && location.pathname === '/login') {
         navigate('/');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]); // Added location.pathname to dependencies
 
   return (
     <SessionContext.Provider value={{ session, user, isLoading }}>

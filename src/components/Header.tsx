@@ -3,19 +3,33 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet'; // Import Sheet components
-import { Menu } from 'lucide-react'; // Import Menu icon
-import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile hook
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Menu, LogOut } from 'lucide-react'; // Import LogOut icon
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useSession } from '@/components/SessionContextProvider'; // Import useSession
+import { supabase } from '@/integrations/supabase/client'; // Import supabase client
+import { toast } from 'sonner';
 
 const Header = () => {
   const location = useLocation();
-  const isMobile = useIsMobile(); // Determine if it's a mobile view
+  const isMobile = useIsMobile();
+  const { user } = useSession(); // Get user from session context
 
   const getButtonClass = (path: string) => {
     return cn(
       "text-gray-700 hover:text-purple-700",
       location.pathname === path && "font-bold text-purple-700"
     );
+  };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error logging out:', error.message);
+      toast.error('Failed to log out. Please try again.');
+    } else {
+      toast.success('Logged out successfully!');
+    }
   };
 
   const navLinks = (
@@ -43,11 +57,24 @@ const Header = () => {
           Contact
         </Button>
       </Link>
-      <Link to="/admin/submissions">
-        <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
-          Admin
+      {user && user.email === 'daniele.buatti@gmail.com' && ( // Only show Admin button if logged in as admin
+        <Link to="/admin/submissions">
+          <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
+            Admin
+          </Button>
+        </Link>
+      )}
+      {user ? (
+        <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700">
+          <LogOut className="mr-2 h-4 w-4" /> Logout
         </Button>
-      </Link>
+      ) : (
+        <Link to="/login">
+          <Button variant="ghost" className={getButtonClass("/login")}>
+            Login
+          </Button>
+        </Link>
+      )}
     </>
   );
 
