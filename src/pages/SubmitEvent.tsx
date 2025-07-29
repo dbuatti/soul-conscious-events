@@ -90,7 +90,14 @@ const SubmitEvent = () => {
   useEffect(() => {
     // Ensure google.maps is available before initializing Autocomplete
     if (addressInputRef.current && window.google && window.google.maps && window.google.maps.places) {
+      // Define a bounding box for Melbourne (approximate coordinates)
+      const melbourneBounds = new window.google.maps.LatLngBounds(
+        new window.google.maps.LatLng(-38.2, 144.5), // South-West corner
+        new window.google.maps.LatLng(-37.5, 145.5)  // North-East corner
+      );
+
       const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+        bounds: melbourneBounds, // Bias results towards Melbourne
         componentRestrictions: { country: 'au' },
         fields: ['formatted_address'], // Request only necessary fields
       });
