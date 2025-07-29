@@ -72,6 +72,8 @@ const SubmitEvent = () => {
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const addressInputRef = useRef<HTMLInputElement>(null); // Ref for the input
+  const suggestionsListRef = useRef<HTMLUListElement>(null); // Ref for the suggestions list
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -91,7 +93,7 @@ const SubmitEvent = () => {
 
   const fetchAddressSuggestions = async (query: string) => {
     const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    console.log("Google Maps API Key:", GOOGLE_MAPS_API_KEY ? "Present" : "Missing"); // Added log
+    console.log("Google Maps API Key:", GOOGLE_MAPS_API_KEY ? "Present" : "Missing");
     if (!GOOGLE_MAPS_API_KEY) {
       console.error("Google Maps API Key is not set. Please set VITE_GOOGLE_MAPS_API_KEY in your .env.local file.");
       toast.error("Address suggestions are unavailable. API key missing.");
@@ -104,7 +106,7 @@ const SubmitEvent = () => {
     }
 
     const googlePlacesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}&components=country:au`;
-    console.log("Google Places URL:", googlePlacesUrl); // Added log
+    console.log("Google Places URL:", googlePlacesUrl);
 
     try {
       const response = await fetch(googlePlacesUrl);
@@ -270,15 +272,27 @@ const SubmitEvent = () => {
                       {...field}
                       onChange={handleAddressInputChange}
                       onFocus={() => setShowAddressSuggestions(addressSuggestions.length > 0)}
-                      onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 100)}
+                      onBlur={(e) => {
+                        // Check if the related target is within the suggestions list
+                        if (suggestionsListRef.current && suggestionsListRef.current.contains(e.relatedTarget as Node)) {
+                          // Do nothing, allow click on suggestion to register
+                        } else {
+                          // Hide suggestions if focus moves outside input and suggestions list
+                          setShowAddressSuggestions(false);
+                        }
+                      }}
+                      ref={addressInputRef} // Assign ref to input
                     />
                     {showAddressSuggestions && addressSuggestions.length > 0 && (
-                      <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+                      <ul
+                        ref={suggestionsListRef} // Assign ref to suggestions list
+                        className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto"
+                      >
                         {addressSuggestions.map((suggestion, index) => (
                           <li
                             key={index}
                             className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                            onMouseDown={() => handleSuggestionClick(suggestion)}
+                            onMouseDown={() => handleSuggestionClick(suggestion)} // Use onMouseDown to ensure click registers before blur
                           >
                             {suggestion}
                           </li>
