@@ -495,7 +495,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Special Notes</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="e.g., discount code: community, bring a blanket" {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -629,7 +629,7 @@ const EditEvent = () => {
                     <img
                       src={selectedImage ? URL.createObjectURL(selectedImage) : previewData.image_url || ''}
                       alt="Event Preview"
-                      className="max-w-full h-auto rounded-lg shadow-md"
+                      className="max-w-full h-auto rounded-lg shadow-lg"
                     />
                   </div>
                 )}

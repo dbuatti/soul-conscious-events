@@ -143,7 +143,7 @@ const EventDetail = () => {
           <img
             src={event.image_url}
             alt={event.event_name}
-            className="w-full h-64 object-cover rounded-lg shadow-md"
+            className="w-full h-64 object-cover rounded-lg shadow-lg"
           />
         </div>
       )}

@@ -236,7 +236,7 @@ const Index = () => {
       </p>
 
       {/* New App Description Clause */}
-      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-sm text-center">
+      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center">
         <p className="text-gray-700 text-base leading-relaxed">
           SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
           As this is a new project from an aspiring app developer, some features may not work as expected.
@@ -245,7 +245,7 @@ const Index = () => {
       </div>
 
       {/* Filter and View Options Section */}
-      <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+      <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-lg">
         <h2 className="text-2xl font-bold text-foreground mb-6">Filter Events</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start">

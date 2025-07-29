@@ -262,7 +262,7 @@ const SubmitEvent = () => {
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Submit an Event</h2>
 
       {/* AI Parsing Tool Section */}
-      <div className="mb-8 p-6 border border-purple-200 rounded-lg bg-purple-50 shadow-sm">
+      <div className="mb-8 p-6 border border-purple-200 rounded-lg bg-purple-50 shadow-lg">
         <h3 className="text-2xl font-semibold text-purple-800 mb-4 flex items-center">
           <Sparkles className="mr-2 h-6 w-6 text-purple-600" />
           AI Event Parser <Badge variant="secondary" className="ml-2 bg-purple-200 text-purple-800">Beta</Badge>
@@ -380,7 +380,7 @@ const SubmitEvent = () => {
                   </Popover>
                   <FormMessage />
                 </FormItem>
-              )}
+            )}
             />
           </div>
 
@@ -593,7 +593,7 @@ const SubmitEvent = () => {
                     <img
                       src={URL.createObjectURL(selectedImage)}
                       alt="Event Preview"
-                      className="max-w-full h-auto rounded-lg shadow-md"
+                      className="max-w-full h-auto rounded-lg shadow-lg"
                     />
                   </div>
                 )}
