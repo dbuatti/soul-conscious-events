@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon } from 'lucide-react'; // Added ImageIcon
+import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useSession } from '@/components/SessionContextProvider'; // Import useSession
+import { useSession } from '@/components/SessionContextProvider';
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -55,7 +55,7 @@ const eventFormSchema = z.object({
   organizerContact: z.string().optional(),
   eventType: z.string().optional(),
   state: z.string().optional(),
-  imageFile: z.any().optional(), // Added for file input
+  imageFile: z.any().optional(),
 });
 
 const eventTypes = [
@@ -71,13 +71,13 @@ const eventTypes = [
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
-  const { user } = useSession(); // Get the current user
+  const { user } = useSession();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const placeNameInputRef = useRef<HTMLInputElement>(null);
   const [aiText, setAiText] = useState('');
   const [isAiParsing, setIsAiParsing] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null); // State for selected image file
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -165,7 +165,7 @@ const SubmitEvent = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setSelectedImage(event.target.files[0]);
-      form.setValue('imageFile', event.target.files[0]); // Set value for form validation/submission
+      form.setValue('imageFile', event.target.files[0]);
     } else {
       setSelectedImage(null);
       form.setValue('imageFile', undefined);
@@ -173,34 +173,32 @@ const SubmitEvent = () => {
   };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
-    if (!user) {
-      toast.error('You must be logged in to submit an event.');
-      navigate('/login'); // Redirect to login if not authenticated
-      return;
-    }
-
     let imageUrl: string | null = null;
     if (selectedImage) {
-      const fileExtension = selectedImage.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExtension}`; // Unique file name
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('event-images')
-        .upload(fileName, selectedImage, {
-          cacheControl: '3600',
-          upsert: false,
-        });
+      if (!user) {
+        toast.error('You must be logged in to upload an image. Event details will be submitted without an image.');
+        // Continue without image upload if user is not logged in
+      } else {
+        const fileExtension = selectedImage.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExtension}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(fileName, selectedImage, {
+            cacheControl: '3600',
+            upsert: false,
+          });
 
-      if (uploadError) {
-        console.error('Error uploading image:', uploadError);
-        toast.error('Failed to upload image. Please try again.');
-        return;
+        if (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          toast.error('Failed to upload image. Please try again.');
+          // Do not return here, allow event submission without image if upload fails
+        } else {
+          const { data: publicUrlData } = supabase.storage
+            .from('event-images')
+            .getPublicUrl(fileName);
+          imageUrl = publicUrlData.publicUrl;
+        }
       }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('event-images')
-        .getPublicUrl(fileName);
-
-      imageUrl = publicUrlData.publicUrl;
     }
 
     let formattedTicketLink = values.ticketLink;
@@ -222,8 +220,8 @@ const SubmitEvent = () => {
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
         state: values.state,
-        user_id: user.id, // Associate event with the logged-in user
-        image_url: imageUrl, // Save the image URL
+        user_id: user?.id || null, // Associate event with the logged-in user or null
+        image_url: imageUrl,
       },
     ]);
 
@@ -233,8 +231,8 @@ const SubmitEvent = () => {
     } else {
       toast.success('Event submitted successfully!');
       form.reset();
-      setAiText(''); // Clear AI text area after successful submission
-      setSelectedImage(null); // Clear selected image
+      setAiText('');
+      setSelectedImage(null);
       navigate('/');
     }
   };
@@ -512,7 +510,16 @@ const SubmitEvent = () => {
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="file:text-purple-600 file:font-semibold file:border-0 file:bg-transparent file:mr-4"
+                    className="
+                      block w-full text-sm text-gray-700
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-purple-50 file:text-purple-700
+                      hover:file:bg-purple-100
+                      border border-gray-300 rounded-md shadow-sm
+                      cursor-pointer
+                    "
                   />
                 </FormControl>
                 {selectedImage && (
@@ -552,7 +559,7 @@ const SubmitEvent = () => {
           <div className="grid gap-4 py-4">
             {previewData && (
               <>
-                {selectedImage && ( // Display image preview if selected
+                {selectedImage && (
                   <div className="col-span-full flex justify-center mb-4">
                     <img
                       src={URL.createObjectURL(selectedImage)}
