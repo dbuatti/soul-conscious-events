@@ -57,18 +57,17 @@ const Header = () => {
           Contact
         </Button>
       </Link>
-      {user && user.email === 'daniele.buatti@gmail.com' && (
-        <Link to="/admin/submissions">
-          <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
-            Admin
-          </Button>
-        </Link>
-      )}
+      {/* Admin button is always visible, ProtectedRoute handles access */}
+      <Link to="/admin/submissions">
+        <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
+          Admin
+        </Button>
+      </Link>
       {user ? (
         <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700">
           <LogOut className="mr-2 h-4 w-4" /> Logout
         </Button>
-      ) : null /* No login button for public users */}
+      ) : null}
     </>
   );
 
