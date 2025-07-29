@@ -319,9 +319,8 @@ const Index = () => {
             </Select>
           </div>
 
-          {/* Action Buttons and View Mode */}
-          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4 md:mt-0">
-            {/* Checkbox for Hidden Events - only visible for admin and not in public view */}
+          {/* Filter Action Buttons and Hidden Events Checkbox */}
+          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4">
             {isAdmin && !isViewingAsPublic && (
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -339,7 +338,7 @@ const Index = () => {
               draftEventType !== appliedEventType ||
               draftState !== appliedState ||
               draftDateFilter !== appliedDateFilter ||
-              (isAdmin && showHiddenEvents !== false && !isViewingAsPublic) // Only consider this filter if admin and not viewing as public
+              (isAdmin && showHiddenEvents !== false && !isViewingAsPublic)
             ) && (
                 <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
                   Apply Filters
@@ -350,17 +349,21 @@ const Index = () => {
                 Clear All Filters
               </Button>
             )}
-            <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
-              <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
-                <ToggleGroupItem value="list" aria-label="Toggle list view">
-                  <List className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="calendar" aria-label="Toggle calendar view">
-                  <CalendarDays className="h-4 w-4" />
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
+          </div>
+        </div>
+
+        {/* View Mode Toggle - Separated for clarity */}
+        <div className="flex justify-end mt-6 pt-4 border-t border-gray-200">
+          <div className="flex flex-col gap-1 w-full sm:w-auto">
+            <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
+            <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
+              <ToggleGroupItem value="list" aria-label="Toggle list view">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="calendar" aria-label="Toggle calendar view">
+                <CalendarDays className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
         </div>
 
