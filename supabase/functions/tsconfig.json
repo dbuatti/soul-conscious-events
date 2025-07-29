@@ -1,19 +1,15 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "lib": ["deno.ns", "esnext"],
     "module": "ESNext",
-    "lib": ["ESNext", "deno.ns"],
-    "moduleResolution": "Bundler",
-    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "Node",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "*": ["./node_modules/*", "./*"]
-    }
+    "types": ["deno"]
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts"]
 }

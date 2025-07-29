@@ -41,12 +41,14 @@ serve(async (req) => {
       });
     }
 
+    const currentYear = new Date().getFullYear(); // Get the current year dynamically
+
     const prompt = `
       You are an AI assistant specialized in extracting event details from unstructured text.
       Your task is to parse the provided event text and return a JSON object containing the extracted information.
       Crucially, your response MUST contain ONLY the JSON object, with no additional text, markdown formatting (like \`\`\`json), or conversational elements.
       If a field is not found, omit it from the JSON.
-      Ensure dates are in 'YYYY-MM-DD' format.
+      Ensure dates are in 'YYYY-MM-DD' format. If a year is not explicitly mentioned for a date, assume the current year, which is ${currentYear}.
       Ensure the 'ticketLink' includes 'https://' if present.
 
       Here is the event text:
