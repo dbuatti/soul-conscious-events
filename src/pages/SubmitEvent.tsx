@@ -70,7 +70,7 @@ const SubmitEvent = () => {
   const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
-  const addressInputRef = useRef<HTMLInputElement>(null); // Ref for the input
+  const placeNameInputRef = useRef<HTMLInputElement>(null); // Ref for the place name input
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -90,27 +90,24 @@ const SubmitEvent = () => {
   });
 
   useEffect(() => {
-    if (addressInputRef.current && window.google && window.google.maps && window.google.maps.places) {
+    if (placeNameInputRef.current && window.google && window.google.maps && window.google.maps.places) {
       const melbourneBounds = new window.google.maps.LatLngBounds(
         new window.google.maps.LatLng(-38.2, 144.5),
         new window.google.maps.LatLng(-37.5, 145.5)
       );
 
-      const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+      const autocomplete = new window.google.maps.places.Autocomplete(placeNameInputRef.current, {
         bounds: melbourneBounds,
         componentRestrictions: { country: 'au' },
-        fields: ['formatted_address', 'name'], // Request 'name' field
+        fields: ['formatted_address', 'name'], // Request 'name' and 'formatted_address' fields
       });
 
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
-        if (place.formatted_address) {
-          form.setValue('fullAddress', place.formatted_address, { shouldValidate: true });
-        } else {
-          form.setValue('fullAddress', '', { shouldValidate: true });
-        }
         // Set the place name
         form.setValue('placeName', place.name || '', { shouldValidate: true });
+        // Set the full address
+        form.setValue('fullAddress', place.formatted_address || '', { shouldValidate: true });
       });
     }
   }, [form]);
@@ -230,7 +227,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Place Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Art of Living Centre" {...field} />
+                  <Input placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -247,7 +244,6 @@ const SubmitEvent = () => {
                   <Input
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
-                    ref={addressInputRef}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
                   />
                 </FormControl>
