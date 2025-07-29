@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
-import AdminPanel from "./pages/AdminPanel"; // Updated import
+import AdminPanel from "./pages/AdminPanel";
 import EventDetail from "./pages/EventDetail";
 import MapPage from "./pages/MapPage";
 import Login from "./pages/Login";
@@ -15,7 +15,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
-import EditEvent from "./pages/EditEvent"; // New import
+import EditEvent from "./pages/EditEvent";
+import About from "./pages/About"; // New import
 
 const queryClient = new QueryClient();
 
@@ -32,9 +33,10 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<About />} /> {/* New Route */}
               <Route path="/login" element={<Login />} />
               <Route
-                path="/admin/panel" // Updated route path
+                path="/admin/panel"
                 element={
                   <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
                     <AdminPanel />
@@ -44,7 +46,7 @@ const App = () => (
               <Route
                 path="/edit-event/:id"
                 element={
-                  <ProtectedRoute> {/* Protected for any logged-in user, component handles creator check */}
+                  <ProtectedRoute>
                     <EditEvent />
                   </ProtectedRoute>
                 }
