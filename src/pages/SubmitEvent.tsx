@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Sparkles } from 'lucide-react';
+import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon } from 'lucide-react'; // Added ImageIcon
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -54,6 +55,7 @@ const eventFormSchema = z.object({
   organizerContact: z.string().optional(),
   eventType: z.string().optional(),
   state: z.string().optional(),
+  imageFile: z.any().optional(), // Added for file input
 });
 
 const eventTypes = [
@@ -69,11 +71,13 @@ const eventTypes = [
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
+  const { user } = useSession(); // Get the current user
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const placeNameInputRef = useRef<HTMLInputElement>(null);
   const [aiText, setAiText] = useState('');
   const [isAiParsing, setIsAiParsing] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null); // State for selected image file
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -158,7 +162,47 @@ const SubmitEvent = () => {
     }
   };
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedImage(event.target.files[0]);
+      form.setValue('imageFile', event.target.files[0]); // Set value for form validation/submission
+    } else {
+      setSelectedImage(null);
+      form.setValue('imageFile', undefined);
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
+    if (!user) {
+      toast.error('You must be logged in to submit an event.');
+      navigate('/login'); // Redirect to login if not authenticated
+      return;
+    }
+
+    let imageUrl: string | null = null;
+    if (selectedImage) {
+      const fileExtension = selectedImage.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExtension}`; // Unique file name
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, selectedImage, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        toast.error('Failed to upload image. Please try again.');
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(fileName);
+
+      imageUrl = publicUrlData.publicUrl;
+    }
+
     let formattedTicketLink = values.ticketLink;
     if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
       formattedTicketLink = `https://${formattedTicketLink}`;
@@ -178,7 +222,8 @@ const SubmitEvent = () => {
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
         state: values.state,
-        user_id: null,
+        user_id: user.id, // Associate event with the logged-in user
+        image_url: imageUrl, // Save the image URL
       },
     ]);
 
@@ -189,6 +234,7 @@ const SubmitEvent = () => {
       toast.success('Event submitted successfully!');
       form.reset();
       setAiText(''); // Clear AI text area after successful submission
+      setSelectedImage(null); // Clear selected image
       navigate('/');
     }
   };
@@ -454,6 +500,32 @@ const SubmitEvent = () => {
             )}
           />
 
+          {/* New Image Upload Field */}
+          <FormField
+            control={form.control}
+            name="imageFile"
+            render={() => (
+              <FormItem>
+                <FormLabel>Event Image (Optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="file:text-purple-600 file:font-semibold file:border-0 file:bg-transparent file:mr-4"
+                  />
+                </FormControl>
+                {selectedImage && (
+                  <div className="mt-2 flex items-center space-x-2">
+                    <ImageIcon className="h-5 w-5 text-gray-500" />
+                    <span className="text-sm text-gray-600">{selectedImage.name}</span>
+                  </div>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => navigate('/')}>
               Back to Events
@@ -480,6 +552,15 @@ const SubmitEvent = () => {
           <div className="grid gap-4 py-4">
             {previewData && (
               <>
+                {selectedImage && ( // Display image preview if selected
+                  <div className="col-span-full flex justify-center mb-4">
+                    <img
+                      src={URL.createObjectURL(selectedImage)}
+                      alt="Event Preview"
+                      className="max-w-full h-auto rounded-lg shadow-md"
+                    />
+                  </div>
+                )}
                 <div className="grid grid-cols-4 items-center gap-4">
                   <p className="text-right font-medium">Event Name:</p>
                   <p className="col-span-3">{previewData.eventName}</p>

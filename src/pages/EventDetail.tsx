@@ -14,7 +14,7 @@ interface Event {
   event_name: string;
   event_date: string;
   event_time?: string;
-  place_name?: string; // Added place_name
+  place_name?: string;
   full_address?: string;
   description?: string;
   ticket_link?: string;
@@ -23,6 +23,7 @@ interface Event {
   organizer_contact?: string;
   event_type?: string;
   state?: string;
+  image_url?: string; // Added image_url
 }
 
 const EventDetail = () => {
@@ -103,6 +104,16 @@ const EventDetail = () => {
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
       <h1 className="text-4xl font-bold text-center text-gray-800 mb-6">{event.event_name}</h1>
+
+      {event.image_url && (
+        <div className="mb-6">
+          <img
+            src={event.image_url}
+            alt={event.event_name}
+            className="w-full h-64 object-cover rounded-lg shadow-md"
+          />
+        </div>
+      )}
 
       <Card className="shadow-md border-none">
         <CardHeader>
