@@ -41,7 +41,7 @@ const AdminPanel = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+    <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h2 className="text-3xl font-bold text-center text-foreground mb-6">Admin Panel</h2>
       <p className="text-center text-gray-600 mb-8">
         Manage contact submissions and events from here.
@@ -59,7 +59,7 @@ const AdminPanel = () => {
           {loadingSubmissions ? (
             <div className="grid grid-cols-1 gap-6">
               {[...Array(3)].map((_, i) => (
-                <Card key={i} className="shadow-md">
+                <Card key={i} className="shadow-lg rounded-lg">
                   <CardHeader>
                     <Skeleton className="h-6 w-3/4 mb-2" />
                     <Skeleton className="h-4 w-1/2" />
@@ -77,7 +77,7 @@ const AdminPanel = () => {
           ) : (
             <div className="grid grid-cols-1 gap-6">
               {submissions.map((submission) => (
-                <Card key={submission.id} className="shadow-md">
+                <Card key={submission.id} className="shadow-lg rounded-lg">
                   <CardHeader>
                     <CardTitle className="text-xl font-semibold text-purple-700">{submission.subject}</CardTitle>
                     <p className="text-sm text-gray-500">

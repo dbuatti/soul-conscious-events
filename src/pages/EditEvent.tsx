@@ -285,7 +285,7 @@ const EditEvent = () => {
 
   if (isSessionLoading || loadingEvent) {
     return (
-      <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+      <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
         <div className="space-y-4">
@@ -307,7 +307,7 @@ const EditEvent = () => {
   }
 
   return (
-    <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Edit Event</h2>
 
       <Form {...form}>
@@ -319,7 +319,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Event Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Sensory SOAK" {...field} />
+                  <Input placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -339,7 +339,7 @@ const EditEvent = () => {
                         <Button
                           variant={'outline'}
                           className={cn(
-                            'w-full pl-3 text-left font-normal',
+                            'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
                             !field.value && 'text-muted-foreground'
                           )}
                         >
@@ -374,7 +374,7 @@ const EditEvent = () => {
                         <Button
                           variant={'outline'}
                           className={cn(
-                            'w-full pl-3 text-left font-normal',
+                            'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
                             !field.value && 'text-muted-foreground'
                           )}
                         >
@@ -406,7 +406,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Time</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., 7-10 PM" {...field} />
+                  <Input placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -420,7 +420,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Place Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} />
+                  <Input placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -438,6 +438,7 @@ const EditEvent = () => {
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
+                    className="focus-visible:ring-purple-500"
                   />
                 </FormControl>
                 <FormMessage />
@@ -452,7 +453,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Purpose, vibe, activities..." {...field} />
+                  <Textarea placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -466,7 +467,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Ticket/Booking Link</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} />
+                  <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -480,7 +481,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Price</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} />
+                  <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -494,7 +495,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Special Notes</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="e.g., discount code: community, bring a blanket" {...field} />
+                  <Textarea placeholder="e.g., discount code: community, bring a blanket" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -508,7 +509,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Organizer Name/Contact</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} />
+                  <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -523,7 +524,7 @@ const EditEvent = () => {
                 <FormLabel>Event Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="focus-visible:ring-purple-500">
                       <SelectValue placeholder="Select an event type" />
                     </SelectTrigger>
                   </FormControl>
@@ -562,6 +563,7 @@ const EditEvent = () => {
                       hover:file:bg-purple-100
                       border border-gray-300 rounded-md shadow-sm
                       cursor-pointer
+                      focus-visible:ring-purple-500
                     "
                   />
                 </FormControl>
@@ -580,7 +582,7 @@ const EditEvent = () => {
                         form.setValue('imageFile', undefined);
                         form.setValue('image_url', ''); // Clear image URL
                       }}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
                     >
                       Remove
                     </Button>
@@ -597,13 +599,13 @@ const EditEvent = () => {
           />
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => navigate(`/events/${id}`)}>
+            <Button type="button" variant="outline" onClick={() => navigate(`/events/${id}`)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Cancel
             </Button>
-            <Button type="button" variant="outline" onClick={handlePreview}>
+            <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Preview
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
@@ -703,7 +705,7 @@ const EditEvent = () => {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button type="button" variant="secondary" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                 Close
               </Button>
             </DialogClose>

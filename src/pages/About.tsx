@@ -5,14 +5,14 @@ import { Sparkles, CalendarDays, MapPin, PlusCircle, Edit, MessageSquare } from 
 
 const About = () => {
   return (
-    <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+    <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h1 className="text-4xl font-bold text-foreground mb-6 text-center">About SoulFlow</h1>
       <p className="text-xl text-gray-600 mb-8 text-center leading-relaxed">
         SoulFlow is a new web application designed to be a central hub for discovering and connecting with soul-nourishing events across Australia.
       </p>
 
       <div className="space-y-8">
-        <Card className="shadow-md">
+        <Card className="shadow-lg rounded-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-purple-700 flex items-center">
               <Sparkles className="mr-3 h-6 w-6 text-purple-600" /> Our Vision
@@ -28,7 +28,7 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md">
+        <Card className="shadow-lg rounded-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-blue-700 flex items-center">
               <CalendarDays className="mr-3 h-6 w-6 text-blue-600" /> What You Can Do
@@ -53,7 +53,7 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md">
+        <Card className="shadow-lg rounded-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-green-700 flex items-center">
               <MessageSquare className="mr-3 h-6 w-6 text-green-600" /> Prototype & Feedback

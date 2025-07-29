@@ -56,7 +56,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h2 className="text-3xl font-bold text-center text-foreground mb-6">Contact Us</h2>
       <p className="text-center text-gray-600 mb-8">
         We'd love to hear from you! Please use the form below to send us your suggestions, recommendations, or feedback.
@@ -71,7 +71,7 @@ const Contact = () => {
               <FormItem>
                 <FormLabel>Your Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <Input placeholder="John Doe" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -85,7 +85,7 @@ const Contact = () => {
               <FormItem>
                 <FormLabel>Your Email (Optional)</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="you@example.com" {...field} />
+                  <Input type="email" placeholder="you@example.com" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -100,7 +100,7 @@ const Contact = () => {
                 <FormLabel>Subject</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="focus-visible:ring-purple-500">
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                   </FormControl>
@@ -123,7 +123,7 @@ const Contact = () => {
               <FormItem>
                 <FormLabel>Message</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Type your message here..." rows={5} {...field} />
+                  <Textarea placeholder="Type your message here..." rows={5} {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -131,7 +131,7 @@ const Contact = () => {
           />
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
             </Button>
           </div>

@@ -92,7 +92,7 @@ const EventDetail = () => {
 
   if (loading || isSessionLoading) {
     return (
-      <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+      <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
         <div className="space-y-4">
@@ -135,7 +135,7 @@ const EventDetail = () => {
       : formattedStartDate;
 
   return (
-    <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h1 className="text-4xl font-bold text-foreground mb-6 text-center">{event.event_name}</h1>
 
       {event.image_url && (
@@ -148,7 +148,7 @@ const EventDetail = () => {
         </div>
       )}
 
-      <Card className="shadow-md border-none">
+      <Card className="shadow-lg rounded-lg border-none">
         <CardHeader>
           <CardDescription className="flex items-center text-gray-600 mt-2">
             <Calendar className="mr-2 h-4 w-4 text-blue-500" />
@@ -205,7 +205,7 @@ const EventDetail = () => {
           {event.ticket_link && (
             <div className="flex items-center">
               <LinkIcon className="mr-2 h-5 w-5 text-purple-600" />
-              <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-base">
+              <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-base transition-all duration-300 ease-in-out transform hover:scale-105">
                 <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
                   Ticket/Booking Link
                 </a>
@@ -234,18 +234,18 @@ const EventDetail = () => {
       </Card>
 
       <div className="flex justify-end mt-8 space-x-2">
-        <Button variant="outline" onClick={() => navigate('/')}>
+        <Button variant="outline" onClick={() => navigate('/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
           Back to Events
         </Button>
-        <Button onClick={handleShare}>
+        <Button onClick={handleShare} className="transition-all duration-300 ease-in-out transform hover:scale-105">
           <Share2 className="mr-2 h-4 w-4" /> Share Event
         </Button>
         {isCreatorOrAdmin && (
           <>
-            <Button variant="outline" onClick={() => navigate(`/edit-event/${event.id}`)}>
+            <Button variant="outline" onClick={() => navigate(`/edit-event/${event.id}`)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               <Edit className="mr-2 h-4 w-4" /> Edit
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            <Button variant="destructive" onClick={handleDelete} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               <Trash2 className="mr-2 h-4 w-4" /> Delete
             </Button>
           </>

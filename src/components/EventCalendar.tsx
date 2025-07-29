@@ -99,7 +99,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         : formattedStartDate;
 
     return (
-      <Card key={event.id} className="group shadow-md hover:shadow-lg transition-shadow duration-300 transform group-hover:scale-102 group-hover:shadow-xl">
+      <Card key={event.id} className="group shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform group-hover:scale-102">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
           <CardDescription className="flex items-center text-gray-600 mt-2">
@@ -157,7 +157,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           {event.ticket_link && (
             <div className="flex items-center">
               <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
-              <Button asChild variant="link" className="p-0 h-auto text-blue-600">
+              <Button asChild variant="link" className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
                 <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
                   Ticket/Booking Link
                 </a>
@@ -183,11 +183,11 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             </p>
           )}
           <div className="flex justify-end space-x-2 mt-4">
-            <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
+            <Button variant="outline" size="sm" onClick={() => handleShare(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               <Share2 className="mr-2 h-4 w-4" /> Share
             </Button>
             <Link to={`/events/${event.id}`}>
-              <Button size="sm">View Details</Button>
+              <Button size="sm" className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
             </Link>
           </div>
         </CardContent>
@@ -211,7 +211,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           onSelect={onDateSelect}
           modifiers={modifiers}
           modifiersStyles={modifiersStyles}
-          className="rounded-md border shadow-md"
+          className="rounded-xl border shadow-lg"
         />
       </div>
       <div className="lg:w-1/2">

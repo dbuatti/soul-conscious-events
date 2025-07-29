@@ -229,7 +229,7 @@ const Index = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+    <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Welcome to SoulFlow</h1>
       <p className="text-xl text-gray-600 mb-6 text-center">
         Connect with soulful events in your community.
@@ -256,7 +256,7 @@ const Index = () => {
             <Input
               id="search-events"
               placeholder="Search events..."
-              className="w-full" // Removed pl-10 class
+              className="w-full focus-visible:ring-purple-500" // Removed pl-10 class
               value={draftSearchTerm}
               onChange={(e) => setDraftSearchTerm(e.target.value)}
             />
@@ -264,7 +264,7 @@ const Index = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-500 hover:bg-gray-200"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-500 hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105"
                 onClick={() => {
                   setDraftSearchTerm('');
                   setAppliedSearchTerm('');
@@ -279,7 +279,7 @@ const Index = () => {
           <div className="flex flex-col gap-1">
             <label htmlFor="event-type" className="text-sm font-medium text-gray-700">Event Type</label>
             <Select onValueChange={setDraftEventType} value={draftEventType}>
-              <SelectTrigger id="event-type" className="w-full">
+              <SelectTrigger id="event-type" className="w-full focus-visible:ring-purple-500">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -296,7 +296,7 @@ const Index = () => {
           <div className="flex flex-col gap-1">
             <label htmlFor="event-state" className="text-sm font-medium text-gray-700">State</label>
             <Select onValueChange={setDraftState} value={draftState}>
-              <SelectTrigger id="event-state" className="w-full">
+              <SelectTrigger id="event-state" className="w-full focus-visible:ring-purple-500">
                 <SelectValue placeholder="All States" />
               </SelectTrigger>
               <SelectContent>
@@ -313,7 +313,7 @@ const Index = () => {
           <div className="flex flex-col gap-1">
             <label htmlFor="date-range" className="text-sm font-medium text-gray-700">Date Range</label>
             <Select onValueChange={setDraftDateFilter} value={draftDateFilter}>
-              <SelectTrigger id="date-range" className="w-full">
+              <SelectTrigger id="date-range" className="w-full focus-visible:ring-purple-500">
                 <SelectValue placeholder="All Upcoming" />
               </SelectTrigger>
               <SelectContent>
@@ -346,12 +346,12 @@ const Index = () => {
               draftState !== appliedState ||
               draftDateFilter !== appliedDateFilter
             ) && (
-                <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
                   Apply Filters
                 </Button>
               )}
             {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming') && (
-              <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+              <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105">
                 Clear All Filters
               </Button>
             )}
@@ -378,7 +378,7 @@ const Index = () => {
             {appliedSearchTerm && (
               <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1">
                 Search: "{appliedSearchTerm}"
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-purple-600 hover:bg-purple-200" onClick={() => removeFilter('search')}>
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
                   <X className="h-3 w-3" />
                 </Button>
               </Badge>
@@ -386,7 +386,7 @@ const Index = () => {
             {appliedEventType !== 'All' && (
               <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1">
                 Type: {appliedEventType}
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-blue-600 hover:bg-blue-200" onClick={() => removeFilter('eventType')}>
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
                   <X className="h-3 w-3" />
                 </Button>
               </Badge>
@@ -394,7 +394,7 @@ const Index = () => {
             {appliedState !== 'All' && (
               <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1">
                 State: {appliedState}
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-green-600 hover:bg-green-200" onClick={() => removeFilter('state')}>
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
                   <X className="h-3 w-3" />
                 </Button>
               </Badge>
@@ -402,7 +402,7 @@ const Index = () => {
             {appliedDateFilter !== 'All Upcoming' && (
               <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1">
                 Date: {appliedDateFilter}
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-orange-600 hover:bg-orange-200" onClick={() => removeFilter('dateFilter')}>
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
                   <X className="h-3 w-3" />
                 </Button>
               </Badge>
@@ -426,7 +426,7 @@ const Index = () => {
       {loading || isSessionLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="flex flex-col justify-between shadow-md">
+            <Card key={i} className="flex flex-col justify-between shadow-lg rounded-lg">
               <CardHeader>
                 <Skeleton className="h-6 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-1/2" />
@@ -468,7 +468,7 @@ const Index = () => {
                       : formattedDate;
 
                   return (
-                    <Card key={event.id} className="group flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow duration-300 transform group-hover:scale-102 group-hover:shadow-xl">
+                    <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform group-hover:scale-102">
                       {event.image_url && (
                         <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
                           <img
@@ -516,7 +516,7 @@ const Index = () => {
                                 : `${event.description.substring(0, 150)}...`}
                             </p>
                             {event.description.length >= 150 && (
-                              <Button variant="link" onClick={() => toggleDescription(event.id)} className="p-0 h-auto text-blue-600">
+                              <Button variant="link" onClick={() => toggleDescription(event.id)} className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
                                 {expandedDescriptions[event.id] ? 'Read Less' : 'Read More'}
                               </Button>
                             )}
@@ -534,7 +534,7 @@ const Index = () => {
                         {event.ticket_link && (
                           <div className="flex items-center">
                             <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
-                            <Button asChild variant="link" className="p-0 h-auto text-blue-600">
+                            <Button asChild variant="link" className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
                               <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
                                 Ticket/Booking Link
                               </a>
@@ -572,20 +572,20 @@ const Index = () => {
                           )}
                         </div>
                         <div className="flex justify-end w-full space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
+                          <Button variant="outline" size="sm" onClick={() => handleShare(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                             <Share2 className="mr-2 h-4 w-4" /> Share
                           </Button>
                           <Link to={`/events/${event.id}`}>
-                            <Button size="sm">View Details</Button>
+                            <Button size="sm" className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
                           </Link>
                           {isCreatorOrAdmin && (
                             <>
                               <Link to={`/edit-event/${event.id}`}>
-                                <Button variant="outline" size="sm" title="Edit Event">
+                                <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </Link>
-                              <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)} title="Delete Event">
+                              <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)} title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </>

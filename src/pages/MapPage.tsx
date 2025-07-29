@@ -122,7 +122,7 @@ const MapPage = () => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200 flex flex-col items-center justify-center min-h-[500px]">
+      <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col items-center justify-center min-h-[500px]">
         <Skeleton className="h-10 w-1/2 mb-6" />
         <Skeleton className="w-full h-96 rounded-lg" />
         <Skeleton className="h-6 w-1/4 mt-6" />
@@ -131,7 +131,7 @@ const MapPage = () => {
   }
 
   return (
-    <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+    <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Map</h1>
       <p className="text-xl text-gray-600 mb-6 text-center">
         Explore soulful events near you on the map.

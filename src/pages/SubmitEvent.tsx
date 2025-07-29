@@ -258,7 +258,7 @@ const SubmitEvent = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Submit an Event</h2>
 
       {/* AI Parsing Tool Section */}
@@ -277,12 +277,12 @@ const SubmitEvent = () => {
             rows={8}
             value={aiText}
             onChange={(e) => setAiText(e.target.value)}
-            className="min-h-[150px]"
+            className="min-h-[150px] focus-visible:ring-purple-500"
           />
           <Button
             onClick={handleAiParse}
             disabled={isAiParsing || !aiText.trim()}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
           >
             {isAiParsing ? (
               <>
@@ -304,7 +304,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Event Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Sensory SOAK" {...field} />
+                  <Input placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -324,7 +324,7 @@ const SubmitEvent = () => {
                         <Button
                           variant={'outline'}
                           className={cn(
-                            'w-full pl-3 text-left font-normal',
+                            'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
                             !field.value && 'text-muted-foreground'
                           )}
                         >
@@ -359,7 +359,7 @@ const SubmitEvent = () => {
                         <Button
                           variant={'outline'}
                           className={cn(
-                            'w-full pl-3 text-left font-normal',
+                            'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
                             !field.value && 'text-muted-foreground'
                           )}
                         >
@@ -391,7 +391,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Time</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., 7-10 PM" {...field} />
+                  <Input placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -405,7 +405,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Place Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} />
+                  <Input placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -423,6 +423,7 @@ const SubmitEvent = () => {
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
+                    className="focus-visible:ring-purple-500"
                   />
                 </FormControl>
                 <FormMessage />
@@ -437,7 +438,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Purpose, vibe, activities..." {...field} />
+                  <Textarea placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -451,7 +452,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Ticket/Booking Link</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} />
+                  <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -465,7 +466,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Price</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} />
+                  <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -479,7 +480,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Special Notes</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="e.g., discount code: community, bring a blanket" {...field} />
+                  <Textarea placeholder="e.g., discount code: community, bring a blanket" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -493,7 +494,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Organizer Name/Contact</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} />
+                  <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -508,7 +509,7 @@ const SubmitEvent = () => {
                 <FormLabel>Event Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="focus-visible:ring-purple-500">
                       <SelectValue placeholder="Select an event type" />
                     </SelectTrigger>
                   </FormControl>
@@ -546,6 +547,7 @@ const SubmitEvent = () => {
                       hover:file:bg-purple-100
                       border border-gray-300 rounded-md shadow-sm
                       cursor-pointer
+                      focus-visible:ring-purple-500
                     "
                   />
                 </FormControl>
@@ -561,13 +563,13 @@ const SubmitEvent = () => {
           />
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => navigate('/')}>
+            <Button type="button" variant="outline" onClick={() => navigate('/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Back to Events
             </Button>
-            <Button type="button" variant="outline" onClick={handlePreview}>
+            <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Preview
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {form.formState.isSubmitting ? 'Submitting...' : 'Submit Event'}
             </Button>
@@ -667,7 +669,7 @@ const SubmitEvent = () => {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button type="button" variant="secondary" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                 Close
               </Button>
             </DialogClose>
