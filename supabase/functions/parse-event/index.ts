@@ -1,6 +1,3 @@
-/// <reference types="https://deno.land/std@0.190.0/http/server.ts" />
-/// <reference types="https://esm.sh/@supabase/supabase-js@2.45.0" />
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
@@ -34,13 +31,18 @@ serve(async (req) => {
 
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not set in environment variables.');
+      error_message = 'GEMINI_API_KEY is not set in environment variables.';
+      console.error(error_message);
+      return new Response(JSON.stringify({ error: error_message }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500, // Internal Server Error for missing key
+      });
     }
 
     const prompt = `
       You are an AI assistant specialized in extracting event details from unstructured text.
       Your task is to parse the provided event text and return a JSON object containing the extracted information.
-      Only return the JSON object. Do not include any other text or markdown.
+      Crucially, your response MUST contain ONLY the JSON object, with no additional text, markdown formatting (like \`\`\`json), or conversational elements.
       If a field is not found, omit it from the JSON.
       Ensure dates are in 'YYYY-MM-DD' format.
       Ensure the 'ticketLink' includes 'https://' if present.
@@ -81,23 +83,38 @@ serve(async (req) => {
 
     if (!geminiResponse.ok) {
       const errorBody = await geminiResponse.json();
-      throw new Error(`Gemini API error: ${geminiResponse.status} - ${JSON.stringify(errorBody)}`);
+      error_message = `Gemini API error: ${geminiResponse.status} - ${JSON.stringify(errorBody)}`;
+      console.error(error_message);
+      return new Response(JSON.stringify({ error: error_message }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: geminiResponse.status, // Propagate Gemini's status code
+      });
     }
 
     const geminiData = await geminiResponse.json();
-    const generatedText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+    let generatedText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (generatedText) {
+      // Attempt to extract JSON from markdown block if present
+      const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/);
+      if (jsonMatch && jsonMatch[1]) {
+        generatedText = jsonMatch[1];
+      }
+
       try {
-        // Attempt to parse the generated text as JSON
         parsed_data = JSON.parse(generatedText);
-      } catch (jsonError) {
-        console.error('Failed to parse Gemini output as JSON:', generatedText, jsonError);
-        throw new Error('AI returned invalid JSON format.');
+      } catch (jsonError: any) {
+        error_message = `Failed to parse Gemini output as JSON: ${jsonError.message}. Raw output: ${generatedText}`;
+        console.error(error_message);
+        return new Response(JSON.stringify({ error: error_message }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400, // Bad Request for invalid JSON from AI
+        });
       }
     } else {
-      console.warn('Gemini did not return any generated text.');
-      parsed_data = {}; // No data extracted
+      error_message = 'Gemini did not return any generated text.';
+      console.warn(error_message);
+      parsed_data = {}; // No data extracted, but not an error for the function itself
     }
 
     return new Response(JSON.stringify({ parsed_data }), {
@@ -105,12 +122,12 @@ serve(async (req) => {
       status: 200,
     });
 
-  } catch (error) {
-    console.error('Error parsing event:', error.message);
-    error_message = error.message;
+  } catch (error: any) {
+    error_message = `Unexpected error during event parsing: ${error.message}`;
+    console.error(error_message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 500, // Internal Server Error for unexpected issues
     });
   } finally {
     // Log the parsing attempt to Supabase
