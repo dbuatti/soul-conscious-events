@@ -110,7 +110,19 @@ const SubmitEvent = () => {
 
     try {
       const response = await fetch(googlePlacesUrl);
+      console.log("Google Places API Response Status:", response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Google Places API HTTP Error:', response.status, response.statusText, errorText);
+        toast.error(`Error fetching address suggestions: ${response.status} ${response.statusText}`);
+        setAddressSuggestions([]);
+        setShowAddressSuggestions(false);
+        return;
+      }
+
       const data = await response.json();
+      console.log("Google Places API Response Data:", data);
 
       if (data.status === 'OK') {
         const suggestions = data.predictions.map((prediction: any) => prediction.description);
@@ -126,8 +138,8 @@ const SubmitEvent = () => {
         setShowAddressSuggestions(false);
       }
     } catch (error) {
-      console.error('Error fetching address suggestions:', error);
-      toast.error('Failed to fetch address suggestions. Please check your network.');
+      console.error('Error fetching address suggestions (network/CORS):', error);
+      toast.error('Failed to fetch address suggestions. Please check your network and API key restrictions.');
       setAddressSuggestions([]);
       setShowAddressSuggestions(false);
     }
