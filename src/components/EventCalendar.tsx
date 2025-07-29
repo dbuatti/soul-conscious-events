@@ -1,0 +1,165 @@
+import React from 'react';
+import { Calendar } from '@/components/ui/calendar';
+import { format, isSameDay } from 'date-fns';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+
+interface Event {
+  id: string;
+  event_name: string;
+  event_date: string;
+  event_time?: string;
+  full_address?: string;
+  description?: string;
+  ticket_link?: string;
+  price?: string;
+  special_notes?: string;
+  organizer_contact?: string;
+  event_type?: string;
+  state?: string;
+}
+
+interface EventCalendarProps {
+  events: Event[];
+  selectedDate: Date | undefined;
+  onDateSelect: (date: Date | undefined) => void;
+}
+
+const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onDateSelect }) => {
+  const eventsByDate = events.reduce((acc, event) => {
+    const dateKey = format(new Date(event.event_date), 'yyyy-MM-dd');
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
+    }
+    acc[dateKey].push(event);
+    return acc;
+  }, {} as Record<string, Event[]>);
+
+  const modifiers = {
+    events: events.map(event => new Date(event.event_date)),
+  };
+
+  const modifiersStyles = {
+    events: {
+      backgroundColor: 'hsl(var(--primary))',
+      color: 'hsl(var(--primary-foreground))',
+      borderRadius: '0.25rem',
+    },
+  };
+
+  const filteredEvents = selectedDate
+    ? events.filter(event => isSameDay(new Date(event.event_date), selectedDate))
+    : [];
+
+  const handleShare = (event: Event) => {
+    const eventUrl = `${window.location.origin}/events/${event.id}`;
+    navigator.clipboard.writeText(eventUrl)
+      .then(() => toast.success('Event link copied to clipboard!'))
+      .catch(() => toast.error('Failed to copy link. Please try again.'));
+  };
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-8">
+      <div className="lg:w-1/2 flex justify-center">
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={onDateSelect}
+          modifiers={modifiers}
+          modifiersStyles={modifiersStyles}
+          className="rounded-md border shadow-md"
+        />
+      </div>
+      <div className="lg:w-1/2">
+        <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center lg:text-left">
+          Events on {selectedDate ? format(selectedDate, 'PPP') : 'Selected Date'}
+        </h3>
+        {filteredEvents.length === 0 ? (
+          <p className="text-gray-600 text-center lg:text-left">No events on this date.</p>
+        ) : (
+          <div className="space-y-4">
+            {filteredEvents.map((event) => (
+              <Card key={event.id} className="shadow-md">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
+                  <CardDescription className="flex items-center text-gray-600 mt-1">
+                    {event.event_time && (
+                      <>
+                        <Clock className="mr-2 h-4 w-4 text-green-500" />
+                        {event.event_time}
+                      </>
+                    )}
+                  </CardDescription>
+                  {(event.full_address) && (
+                    <CardDescription className="flex items-center text-gray-600 mt-1">
+                      <MapPin className="mr-2 h-4 w-4 text-red-500" />
+                      {event.full_address}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {event.description && (
+                    <div>
+                      <p className="text-gray-700 line-clamp-3">{event.description}</p>
+                    </div>
+                  )}
+                  {event.price && (
+                    <p className="flex items-center text-gray-700">
+                      <DollarSign className="mr-2 h-4 w-4 text-green-600" />
+                      Price: {event.price}
+                      {event.price.toLowerCase() === 'free' && (
+                        <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
+                      )}
+                    </p>
+                  )}
+                  {event.ticket_link && (
+                    <div className="flex items-center">
+                      <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
+                      <Button asChild variant="link" className="p-0 h-auto text-blue-600">
+                        <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
+                          Ticket/Booking Link
+                        </a>
+                      </Button>
+                    </div>
+                  )}
+                  {event.special_notes && (
+                    <p className="flex items-start text-gray-700">
+                      <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
+                      Special Notes: {event.special_notes}
+                    </p>
+                  )}
+                  {event.organizer_contact && (
+                    <p className="flex items-center text-gray-700">
+                      <User className="mr-2 h-4 w-4 text-indigo-500" />
+                      Organizer: {event.organizer_contact}
+                    </p>
+                  )}
+                  {event.event_type && (
+                    <p className="flex items-center text-gray-700">
+                      <Tag className="mr-2 h-4 w-4 text-pink-500" />
+                      Type: {event.event_type}
+                    </p>
+                  )}
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
+                      <Share2 className="mr-2 h-4 w-4" /> Share
+                    </Button>
+                    <Link to={`/events/${event.id}`}>
+                      <Button size="sm">View Details</Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default EventCalendar;
