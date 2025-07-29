@@ -18,6 +18,7 @@ import { useSession } from '@/components/SessionContextProvider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import MeditationTimer from '@/components/MeditationTimer';
 import PomodoroTimer from '@/components/PomodoroTimer'; // Import the new PomodoroTimer
+import { playClickSound } from '@/utils/audio'; // Import playClickSound
 
 interface Event {
   id: string;
@@ -333,7 +334,10 @@ const Index = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             {/* Meditation Timer Button */}
-            <Dialog open={isMeditationTimerOpen} onOpenChange={setIsMeditationTimerOpen}>
+            <Dialog open={isMeditationTimerOpen} onOpenChange={(open) => {
+              setIsMeditationTimerOpen(open);
+              playClickSound(); // Play sound on open/close
+            }}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
                   <Bell className="mr-2 h-4 w-4" /> Meditation Timer
@@ -343,12 +347,18 @@ const Index = () => {
                 <DialogHeader>
                   <DialogTitle>Meditation Timer</DialogTitle>
                 </DialogHeader>
-                <MeditationTimer onClose={() => setIsMeditationTimerOpen(false)} />
+                <MeditationTimer onClose={() => {
+                  setIsMeditationTimerOpen(false);
+                  playClickSound(); // Play sound on close
+                }} />
               </DialogContent>
             </Dialog>
 
             {/* Pomodoro Timer Button */}
-            <Dialog open={isPomodoroTimerOpen} onOpenChange={setIsPomodoroTimerOpen}>
+            <Dialog open={isPomodoroTimerOpen} onOpenChange={(open) => {
+              setIsPomodoroTimerOpen(open);
+              playClickSound(); // Play sound on open/close
+            }}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
                   <TimerIcon className="mr-2 h-4 w-4" /> Pomodoro Timer
@@ -358,7 +368,10 @@ const Index = () => {
                 <DialogHeader>
                   <DialogTitle>Pomodoro Timer</DialogTitle>
                 </DialogHeader>
-                <PomodoroTimer onClose={() => setIsPomodoroTimerOpen(false)} />
+                <PomodoroTimer onClose={() => {
+                  setIsPomodoroTimerOpen(false);
+                  playClickSound(); // Play sound on close
+                }} />
               </DialogContent>
             </Dialog>
 

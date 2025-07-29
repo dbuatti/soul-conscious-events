@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EventManagementTable from '@/components/EventManagementTable'; // Will create this next
+import { playSuccessSound, playErrorSound } from '@/utils/audio'; // Import sound functions
 
 interface ContactSubmission {
   id: string;
@@ -31,6 +32,7 @@ const AdminPanel = () => {
       if (error) {
         console.error('Error fetching contact submissions:', error);
         toast.error('Failed to load submissions.');
+        playErrorSound(); // Play error sound
       } else {
         setSubmissions(data || []);
       }

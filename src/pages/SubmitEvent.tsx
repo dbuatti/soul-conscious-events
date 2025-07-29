@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider'; // Keep useSession for user_id in events table
+import { playSuccessSound, playErrorSound, playClickSound } from '@/utils/audio'; // Import sound functions
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -139,6 +140,7 @@ const SubmitEvent = () => {
   const handleAiParse = async () => {
     if (!aiText.trim()) {
       toast.error('Please enter some text to parse.');
+      playErrorSound(); // Play error sound
       return;
     }
 
@@ -170,12 +172,14 @@ const SubmitEvent = () => {
         if (parsed_data.eventType) form.setValue('eventType', parsed_data.eventType);
 
         toast.success('Event details parsed successfully!');
+        playSuccessSound(); // Play success sound
       } else {
         toast.info('No event details could be extracted from the text.');
       }
     } catch (error: any) {
       console.error('AI Parsing Error:', error);
       toast.error(`AI parsing failed: ${error.message || 'Unknown error'}`);
+      playErrorSound(); // Play error sound
     } finally {
       setIsAiParsing(false);
     }
@@ -209,6 +213,7 @@ const SubmitEvent = () => {
       if (uploadError) {
         console.error('Error uploading image:', uploadError);
         toast.error('Failed to upload image. Please try again.');
+        playErrorSound(); // Play error sound
         return;
       }
 
@@ -247,8 +252,10 @@ const SubmitEvent = () => {
     if (error) {
       console.error('Error submitting event:', error);
       toast.error('Failed to submit event. Please try again.');
+      playErrorSound(); // Play error sound
     } else {
       toast.success('Event submitted successfully!');
+      playSuccessSound(); // Play success sound
       form.reset();
       setAiText('');
       setSelectedImage(null);
@@ -261,6 +268,7 @@ const SubmitEvent = () => {
     const data = form.getValues();
     setPreviewData(data);
     setIsPreviewOpen(true);
+    playClickSound(); // Play sound on preview open
   };
 
   const handleClearForm = () => {
@@ -269,6 +277,7 @@ const SubmitEvent = () => {
     setSelectedImage(null);
     setImagePreviewUrl(null);
     toast.info('Form cleared!');
+    playClickSound(); // Play sound on clear
   };
 
   return (
@@ -358,7 +367,7 @@ const SubmitEvent = () => {
                   </Popover>
                   <FormMessage />
                 </FormItem>
-              )}
+            )}
             />
 
             <FormField
@@ -595,7 +604,10 @@ const SubmitEvent = () => {
         </form>
       </Form>
 
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+      <Dialog open={isPreviewOpen} onOpenChange={(open) => {
+        setIsPreviewOpen(open);
+        playClickSound(); // Play sound on close
+      }}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>

@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { playSuccessSound, playErrorSound, playClickSound } from '@/utils/audio'; // Import sound functions
 
 interface Event {
   id: string;
@@ -51,6 +52,7 @@ const EventDetail = () => {
     const fetchEvent = async () => {
       if (!id) {
         toast.error('Event ID is missing.');
+        playErrorSound(); // Play error sound
         navigate('/404');
         return;
       }
@@ -65,6 +67,7 @@ const EventDetail = () => {
       if (error) {
         console.error('Error fetching event:', error);
         toast.error('Failed to load event details.');
+        playErrorSound(); // Play error sound
         navigate('/404');
       } else if (data) {
         setEvent(data);
@@ -81,8 +84,14 @@ const EventDetail = () => {
     if (event) {
       const eventUrl = `${window.location.origin}/events/${event.id}`;
       navigator.clipboard.writeText(eventUrl)
-        .then(() => toast.success('Event link copied to clipboard!'))
-        .catch(() => toast.error('Failed to copy link. Please try again.'));
+        .then(() => {
+          toast.success('Event link copied to clipboard!');
+          playSuccessSound(); // Play success sound
+        })
+        .catch(() => {
+          toast.error('Failed to copy link. Please try again.');
+          playErrorSound(); // Play error sound
+        });
     }
   };
 
@@ -93,8 +102,10 @@ const EventDetail = () => {
     if (error) {
       console.error('Error deleting event:', error);
       toast.error('Failed to delete event.');
+      playErrorSound(); // Play error sound
     } else {
       toast.success('Event deleted successfully!');
+      playSuccessSound(); // Play success sound
       navigate('/'); // Redirect to home page after deletion
     }
   };

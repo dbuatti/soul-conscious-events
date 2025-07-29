@@ -34,6 +34,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { playSuccessSound, playErrorSound, playClickSound } from '@/utils/audio'; // Import sound functions
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -124,6 +125,7 @@ const EditEvent = () => {
     const fetchEvent = async () => {
       if (!id) {
         toast.error('Event ID is missing.');
+        playErrorSound(); // Play error sound
         navigate('/404');
         return;
       }
@@ -138,6 +140,7 @@ const EditEvent = () => {
       if (error) {
         console.error('Error fetching event:', error);
         toast.error('Failed to load event details.');
+        playErrorSound(); // Play error sound
         navigate('/404');
       } else if (data) {
         setCurrentEvent(data);
@@ -205,6 +208,7 @@ const EditEvent = () => {
     setImagePreviewUrl(null);
     form.setValue('imageFile', undefined);
     form.setValue('image_url', ''); // Explicitly clear the image_url in the form state
+    playClickSound(); // Play sound on remove
   };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
@@ -236,6 +240,7 @@ const EditEvent = () => {
       if (uploadError) {
         console.error('Error uploading new image:', uploadError);
         toast.error('Failed to upload new image. Please try again.');
+        playErrorSound(); // Play error sound
         return;
       }
 
@@ -282,8 +287,10 @@ const EditEvent = () => {
     if (error) {
       console.error('Error updating event:', error);
       toast.error('Failed to update event. Please try again.');
+      playErrorSound(); // Play error sound
     } else {
       toast.success('Event updated successfully!');
+      playSuccessSound(); // Play success sound
       navigate(`/events/${id}`);
     }
   };
@@ -292,6 +299,7 @@ const EditEvent = () => {
     const data = form.getValues();
     setPreviewData(data);
     setIsPreviewOpen(true);
+    playClickSound(); // Play sound on preview open
   };
 
   if (isSessionLoading || loadingEvent) {
@@ -313,6 +321,7 @@ const EditEvent = () => {
 
   if (!isCreatorOrAdmin) {
     toast.error('You do not have permission to edit this event.');
+    playErrorSound(); // Play error sound
     navigate('/');
     return null;
   }
@@ -616,7 +625,10 @@ const EditEvent = () => {
         </form>
       </Form>
 
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+      <Dialog open={isPreviewOpen} onOpenChange={(open) => {
+        setIsPreviewOpen(open);
+        playClickSound(); // Play sound on close
+      }}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>
