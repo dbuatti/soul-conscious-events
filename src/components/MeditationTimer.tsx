@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Play, Pause, RotateCcw, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { playSimpleSound } from '@/utils/audio'; // Import the sound utility
 
 interface MeditationTimerProps {
   onClose?: () => void; // Optional callback to close the timer, e.g., if in a dialog
@@ -15,29 +16,6 @@ const MeditationTimer: React.FC<MeditationTimerProps> = ({ onClose }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [isStarted, setIsStarted] = useState(false); // To differentiate between initial state and paused state
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  // Function to play a synthesized bell sound
-  const playBellSound = (frequency: number = 440, durationMs: number = 200, volume: number = 0.5) => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-
-    const oscillator = audioContextRef.current.createOscillator();
-    const gainNode = audioContextRef.current.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContextRef.current.destination);
-
-    oscillator.type = 'sine'; // Sine wave for a clean tone
-    oscillator.frequency.setValueAtTime(frequency, audioContextRef.current.currentTime); // Set frequency
-
-    gainNode.gain.setValueAtTime(volume, audioContextRef.current.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + durationMs / 1000); // Fade out
-
-    oscillator.start(audioContextRef.current.currentTime);
-    oscillator.stop(audioContextRef.current.currentTime + durationMs / 1000);
-  };
 
   useEffect(() => {
     if (isRunning && timeRemaining > 0) {
@@ -51,18 +29,14 @@ const MeditationTimer: React.FC<MeditationTimerProps> = ({ onClose }) => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      playBellSound(660, 500, 0.7); // Play a slightly higher pitched, longer bell for end
+      // Play a longer, more resonant bell for the end of meditation
+      playSimpleSound({ frequency: 523.25, duration: 1, volume: 0.6, type: 'sine', attack: 0.05, decay: 0.5 }); // C5 note
       toast.success('Meditation session complete!');
     }
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        // Close audio context when component unmounts
-        audioContextRef.current.close();
-        audioContextRef.current = null;
       }
     };
   }, [isRunning, timeRemaining, isStarted]);
@@ -82,7 +56,8 @@ const MeditationTimer: React.FC<MeditationTimerProps> = ({ onClose }) => {
         }
         setTimeRemaining(duration * 60);
         setIsStarted(true);
-        playBellSound(440, 200, 0.5); // Play a standard bell for start
+        // Play a standard bell for the start of meditation
+        playSimpleSound({ frequency: 440, duration: 0.3, volume: 0.5, type: 'sine', attack: 0.02, decay: 0.1 });
         toast.info('Meditation started!');
       }
       setIsRunning(true);
@@ -96,6 +71,8 @@ const MeditationTimer: React.FC<MeditationTimerProps> = ({ onClose }) => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
+    // Play a short, clear sound for reset
+    playSimpleSound({ frequency: 660, duration: 0.15, volume: 0.4, type: 'sine', attack: 0.01, decay: 0.05 }); // E5 note
     toast.info('Timer reset.');
   };
 
