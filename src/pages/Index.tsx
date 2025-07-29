@@ -121,7 +121,11 @@ const Index = () => {
       }
 
       // Conditionally filter by 'approved' state if showHiddenEvents is false
-      if (!showHiddenEvents) {
+      if (showHiddenEvents) {
+        // If showing hidden events, explicitly include 'approved', 'draft', 'pending', and NULL states
+        query = query.or('state.eq.approved,state.eq.draft,state.eq.pending,state.is.null');
+      } else {
+        // If not showing hidden events, only fetch 'approved' events.
         query = query.eq('state', 'approved');
       }
 
