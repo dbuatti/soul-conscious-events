@@ -506,7 +506,7 @@ const Index = () => {
                             </>
                           )}
                         </CardDescription>
-                        {(event.place_name || event.full_address) && (
+                        {(event.place_name || event.full_address || event.state) && (
                           <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
                             {event.place_name && (
                               <div className="flex items-center mb-1">
@@ -529,12 +529,14 @@ const Index = () => {
                                 </a>
                               </div>
                             )}
-                          </CardDescription>
-                        )}
-                        {event.state && (
-                          <CardDescription className="flex items-center text-gray-600 mt-1">
-                            <Globe className="mr-2 h-4 w-4 text-orange-500" />
-                            {event.state}
+                            {event.state && (
+                              <div className="flex items-center mt-1">
+                                <Globe className="mr-2 h-4 w-4 text-orange-500" />
+                                <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                                  {event.state}
+                                </Badge>
+                              </div>
+                            )}
                           </CardDescription>
                         )}
                       </CardHeader>

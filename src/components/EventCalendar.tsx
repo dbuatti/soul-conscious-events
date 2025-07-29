@@ -4,7 +4,7 @@ import { format, isSameDay } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2 } from 'lucide-react';
+import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
@@ -99,7 +99,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
                         </>
                       )}
                     </CardDescription>
-                    {(event.place_name || event.full_address) && (
+                    {(event.place_name || event.full_address || event.state) && (
                       <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
                         {event.place_name && (
                           <div className="flex items-center mb-1">
@@ -120,6 +120,14 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
                             >
                               {event.full_address}
                             </a>
+                          </div>
+                        )}
+                        {event.state && (
+                          <div className="flex items-center mt-1">
+                            <Globe className="mr-2 h-4 w-4 text-orange-500" />
+                            <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                              {event.state}
+                            </Badge>
                           </div>
                         )}
                       </CardDescription>
