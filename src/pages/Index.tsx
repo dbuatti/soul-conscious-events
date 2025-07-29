@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge'; // Import Badge component
@@ -96,6 +96,13 @@ const Index = () => {
     setSearchTerm('');
     setSelectedEventType('All');
     setSelectedState('All');
+  };
+
+  const handleShare = (event: Event) => {
+    const eventUrl = `${window.location.origin}/events/${event.id}`;
+    navigator.clipboard.writeText(eventUrl)
+      .then(() => toast.success('Event link copied to clipboard!'))
+      .catch(() => toast.error('Failed to copy link. Please try again.'));
   };
 
   return (
@@ -194,10 +201,10 @@ const Index = () => {
                     </>
                   )}
                 </CardDescription>
-                {(event.full_address || event.location) && ( // Display full_address if available, fallback to location
+                {(event.full_address) && ( // Display full_address if available, fallback to location
                   <CardDescription className="flex items-center text-gray-600 mt-1">
                     <MapPin className="mr-2 h-4 w-4 text-red-500" />
-                    {event.full_address || event.location}
+                    {event.full_address}
                   </CardDescription>
                 )}
                 {event.state && (
@@ -260,8 +267,13 @@ const Index = () => {
                   </p>
                 )}
               </CardContent>
-              <CardFooter className="flex justify-end">
-                {/* Future buttons like Save, Share, RSVP can go here */}
+              <CardFooter className="flex justify-end space-x-2">
+                <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
+                  <Share2 className="mr-2 h-4 w-4" /> Share
+                </Button>
+                <Link to={`/events/${event.id}`}>
+                  <Button size="sm">View Details</Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}

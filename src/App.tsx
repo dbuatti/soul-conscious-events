@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
 import AdminContactSubmissions from "./pages/AdminContactSubmissions";
+import EventDetail from "./pages/EventDetail"; // Import the new EventDetail component
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop"; // Import the new ScrollToTop component
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin/submissions" element={<AdminContactSubmissions />} />
+              <Route path="/events/:id" element={<EventDetail />} /> {/* New route for event details */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
