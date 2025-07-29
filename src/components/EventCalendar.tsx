@@ -4,7 +4,7 @@ import { format, isSameDay, isAfter, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2, Globe } from 'lucide-react';
+import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2, Globe, Calendar as CalendarIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
@@ -12,6 +12,7 @@ interface Event {
   id: string;
   event_name: string;
   event_date: string;
+  end_date?: string; // Added end_date
   event_time?: string;
   place_name?: string;
   full_address?: string;
@@ -84,14 +85,29 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
     const googleMapsLink = event.full_address
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
       : '#';
+
+    const formattedStartDate = event.event_date
+      ? format(new Date(event.event_date), 'PPP')
+      : 'Date TBD';
+    const formattedEndDate = event.end_date
+      ? format(new Date(event.end_date), 'PPP')
+      : '';
+
+    const dateDisplay =
+      event.end_date && event.event_date !== event.end_date
+        ? `${formattedStartDate} - ${formattedEndDate}`
+        : formattedStartDate;
+
     return (
       <Card key={event.id} className="shadow-md">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
-          <CardDescription className="flex items-center text-gray-600 mt-1">
+          <CardDescription className="flex items-center text-gray-600 mt-2">
+            <CalendarIcon className="mr-2 h-4 w-4 text-blue-500" />
+            {dateDisplay}
             {event.event_time && (
               <>
-                <Clock className="mr-2 h-4 w-4 text-green-500" />
+                <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
                 {event.event_time}
               </>
             )}
