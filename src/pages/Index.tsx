@@ -238,13 +238,7 @@ const Index = () => {
         </p>
       </div>
 
-      <div className="flex justify-center mb-8">
-        <Link to="/submit-event">
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
-            Add New Event
-          </Button>
-        </Link>
-      </div>
+      {/* Removed the standalone "Add New Event" button here */}
 
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">SoulFlow Events</h2>
 
@@ -330,35 +324,44 @@ const Index = () => {
           </div>
 
           {/* Filter Action Buttons and Hidden Events Checkbox */}
-          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center">
-            {isAdmin && !isViewingAsPublic && (
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="show-hidden-events"
-                  checked={showHiddenEvents}
-                  onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
-                />
-                <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                  Show hidden/draft events
-                </Label>
-              </div>
-            )}
+          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-between items-center mt-4 pt-4 border-t border-gray-200"> {/* Added border-t and pt-4 for separation */}
+            {/* Add New Event Button - Moved here */}
+            <Link to="/submit-event">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
+                Add New Event
+              </Button>
+            </Link>
 
-            {(
-              draftEventType !== appliedEventType ||
-              draftState !== appliedState ||
-              draftDateFilter !== appliedDateFilter ||
-              (isAdmin && showHiddenEvents !== false && !isViewingAsPublic)
-            ) && (
-                <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
-                  Apply Filters
+            <div className="flex flex-col sm:flex-row gap-4 items-center"> {/* Grouped right-aligned elements */}
+              {isAdmin && !isViewingAsPublic && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-hidden-events"
+                    checked={showHiddenEvents}
+                    onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
+                  />
+                  <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                    Show hidden/draft events
+                  </Label>
+                </div>
+              )}
+
+              {(
+                draftEventType !== appliedEventType ||
+                draftState !== appliedState ||
+                draftDateFilter !== appliedDateFilter ||
+                (isAdmin && showHiddenEvents !== false && !isViewingAsPublic)
+              ) && (
+                  <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                    Apply Filters
+                  </Button>
+                )}
+              {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming' || (isAdmin && showHiddenEvents && !isViewingAsPublic)) && (
+                <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+                  Clear All Filters
                 </Button>
               )}
-            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming' || (isAdmin && showHiddenEvents && !isViewingAsPublic)) && (
-              <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
-                Clear All Filters
-              </Button>
-            )}
+            </div>
           </div>
         </div>
 
