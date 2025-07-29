@@ -241,7 +241,7 @@ const Index = () => {
                   setAppliedSearchTerm('');
                 }}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3" />
               </Button>
             )}
           </div>
@@ -425,7 +425,7 @@ const Index = () => {
                           )}
                         </CardDescription>
                         {(event.place_name || event.full_address || event.state) && (
-                          <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
+                          <div className="flex flex-col items-start text-gray-600 mt-1"> {/* Changed from CardDescription (p) to div */}
                             {event.place_name && (
                               <div className="flex items-center mb-1">
                                 <MapPin className="mr-2 h-4 w-4 text-red-500" />
@@ -455,7 +455,7 @@ const Index = () => {
                                 </Badge>
                               </div>
                             )}
-                          </CardDescription>
+                          </div>
                         )}
                       </CardHeader>
                       <CardContent className="space-y-2">
