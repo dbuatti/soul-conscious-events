@@ -30,6 +30,7 @@ const MapPage = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
 
   useEffect(() => {
+    console.log('MapPage: Component mounted. Starting event fetch.');
     const fetchEvents = async () => {
       setLoading(true);
       const now = new Date();
@@ -44,10 +45,10 @@ const MapPage = () => {
         .order('event_date', { ascending: true });
 
       if (error) {
-        console.error('MapPage Debug: Error fetching events for map:', error);
+        console.error('MapPage: Error fetching events for map:', error);
         toast.error('Failed to load events for the map.');
       } else {
-        console.log('MapPage Debug: Events fetched:', data);
+        console.log('MapPage: Events fetched successfully:', data);
         setEvents(data || []);
       }
       setLoading(false);
@@ -57,8 +58,12 @@ const MapPage = () => {
   }, []);
 
   useEffect(() => {
+    console.log('MapPage: useEffect for map initialization triggered.');
+    console.log('MapPage: window.google available?', !!window.google);
+    console.log('MapPage: window.google.maps available?', !!(window.google && window.google.maps));
+
     if (mapRef.current && !mapLoaded && window.google && window.google.maps) {
-      console.log('MapPage Debug: Google Maps API is available. Initializing map.');
+      console.log('MapPage: Google Maps API is available. Initializing map.');
       setMapLoaded(true);
       const map = new window.google.maps.Map(mapRef.current, {
         center: { lat: -37.8136, lng: 144.9631 }, // Centered around Melbourne, Australia
@@ -73,8 +78,9 @@ const MapPage = () => {
 
       events.forEach((event) => {
         if (event.full_address) {
+          console.log(`MapPage: Attempting to geocode address: "${event.full_address}" for event "${event.event_name}"`);
           geocoder.geocode({ address: event.full_address }, (results, status) => {
-            console.log(`MapPage Debug: Geocoding for "${event.full_address}" status: ${status}`);
+            console.log(`MapPage: Geocoding result for "${event.full_address}" - Status: ${status}, Results:`, results);
             if (status === 'OK' && results && results[0]) {
               const marker = new window.google.maps.Marker({
                 map: map,
@@ -110,13 +116,13 @@ const MapPage = () => {
                 infoWindow.open(map, marker);
               });
             } else {
-              console.warn(`MapPage Debug: Geocoding failed for address: "${event.full_address}", status: ${status}`);
+              console.warn(`MapPage: Geocoding failed for address: "${event.full_address}", status: ${status}`);
             }
           });
         }
       });
     } else if (mapRef.current && !mapLoaded && (!window.google || !window.google.maps)) {
-      console.warn('MapPage Debug: Google Maps API not yet loaded or available.');
+      console.warn('MapPage: Google Maps API not yet loaded or available. Waiting for script.');
     }
   }, [events, mapLoaded]); // Re-run when events or mapLoaded state changes
 

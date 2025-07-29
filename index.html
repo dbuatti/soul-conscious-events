@@ -8,6 +8,7 @@
     <script>
       // Dynamically load Google Maps API key from environment variable
       const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      console.log('index.html: VITE_GOOGLE_MAPS_API_KEY status:', googleMapsApiKey ? 'Loaded' : 'Not Found');
       if (googleMapsApiKey) {
         const script = document.createElement('script');
         script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places`;
