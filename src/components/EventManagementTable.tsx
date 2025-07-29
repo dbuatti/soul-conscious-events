@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { Edit, Trash2, PlusCircle, ExternalLink, CheckCircle, Clock } from 'lucide-react';
+import { Edit, Trash2, PlusCircle, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  AlertDialogFooter, // Added this import
+  AlertDialogFooter,
 } from '@/components/ui/alert-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -58,6 +58,7 @@ interface Event {
   id: string;
   event_name: string;
   event_date: string;
+  end_date?: string; // Added end_date
   event_time?: string;
   place_name?: string;
   full_address?: string;
@@ -67,8 +68,9 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string;
+  state?: string; // Added state
   image_url?: string;
+  user_id?: string; // Added user_id
 }
 
 const eventFormSchema = z.object({
@@ -79,6 +81,7 @@ const eventFormSchema = z.object({
   eventDate: z.date({
     required_error: 'A date is required.',
   }),
+  endDate: z.date().optional(), // Added endDate to schema
   eventTime: z.string().optional().or(z.literal('')),
   placeName: z.string().optional().or(z.literal('')),
   fullAddress: z.string().optional().or(z.literal('')),
@@ -88,7 +91,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  // Removed state from schema
+  state: z.string().optional().or(z.literal('')), // Added state to schema
   image_url: z.string().optional().or(z.literal('')),
 });
 
@@ -97,8 +100,8 @@ const eventTypes = [
   'Community Gathering', 'Other',
 ];
 
-const australianStates = [
-  'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
+const eventStates = [
+  'approved', 'pending', 'rejected'
 ];
 
 const EventManagementTable = () => {
@@ -120,7 +123,7 @@ const EventManagementTable = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      // Removed state from defaultValues
+      state: '', // Added state to defaultValues
       image_url: '',
     },
   });
@@ -163,6 +166,7 @@ const EventManagementTable = () => {
       id: event.id,
       eventName: event.event_name,
       eventDate: new Date(event.event_date),
+      endDate: event.end_date ? new Date(event.end_date) : undefined, // Set endDate
       eventTime: event.event_time || '',
       placeName: event.place_name || '',
       fullAddress: event.full_address || '',
@@ -172,7 +176,7 @@ const EventManagementTable = () => {
       specialNotes: event.special_notes || '',
       organizerContact: event.organizer_contact || '',
       eventType: event.event_type || '',
-      // Removed state from form reset
+      state: event.state || '', // Set state
       image_url: event.image_url || '',
     });
     setIsEditDialogOpen(true);
@@ -189,6 +193,7 @@ const EventManagementTable = () => {
       .update({
         event_name: values.eventName,
         event_date: values.eventDate.toISOString().split('T')[0],
+        end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null, // Save end_date
         event_time: values.eventTime || null,
         place_name: values.placeName || null,
         full_address: values.fullAddress || null,
@@ -197,7 +202,8 @@ const EventManagementTable = () => {
         price: values.price || null,
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
-        state: currentEvent?.state || 'approved', // Use existing state or default to 'approved'
+        event_type: values.eventType || null,
+        state: values.state || null, // Save state
       })
       .eq('id', values.id);
 
@@ -208,6 +214,19 @@ const EventManagementTable = () => {
       toast.success('Event updated successfully!');
       setIsEditDialogOpen(false);
       fetchEvents();
+    }
+  };
+
+  const getStatusBadgeVariant = (status?: string) => {
+    switch (status) {
+      case 'approved':
+        return 'default'; // Greenish
+      case 'pending':
+        return 'secondary'; // Grayish
+      case 'rejected':
+        return 'destructive'; // Reddish
+      default:
+        return 'outline';
     }
   };
 
@@ -235,11 +254,14 @@ const EventManagementTable = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[200px]">Event Name</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Start Date</TableHead>
+                <TableHead>End Date</TableHead>
                 <TableHead>Time</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Type</TableHead>
-                {/* Removed Status Header */}
+                <TableHead>Image</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Submitted By</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -248,10 +270,23 @@ const EventManagementTable = () => {
                 <TableRow key={event.id}>
                   <TableCell className="font-medium text-foreground">{event.event_name}</TableCell>
                   <TableCell className="text-foreground">{event.event_date ? format(new Date(event.event_date), 'PPP') : 'N/A'}</TableCell>
+                  <TableCell className="text-foreground">{event.end_date ? format(new Date(event.end_date), 'PPP') : 'N/A'}</TableCell>
                   <TableCell className="text-foreground">{event.event_time || 'N/A'}</TableCell>
                   <TableCell className="text-foreground">{event.place_name || event.full_address || 'N/A'}</TableCell>
                   <TableCell className="text-foreground">{event.event_type || 'N/A'}</TableCell>
-                  {/* Removed Status Cell */}
+                  <TableCell>
+                    {event.image_url ? (
+                      <img src={event.image_url} alt="Event" className="w-12 h-12 object-cover rounded-md" />
+                    ) : (
+                      <ImageIcon className="h-8 w-8 text-gray-400" />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(event.state)}>
+                      {event.state || 'N/A'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-foreground text-sm">{event.user_id || 'N/A'}</TableCell>
                   <TableCell className="text-right flex justify-end space-x-2">
                     <Link to={`/events/${event.id}`} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -313,46 +348,83 @@ const EventManagementTable = () => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="eventDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="eventDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Start Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>End Date (Optional)</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            key={field.name}
+                            mode="single"
+                            selected={field.value as Date | undefined}
+                            onSelect={(date) => field.onChange(date)}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <FormField
                 control={form.control}
                 name="eventTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Time</FormLabel>
+                    <FormLabel>Time (Optional)</FormLabel>
                     <FormControl>
                       <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
@@ -365,7 +437,7 @@ const EventManagementTable = () => {
                 name="placeName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Place Name</FormLabel>
+                    <FormLabel>Place Name (Optional)</FormLabel>
                     <FormControl>
                       <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
@@ -378,7 +450,7 @@ const EventManagementTable = () => {
                 name="fullAddress"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Address</FormLabel>
+                    <FormLabel>Full Address (Optional)</FormLabel>
                     <FormControl>
                       <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
@@ -391,7 +463,7 @@ const EventManagementTable = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Description (Optional)</FormLabel>
                     <FormControl>
                       <Textarea {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
@@ -404,7 +476,7 @@ const EventManagementTable = () => {
                 name="ticketLink"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ticket/Booking Link</FormLabel>
+                    <FormLabel>Ticket/Booking Link (Optional)</FormLabel>
                     <FormControl>
                       <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
@@ -417,7 +489,7 @@ const EventManagementTable = () => {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price</FormLabel>
+                    <FormLabel>Price (Optional)</FormLabel>
                     <FormControl>
                       <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
@@ -430,7 +502,7 @@ const EventManagementTable = () => {
                 name="specialNotes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Special Notes</FormLabel>
+                    <FormLabel>Special Notes (Optional)</FormLabel>
                     <FormControl>
                       <Textarea {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
@@ -443,7 +515,7 @@ const EventManagementTable = () => {
                 name="organizerContact"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Organizer Name/Contact</FormLabel>
+                    <FormLabel>Organizer Name/Contact (Optional)</FormLabel>
                     <FormControl>
                       <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
@@ -456,7 +528,7 @@ const EventManagementTable = () => {
                 name="eventType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Event Type</FormLabel>
+                    <FormLabel>Event Type (Optional)</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="focus-visible:ring-purple-500">
@@ -467,6 +539,30 @@ const EventManagementTable = () => {
                         {eventTypes.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="focus-visible:ring-purple-500">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {eventStates.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state.charAt(0).toUpperCase() + state.slice(1)}
                           </SelectItem>
                         ))}
                       </SelectContent>
