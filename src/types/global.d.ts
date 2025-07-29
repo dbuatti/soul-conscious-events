@@ -60,7 +60,8 @@ declare namespace google {
 
       interface PlaceResult {
         formatted_address?: string;
-        // Add other fields you might use, e.g., geometry, name, etc.
+        name?: string; // Added this line
+        // Add other fields you might use, e.g., geometry, etc.
       }
     }
   }

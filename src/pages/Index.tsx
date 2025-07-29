@@ -19,6 +19,7 @@ interface Event {
   event_date: string;
   event_time?: string;
   location?: string;
+  place_name?: string; // Added place_name
   full_address?: string;
   description?: string;
   ticket_link?: string;
@@ -53,6 +54,7 @@ const Index = () => {
       event_name: 'Mindful Meditation & Sound Bath',
       event_date: '2024-09-15',
       event_time: '6:00 PM - 7:30 PM',
+      place_name: 'Art of Living Centre', // Added dummy data for place_name
       full_address: '123 Wellness Way, Fitzroy, VIC 3065, Australia',
       description: 'Join us for an evening of deep relaxation and inner peace with guided meditation followed by a soothing sound bath. All levels welcome.',
       ticket_link: 'https://example.com/meditation-soundbath',
@@ -67,6 +69,7 @@ const Index = () => {
       event_name: 'Community Garden Harvest Festival',
       event_date: '2024-10-05',
       event_time: '10:00 AM - 3:00 PM',
+      place_name: 'Brunswick Community Gardens', // Added dummy data for place_name
       full_address: '456 Green Lane, Brunswick, VIC 3056, Australia',
       description: 'Celebrate the bounty of our community garden! Enjoy fresh produce, live music, workshops on sustainable living, and activities for kids.',
       ticket_link: '',
@@ -81,6 +84,7 @@ const Index = () => {
       event_name: 'Acoustic Open Mic Night',
       event_date: '2024-09-20',
       event_time: '7:00 PM - 10:00 PM',
+      place_name: 'The St Kilda Cafe', // Added dummy data for place_name
       full_address: '789 Harmony Street, St Kilda, VIC 3182, Australia',
       description: 'Showcase your talent or simply enjoy an evening of local acoustic music and poetry. Sign-ups start at 6:30 PM.',
       ticket_link: '',
@@ -95,6 +99,7 @@ const Index = () => {
       event_name: 'Urban Foraging Workshop: Edible Weeds',
       event_date: '2024-10-12',
       event_time: '9:00 AM - 12:00 PM',
+      place_name: 'Royal Botanic Gardens Victoria', // Added dummy data for place_name
       full_address: 'Royal Botanic Gardens Victoria, Birdwood Ave, Melbourne, VIC 3004, Australia',
       description: 'Learn to identify and safely forage for edible weeds in urban environments. Discover their nutritional benefits and how to incorporate them into your diet.',
       ticket_link: 'https://example.com/foraging-workshop',
@@ -109,6 +114,7 @@ const Index = () => {
       event_name: 'Sunset Yoga & Live Music',
       event_date: '2024-09-25',
       event_time: '5:30 PM - 6:45 PM',
+      place_name: 'Southbank Promenade', // Added dummy data for place_name
       full_address: 'Southbank Promenade, Melbourne, VIC 3006, Australia',
       description: 'Experience a rejuvenating yoga flow accompanied by live acoustic music as the sun sets over the Yarra River. All levels welcome.',
       ticket_link: 'https://example.com/sunset-yoga',
@@ -123,6 +129,7 @@ const Index = () => {
       event_name: 'Beginner Pottery Workshop',
       event_date: '2024-11-02',
       event_time: '1:00 PM - 4:00 PM',
+      place_name: 'Northcote Arts Studio', // Added dummy data for place_name
       full_address: '88 Clay Street, Northcote, VIC 3070, Australia',
       description: 'Get your hands dirty and learn the basics of pottery. Create your own unique ceramic piece to take home.',
       ticket_link: 'https://example.com/pottery-workshop',
@@ -133,16 +140,14 @@ const Index = () => {
       state: 'VIC',
     },
   ]);
-  const [loading, setLoading] = useState(false); // Set to false as we have initial data
+  const [loading, setLoading] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
-  // States for filter inputs (draft values)
   const [draftSearchTerm, setDraftSearchTerm] = useState('');
   const [draftEventType, setDraftEventType] = useState('All');
   const [draftState, setDraftState] = useState('All');
   const [draftDateFilter, setDraftDateFilter] = useState('All Upcoming');
 
-  // States for applied filters (trigger data fetch)
   const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
   const [appliedEventType, setAppliedEventType] = useState('All');
   const [appliedState, setAppliedState] = useState('All');
@@ -151,11 +156,10 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
-  // Debounce effect for search term
   useEffect(() => {
     const handler = setTimeout(() => {
       setAppliedSearchTerm(draftSearchTerm);
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => {
       clearTimeout(handler);
@@ -188,7 +192,6 @@ const Index = () => {
           query = query.lt('event_date', todayFormatted).order('event_date', { ascending: false });
           break;
         case 'All Events':
-          // No date filter applied, will fetch all events
           break;
         case 'All Upcoming':
         default:
@@ -206,11 +209,10 @@ const Index = () => {
 
       if (appliedSearchTerm) {
         query = query.or(
-          `event_name.ilike.%${appliedSearchTerm}%,description.ilike.%${appliedSearchTerm}%,organizer_contact.ilike.%${appliedSearchTerm}%,full_address.ilike.%${appliedSearchTerm}%`
+          `event_name.ilike.%${appliedSearchTerm}%,description.ilike.%${appliedSearchTerm}%,organizer_contact.ilike.%${appliedSearchTerm}%,full_address.ilike.%${appliedSearchTerm}%,place_name.ilike.%${appliedSearchTerm}%` // Added place_name to search
         );
       }
 
-      // Default order for upcoming/all events
       if (appliedDateFilter !== 'Past Events') {
         query = query.order('event_date', { ascending: true });
       }
@@ -221,9 +223,6 @@ const Index = () => {
         console.error('Error fetching events:', error);
         toast.error('Failed to load events.');
       } else {
-        // Only update if data is different from dummy data to avoid overwriting
-        // In a real app, you'd always fetch from Supabase and not use dummy data here.
-        // For this exercise, we'll keep the dummy data as a fallback/initial state.
         if (data && data.length > 0) {
           setEvents(data as Event[]);
         }
@@ -231,9 +230,7 @@ const Index = () => {
       setLoading(false);
     };
 
-    // Commenting out fetchEvents for now to rely on dummy data,
-    // but keeping the function for future use if Supabase is populated.
-    // fetchEvents();
+    // fetchEvents(); // Uncomment this line if you want to fetch from Supabase
   }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]);
 
   const toggleDescription = (id: string) => {
@@ -244,7 +241,6 @@ const Index = () => {
   };
 
   const handleApplyFilters = () => {
-    // Only apply dropdown filters here, search is handled by debounce
     setAppliedEventType(draftEventType);
     setAppliedState(draftState);
     setAppliedDateFilter(draftDateFilter);
@@ -252,7 +248,7 @@ const Index = () => {
 
   const handleClearFilters = () => {
     setDraftSearchTerm('');
-    setAppliedSearchTerm(''); // Clear applied search term immediately
+    setAppliedSearchTerm('');
     setDraftEventType('All');
     setAppliedEventType('All');
     setDraftState('All');
@@ -322,7 +318,7 @@ const Index = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               id="search-events"
-              placeholder="Search by name, description, organizer, or address..."
+              placeholder="Search by name, description, organizer, address, or place name..."
               className="pl-9 w-full"
               value={draftSearchTerm}
               onChange={(e) => setDraftSearchTerm(e.target.value)}
@@ -510,17 +506,20 @@ const Index = () => {
                             </>
                           )}
                         </CardDescription>
-                        {(event.full_address) && (
+                        {(event.place_name || event.full_address) && ( // Display place name if available
                           <CardDescription className="flex items-center text-gray-600 mt-1">
                             <MapPin className="mr-2 h-4 w-4 text-red-500" />
-                            <a
-                              href={googleMapsLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              {event.full_address}
-                            </a>
+                            {event.place_name && <span className="font-medium mr-1">{event.place_name}</span>}
+                            {event.full_address && (
+                              <a
+                                href={googleMapsLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                {event.full_address}
+                              </a>
+                            )}
                           </CardDescription>
                         )}
                         {event.state && (

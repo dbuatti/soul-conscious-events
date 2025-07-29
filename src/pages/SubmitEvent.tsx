@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Corrected this line
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,6 +44,7 @@ const eventFormSchema = z.object({
     required_error: 'A date is required.',
   }),
   eventTime: z.string().optional(),
+  placeName: z.string().optional(), // New field for place name
   fullAddress: z.string().optional(),
   description: z.string().optional(),
   ticketLink: z.string().optional(),
@@ -76,6 +77,7 @@ const SubmitEvent = () => {
     defaultValues: {
       eventName: '',
       eventTime: '',
+      placeName: '', // Initialize new field
       fullAddress: '',
       description: '',
       ticketLink: '',
@@ -88,18 +90,16 @@ const SubmitEvent = () => {
   });
 
   useEffect(() => {
-    // Ensure google.maps is available before initializing Autocomplete
     if (addressInputRef.current && window.google && window.google.maps && window.google.maps.places) {
-      // Define a bounding box for Melbourne (approximate coordinates)
       const melbourneBounds = new window.google.maps.LatLngBounds(
-        new window.google.maps.LatLng(-38.2, 144.5), // South-West corner
-        new window.google.maps.LatLng(-37.5, 145.5)  // North-East corner
+        new window.google.maps.LatLng(-38.2, 144.5),
+        new window.google.maps.LatLng(-37.5, 145.5)
       );
 
       const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
-        bounds: melbourneBounds, // Bias results towards Melbourne
+        bounds: melbourneBounds,
         componentRestrictions: { country: 'au' },
-        fields: ['formatted_address'], // Request only necessary fields
+        fields: ['formatted_address', 'name'], // Request 'name' field
       });
 
       autocomplete.addListener('place_changed', () => {
@@ -109,9 +109,11 @@ const SubmitEvent = () => {
         } else {
           form.setValue('fullAddress', '', { shouldValidate: true });
         }
+        // Set the place name
+        form.setValue('placeName', place.name || '', { shouldValidate: true });
       });
     }
-  }, [form]); // Depend on form to ensure setValue is stable
+  }, [form]);
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     let formattedTicketLink = values.ticketLink;
@@ -124,6 +126,7 @@ const SubmitEvent = () => {
         event_name: values.eventName,
         event_date: values.eventDate.toISOString().split('T')[0],
         event_time: values.eventTime,
+        place_name: values.placeName, // Save place name
         full_address: values.fullAddress,
         description: values.description,
         ticket_link: formattedTicketLink,
@@ -231,8 +234,22 @@ const SubmitEvent = () => {
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
                     ref={addressInputRef}
-                    onDoubleClick={(e) => (e.target as HTMLInputElement).select()} // Added this line
+                    onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="placeName" // New field for place name
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Place Name (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Art of Living Centre" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -397,6 +414,12 @@ const SubmitEvent = () => {
                   <div className="grid grid-cols-4 items-center gap-4">
                     <p className="text-right font-medium">Time:</p>
                     <p className="col-span-3">{previewData.eventTime}</p>
+                  </div>
+                )}
+                {previewData.placeName && ( // Display place name in preview
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium">Place Name:</p>
+                    <p className="col-span-3">{previewData.placeName}</p>
                   </div>
                 )}
                 {previewData.fullAddress && (

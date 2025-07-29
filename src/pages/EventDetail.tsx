@@ -14,6 +14,7 @@ interface Event {
   event_name: string;
   event_date: string;
   event_time?: string;
+  place_name?: string; // Added place_name
   full_address?: string;
   description?: string;
   ticket_link?: string;
@@ -34,7 +35,7 @@ const EventDetail = () => {
     const fetchEvent = async () => {
       if (!id) {
         toast.error('Event ID is missing.');
-        navigate('/404'); // Redirect to not found if no ID
+        navigate('/404');
         return;
       }
 
@@ -48,11 +49,11 @@ const EventDetail = () => {
       if (error) {
         console.error('Error fetching event:', error);
         toast.error('Failed to load event details.');
-        navigate('/404'); // Redirect to not found if event not found or error
+        navigate('/404');
       } else if (data) {
         setEvent(data);
       } else {
-        navigate('/404'); // Redirect if data is null (event not found)
+        navigate('/404');
       }
       setLoading(false);
     };
@@ -92,7 +93,7 @@ const EventDetail = () => {
   }
 
   if (!event) {
-    return null; // Should be handled by navigate('/404')
+    return null;
   }
 
   const googleMapsLink = event.full_address
@@ -115,17 +116,20 @@ const EventDetail = () => {
               </>
             )}
           </CardDescription>
-          {(event.full_address) && (
+          {(event.place_name || event.full_address) && ( // Display place name if available
             <CardDescription className="flex items-center text-gray-600 mt-1">
               <MapPin className="mr-2 h-4 w-4 text-red-500" />
-              <a
-                href={googleMapsLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                {event.full_address}
-              </a>
+              {event.place_name && <span className="font-medium mr-1">{event.place_name}</span>}
+              {event.full_address && (
+                <a
+                  href={googleMapsLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {event.full_address}
+                </a>
+              )}
             </CardDescription>
           )}
           {event.state && (
