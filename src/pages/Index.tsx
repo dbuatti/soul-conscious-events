@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import EventCalendar from '@/components/EventCalendar'; // Import the new EventCalendar component
-import { FormLabel } from '@/components/ui/form'; // Import FormLabel for consistent labeling
+// Removed FormLabel import as it's not used outside of a Form context
 
 interface Event {
   id: string;
@@ -167,9 +167,10 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-end">
           {/* Search Input */}
           <div className="relative col-span-full"> {/* Spans full width on all screens */}
-            <FormLabel className="text-sm font-medium text-gray-700 mb-1 block">Search Events</FormLabel>
+            <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
+              id="search-events"
               placeholder="Search by name, description, organizer, or address..."
               className="pl-9 w-full"
               value={searchTerm}
@@ -179,9 +180,9 @@ const Index = () => {
 
           {/* Event Type Select */}
           <div className="flex flex-col gap-1">
-            <FormLabel className="text-sm font-medium text-gray-700">Event Type</FormLabel>
+            <label htmlFor="event-type" className="text-sm font-medium text-gray-700">Event Type</label>
             <Select onValueChange={setSelectedEventType} value={selectedEventType}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="event-type" className="w-full">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -196,9 +197,9 @@ const Index = () => {
 
           {/* State Select */}
           <div className="flex flex-col gap-1">
-            <FormLabel className="text-sm font-medium text-gray-700">State</FormLabel>
+            <label htmlFor="event-state" className="text-sm font-medium text-gray-700">State</label>
             <Select onValueChange={setSelectedState} value={selectedState}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="event-state" className="w-full">
                 <SelectValue placeholder="All States" />
               </SelectTrigger>
               <SelectContent>
@@ -213,9 +214,9 @@ const Index = () => {
 
           {/* Date Range Select */}
           <div className="flex flex-col gap-1">
-            <FormLabel className="text-sm font-medium text-gray-700">Date Range</FormLabel>
+            <label htmlFor="date-range" className="text-sm font-medium text-gray-700">Date Range</label>
             <Select onValueChange={setSelectedDateFilter} value={selectedDateFilter}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="date-range" className="w-full">
                 <SelectValue placeholder="All Upcoming" />
               </SelectTrigger>
               <SelectContent>
@@ -237,8 +238,8 @@ const Index = () => {
               </Button>
             )}
             <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <FormLabel className="text-sm font-medium text-gray-700 sr-only sm:not-sr-only">View Mode</FormLabel>
-              <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
+              <label htmlFor="view-mode" className="text-sm font-medium text-gray-700 sr-only sm:not-sr-only">View Mode</label>
+              <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
                 <ToggleGroupItem value="list" aria-label="Toggle list view">
                   <List className="h-4 w-4" />
                 </ToggleGroupItem>
