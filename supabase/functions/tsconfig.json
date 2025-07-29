@@ -1,18 +1,17 @@
 {
   "compilerOptions": {
-    "lib": ["esnext", "deno.ns"],
-    "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "lib": ["ESNext", "deno.ns", "deno.window"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      // Paths are typically for local aliases, not remote URLs
+      "*": ["./node_modules/*", "./*"]
     }
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts"]
 }

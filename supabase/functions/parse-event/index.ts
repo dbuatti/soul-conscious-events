@@ -32,43 +32,72 @@ serve(async (req) => {
     const { text } = await req.json();
     input_text = text;
 
-    // --- Simulated AI Parsing Logic ---
-    // In a real application, you would call an external AI API here.
-    // For demonstration, we'll use simple regex/string matching.
+    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+    if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not set in environment variables.');
+    }
 
-    const eventNameMatch = text.match(/(?:Event Name|Title):\s*(.+)/i);
-    const eventDateMatch = text.match(/(?:Date):\s*(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})/i);
-    const eventTimeMatch = text.match(/(?:Time):\s*(.+)/i);
-    const placeNameMatch = text.match(/(?:Place Name|Venue):\s*(.+)/i);
-    const fullAddressMatch = text.match(/(?:Address|Location):\s*(.+)/i);
-    const descriptionMatch = text.match(/(?:Description):\s*([\s\S]+?)(?:\n\n|\nEvent Name|\nDate|\nTime|\nPlace Name|\nAddress|\nTicket Link|\nPrice|\nSpecial Notes|\nOrganizer Contact|\nEvent Type|$)/i);
-    const ticketLinkMatch = text.match(/(?:Ticket Link|Tickets):\s*(https?:\/\/\S+)/i);
-    const priceMatch = text.match(/(?:Price):\s*(.+)/i);
-    const specialNotesMatch = text.match(/(?:Special Notes):\s*(.+)/i);
-    const organizerContactMatch = text.match(/(?:Organizer Contact|Contact):\s*(.+)/i);
-    const eventTypeMatch = text.match(/(?:Event Type|Type):\s*(.+)/i);
-    const stateMatch = text.match(/(?:State):\s*([A-Z]{2,3})/i);
+    const prompt = `
+      You are an AI assistant specialized in extracting event details from unstructured text.
+      Your task is to parse the provided event text and return a JSON object containing the extracted information.
+      Only return the JSON object. Do not include any other text or markdown.
+      If a field is not found, omit it from the JSON.
+      Ensure dates are in 'YYYY-MM-DD' format.
+      Ensure the 'ticketLink' includes 'https://' if present.
 
-    parsed_data = {
-      eventName: eventNameMatch ? eventNameMatch[1].trim() : undefined,
-      eventDate: eventDateMatch ? new Date(eventDateMatch[1].trim()).toISOString().split('T')[0] : undefined,
-      eventTime: eventTimeMatch ? eventTimeMatch[1].trim() : undefined,
-      placeName: placeNameMatch ? placeNameMatch[1].trim() : undefined,
-      fullAddress: fullAddressMatch ? fullAddressMatch[1].trim() : undefined,
-      description: descriptionMatch ? descriptionMatch[1].trim() : undefined,
-      ticketLink: ticketLinkMatch ? ticketLinkMatch[1].trim() : undefined,
-      price: priceMatch ? priceMatch[1].trim() : undefined,
-      specialNotes: specialNotesMatch ? specialNotesMatch[1].trim() : undefined,
-      organizerContact: organizerContactMatch ? organizerContactMatch[1].trim() : undefined,
-      eventType: eventTypeMatch ? eventTypeMatch[1].trim() : undefined,
-      state: stateMatch ? stateMatch[1].trim() : undefined,
-    };
+      Here is the event text:
+      "${text}"
 
-    // Clean up empty strings/undefined values
-    for (const key in parsed_data) {
-      if (parsed_data[key] === '' || parsed_data[key] === undefined) {
-        delete parsed_data[key];
+      Expected JSON format (example, omit fields if not found):
+      {
+        "eventName": "Example Event",
+        "eventDate": "2024-12-25",
+        "eventTime": "7:00 PM",
+        "placeName": "The Venue",
+        "fullAddress": "123 Main St, City, State, Postcode",
+        "description": "A detailed description of the event.",
+        "ticketLink": "https://example.com/tickets",
+        "price": "$50",
+        "specialNotes": "Bring your own mat.",
+        "organizerContact": "John Doe",
+        "eventType": "Music",
+        "state": "VIC"
       }
+    `;
+
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt,
+          }],
+        }],
+      }),
+    });
+
+    if (!geminiResponse.ok) {
+      const errorBody = await geminiResponse.json();
+      throw new Error(`Gemini API error: ${geminiResponse.status} - ${JSON.stringify(errorBody)}`);
+    }
+
+    const geminiData = await geminiResponse.json();
+    const generatedText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (generatedText) {
+      try {
+        // Attempt to parse the generated text as JSON
+        parsed_data = JSON.parse(generatedText);
+      } catch (jsonError) {
+        console.error('Failed to parse Gemini output as JSON:', generatedText, jsonError);
+        throw new Error('AI returned invalid JSON format.');
+      }
+    } else {
+      console.warn('Gemini did not return any generated text.');
+      parsed_data = {}; // No data extracted
     }
 
     return new Response(JSON.stringify({ parsed_data }), {
