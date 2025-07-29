@@ -454,6 +454,19 @@ const Index = () => {
                     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
                     : '#';
                   const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
+
+                  const formattedDate = event.event_date
+                    ? format(new Date(event.event_date), 'PPP')
+                    : 'Date TBD';
+                  const formattedEndDate = event.end_date
+                    ? format(new Date(event.end_date), 'PPP')
+                    : '';
+
+                  const dateDisplay =
+                    event.end_date && event.event_date !== event.end_date
+                      ? `${formattedDate} - ${formattedEndDate}`
+                      : formattedDate;
+
                   return (
                     <Card key={event.id} className="flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow duration-300">
                       {event.image_url && (
@@ -470,7 +483,7 @@ const Index = () => {
                         <CardTitle className="text-xl font-semibold text-purple-700">{event.event_name}</CardTitle>
                         <CardDescription className="flex items-center text-gray-600 mt-2">
                           <Calendar className="mr-2 h-4 w-4 text-blue-500" />
-                          {event.event_date ? format(new Date(event.event_date), 'PPP') : 'Date TBD'}
+                          {dateDisplay}
                           {event.event_time && (
                             <>
                               <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
