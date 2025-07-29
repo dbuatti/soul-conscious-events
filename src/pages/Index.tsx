@@ -506,19 +506,28 @@ const Index = () => {
                             </>
                           )}
                         </CardDescription>
-                        {(event.place_name || event.full_address) && ( // Display place name if available
-                          <CardDescription className="flex items-center text-gray-600 mt-1">
-                            <MapPin className="mr-2 h-4 w-4 text-red-500" />
-                            {event.place_name && <span className="font-medium mr-1">{event.place_name}</span>}
+                        {(event.place_name || event.full_address) && (
+                          <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
+                            {event.place_name && (
+                              <div className="flex items-center mb-1">
+                                <MapPin className="mr-2 h-4 w-4 text-red-500" />
+                                <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                                  {event.place_name}
+                                </Badge>
+                              </div>
+                            )}
                             {event.full_address && (
-                              <a
-                                href={googleMapsLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
-                              >
-                                {event.full_address}
-                              </a>
+                              <div className="flex items-center">
+                                {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-red-500" />}
+                                <a
+                                  href={googleMapsLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {event.full_address}
+                                </a>
+                              </div>
                             )}
                           </CardDescription>
                         )}
