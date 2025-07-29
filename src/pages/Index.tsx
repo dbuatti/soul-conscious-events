@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon } from 'lucide-react'; // Added Search icon back
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -52,7 +52,7 @@ const australianStates = [
 ];
 
 const Index = () => {
-  const [events, setEvents] = useState<Event[]>([]); // Initialize with empty array to load from Supabase
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
@@ -65,12 +65,12 @@ const Index = () => {
   const [appliedEventType, setAppliedEventType] = useState('All');
   const [appliedState, setAppliedState] = useState('All');
   const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
-  const [showHiddenEvents, setShowHiddenEvents] = useState(false); // New state for the checkbox
+  // const [showHiddenEvents, setShowHiddenEvents] = useState(false); // Removed state for the checkbox
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
-  const { user, isViewingAsPublic } = useSession(); // Get user and isViewingAsPublic from context
+  const { user } = useSession(); // Get user from context
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
 
   useEffect(() => {
@@ -124,14 +124,8 @@ const Index = () => {
         query = query.eq('state', appliedState);
       }
 
-      // Conditional filtering based on admin status and 'view as public' mode
-      if (isAdmin && showHiddenEvents && !isViewingAsPublic) {
-        // Admin viewing all events (including hidden/draft/null)
-        query = query.or('state.eq.approved,state.eq.draft,state.eq.pending,state.is.null');
-      } else {
-        // Public view, or non-admin user, or admin viewing as public: only show 'approved'
-        query = query.eq('state', 'approved');
-      }
+      // Always filter for 'approved' events for public view
+      query = query.eq('state', 'approved');
 
       if (appliedSearchTerm) {
         query = query.or(
@@ -149,13 +143,13 @@ const Index = () => {
         console.error('Error fetching events:', error);
         toast.error('Failed to load events.');
       } else {
-        setEvents(data || []); // Set events to fetched data
+        setEvents(data || []);
       }
       setLoading(false);
     };
 
     fetchEvents();
-  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter, showHiddenEvents, isAdmin, isViewingAsPublic]); // Add new dependencies
+  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]); // Removed showHiddenEvents, isAdmin, isViewingAsPublic from dependencies
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -179,10 +173,10 @@ const Index = () => {
     setAppliedState('All');
     setDraftDateFilter('All Upcoming');
     setAppliedDateFilter('All Upcoming');
-    setShowHiddenEvents(false); // Also clear this filter
+    // setShowHiddenEvents(false); // Removed this
   };
 
-  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter' | 'hiddenEvents') => {
+  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => { // Removed 'hiddenEvents'
     switch (filterType) {
       case 'search':
         setDraftSearchTerm('');
@@ -200,9 +194,6 @@ const Index = () => {
         setDraftDateFilter('All Upcoming');
         setAppliedDateFilter('All Upcoming');
         break;
-      case 'hiddenEvents':
-        setShowHiddenEvents(false);
-        break;
       default:
         break;
     }
@@ -212,8 +203,7 @@ const Index = () => {
     appliedSearchTerm !== '' ||
     appliedEventType !== 'All' ||
     appliedState !== 'All' ||
-    appliedDateFilter !== 'All Upcoming' ||
-    (isAdmin && showHiddenEvents && !isViewingAsPublic); // Only consider 'showHiddenEvents' as active filter if admin and not viewing as public
+    appliedDateFilter !== 'All Upcoming'; // Removed showHiddenEvents logic
 
   const handleShare = (event: Event) => {
     const eventUrl = `${window.location.origin}/events/${event.id}`;
@@ -246,11 +236,11 @@ const Index = () => {
           {/* Search Input */}
           <div className="relative col-span-full">
             <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
-            <Search className="absolute inset-y-0 left-0 flex items-center pl-3 h-full w-4 text-gray-500" /> {/* Re-added Search icon with proper alignment */}
+            <Search className="absolute inset-y-0 left-0 flex items-center pl-3 h-full w-4 text-gray-500" />
             <Input
               id="search-events"
               placeholder="Search events..."
-              className="pl-10 w-full" // Adjusted padding-left for the icon
+              className="pl-10 w-full"
               value={draftSearchTerm}
               onChange={(e) => setDraftSearchTerm(e.target.value)}
             />
@@ -331,32 +321,20 @@ const Index = () => {
             </Button>
           </Link>
 
-          {/* Right side: Checkbox, Apply, Clear, View Mode */}
+          {/* Right side: Apply, Clear, View Mode */}
           <div className="flex flex-col sm:flex-row gap-4 items-center">
-            {isAdmin && !isViewingAsPublic && (
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="show-hidden-events"
-                  checked={showHiddenEvents}
-                  onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
-                />
-                <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                  Show hidden/draft events
-                </Label>
-              </div>
-            )}
+            {/* Removed isAdmin && !isViewingAsPublic checkbox */}
 
             {(
               draftEventType !== appliedEventType ||
               draftState !== appliedState ||
-              draftDateFilter !== appliedDateFilter ||
-              (isAdmin && showHiddenEvents !== false && !isViewingAsPublic)
+              draftDateFilter !== appliedDateFilter
             ) && (
                 <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
                   Apply Filters
                 </Button>
               )}
-            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming' || (isAdmin && showHiddenEvents && !isViewingAsPublic)) && (
+            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming') && (
               <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
                 Clear All Filters
               </Button>
@@ -413,14 +391,7 @@ const Index = () => {
                 </Button>
               </Badge>
             )}
-            {isAdmin && showHiddenEvents && !isViewingAsPublic && (
-              <Badge variant="secondary" className="bg-red-100 text-red-800 flex items-center gap-1">
-                Showing Hidden
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-red-600 hover:bg-red-200" onClick={() => removeFilter('hiddenEvents')}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </Badge>
-            )}
+            {/* Removed showHiddenEvents badge */}
           </div>
         )}
       </div>

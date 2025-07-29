@@ -71,7 +71,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional(),
   organizerContact: z.string().optional(),
   eventType: z.string().optional(),
-  state: z.string().optional(), // Added state to schema
+  // Removed state from schema as it's now automatically set to 'approved'
   imageFile: z.any().optional(),
 });
 
@@ -109,7 +109,7 @@ const SubmitEvent = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      state: 'pending', // Set default state to 'pending'
+      // state: 'pending', // Removed default state as it's now 'approved'
     },
   });
 
@@ -165,7 +165,7 @@ const SubmitEvent = () => {
         if (parsed_data.specialNotes) form.setValue('specialNotes', parsed_data.specialNotes);
         if (parsed_data.organizerContact) form.setValue('organizerContact', parsed_data.organizerContact);
         if (parsed_data.eventType) form.setValue('eventType', parsed_data.eventType);
-        if (parsed_data.state) form.setValue('state', parsed_data.state);
+        // if (parsed_data.state) form.setValue('state', parsed_data.state); // Removed state setting from AI parse
 
         toast.success('Event details parsed successfully!');
       } else {
@@ -233,7 +233,7 @@ const SubmitEvent = () => {
         special_notes: values.specialNotes,
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
-        state: values.state || 'pending', // Ensure state is set, default to 'pending'
+        state: 'approved', // Always set to 'approved'
         user_id: user?.id || null, // Associate event with the logged-in user if available, otherwise null
         image_url: imageUrl,
       },
@@ -392,6 +392,8 @@ const SubmitEvent = () => {
             )}
           />
 
+          {/* Removed state field from the form */}
+          {/*
           <FormField
             control={form.control}
             name="state"
@@ -416,6 +418,7 @@ const SubmitEvent = () => {
               </FormItem>
             )}
           />
+          */}
 
           <FormField
             control={form.control}
@@ -492,7 +495,7 @@ const SubmitEvent = () => {
             name="eventType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Event Type</FormLabel> {/* Corrected closing tag */}
+                <FormLabel>Event Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -608,12 +611,15 @@ const SubmitEvent = () => {
                     <p className="col-span-3">{previewData.fullAddress}</p>
                   </div>
                 )}
+                {/* Removed state from preview as it's now automatically set */}
+                {/*
                 {previewData.state && (
                   <div className="grid grid-cols-4 items-center gap-4">
                     <p className="text-right font-medium">State:</p>
                     <p className="col-span-3">{previewData.state}</p>
                   </div>
                 )}
+                */}
                 {previewData.description && (
                   <div className="grid grid-cols-4 items-start gap-4">
                     <p className="text-right font-medium">Description:</p>

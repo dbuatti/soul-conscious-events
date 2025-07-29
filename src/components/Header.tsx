@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, LogOut, Eye, EyeOff } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react'; // Removed Eye, EyeOff
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 const Header = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { user, isViewingAsPublic, toggleViewAsPublic } = useSession();
+  const { user } = useSession(); // Removed isViewingAsPublic, toggleViewAsPublic
 
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
 
@@ -65,6 +65,7 @@ const Header = () => {
           Admin
         </Button>
       </Link>
+      {/* Removed View as Public/Admin toggle
       {isAdmin && (
         <Button
           variant="outline"
@@ -85,6 +86,7 @@ const Header = () => {
           )}
         </Button>
       )}
+      */}
       {user ? (
         <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700">
           <LogOut className="mr-2 h-4 w-4" /> Logout
