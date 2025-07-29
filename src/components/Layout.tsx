@@ -13,6 +13,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <main className="flex-grow w-full flex flex-col items-center py-8">
         {children}
       </main>
+      <div className="p-4 text-center">
+        <a
+          href="https://buymeacoffee.com/danielebuatti"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mb-2"
+        >
+          <img
+            src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+            alt="Buy Me a Coffee"
+            style={{ height: '40px', width: '140px' }}
+            className="shadow-md rounded-md hover:opacity-90 transition-opacity"
+          />
+        </a>
+      </div>
       <MadeWithDyad />
     </div>
   );

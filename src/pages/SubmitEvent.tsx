@@ -242,7 +242,7 @@ const SubmitEvent = () => {
 
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Submit a SoulFlow Event</h2>
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Submit an Event</h2> {/* Changed title */}
 
       {/* AI Parsing Tool Section */}
       <div className="mb-8 p-6 border border-purple-200 rounded-lg bg-purple-50 shadow-sm">
