@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,7 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -44,7 +45,7 @@ const eventFormSchema = z.object({
     required_error: 'A date is required.',
   }),
   eventTime: z.string().optional(),
-  placeName: z.string().optional(), // New field for place name
+  placeName: z.string().optional(),
   fullAddress: z.string().optional(),
   description: z.string().optional(),
   ticketLink: z.string().optional(),
@@ -70,14 +71,16 @@ const SubmitEvent = () => {
   const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
-  const placeNameInputRef = useRef<HTMLInputElement>(null); // Ref for the place name input
+  const placeNameInputRef = useRef<HTMLInputElement>(null);
+  const [aiText, setAiText] = useState('');
+  const [isAiParsing, setIsAiParsing] = useState(false);
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       eventName: '',
       eventTime: '',
-      placeName: '', // Initialize new field
+      placeName: '',
       fullAddress: '',
       description: '',
       ticketLink: '',
@@ -99,18 +102,61 @@ const SubmitEvent = () => {
       const autocomplete = new window.google.maps.places.Autocomplete(placeNameInputRef.current, {
         bounds: melbourneBounds,
         componentRestrictions: { country: 'au' },
-        fields: ['formatted_address', 'name'], // Request 'name' and 'formatted_address' fields
+        fields: ['formatted_address', 'name'],
       });
 
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
-        // Set the place name
         form.setValue('placeName', place.name || '', { shouldValidate: true });
-        // Set the full address
         form.setValue('fullAddress', place.formatted_address || '', { shouldValidate: true });
       });
     }
   }, [form]);
+
+  const handleAiParse = async () => {
+    if (!aiText.trim()) {
+      toast.error('Please enter some text to parse.');
+      return;
+    }
+
+    setIsAiParsing(true);
+    try {
+      const response = await supabase.functions.invoke('parse-event', {
+        body: { text: aiText },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      const { parsed_data } = response.data;
+
+      if (parsed_data) {
+        // Map parsed data to form fields
+        if (parsed_data.eventName) form.setValue('eventName', parsed_data.eventName);
+        if (parsed_data.eventDate) form.setValue('eventDate', new Date(parsed_data.eventDate));
+        if (parsed_data.eventTime) form.setValue('eventTime', parsed_data.eventTime);
+        if (parsed_data.placeName) form.setValue('placeName', parsed_data.placeName);
+        if (parsed_data.fullAddress) form.setValue('fullAddress', parsed_data.fullAddress);
+        if (parsed_data.description) form.setValue('description', parsed_data.description);
+        if (parsed_data.ticketLink) form.setValue('ticketLink', parsed_data.ticketLink);
+        if (parsed_data.price) form.setValue('price', parsed_data.price);
+        if (parsed_data.specialNotes) form.setValue('specialNotes', parsed_data.specialNotes);
+        if (parsed_data.organizerContact) form.setValue('organizerContact', parsed_data.organizerContact);
+        if (parsed_data.eventType) form.setValue('eventType', parsed_data.eventType);
+        if (parsed_data.state) form.setValue('state', parsed_data.state);
+
+        toast.success('Event details parsed successfully!');
+      } else {
+        toast.info('No event details could be extracted from the text.');
+      }
+    } catch (error: any) {
+      console.error('AI Parsing Error:', error);
+      toast.error(`AI parsing failed: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsAiParsing(false);
+    }
+  };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     let formattedTicketLink = values.ticketLink;
@@ -123,7 +169,7 @@ const SubmitEvent = () => {
         event_name: values.eventName,
         event_date: values.eventDate.toISOString().split('T')[0],
         event_time: values.eventTime,
-        place_name: values.placeName, // Save place name
+        place_name: values.placeName,
         full_address: values.fullAddress,
         description: values.description,
         ticket_link: formattedTicketLink,
@@ -142,6 +188,7 @@ const SubmitEvent = () => {
     } else {
       toast.success('Event submitted successfully!');
       form.reset();
+      setAiText(''); // Clear AI text area after successful submission
       navigate('/');
     }
   };
@@ -155,6 +202,41 @@ const SubmitEvent = () => {
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Submit a SoulFlow Event</h2>
+
+      {/* AI Parsing Tool Section */}
+      <div className="mb-8 p-6 border border-purple-200 rounded-lg bg-purple-50 shadow-sm">
+        <h3 className="text-2xl font-semibold text-purple-800 mb-4 flex items-center">
+          <Sparkles className="mr-2 h-6 w-6 text-purple-600" />
+          AI Event Parser <Badge variant="secondary" className="ml-2 bg-purple-200 text-purple-800">Beta</Badge>
+        </h3>
+        <p className="text-gray-700 mb-4">
+          Paste a large block of event text below, and our AI will try to automatically fill out the form fields for you.
+          This feature is in beta, so please review the parsed details carefully!
+        </p>
+        <div className="space-y-4">
+          <Textarea
+            placeholder="Paste your event description here (e.g., Event Name: My Awesome Gig, Date: 2024-12-25, Time: 7 PM, Place Name: The Venue, Address: 123 Main St, Description: ...)"
+            rows={8}
+            value={aiText}
+            onChange={(e) => setAiText(e.target.value)}
+            className="min-h-[150px]"
+          />
+          <Button
+            onClick={handleAiParse}
+            disabled={isAiParsing || !aiText.trim()}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            {isAiParsing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Parsing...
+              </>
+            ) : (
+              'Parse with AI'
+            )}
+          </Button>
+        </div>
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -222,7 +304,7 @@ const SubmitEvent = () => {
 
           <FormField
             control={form.control}
-            name="placeName" // New field for place name
+            name="placeName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Place Name (Optional)</FormLabel>
@@ -412,7 +494,7 @@ const SubmitEvent = () => {
                     <p className="col-span-3">{previewData.eventTime}</p>
                   </div>
                 )}
-                {previewData.placeName && ( // Display place name in preview
+                {previewData.placeName && (
                   <div className="grid grid-cols-4 items-center gap-4">
                     <p className="text-right font-medium">Place Name:</p>
                     <p className="col-span-3">{previewData.placeName}</p>
