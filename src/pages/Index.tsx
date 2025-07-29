@@ -236,11 +236,11 @@ const Index = () => {
           {/* Search Input */}
           <div className="relative col-span-full">
             <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
-            <Search className="absolute inset-y-0 left-0 flex items-center pl-3 h-full w-4 text-gray-500" />
+            {/* Removed Search icon */}
             <Input
               id="search-events"
               placeholder="Search events..."
-              className="pl-10 w-full"
+              className="w-full" // Removed pl-10 class
               value={draftSearchTerm}
               onChange={(e) => setDraftSearchTerm(e.target.value)}
             />
