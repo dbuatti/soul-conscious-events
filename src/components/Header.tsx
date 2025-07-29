@@ -1,15 +1,15 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom'; // Import useLocation
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils'; // Import cn for conditional class names
+import { cn } from '@/lib/utils';
 
 const Header = () => {
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   const getButtonClass = (path: string) => {
     return cn(
       "text-gray-700 hover:text-purple-700",
-      location.pathname === path && "font-bold text-purple-700" // Apply bold and purple if active
+      location.pathname === path && "font-bold text-purple-700"
     );
   };
 
@@ -28,6 +28,11 @@ const Header = () => {
           <Link to="/submit-event">
             <Button variant="ghost" className={getButtonClass("/submit-event")}>
               Add Event
+            </Button>
+          </Link>
+          <Link to="/map">
+            <Button variant="ghost" className={getButtonClass("/map")}>
+              Map
             </Button>
           </Link>
           <Link to="/contact">

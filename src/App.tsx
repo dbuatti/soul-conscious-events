@@ -8,10 +8,11 @@ import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
 import AdminContactSubmissions from "./pages/AdminContactSubmissions";
-import EventDetail from "./pages/EventDetail"; // Import the new EventDetail component
+import EventDetail from "./pages/EventDetail";
+import MapPage from "./pages/MapPage"; // Import the new MapPage component
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
-import ScrollToTop from "./components/ScrollToTop"; // Import the new ScrollToTop component
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ScrollToTop /> {/* Add ScrollToTop here */}
+        <ScrollToTop />
         <SessionContextProvider>
           <Layout>
             <Routes>
@@ -29,7 +30,8 @@ const App = () => (
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin/submissions" element={<AdminContactSubmissions />} />
-              <Route path="/events/:id" element={<EventDetail />} /> {/* New route for event details */}
+              <Route path="/events/:id" element={<EventDetail />} />
+              <Route path="/map" element={<MapPage />} /> {/* New route for the map page */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
