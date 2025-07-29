@@ -6,7 +6,7 @@ import { defineConfig } from "vite";
     export default defineConfig(() => ({
       server: {
         host: "::",
-        port: 8080, // This is where the port 8080 is configured
+        port: 32100, // Changed port to 32100
       },
       plugins: [dyadComponentTagger(), react()],
       resolve: {
