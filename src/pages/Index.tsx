@@ -12,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import EventCalendar from '@/components/EventCalendar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface Event {
   id: string;
@@ -62,6 +64,7 @@ const Index = () => {
   const [appliedEventType, setAppliedEventType] = useState('All');
   const [appliedState, setAppliedState] = useState('All');
   const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
+  const [showHiddenEvents, setShowHiddenEvents] = useState(false); // New state for the checkbox
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
@@ -117,6 +120,11 @@ const Index = () => {
         query = query.eq('state', appliedState);
       }
 
+      // Conditionally filter by 'approved' state if showHiddenEvents is false
+      if (!showHiddenEvents) {
+        query = query.eq('state', 'approved');
+      }
+
       if (appliedSearchTerm) {
         query = query.or(
           `event_name.ilike.%${appliedSearchTerm}%,description.ilike.%${appliedSearchTerm}%,organizer_contact.ilike.%${appliedSearchTerm}%,full_address.ilike.%${appliedSearchTerm}%,place_name.ilike.%${appliedSearchTerm}%`
@@ -138,8 +146,8 @@ const Index = () => {
       setLoading(false);
     };
 
-    fetchEvents(); // Uncommented this line
-  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]);
+    fetchEvents();
+  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter, showHiddenEvents]); // Add showHiddenEvents to dependencies
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -163,9 +171,10 @@ const Index = () => {
     setAppliedState('All');
     setDraftDateFilter('All Upcoming');
     setAppliedDateFilter('All Upcoming');
+    setShowHiddenEvents(false); // Also clear this filter
   };
 
-  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => {
+  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter' | 'hiddenEvents') => {
     switch (filterType) {
       case 'search':
         setDraftSearchTerm('');
@@ -183,6 +192,9 @@ const Index = () => {
         setDraftDateFilter('All Upcoming');
         setAppliedDateFilter('All Upcoming');
         break;
+      case 'hiddenEvents':
+        setShowHiddenEvents(false);
+        break;
       default:
         break;
     }
@@ -192,7 +204,8 @@ const Index = () => {
     appliedSearchTerm !== '' ||
     appliedEventType !== 'All' ||
     appliedState !== 'All' ||
-    appliedDateFilter !== 'All Upcoming';
+    appliedDateFilter !== 'All Upcoming' ||
+    showHiddenEvents; // Include new filter in active check
 
   const handleShare = (event: Event) => {
     const eventUrl = `${window.location.origin}/events/${event.id}`;
@@ -298,18 +311,31 @@ const Index = () => {
             </Select>
           </div>
 
+          {/* New Checkbox for Hidden Events */}
+          <div className="col-span-full flex items-center gap-2 mt-4">
+            <Checkbox
+              id="show-hidden-events"
+              checked={showHiddenEvents}
+              onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
+            />
+            <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700">
+              Show hidden/draft events
+            </Label>
+          </div>
+
           {/* Action Buttons */}
           <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4 md:mt-0">
             {(
               draftEventType !== appliedEventType ||
               draftState !== appliedState ||
-              draftDateFilter !== appliedDateFilter
+              draftDateFilter !== appliedDateFilter ||
+              showHiddenEvents !== false // Check if the new filter is active
             ) && (
                 <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
                   Apply Filters
                 </Button>
               )}
-            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming') && (
+            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming' || showHiddenEvents) && (
               <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
                 Clear All Filters
               </Button>
@@ -360,6 +386,14 @@ const Index = () => {
               <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1">
                 Date: {appliedDateFilter}
                 <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-orange-600 hover:bg-orange-200" onClick={() => removeFilter('dateFilter')}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {showHiddenEvents && (
+              <Badge variant="secondary" className="bg-red-100 text-red-800 flex items-center gap-1">
+                Showing Hidden
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-red-600 hover:bg-red-200" onClick={() => removeFilter('hiddenEvents')}>
                   <X className="h-3 w-3" />
                 </Button>
               </Badge>
