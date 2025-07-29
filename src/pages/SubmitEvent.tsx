@@ -230,7 +230,8 @@ const SubmitEvent = () => {
                   <Input
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
-                    ref={addressInputRef} // Assign ref to input
+                    ref={addressInputRef}
+                    onDoubleClick={(e) => (e.target as HTMLInputElement).select()} // Added this line
                   />
                 </FormControl>
                 <FormMessage />
