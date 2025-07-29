@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { Edit, Trash2, PlusCircle, ExternalLink, CheckCircle, Clock } from 'lucide-react'; // Added CheckCircle and Clock icons
+import { Edit, Trash2, PlusCircle, ExternalLink, CheckCircle, Clock } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,7 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge'; // Imported Badge
+import { Badge } from '@/components/ui/badge';
 
 interface Event {
   id: string;
@@ -56,12 +56,12 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string; // Added state to interface
+  state?: string;
   image_url?: string;
 }
 
 const eventFormSchema = z.object({
-  id: z.string(), // Hidden field for ID
+  id: z.string(),
   eventName: z.string().min(2, {
     message: 'Event name must be at least 2 characters.',
   }),
@@ -77,8 +77,8 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  state: z.string().optional().or(z.literal('')), // Added state to schema
-  image_url: z.string().optional().or(z.literal('')), // For displaying current image URL
+  state: z.string().optional().or(z.literal('')),
+  image_url: z.string().optional().or(z.literal('')),
 });
 
 const eventTypes = [
@@ -189,8 +189,7 @@ const EventManagementTable = () => {
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
         event_type: values.eventType || null,
-        state: values.state || null, // Allow state to be updated from the form
-        // image_url is not updated via this form, it's just displayed
+        state: values.state || null,
       })
       .eq('id', values.id);
 
@@ -200,7 +199,7 @@ const EventManagementTable = () => {
     } else {
       toast.success('Event updated successfully!');
       setIsEditDialogOpen(false);
-      fetchEvents(); // Re-fetch events to update the list
+      fetchEvents();
     }
   };
 
@@ -232,7 +231,7 @@ const EventManagementTable = () => {
                 <TableHead>Time</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead> {/* New Status Header */}
+                {/* Removed Status Header */}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -244,25 +243,7 @@ const EventManagementTable = () => {
                   <TableCell>{event.event_time || 'N/A'}</TableCell>
                   <TableCell>{event.place_name || event.full_address || 'N/A'}</TableCell>
                   <TableCell>{event.event_type || 'N/A'}</TableCell>
-                  <TableCell> {/* New Status Cell */}
-                    {event.state === 'approved' ? (
-                      <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center w-fit">
-                        <CheckCircle className="h-3 w-3 mr-1" /> Approved
-                      </Badge>
-                    ) : event.state === 'pending' ? (
-                      <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center w-fit">
-                        <Clock className="h-3 w-3 mr-1" /> Pending
-                      </Badge>
-                    ) : event.state === 'draft' ? (
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center w-fit">
-                        Draft
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-gray-100 text-gray-800 flex items-center w-fit">
-                        N/A
-                      </Badge>
-                    )}
-                  </TableCell>
+                  {/* Removed Status Cell */}
                   <TableCell className="text-right flex justify-end space-x-2">
                     <Link to={`/events/${event.id}`} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm" title="View Event">
