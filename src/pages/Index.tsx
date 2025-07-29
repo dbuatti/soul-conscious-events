@@ -228,6 +228,16 @@ const Index = () => {
       <p className="text-xl text-gray-600 mb-6 text-center">
         Connect with soulful events in your community.
       </p>
+
+      {/* New App Description Clause */}
+      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-sm text-center">
+        <p className="text-gray-700 text-base leading-relaxed">
+          SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
+          As this is a new project from an aspiring app developer, some features may not work as expected.
+          Your feedback is invaluable! Please visit the <Link to="/contact" className="text-blue-600 hover:underline font-medium">Contact Us</Link> page to share your suggestions or report any issues.
+        </p>
+      </div>
+
       <div className="flex justify-center mb-8">
         <Link to="/submit-event">
           <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -320,7 +330,7 @@ const Index = () => {
           </div>
 
           {/* Filter Action Buttons and Hidden Events Checkbox */}
-          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center"> {/* Removed mt-4 */}
+          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center">
             {isAdmin && !isViewingAsPublic && (
               <div className="flex items-center gap-2">
                 <Checkbox
