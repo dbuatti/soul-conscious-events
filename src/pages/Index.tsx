@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,8 @@ import EventCalendar from '@/components/EventCalendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useSession } from '@/components/SessionContextProvider'; // Import useSession
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'; // Import Dialog components
+import MeditationTimer from '@/components/MeditationTimer'; // Import the new component
 
 interface Event {
   id: string;
@@ -71,6 +73,8 @@ const Index = () => {
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
+  const [isTimerOpen, setIsTimerOpen] = useState(false); // New state for timer dialog
+
 
   const { user, isLoading: isSessionLoading } = useSession(); // Get user from context
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
@@ -336,6 +340,21 @@ const Index = () => {
               Add New Event
             </Button>
           </Link>
+
+          {/* New: Meditation Timer Button */}
+          <Dialog open={isTimerOpen} onOpenChange={setIsTimerOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
+                <Bell className="mr-2 h-4 w-4" /> Meditation Timer
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Meditation Timer</DialogTitle>
+              </DialogHeader>
+              <MeditationTimer onClose={() => setIsTimerOpen(false)} />
+            </DialogContent>
+          </Dialog>
 
           {/* Right side: Apply, Clear, View Mode */}
           <div className="flex flex-col sm:flex-row gap-4 items-center">

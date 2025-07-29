@@ -620,7 +620,9 @@ const EditEvent = () => {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>
-            {/* Removed DialogDescription to fix compile error */}
+            <DialogDescription> {/* Re-adding DialogDescription */}
+              Review your event details before saving.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             {previewData && (
