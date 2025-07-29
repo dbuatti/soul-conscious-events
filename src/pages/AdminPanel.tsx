@@ -42,7 +42,7 @@ const AdminPanel = () => {
 
   return (
     <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Admin Panel</h2>
+      <h2 className="text-3xl font-bold text-center text-foreground mb-6">Admin Panel</h2>
       <p className="text-center text-gray-600 mb-8">
         Manage contact submissions and events from here.
       </p>
@@ -86,19 +86,19 @@ const AdminPanel = () => {
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {submission.name && (
-                      <p className="text-gray-700">
+                      <p className="text-foreground">
                         <span className="font-medium">From:</span> {submission.name}
                       </p>
                     )}
                     {submission.email && (
-                      <p className="text-gray-700">
+                      <p className="text-foreground">
                         <span className="font-medium">Email:</span>{' '}
                         <a href={`mailto:${submission.email}`} className="text-blue-600 hover:underline">
                           {submission.email}
                         </a>
                       </p>
                     )}
-                    <p className="text-gray-700">
+                    <p className="text-foreground">
                       <span className="font-medium">Message:</span> {submission.message}
                     </p>
                   </CardContent>

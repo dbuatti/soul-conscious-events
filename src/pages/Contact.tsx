@@ -57,7 +57,7 @@ const Contact = () => {
 
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Contact Us</h2>
+      <h2 className="text-3xl font-bold text-center text-foreground mb-6">Contact Us</h2>
       <p className="text-center text-gray-600 mb-8">
         We'd love to hear from you! Please use the form below to send us your suggestions, recommendations, or feedback.
       </p>

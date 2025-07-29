@@ -136,7 +136,7 @@ const EventDetail = () => {
 
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h1 className="text-4xl font-bold text-center text-gray-800 mb-6">{event.event_name}</h1>
+      <h1 className="text-4xl font-bold text-foreground mb-6 text-center">{event.event_name}</h1>
 
       {event.image_url && (
         <div className="mb-6">
@@ -189,7 +189,7 @@ const EventDetail = () => {
         <CardContent className="space-y-4">
           {event.description && (
             <div>
-              <h3 className="font-semibold text-lg text-gray-800 mb-2">Description:</h3>
+              <h3 className="font-semibold text-foreground mb-2">Description:</h3>
               <p className="text-gray-700 whitespace-pre-wrap">{event.description}</p>
             </div>
           )}

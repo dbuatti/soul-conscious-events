@@ -230,7 +230,7 @@ const Index = () => {
 
   return (
     <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h1 className="text-4xl font-bold mb-4 text-gray-800 text-center">Welcome to SoulFlow</h1>
+      <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Welcome to SoulFlow</h1>
       <p className="text-xl text-gray-600 mb-6 text-center">
         Connect with soulful events in your community.
       </p>
@@ -246,7 +246,7 @@ const Index = () => {
 
       {/* Filter and View Options Section */}
       <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Filter Events</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-6">Filter Events</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start">
           {/* Search Input */}
@@ -510,7 +510,7 @@ const Index = () => {
                       <CardContent className="space-y-2">
                         {event.description && (
                           <div>
-                            <p className="text-gray-700">
+                            <p className="text-foreground"> {/* Changed from text-gray-700 */}
                               {expandedDescriptions[event.id] || event.description.length < 150
                                 ? event.description
                                 : `${event.description.substring(0, 150)}...`}
@@ -523,7 +523,7 @@ const Index = () => {
                           </div>
                         )}
                         {event.price && (
-                          <p className="flex items-center text-gray-700">
+                          <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
                             <DollarSign className="mr-2 h-4 w-4 text-green-600" />
                             Price: {event.price}
                             {event.price.toLowerCase() === 'free' && (
@@ -542,19 +542,19 @@ const Index = () => {
                           </div>
                         )}
                         {event.special_notes && (
-                          <p className="flex items-start text-gray-700">
+                          <p className="flex items-start text-foreground"> {/* Changed from text-gray-700 */}
                             <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
                             Special Notes: {event.special_notes}
                           </p>
                         )}
                         {event.organizer_contact && (
-                          <p className="flex items-center text-gray-700">
+                          <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
                             <User className="mr-2 h-4 w-4 text-indigo-500" />
                             Organizer: {event.organizer_contact}
                           </p>
                         )}
                         {event.event_type && (
-                          <p className="flex items-center text-gray-700">
+                          <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
                             <Tag className="mr-2 h-4 w-4 text-pink-500" />
                             Type: {event.event_type}
                           </p>

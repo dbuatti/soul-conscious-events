@@ -238,11 +238,11 @@ const EventManagementTable = () => {
             <TableBody>
               {events.map((event) => (
                 <TableRow key={event.id}>
-                  <TableCell className="font-medium">{event.event_name}</TableCell>
-                  <TableCell>{event.event_date ? format(new Date(event.event_date), 'PPP') : 'N/A'}</TableCell>
-                  <TableCell>{event.event_time || 'N/A'}</TableCell>
-                  <TableCell>{event.place_name || event.full_address || 'N/A'}</TableCell>
-                  <TableCell>{event.event_type || 'N/A'}</TableCell>
+                  <TableCell className="font-medium text-foreground">{event.event_name}</TableCell>
+                  <TableCell className="text-foreground">{event.event_date ? format(new Date(event.event_date), 'PPP') : 'N/A'}</TableCell>
+                  <TableCell className="text-foreground">{event.event_time || 'N/A'}</TableCell>
+                  <TableCell className="text-foreground">{event.place_name || event.full_address || 'N/A'}</TableCell>
+                  <TableCell className="text-foreground">{event.event_type || 'N/A'}</TableCell>
                   {/* Removed Status Cell */}
                   <TableCell className="text-right flex justify-end space-x-2">
                     <Link to={`/events/${event.id}`} target="_blank" rel="noopener noreferrer">

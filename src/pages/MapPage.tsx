@@ -127,7 +127,7 @@ const MapPage = () => {
 
   return (
     <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h1 className="text-4xl font-bold mb-4 text-gray-800 text-center">Event Map</h1>
+      <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Map</h1>
       <p className="text-xl text-gray-600 mb-6 text-center">
         Explore soulful events near you on the map.
       </p>

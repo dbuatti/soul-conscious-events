@@ -19,7 +19,7 @@ const Header = () => {
 
   const getButtonClass = (path: string) => {
     return cn(
-      "text-gray-700 hover:text-purple-700",
+      "text-foreground hover:text-purple-700", // Changed from text-gray-700
       location.pathname === path && "font-bold text-purple-700"
     );
   };

@@ -6,7 +6,7 @@ import { Sparkles, CalendarDays, MapPin, PlusCircle, Edit, MessageSquare } from 
 const About = () => {
   return (
     <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h1 className="text-4xl font-bold text-center text-gray-800 mb-6">About SoulFlow</h1>
+      <h1 className="text-4xl font-bold text-foreground mb-6 text-center">About SoulFlow</h1>
       <p className="text-xl text-gray-600 mb-8 text-center leading-relaxed">
         SoulFlow is a new web application designed to be a central hub for discovering and connecting with soul-nourishing events across Australia.
       </p>

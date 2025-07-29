@@ -142,11 +142,11 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         <CardContent className="space-y-2">
           {event.description && (
             <div>
-              <p className="text-gray-700 line-clamp-3">{event.description}</p>
+              <p className="text-foreground line-clamp-3">{event.description}</p> {/* Changed from text-gray-700 */}
             </div>
           )}
           {event.price && (
-            <p className="flex items-center text-gray-700">
+            <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
               <DollarSign className="mr-2 h-4 w-4 text-green-600" />
               Price: {event.price}
               {event.price.toLowerCase() === 'free' && (
@@ -165,19 +165,19 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             </div>
           )}
           {event.special_notes && (
-            <p className="flex items-start text-gray-700">
+            <p className="flex items-start text-foreground"> {/* Changed from text-gray-700 */}
               <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
               Special Notes: {event.special_notes}
             </p>
           )}
           {event.organizer_contact && (
-            <p className="flex items-center text-gray-700">
+            <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
               <User className="mr-2 h-4 w-4 text-indigo-500" />
               Organizer: {event.organizer_contact}
             </p>
           )}
           {event.event_type && (
-            <p className="flex items-center text-gray-700">
+            <p className="flex items-center text-foreground"> {/* Changed from text-gray-700 */}
               <Tag className="mr-2 h-4 w-4 text-pink-500" />
               Type: {event.event_type}
             </p>
@@ -215,7 +215,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         />
       </div>
       <div className="lg:w-1/2">
-        <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center lg:text-left">
+        <h3 className="text-2xl font-bold text-foreground mb-4 text-center lg:text-left">
           Events on {selectedDate ? format(selectedDate, 'PPP') : 'Selected Date'}
         </h3>
         {eventsOnSelectedDate.length === 0 ? (
@@ -228,7 +228,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
 
         {moreUpcomingEvents.length > 0 && (
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <h4 className="text-xl font-bold text-gray-800 mb-4 text-center lg:text-left">
+            <h4 className="text-xl font-bold text-foreground mb-4 text-center lg:text-left">
               More Upcoming Events
             </h4>
             <div className="space-y-4">

@@ -308,7 +308,7 @@ const EditEvent = () => {
 
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Edit Event</h2>
+      <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Edit Event</h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
