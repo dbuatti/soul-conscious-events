@@ -95,6 +95,10 @@ const EventDetail = () => {
     return null; // Should be handled by navigate('/404')
   }
 
+  const googleMapsLink = event.full_address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
+    : '#';
+
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
       <h1 className="text-4xl font-bold text-center text-gray-800 mb-6">{event.event_name}</h1>
@@ -114,7 +118,14 @@ const EventDetail = () => {
           {(event.full_address) && (
             <CardDescription className="flex items-center text-gray-600 mt-1">
               <MapPin className="mr-2 h-4 w-4 text-red-500" />
-              {event.full_address}
+              <a
+                href={googleMapsLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                {event.full_address}
+              </a>
             </CardDescription>
           )}
           {event.state && (

@@ -82,79 +82,91 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           <p className="text-gray-600 text-center lg:text-left">No events on this date.</p>
         ) : (
           <div className="space-y-4">
-            {filteredEvents.map((event) => (
-              <Card key={event.id} className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
-                  <CardDescription className="flex items-center text-gray-600 mt-1">
-                    {event.event_time && (
-                      <>
-                        <Clock className="mr-2 h-4 w-4 text-green-500" />
-                        {event.event_time}
-                      </>
-                    )}
-                  </CardDescription>
-                  {(event.full_address) && (
+            {filteredEvents.map((event) => {
+              const googleMapsLink = event.full_address
+                ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
+                : '#';
+              return (
+                <Card key={event.id} className="shadow-md">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
                     <CardDescription className="flex items-center text-gray-600 mt-1">
-                      <MapPin className="mr-2 h-4 w-4 text-red-500" />
-                      {event.full_address}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {event.description && (
-                    <div>
-                      <p className="text-gray-700 line-clamp-3">{event.description}</p>
-                    </div>
-                  )}
-                  {event.price && (
-                    <p className="flex items-center text-gray-700">
-                      <DollarSign className="mr-2 h-4 w-4 text-green-600" />
-                      Price: {event.price}
-                      {event.price.toLowerCase() === 'free' && (
-                        <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
+                      {event.event_time && (
+                        <>
+                          <Clock className="mr-2 h-4 w-4 text-green-500" />
+                          {event.event_time}
+                        </>
                       )}
-                    </p>
-                  )}
-                  {event.ticket_link && (
-                    <div className="flex items-center">
-                      <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
-                      <Button asChild variant="link" className="p-0 h-auto text-blue-600">
-                        <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
-                          Ticket/Booking Link
+                    </CardDescription>
+                    {(event.full_address) && (
+                      <CardDescription className="flex items-center text-gray-600 mt-1">
+                        <MapPin className="mr-2 h-4 w-4 text-red-500" />
+                        <a
+                          href={googleMapsLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {event.full_address}
                         </a>
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {event.description && (
+                      <div>
+                        <p className="text-gray-700 line-clamp-3">{event.description}</p>
+                      </div>
+                    )}
+                    {event.price && (
+                      <p className="flex items-center text-gray-700">
+                        <DollarSign className="mr-2 h-4 w-4 text-green-600" />
+                        Price: {event.price}
+                        {event.price.toLowerCase() === 'free' && (
+                          <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
+                        )}
+                      </p>
+                    )}
+                    {event.ticket_link && (
+                      <div className="flex items-center">
+                        <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
+                        <Button asChild variant="link" className="p-0 h-auto text-blue-600">
+                          <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
+                            Ticket/Booking Link
+                          </a>
+                        </Button>
+                      </div>
+                    )}
+                    {event.special_notes && (
+                      <p className="flex items-start text-gray-700">
+                        <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
+                        Special Notes: {event.special_notes}
+                      </p>
+                    )}
+                    {event.organizer_contact && (
+                      <p className="flex items-center text-gray-700">
+                        <User className="mr-2 h-4 w-4 text-indigo-500" />
+                        Organizer: {event.organizer_contact}
+                      </p>
+                    )}
+                    {event.event_type && (
+                      <p className="flex items-center text-gray-700">
+                        <Tag className="mr-2 h-4 w-4 text-pink-500" />
+                        Type: {event.event_type}
+                      </p>
+                    )}
+                    <div className="flex justify-end space-x-2 mt-4">
+                      <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
+                        <Share2 className="mr-2 h-4 w-4" /> Share
                       </Button>
+                      <Link to={`/events/${event.id}`}>
+                        <Button size="sm">View Details</Button>
+                      </Link>
                     </div>
-                  )}
-                  {event.special_notes && (
-                    <p className="flex items-start text-gray-700">
-                      <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
-                      Special Notes: {event.special_notes}
-                    </p>
-                  )}
-                  {event.organizer_contact && (
-                    <p className="flex items-center text-gray-700">
-                      <User className="mr-2 h-4 w-4 text-indigo-500" />
-                      Organizer: {event.organizer_contact}
-                    </p>
-                  )}
-                  {event.event_type && (
-                    <p className="flex items-center text-gray-700">
-                      <Tag className="mr-2 h-4 w-4 text-pink-500" />
-                      Type: {event.event_type}
-                    </p>
-                  )}
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
-                      <Share2 className="mr-2 h-4 w-4" /> Share
-                    </Button>
-                    <Link to={`/events/${event.id}`}>
-                      <Button size="sm">View Details</Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
