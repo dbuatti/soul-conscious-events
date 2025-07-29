@@ -56,7 +56,7 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string;
+  state?: string; // Added state to interface
   image_url?: string;
 }
 
@@ -77,7 +77,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  state: z.string().optional().or(z.literal('')),
+  state: z.string().optional().or(z.literal('')), // Added state to schema
   image_url: z.string().optional().or(z.literal('')), // For displaying current image URL
 });
 
@@ -189,7 +189,7 @@ const EventManagementTable = () => {
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
         event_type: values.eventType || null,
-        state: values.state || null,
+        state: values.state || null, // Allow state to be updated from the form
         // image_url is not updated via this form, it's just displayed
       })
       .eq('id', values.id);

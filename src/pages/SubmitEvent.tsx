@@ -38,6 +38,23 @@ const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
 ];
 
+interface Event {
+  id: string;
+  event_name: string;
+  event_date: string;
+  event_time?: string;
+  place_name?: string;
+  full_address?: string;
+  description?: string;
+  ticket_link?: string;
+  price?: string;
+  special_notes?: string;
+  organizer_contact?: string;
+  event_type?: string;
+  state?: string; // Added state to interface
+  image_url?: string;
+}
+
 const eventFormSchema = z.object({
   eventName: z.string().min(2, {
     message: 'Event name must be at least 2 characters.',
@@ -54,7 +71,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional(),
   organizerContact: z.string().optional(),
   eventType: z.string().optional(),
-  state: z.string().optional(),
+  state: z.string().optional(), // Added state to schema
   imageFile: z.any().optional(),
 });
 
@@ -92,7 +109,7 @@ const SubmitEvent = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      state: '',
+      state: 'pending', // Set default state to 'pending'
     },
   });
 
@@ -216,7 +233,7 @@ const SubmitEvent = () => {
         special_notes: values.specialNotes,
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
-        state: values.state,
+        state: values.state || 'pending', // Ensure state is set, default to 'pending'
         user_id: user?.id || null, // Associate event with the logged-in user if available, otherwise null
         image_url: imageUrl,
       },
@@ -475,7 +492,7 @@ const SubmitEvent = () => {
             name="eventType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Event Type</FormLabel>
+                <FormLabel>Event Type</FormLabel> {/* Corrected closing tag */}
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
