@@ -5,7 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>dyad-generated-app</title>
     <!-- Google Maps JavaScript SDK for Places Autocomplete -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOhxn3A2qu5e9VJHamFCRdwAZzV9r4424&libraries=places"></script>
+    <script>
+      // Dynamically load Google Maps API key from environment variable
+      const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      if (googleMapsApiKey) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      } else {
+        console.error("Google Maps API Key is not defined. Please ensure VITE_GOOGLE_MAPS_API_KEY is set in your environment variables.");
+      }
+    </script>
   </head>
 
   <body>
