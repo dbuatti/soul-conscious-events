@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -100,6 +100,8 @@ const EditEvent = () => {
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const placeNameInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -154,6 +156,7 @@ const EditEvent = () => {
           eventType: data.event_type || '',
           image_url: data.image_url || '',
         });
+        setImagePreviewUrl(data.image_url || null); // Set initial preview URL
       } else {
         navigate('/404');
       }
@@ -186,14 +189,22 @@ const EditEvent = () => {
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setSelectedImage(event.target.files[0]);
-      form.setValue('imageFile', event.target.files[0]);
-      form.setValue('image_url', URL.createObjectURL(event.target.files[0])); // Update preview URL
+      const file = event.target.files[0];
+      setSelectedImage(file);
+      setImagePreviewUrl(URL.createObjectURL(file)); // Update preview URL
+      form.setValue('imageFile', file);
     } else {
       setSelectedImage(null);
+      setImagePreviewUrl(currentEvent?.image_url || null); // Revert to original if cleared
       form.setValue('imageFile', undefined);
-      form.setValue('image_url', currentEvent?.image_url || ''); // Revert to original if cleared
     }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreviewUrl(null);
+    form.setValue('imageFile', undefined);
+    form.setValue('image_url', ''); // Explicitly clear the image_url in the form state
   };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
@@ -567,30 +578,22 @@ const EditEvent = () => {
                     "
                   />
                 </FormControl>
-                {(selectedImage || form.watch('image_url')) && (
+                {imagePreviewUrl && (
                   <div className="mt-2 flex items-center space-x-2">
                     <ImageIcon className="h-5 w-5 text-gray-500" />
                     <span className="text-sm text-gray-600">
                       {selectedImage ? selectedImage.name : 'Current Image'}
                     </span>
+                    <img src={imagePreviewUrl} alt="Current Event Image" className="ml-4 h-20 w-20 object-cover rounded-md border border-gray-200 shadow-md" />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        setSelectedImage(null);
-                        form.setValue('imageFile', undefined);
-                        form.setValue('image_url', ''); // Clear image URL
-                      }}
+                      onClick={handleRemoveImage}
                       className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
                     >
                       Remove
                     </Button>
-                  </div>
-                )}
-                {form.watch('image_url') && !selectedImage && (
-                  <div className="mt-2">
-                    <img src={form.watch('image_url')} alt="Current Event Image" className="max-w-full h-32 object-contain rounded-md border border-gray-200" />
                   </div>
                 )}
                 <FormMessage />
@@ -617,17 +620,15 @@ const EditEvent = () => {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>
-            <DialogDescription>
-              Review your event details before saving.
-            </DialogDescription>
+            {/* Removed DialogDescription to fix compile error */}
           </DialogHeader>
           <div className="grid gap-4 py-4">
             {previewData && (
               <>
-                {(selectedImage || previewData.image_url) && (
+                {imagePreviewUrl && (
                   <div className="col-span-full flex justify-center mb-4">
                     <img
-                      src={selectedImage ? URL.createObjectURL(selectedImage) : previewData.image_url || ''}
+                      src={imagePreviewUrl}
                       alt="Event Preview"
                       className="max-w-full h-auto rounded-lg shadow-lg"
                     />

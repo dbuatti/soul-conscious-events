@@ -96,6 +96,8 @@ const SubmitEvent = () => {
   const [aiText, setAiText] = useState('');
   const [isAiParsing, setIsAiParsing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -181,10 +183,13 @@ const SubmitEvent = () => {
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setSelectedImage(event.target.files[0]);
-      form.setValue('imageFile', event.target.files[0]);
+      const file = event.target.files[0];
+      setSelectedImage(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
+      form.setValue('imageFile', file);
     } else {
       setSelectedImage(null);
+      setImagePreviewUrl(null);
       form.setValue('imageFile', undefined);
     }
   };
@@ -247,6 +252,7 @@ const SubmitEvent = () => {
       form.reset();
       setAiText('');
       setSelectedImage(null);
+      setImagePreviewUrl(null);
       navigate('/');
     }
   };
@@ -551,10 +557,11 @@ const SubmitEvent = () => {
                     "
                   />
                 </FormControl>
-                {selectedImage && (
+                {imagePreviewUrl && (
                   <div className="mt-2 flex items-center space-x-2">
                     <ImageIcon className="h-5 w-5 text-gray-500" />
-                    <span className="text-sm text-gray-600">{selectedImage.name}</span>
+                    <span className="text-sm text-gray-600">{selectedImage?.name}</span>
+                    <img src={imagePreviewUrl} alt="Image Preview" className="ml-4 h-20 w-20 object-cover rounded-md shadow-md" />
                   </div>
                 )}
                 <FormMessage />
@@ -588,10 +595,10 @@ const SubmitEvent = () => {
           <div className="grid gap-4 py-4">
             {previewData && (
               <>
-                {selectedImage && (
+                {imagePreviewUrl && (
                   <div className="col-span-full flex justify-center mb-4">
                     <img
-                      src={URL.createObjectURL(selectedImage)}
+                      src={imagePreviewUrl}
                       alt="Event Preview"
                       className="max-w-full h-auto rounded-lg shadow-lg"
                     />
