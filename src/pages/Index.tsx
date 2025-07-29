@@ -320,7 +320,7 @@ const Index = () => {
           </div>
 
           {/* Filter Action Buttons and Hidden Events Checkbox */}
-          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4">
+          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center"> {/* Removed mt-4 */}
             {isAdmin && !isViewingAsPublic && (
               <div className="flex items-center gap-2">
                 <Checkbox
