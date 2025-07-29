@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Play, Pause, RotateCcw, FastForward, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { playSimpleSound } from '@/utils/audio'; // Import the sound utility
+import { playStartSound, playFinishSound, playResetSound } from '@/utils/audio';
 
 interface PomodoroTimerProps {
   onClose?: () => void;
@@ -13,46 +13,31 @@ interface PomodoroTimerProps {
 type PomodoroPhase = 'work' | 'shortBreak' | 'longBreak';
 
 const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
-  const defaultWorkDuration = 25; // minutes
-  const defaultShortBreakDuration = 5; // minutes
-  const defaultLongBreakDuration = 15; // minutes
+  const defaultWorkDuration = 25;
+  const defaultShortBreakDuration = 5;
+  const defaultLongBreakDuration = 15;
   const pomodorosBeforeLongBreak = 4;
 
   const [workDuration, setWorkDuration] = useState(defaultWorkDuration);
   const [shortBreakDuration, setShortBreakDuration] = useState(defaultShortBreakDuration);
   const [longBreakDuration, setLongBreakDuration] = useState(defaultLongBreakDuration);
 
-  const [timeRemaining, setTimeRemaining] = useState(defaultWorkDuration * 60); // seconds
+  const [timeRemaining, setTimeRemaining] = useState(defaultWorkDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [currentPhase, setCurrentPhase] = useState<PomodoroPhase>('work');
-  const [pomodoroCount, setPomodoroCount] = useState(0); // Completed work sessions
-  const [isStarted, setIsStarted] = useState(false); // To differentiate initial state from paused
+  const [pomodoroCount, setPomodoroCount] = useState(0);
+  const [isStarted, setIsStarted] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Define distinct sounds for different phases
-  const playWorkSound = useCallback(() => {
-    playSimpleSound({ frequency: 880, duration: 0.2, volume: 0.5, type: 'sine', attack: 0.02, decay: 0.1 }); // Higher pitch, sharp start
-  }, []);
-
-  const playBreakSound = useCallback(() => {
-    playSimpleSound({ frequency: 660, duration: 0.5, volume: 0.4, type: 'sine', attack: 0.05, decay: 0.3 }); // Softer, more relaxing chime
-  }, []);
 
   const startTimer = useCallback(() => {
     setIsRunning(true);
     if (!isStarted) {
       setIsStarted(true);
-      // Play sound based on the current phase
-      if (currentPhase === 'work') {
-        playWorkSound();
-        toast.info('Work session started!');
-      } else {
-        playBreakSound();
-        toast.info(`${currentPhase === 'shortBreak' ? 'Short' : 'Long'} break started!`);
-      }
+      playStartSound();
+      toast.info(`${currentPhase === 'work' ? 'Work' : 'Break'} session started!`);
     }
-  }, [isStarted, currentPhase, playWorkSound, playBreakSound]);
+  }, [isStarted, currentPhase]);
 
   const pauseTimer = useCallback(() => {
     setIsRunning(false);
@@ -70,15 +55,13 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
     setCurrentPhase('work');
     setPomodoroCount(0);
     setIsStarted(false);
+    playResetSound();
     toast.info('Pomodoro timer reset.');
-    // Play a neutral reset sound
-    playSimpleSound({ frequency: 440, duration: 0.15, volume: 0.3, type: 'square', attack: 0.01, decay: 0.05 });
-  }, [pauseTimer, defaultWorkDuration, defaultShortBreakDuration, defaultLongBreakDuration, playSimpleSound]);
+  }, [pauseTimer, defaultWorkDuration, defaultShortBreakDuration, defaultLongBreakDuration]);
 
   const nextPhase = useCallback(() => {
     pauseTimer();
-    // Play a transition sound
-    playSimpleSound({ frequency: 770, duration: 0.3, volume: 0.4, type: 'sine', attack: 0.02, decay: 0.15 });
+    playFinishSound();
 
     if (currentPhase === 'work') {
       setPomodoroCount((prevCount) => prevCount + 1);
@@ -86,21 +69,18 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
         setCurrentPhase('longBreak');
         setTimeRemaining(longBreakDuration * 60);
         toast.success('Work session complete! Starting long break.');
-        playBreakSound(); // Play break sound for the new phase
       } else {
         setCurrentPhase('shortBreak');
         setTimeRemaining(shortBreakDuration * 60);
         toast.success('Work session complete! Starting short break.');
-        playBreakSound(); // Play break sound for the new phase
       }
     } else {
       setCurrentPhase('work');
       setTimeRemaining(workDuration * 60);
       toast.info('Break complete! Starting work session.');
-      playWorkSound(); // Play work sound for the new phase
     }
-    setIsStarted(false); // Reset isStarted to allow bell sound on next auto-start
-  }, [currentPhase, pomodoroCount, workDuration, shortBreakDuration, longBreakDuration, pauseTimer, playSimpleSound, playWorkSound, playBreakSound, pomodorosBeforeLongBreak]);
+    setIsStarted(false);
+  }, [currentPhase, pomodoroCount, workDuration, shortBreakDuration, longBreakDuration, pauseTimer, pomodorosBeforeLongBreak]);
 
   useEffect(() => {
     if (isRunning && timeRemaining > 0) {
@@ -108,7 +88,6 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
         setTimeRemaining((prevTime) => prevTime - 1);
       }, 1000);
     } else if (timeRemaining === 0 && isRunning) {
-      // Timer finished for current phase
       nextPhase();
     }
 
@@ -127,7 +106,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
 
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<number>>) => {
     const value = Number(e.target.value);
-    if (value >= 1 || e.target.value === '') { // Allow empty string for temporary input clearing
+    if (value >= 1 || e.target.value === '') {
       setter(value);
     }
   };
@@ -139,14 +118,12 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
         setter(defaultValue);
         toast.warning('Duration must be at least 1 minute. Resetting to default.');
       }
-      // If it's the work phase and not running, update timeRemaining immediately
       if (currentPhase === 'work' && !isRunning && !isStarted) {
         setTimeRemaining(workDuration * 60);
       }
     };
   };
 
-  // Determine visual style based on current phase
   const getPhaseStyles = () => {
     switch (currentPhase) {
       case 'work':
@@ -186,7 +163,6 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
     <div className={`p-6 bg-white rounded-lg shadow-lg border ${border} max-w-md mx-auto`}>
       <h2 className="text-2xl font-bold text-center text-foreground mb-4">Pomodoro Timer</h2>
       
-      {/* Phase Indicator */}
       <div className={`mb-6 p-4 rounded-lg ${bg} border ${border} text-center`}>
         <div className="flex items-center justify-center mb-2">
           {icon}

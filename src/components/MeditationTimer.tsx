@@ -4,33 +4,31 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Play, Pause, RotateCcw, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { playSimpleSound } from '@/utils/audio'; // Import the sound utility
+import { playStartSound, playFinishSound, playResetSound } from '@/utils/audio';
 
 interface MeditationTimerProps {
-  onClose?: () => void; // Optional callback to close the timer, e.g., if in a dialog
+  onClose?: () => void;
 }
 
 const MeditationTimer: React.FC<MeditationTimerProps> = ({ onClose }) => {
-  const [duration, setDuration] = useState(1); // Duration in minutes
-  const [timeRemaining, setTimeRemaining] = useState(0); // Time in seconds
+  const [duration, setDuration] = useState(1);
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [isStarted, setIsStarted] = useState(false); // To differentiate between initial state and paused state
+  const [isStarted, setIsStarted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isRunning && timeRemaining > 0) {
       intervalRef.current = setInterval(() => {
-        setTimeRemaining((prevTime) => prevTime - 1);
+        setTimeRemaining((prev) => prev - 1);
       }, 1000);
     } else if (timeRemaining === 0 && isStarted) {
-      // Timer finished
       setIsRunning(false);
       setIsStarted(false);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      // Play a longer, more resonant bell for the end of meditation
-      playSimpleSound({ frequency: 523.25, duration: 1, volume: 0.6, type: 'sine', attack: 0.05, decay: 0.5 }); // C5 note
+      playFinishSound();
       toast.success('Meditation session complete!');
     }
 
@@ -49,15 +47,13 @@ const MeditationTimer: React.FC<MeditationTimerProps> = ({ onClose }) => {
       }
     } else {
       if (!isStarted) {
-        // First start
         if (duration <= 0) {
           toast.error('Please set a duration greater than 0 minutes.');
           return;
         }
         setTimeRemaining(duration * 60);
         setIsStarted(true);
-        // Play a standard bell for the start of meditation
-        playSimpleSound({ frequency: 440, duration: 0.3, volume: 0.5, type: 'sine', attack: 0.02, decay: 0.1 });
+        playStartSound();
         toast.info('Meditation started!');
       }
       setIsRunning(true);
@@ -71,8 +67,7 @@ const MeditationTimer: React.FC<MeditationTimerProps> = ({ onClose }) => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    // Play a short, clear sound for reset
-    playSimpleSound({ frequency: 660, duration: 0.15, volume: 0.4, type: 'sine', attack: 0.01, decay: 0.05 }); // E5 note
+    playResetSound();
     toast.info('Timer reset.');
   };
 
