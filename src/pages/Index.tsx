@@ -450,6 +450,9 @@ const Index = () => {
             events.length === 0 ? null : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {events.map((event) => {
+                  // Temporary console log for debugging
+                  console.log(`Event ID: ${event.id}, Start Date: ${event.event_date}, End Date: ${event.end_date}`);
+
                   const googleMapsLink = event.full_address
                     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
                     : '#';

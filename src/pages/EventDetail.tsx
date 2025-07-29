@@ -14,6 +14,7 @@ interface Event {
   id: string;
   event_name: string;
   event_date: string;
+  end_date?: string; // Added end_date
   event_time?: string;
   place_name?: string;
   full_address?: string;
@@ -121,6 +122,18 @@ const EventDetail = () => {
 
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
+  const formattedStartDate = event.event_date
+    ? format(new Date(event.event_date), 'PPP')
+    : 'Date TBD';
+  const formattedEndDate = event.end_date
+    ? format(new Date(event.end_date), 'PPP')
+    : '';
+
+  const dateDisplay =
+    event.end_date && event.event_date !== event.end_date
+      ? `${formattedStartDate} - ${formattedEndDate}`
+      : formattedStartDate;
+
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
       <h1 className="text-4xl font-bold text-center text-gray-800 mb-6">{event.event_name}</h1>
@@ -139,7 +152,7 @@ const EventDetail = () => {
         <CardHeader>
           <CardDescription className="flex items-center text-gray-600 mt-2">
             <Calendar className="mr-2 h-4 w-4 text-blue-500" />
-            {event.event_date ? format(new Date(event.event_date), 'PPP') : 'Date TBD'}
+            {dateDisplay}
             {event.event_time && (
               <>
                 <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
