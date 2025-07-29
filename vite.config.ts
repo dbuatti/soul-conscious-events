@@ -6,7 +6,7 @@ import { defineConfig } from "vite";
     export default defineConfig(() => ({
       server: {
         host: "::",
-        port: 32100, // Changed port to 32100
+        port: 32100,
       },
       plugins: [dyadComponentTagger(), react()],
       resolve: {
@@ -14,7 +14,5 @@ import { defineConfig } from "vite";
           "@": path.resolve(__dirname, "./src"),
         },
       },
-      define: {
-        'import.meta.env.VITE_GOOGLE_MAPS_API_KEY': JSON.stringify("AIzaSyBIAYKFIlCYLkU2qb9k1svA7rLKvAve71I"),
-      },
+      // Removed the define block for VITE_GOOGLE_MAPS_API_KEY
     }));
