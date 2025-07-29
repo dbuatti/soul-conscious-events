@@ -21,6 +21,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialogFooter, // Added this import
+} from '@/components/ui/alert-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -135,16 +146,14 @@ const EventManagementTable = () => {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      const { error } = await supabase.from('events').delete().eq('id', id);
+    const { error } = await supabase.from('events').delete().eq('id', id);
 
-      if (error) {
-        console.error('Error deleting event:', error);
-        toast.error('Failed to delete event.');
-      } else {
-        toast.success('Event deleted successfully!');
-        fetchEvents(); // Re-fetch events to update the list
-      }
+    if (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Failed to delete event.');
+    } else {
+      toast.success('Event deleted successfully!');
+      fetchEvents(); // Re-fetch events to update the list
     }
   };
 
@@ -188,7 +197,6 @@ const EventManagementTable = () => {
         price: values.price || null,
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
-        event_type: values.eventType || null,
         state: currentEvent?.state || 'approved', // Use existing state or default to 'approved'
       })
       .eq('id', values.id);
@@ -253,9 +261,26 @@ const EventManagementTable = () => {
                     <Button variant="outline" size="sm" onClick={() => handleEdit(event)} title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)} title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the event
+                            and remove its data from our servers.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(event.id)}>Continue</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}

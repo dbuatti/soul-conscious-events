@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -263,6 +263,14 @@ const SubmitEvent = () => {
     setIsPreviewOpen(true);
   };
 
+  const handleClearForm = () => {
+    form.reset();
+    setAiText('');
+    setSelectedImage(null);
+    setImagePreviewUrl(null);
+    toast.info('Form cleared!');
+  };
+
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Submit an Event</h2>
@@ -486,7 +494,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Special Notes</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="e.g., discount code: community, bring a blanket" {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -560,7 +568,7 @@ const SubmitEvent = () => {
                 {imagePreviewUrl && (
                   <div className="mt-2 flex items-center space-x-2">
                     <ImageIcon className="h-5 w-5 text-gray-500" />
-                    <span className="text-sm text-gray-600">{selectedImage?.name}</span>
+                    <span className="text-sm text-gray-600">{selectedImage?.name || 'Image selected'}</span>
                     <img src={imagePreviewUrl} alt="Image Preview" className="ml-4 h-20 w-20 object-cover rounded-md shadow-md" />
                   </div>
                 )}
@@ -570,6 +578,9 @@ const SubmitEvent = () => {
           />
 
           <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={handleClearForm} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              <XCircle className="mr-2 h-4 w-4" /> Clear Form
+            </Button>
             <Button type="button" variant="outline" onClick={() => navigate('/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Back to Events
             </Button>

@@ -9,6 +9,17 @@ import { format } from 'date-fns';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Event {
   id: string;
@@ -77,16 +88,14 @@ const EventDetail = () => {
 
   const handleDelete = async () => {
     if (!event) return;
-    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-      const { error } = await supabase.from('events').delete().eq('id', event.id);
+    const { error } = await supabase.from('events').delete().eq('id', event.id);
 
-      if (error) {
-        console.error('Error deleting event:', error);
-        toast.error('Failed to delete event.');
-      } else {
-        toast.success('Event deleted successfully!');
-        navigate('/'); // Redirect to home page after deletion
-      }
+    if (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Failed to delete event.');
+    } else {
+      toast.success('Event deleted successfully!');
+      navigate('/'); // Redirect to home page after deletion
     }
   };
 
@@ -245,9 +254,26 @@ const EventDetail = () => {
             <Button variant="outline" onClick={() => navigate(`/edit-event/${event.id}`)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               <Edit className="mr-2 h-4 w-4" /> Edit
             </Button>
-            <Button variant="destructive" onClick={handleDelete} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your event
+                    and remove its data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
       </div>
