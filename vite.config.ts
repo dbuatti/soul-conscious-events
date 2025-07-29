@@ -14,5 +14,7 @@ import { defineConfig } from "vite";
           "@": path.resolve(__dirname, "./src"),
         },
       },
-      // Removed the define block for VITE_GOOGLE_MAPS_API_KEY
+      define: {
+        'import.meta.env.VITE_GOOGLE_MAPS_API_KEY': JSON.stringify("AIzaSyBIAYKFIlCYLkU2qb9k1svA7rLKvAve71I"),
+      },
     }));
