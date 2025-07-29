@@ -238,12 +238,19 @@ const Index = () => {
         </p>
       </div>
 
-      {/* Removed the standalone "Add New Event" button here */}
-
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">SoulFlow Events</h2>
-
       {/* Filter and View Options Section */}
       <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+        {/* Add New Event Button - Moved to top-left of filter section */}
+        <div className="mb-6">
+          <Link to="/submit-event">
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
+              Add New Event
+            </Button>
+          </Link>
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Filter Events</h2> {/* New heading for filter section */}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start">
           {/* Search Input */}
           <div className="relative col-span-full">
@@ -251,7 +258,7 @@ const Index = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               id="search-events"
-              placeholder="Search by name, description, organizer, address, or place name..."
+              placeholder="Search events..."
               className="pl-9 w-full"
               value={draftSearchTerm}
               onChange={(e) => setDraftSearchTerm(e.target.value)}
@@ -324,14 +331,7 @@ const Index = () => {
           </div>
 
           {/* Filter Action Buttons and Hidden Events Checkbox */}
-          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-between items-center mt-4 pt-4 border-t border-gray-200"> {/* Added border-t and pt-4 for separation */}
-            {/* Add New Event Button - Moved here */}
-            <Link to="/submit-event">
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
-                Add New Event
-              </Button>
-            </Link>
-
+          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4 pt-4 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row gap-4 items-center"> {/* Grouped right-aligned elements */}
               {isAdmin && !isViewingAsPublic && (
                 <div className="flex items-center gap-2">
@@ -428,6 +428,17 @@ const Index = () => {
         )}
       </div>
 
+      {/* Event Count Display */}
+      <p className="text-center text-gray-700 mb-4">
+        {loading ? (
+          <Skeleton className="h-5 w-48 mx-auto" />
+        ) : events.length === 0 ? (
+          'No events found matching your criteria.'
+        ) : (
+          `Showing ${events.length} event${events.length === 1 ? '' : 's'}.`
+        )}
+      </p>
+
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
@@ -452,9 +463,7 @@ const Index = () => {
       ) : (
         <>
           {viewMode === 'list' ? (
-            events.length === 0 ? (
-              <p className="text-center text-gray-600">No events found matching your criteria.</p>
-            ) : (
+            events.length === 0 ? null : ( // Removed "No events found" here as it's handled by the count display
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {events.map((event) => {
                   const googleMapsLink = event.full_address
