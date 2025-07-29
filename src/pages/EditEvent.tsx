@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -281,7 +281,7 @@ const EditEvent = () => {
 
     if (error) {
       console.error('Error updating event:', error);
-      toast.error('Failed to update event. Please try again.');
+      toast.error('Failed to update event.');
     } else {
       toast.success('Event updated successfully!');
       navigate(`/events/${id}`);
@@ -586,11 +586,7 @@ const EditEvent = () => {
                 </FormControl>
                 {imagePreviewUrl && (
                   <div className="mt-2 flex items-center space-x-2">
-                    <ImageIcon className="h-5 w-5 text-gray-500" />
-                    <span className="text-sm text-gray-600">
-                      {selectedImage ? selectedImage.name : 'Current Image'}
-                    </span>
-                    <img src={imagePreviewUrl} alt="Current Event Image" className="ml-4 h-20 w-20 object-cover rounded-md border border-gray-200 shadow-md" />
+                    <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-gray-200 shadow-md" />
                     <Button
                       type="button"
                       variant="ghost"
@@ -598,7 +594,7 @@ const EditEvent = () => {
                       onClick={handleRemoveImage}
                       className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
                     >
-                      Remove
+                      <XCircle className="mr-1 h-4 w-4" /> Remove
                     </Button>
                   </div>
                 )}

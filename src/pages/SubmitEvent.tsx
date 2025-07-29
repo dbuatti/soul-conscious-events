@@ -93,8 +93,8 @@ const SubmitEvent = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const placeNameInputRef = useRef<HTMLInputElement>(null);
-  const [aiText, setAiText] = useState('');
-  const [isAiParsing, setIsAiParsing] = useState(false);
+  const [aiText, setAiText] = useState(''); // Declared aiText
+  const [isAiParsing, setIsAiParsing] = useState(false); // Declared isAiParsing
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
@@ -192,6 +192,14 @@ const SubmitEvent = () => {
       setImagePreviewUrl(null);
       form.setValue('imageFile', undefined);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreviewUrl(null);
+    form.setValue('imageFile', undefined);
+    // If you also have an image_url field in your form schema for existing images, clear it here too
+    // form.setValue('image_url', ''); 
   };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
@@ -573,9 +581,16 @@ const SubmitEvent = () => {
                 </FormControl>
                 {imagePreviewUrl && (
                   <div className="mt-2 flex items-center space-x-2">
-                    <ImageIcon className="h-5 w-5 text-gray-500" />
-                    <span className="text-sm text-gray-600">{selectedImage?.name || 'Image selected'}</span>
-                    <img src={imagePreviewUrl} alt="Image Preview" className="ml-4 h-20 w-20 object-cover rounded-md shadow-md" />
+                    <img src={imagePreviewUrl} alt="Image Preview" className="h-20 w-20 object-cover rounded-md shadow-md border border-gray-200" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveImage}
+                      className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
+                    >
+                      <XCircle className="mr-1 h-4 w-4" /> Remove
+                    </Button>
                   </div>
                 )}
                 <FormMessage />

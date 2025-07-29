@@ -124,8 +124,9 @@ const MapPage = () => {
     return (
       <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col items-center justify-center min-h-[500px]">
         <Skeleton className="h-10 w-1/2 mb-6" />
-        <Skeleton className="w-full h-96 rounded-lg" />
-        <Skeleton className="h-6 w-1/4 mt-6" />
+        <Skeleton className="w-full h-96 rounded-lg mb-4" />
+        <Skeleton className="h-6 w-1/4" />
+        <Skeleton className="h-4 w-3/4 mt-2" />
       </div>
     );
   }
