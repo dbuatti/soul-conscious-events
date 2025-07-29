@@ -161,8 +161,8 @@ const Index = () => {
 
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">SoulFlow Events</h2>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center">
-        <div className="relative flex-grow">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 mb-6 items-start">
+        <div className="relative flex-grow w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Search events..."
@@ -171,56 +171,73 @@ const Index = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Select onValueChange={setSelectedEventType} value={selectedEventType}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Filter by type" />
-          </SelectTrigger>
-          <SelectContent>
-            {eventTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select onValueChange={setSelectedState} value={selectedState}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Filter by state" />
-          </SelectTrigger>
-          <SelectContent>
-            {australianStates.map((state) => (
-              <SelectItem key={state} value={state}>
-                {state}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select onValueChange={setSelectedDateFilter} value={selectedDateFilter}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Filter by date" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All Upcoming">All Upcoming</SelectItem>
-            <SelectItem value="Today">Today</SelectItem>
-            <SelectItem value="This Week">This Week</SelectItem>
-            <SelectItem value="This Month">This Month</SelectItem>
-            <SelectItem value="Past Events">Past Events</SelectItem>
-            <SelectItem value="All Events">All Events</SelectItem>
-          </SelectContent>
-        </Select>
+
+        <div className="flex flex-col gap-1 w-full sm:w-[180px]">
+          <span className="text-sm font-medium text-gray-700">Event Type:</span>
+          <Select onValueChange={setSelectedEventType} value={selectedEventType}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              {eventTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex flex-col gap-1 w-full sm:w-[180px]">
+          <span className="text-sm font-medium text-gray-700">State:</span>
+          <Select onValueChange={setSelectedState} value={selectedState}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All States" />
+            </SelectTrigger>
+            <SelectContent>
+              {australianStates.map((state) => (
+                <SelectItem key={state} value={state}>
+                  {state}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex flex-col gap-1 w-full sm:w-[180px]">
+          <span className="text-sm font-medium text-gray-700">Date Range:</span>
+          <Select onValueChange={setSelectedDateFilter} value={selectedDateFilter}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Upcoming" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Upcoming">All Upcoming</SelectItem>
+              <SelectItem value="Today">Today</SelectItem>
+              <SelectItem value="This Week">This Week</SelectItem>
+              <SelectItem value="This Month">This Month</SelectItem>
+              <SelectItem value="Past Events">Past Events</SelectItem>
+              <SelectItem value="All Events">All Events</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {(searchTerm || selectedEventType !== 'All' || selectedState !== 'All' || selectedDateFilter !== 'All Upcoming') && (
-          <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+          <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto self-end">
             Clear Filters
           </Button>
         )}
-        <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
-          <ToggleGroupItem value="list" aria-label="Toggle list view">
-            <List className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="calendar" aria-label="Toggle calendar view">
-            <CalendarDays className="h-4 w-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+
+        <div className="flex flex-col gap-1 w-full sm:w-auto self-end">
+          <span className="text-sm font-medium text-gray-700 sr-only sm:not-sr-only">View:</span>
+          <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
+            <ToggleGroupItem value="list" aria-label="Toggle list view">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="calendar" aria-label="Toggle calendar view">
+              <CalendarDays className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
 
       {loading ? (
