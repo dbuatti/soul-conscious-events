@@ -351,7 +351,13 @@ const SubmitEvent = () => {
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          // If endDate is not set, set it to the same as eventDate
+                          if (date && !form.getValues('endDate')) {
+                            form.setValue('endDate', date);
+                          }
+                        }}
                         initialFocus
                       />
                     </PopoverContent>

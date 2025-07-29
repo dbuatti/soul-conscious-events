@@ -104,14 +104,17 @@ const EventDetail = () => {
       <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
+        <div className="mb-6">
+          <Skeleton className="w-full h-64 object-cover rounded-lg shadow-lg" />
+        </div>
         <div className="space-y-4">
           <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
           <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-1/2" />
         </div>
         <div className="flex justify-end mt-8 space-x-2">
           <Skeleton className="h-10 w-24" />
