@@ -42,6 +42,7 @@ interface Event {
   id: string;
   event_name: string;
   event_date: string;
+  end_date?: string; // Added end_date
   event_time?: string;
   place_name?: string;
   full_address?: string;
@@ -62,6 +63,7 @@ const eventFormSchema = z.object({
   eventDate: z.date({
     required_error: 'A date is required.',
   }),
+  endDate: z.date().optional(), // Added endDate to schema
   eventTime: z.string().optional(),
   placeName: z.string().optional(),
   fullAddress: z.string().optional(),
@@ -71,7 +73,6 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional(),
   organizerContact: z.string().optional(),
   eventType: z.string().optional(),
-  // Removed state from schema as it's now automatically set to 'approved'
   imageFile: z.any().optional(),
 });
 
@@ -88,7 +89,7 @@ const eventTypes = [
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
-  const { user } = useSession(); // Still useSession to potentially link event to user if logged in
+  const { user } = useSession();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const placeNameInputRef = useRef<HTMLInputElement>(null);
@@ -109,7 +110,6 @@ const SubmitEvent = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      // state: 'pending', // Removed default state as it's now 'approved'
     },
   });
 
@@ -156,6 +156,7 @@ const SubmitEvent = () => {
         // Map parsed data to form fields
         if (parsed_data.eventName) form.setValue('eventName', parsed_data.eventName);
         if (parsed_data.eventDate) form.setValue('eventDate', new Date(parsed_data.eventDate));
+        if (parsed_data.endDate) form.setValue('endDate', new Date(parsed_data.endDate)); // Set endDate
         if (parsed_data.eventTime) form.setValue('eventTime', parsed_data.eventTime);
         if (parsed_data.placeName) form.setValue('placeName', parsed_data.placeName);
         if (parsed_data.fullAddress) form.setValue('fullAddress', parsed_data.fullAddress);
@@ -165,7 +166,6 @@ const SubmitEvent = () => {
         if (parsed_data.specialNotes) form.setValue('specialNotes', parsed_data.specialNotes);
         if (parsed_data.organizerContact) form.setValue('organizerContact', parsed_data.organizerContact);
         if (parsed_data.eventType) form.setValue('eventType', parsed_data.eventType);
-        // if (parsed_data.state) form.setValue('state', parsed_data.state); // Removed state setting from AI parse
 
         toast.success('Event details parsed successfully!');
       } else {
@@ -193,7 +193,6 @@ const SubmitEvent = () => {
     let imageUrl: string | null = null;
     if (selectedImage) {
       const fileExtension = selectedImage.name.split('.').pop();
-      // Use a UUID or timestamp for the filename, not user.id, since it's unauthenticated
       const fileName = `${crypto.randomUUID()}.${fileExtension}`; 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('event-images')
@@ -205,7 +204,7 @@ const SubmitEvent = () => {
       if (uploadError) {
         console.error('Error uploading image:', uploadError);
         toast.error('Failed to upload image. Please try again.');
-        return; // Stop submission if image upload fails
+        return;
       }
 
       const { data: publicUrlData } = supabase.storage
@@ -224,6 +223,7 @@ const SubmitEvent = () => {
       {
         event_name: values.eventName,
         event_date: values.eventDate.toISOString().split('T')[0],
+        end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null, // Save end_date
         event_time: values.eventTime,
         place_name: values.placeName,
         full_address: values.fullAddress,
@@ -233,8 +233,8 @@ const SubmitEvent = () => {
         special_notes: values.specialNotes,
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
-        state: 'approved', // Always set to 'approved'
-        user_id: user?.id || null, // Associate event with the logged-in user if available, otherwise null
+        state: 'approved',
+        user_id: user?.id || null,
         image_url: imageUrl,
       },
     ]);
@@ -259,7 +259,7 @@ const SubmitEvent = () => {
 
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Submit an Event</h2> {/* Changed title */}
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Submit an Event</h2>
 
       {/* AI Parsing Tool Section */}
       <div className="mb-8 p-6 border border-purple-200 rounded-lg bg-purple-50 shadow-sm">
@@ -311,40 +311,78 @@ const SubmitEvent = () => {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="eventDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-full pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="eventDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Start Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-full pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>End Date (Optional)</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-full pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        key={field.name} // Added key
+                        mode="single"
+                        selected={field.value as Date | undefined} // Explicit cast
+                        onSelect={(date) => field.onChange(date)} // Explicit callback
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}
@@ -391,34 +429,6 @@ const SubmitEvent = () => {
               </FormItem>
             )}
           />
-
-          {/* Removed state field from the form */}
-          {/*
-          <FormField
-            control={form.control}
-            name="state"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>State</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a state" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {australianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          */}
 
           <FormField
             control={form.control}
@@ -591,7 +601,10 @@ const SubmitEvent = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <p className="text-right font-medium">Date:</p>
-                  <p className="col-span-3">{previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}</p>
+                  <p className="col-span-3">
+                    {previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}
+                    {previewData.endDate && ` - ${format(previewData.endDate, 'PPP')}`}
+                  </p>
                 </div>
                 {previewData.eventTime && (
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -611,15 +624,6 @@ const SubmitEvent = () => {
                     <p className="col-span-3">{previewData.fullAddress}</p>
                   </div>
                 )}
-                {/* Removed state from preview as it's now automatically set */}
-                {/*
-                {previewData.state && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">State:</p>
-                    <p className="col-span-3">{previewData.state}</p>
-                  </div>
-                )}
-                */}
                 {previewData.description && (
                   <div className="grid grid-cols-4 items-start gap-4">
                     <p className="text-right font-medium">Description:</p>
