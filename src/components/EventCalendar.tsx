@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, isAfter, parseISO } from 'date-fns'; // Added parseISO and isAfter
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -22,6 +22,7 @@ interface Event {
   organizer_contact?: string;
   event_type?: string;
   state?: string;
+  image_url?: string; // Added image_url
 }
 
 interface EventCalendarProps {
@@ -41,7 +42,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
   }, {} as Record<string, Event[]>);
 
   const modifiers = {
-    events: events.map(event => new Date(event.event_date)),
+    events: events.map(event => parseISO(event.event_date)), // Use parseISO
   };
 
   const modifiersStyles = {
@@ -52,9 +53,131 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
     },
   };
 
-  const filteredEvents = selectedDate
-    ? events.filter(event => isSameDay(new Date(event.event_date), selectedDate))
+  const eventsOnSelectedDate = selectedDate
+    ? events.filter(event => isSameDay(parseISO(event.event_date), selectedDate))
     : [];
+
+  const moreUpcomingEvents = selectedDate
+    ? events
+        .filter(event => isAfter(parseISO(event.event_date), selectedDate))
+        .sort((a, b) => {
+          const dateA = parseISO(a.event_date);
+          const dateB = parseISO(b.event_date);
+          if (dateA.getTime() !== dateB.getTime()) {
+            return dateA.getTime() - dateB.getTime();
+          }
+          // Fallback to time if dates are the same
+          const timeA = a.event_time || '';
+          const timeB = b.event_time || '';
+          return timeA.localeCompare(timeB);
+        })
+    : [];
+
+  const renderEventCard = (event: Event) => {
+    const googleMapsLink = event.full_address
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
+      : '#';
+    return (
+      <Card key={event.id} className="shadow-md">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
+          <CardDescription className="flex items-center text-gray-600 mt-1">
+            {event.event_time && (
+              <>
+                <Clock className="mr-2 h-4 w-4 text-green-500" />
+                {event.event_time}
+              </>
+            )}
+          </CardDescription>
+          {(event.place_name || event.full_address || event.state) && (
+            <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
+              {event.place_name && (
+                <div className="flex items-center mb-1">
+                  <MapPin className="mr-2 h-4 w-4 text-red-500" />
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                    {event.place_name}
+                  </Badge>
+                </div>
+              )}
+              {event.full_address && (
+                <div className="flex items-center">
+                  {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-red-500" />}
+                  <a
+                    href={googleMapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {event.full_address}
+                  </a>
+                </div>
+              )}
+              {event.state && (
+                <div className="flex items-center mt-1">
+                  <Globe className="mr-2 h-4 w-4 text-orange-500" />
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                    {event.state}
+                  </Badge>
+                </div>
+              )}
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {event.description && (
+            <div>
+              <p className="text-gray-700 line-clamp-3">{event.description}</p>
+            </div>
+          )}
+          {event.price && (
+            <p className="flex items-center text-gray-700">
+              <DollarSign className="mr-2 h-4 w-4 text-green-600" />
+              Price: {event.price}
+              {event.price.toLowerCase() === 'free' && (
+                <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
+              )}
+            </p>
+          )}
+          {event.ticket_link && (
+            <div className="flex items-center">
+              <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
+              <Button asChild variant="link" className="p-0 h-auto text-blue-600">
+                <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
+                  Ticket/Booking Link
+                </a>
+              </Button>
+            </div>
+          )}
+          {event.special_notes && (
+            <p className="flex items-start text-gray-700">
+              <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
+              Special Notes: {event.special_notes}
+            </p>
+          )}
+          {event.organizer_contact && (
+            <p className="flex items-center text-gray-700">
+              <User className="mr-2 h-4 w-4 text-indigo-500" />
+              Organizer: {event.organizer_contact}
+            </p>
+          )}
+          {event.event_type && (
+            <p className="flex items-center text-gray-700">
+              <Tag className="mr-2 h-4 w-4 text-pink-500" />
+              Type: {event.event_type}
+            </p>
+          )}
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
+              <Share2 className="mr-2 h-4 w-4" /> Share
+            </Button>
+            <Link to={`/events/${event.id}`}>
+              <Button size="sm">View Details</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const handleShare = (event: Event) => {
     const eventUrl = `${window.location.origin}/events/${event.id}`;
@@ -79,115 +202,22 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center lg:text-left">
           Events on {selectedDate ? format(selectedDate, 'PPP') : 'Selected Date'}
         </h3>
-        {filteredEvents.length === 0 ? (
+        {eventsOnSelectedDate.length === 0 ? (
           <p className="text-gray-600 text-center lg:text-left">No events on this date.</p>
         ) : (
           <div className="space-y-4">
-            {filteredEvents.map((event) => {
-              const googleMapsLink = event.full_address
-                ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
-                : '#';
-              return (
-                <Card key={event.id} className="shadow-md">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
-                    <CardDescription className="flex items-center text-gray-600 mt-1">
-                      {event.event_time && (
-                        <>
-                          <Clock className="mr-2 h-4 w-4 text-green-500" />
-                          {event.event_time}
-                        </>
-                      )}
-                    </CardDescription>
-                    {(event.place_name || event.full_address || event.state) && (
-                      <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
-                        {event.place_name && (
-                          <div className="flex items-center mb-1">
-                            <MapPin className="mr-2 h-4 w-4 text-red-500" />
-                            <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                              {event.place_name}
-                            </Badge>
-                          </div>
-                        )}
-                        {event.full_address && (
-                          <div className="flex items-center">
-                            {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-red-500" />}
-                            <a
-                              href={googleMapsLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              {event.full_address}
-                            </a>
-                          </div>
-                        )}
-                        {event.state && (
-                          <div className="flex items-center mt-1">
-                            <Globe className="mr-2 h-4 w-4 text-orange-500" />
-                            <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                              {event.state}
-                            </Badge>
-                          </div>
-                        )}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {event.description && (
-                      <div>
-                        <p className="text-gray-700 line-clamp-3">{event.description}</p>
-                      </div>
-                    )}
-                    {event.price && (
-                      <p className="flex items-center text-gray-700">
-                        <DollarSign className="mr-2 h-4 w-4 text-green-600" />
-                        Price: {event.price}
-                        {event.price.toLowerCase() === 'free' && (
-                          <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
-                        )}
-                      </p>
-                    )}
-                    {event.ticket_link && (
-                      <div className="flex items-center">
-                        <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
-                        <Button asChild variant="link" className="p-0 h-auto text-blue-600">
-                          <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
-                            Ticket/Booking Link
-                          </a>
-                        </Button>
-                      </div>
-                    )}
-                    {event.special_notes && (
-                      <p className="flex items-start text-gray-700">
-                        <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
-                        Special Notes: {event.special_notes}
-                      </p>
-                    )}
-                    {event.organizer_contact && (
-                      <p className="flex items-center text-gray-700">
-                        <User className="mr-2 h-4 w-4 text-indigo-500" />
-                        Organizer: {event.organizer_contact}
-                      </p>
-                    )}
-                    {event.event_type && (
-                      <p className="flex items-center text-gray-700">
-                        <Tag className="mr-2 h-4 w-4 text-pink-500" />
-                        Type: {event.event_type}
-                      </p>
-                    )}
-                    <div className="flex justify-end space-x-2 mt-4">
-                      <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
-                        <Share2 className="mr-2 h-4 w-4" /> Share
-                      </Button>
-                      <Link to={`/events/${event.id}`}>
-                        <Button size="sm">View Details</Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {eventsOnSelectedDate.map((event) => renderEventCard(event))}
+          </div>
+        )}
+
+        {moreUpcomingEvents.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <h4 className="text-xl font-bold text-gray-800 mb-4 text-center lg:text-left">
+              More Upcoming Events
+            </h4>
+            <div className="space-y-4">
+              {moreUpcomingEvents.map((event) => renderEventCard(event))}
+            </div>
           </div>
         )}
       </div>
