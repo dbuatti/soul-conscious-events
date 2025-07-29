@@ -39,9 +39,10 @@ const MapPage = () => {
         .order('event_date', { ascending: true });
 
       if (error) {
-        console.error('Error fetching events for map:', error);
+        console.error('MapPage Debug: Error fetching events for map:', error);
         toast.error('Failed to load events for the map.');
       } else {
+        console.log('MapPage Debug: Events fetched:', data);
         setEvents(data || []);
       }
       setLoading(false);
@@ -52,6 +53,7 @@ const MapPage = () => {
 
   useEffect(() => {
     if (mapRef.current && !mapLoaded && window.google && window.google.maps) {
+      console.log('MapPage Debug: Google Maps API is available. Initializing map.');
       setMapLoaded(true);
       const map = new window.google.maps.Map(mapRef.current, {
         center: { lat: -37.8136, lng: 144.9631 }, // Centered around Melbourne, Australia
@@ -67,6 +69,7 @@ const MapPage = () => {
       events.forEach((event) => {
         if (event.full_address) {
           geocoder.geocode({ address: event.full_address }, (results, status) => {
+            console.log(`MapPage Debug: Geocoding for "${event.full_address}" status: ${status}`);
             if (status === 'OK' && results && results[0]) {
               const marker = new window.google.maps.Marker({
                 map: map,
@@ -102,11 +105,13 @@ const MapPage = () => {
                 infoWindow.open(map, marker);
               });
             } else {
-              console.warn(`Geocoding failed for address: ${event.full_address}, status: ${status}`);
+              console.warn(`MapPage Debug: Geocoding failed for address: "${event.full_address}", status: ${status}`);
             }
           });
         }
       });
+    } else if (mapRef.current && !mapLoaded && (!window.google || !window.google.maps)) {
+      console.warn('MapPage Debug: Google Maps API not yet loaded or available.');
     }
   }, [events, mapLoaded]); // Re-run when events or mapLoaded state changes
 
