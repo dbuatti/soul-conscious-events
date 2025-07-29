@@ -32,10 +32,15 @@ const MapPage = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
+      const now = new Date();
+      const todayFormatted = format(now, 'yyyy-MM-dd');
+
       const { data, error } = await supabase
         .from('events')
         .select('*')
         .not('full_address', 'is', null) // Only fetch events with an address
+        .gte('event_date', todayFormatted) // Only show events from today and future
+        .eq('state', 'approved') // Only show approved events
         .order('event_date', { ascending: true });
 
       if (error) {
