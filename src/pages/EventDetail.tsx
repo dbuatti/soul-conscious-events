@@ -246,6 +246,13 @@ const EventDetail = () => {
         <Button variant="outline" onClick={() => navigate('/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
           Back to Events
         </Button>
+        {event.full_address && (
+          <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
+            <Button className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Globe className="mr-2 h-4 w-4" /> View on Map
+            </Button>
+          </a>
+        )}
         <Button onClick={handleShare} className="transition-all duration-300 ease-in-out transform hover:scale-105">
           <Share2 className="mr-2 h-4 w-4" /> Share Event
         </Button>

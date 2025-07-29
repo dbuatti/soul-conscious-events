@@ -415,7 +415,7 @@ const EditEvent = () => {
             name="eventTime"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Time</FormLabel>
+                <FormLabel>Time (Optional)</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
@@ -443,7 +443,7 @@ const EditEvent = () => {
             name="fullAddress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Address</FormLabel>
+                <FormLabel>Full Address (Optional)</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
@@ -462,7 +462,7 @@ const EditEvent = () => {
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>Description (Optional)</FormLabel>
                 <FormControl>
                   <Textarea placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
@@ -476,7 +476,7 @@ const EditEvent = () => {
             name="ticketLink"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ticket/Booking Link</FormLabel>
+                <FormLabel>Ticket/Booking Link (Optional)</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
@@ -490,7 +490,7 @@ const EditEvent = () => {
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Price</FormLabel>
+                <FormLabel>Price (Optional)</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
@@ -504,7 +504,7 @@ const EditEvent = () => {
             name="specialNotes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Special Notes</FormLabel>
+                <FormLabel>Special Notes (Optional)</FormLabel>
                 <FormControl>
                   <Textarea {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
@@ -518,7 +518,7 @@ const EditEvent = () => {
             name="organizerContact"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Organizer Name/Contact</FormLabel>
+                <FormLabel>Organizer Name/Contact (Optional)</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
@@ -532,7 +532,7 @@ const EditEvent = () => {
             name="eventType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Event Type</FormLabel>
+                <FormLabel>Event Type (Optional)</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="focus-visible:ring-purple-500">
