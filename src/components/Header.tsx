@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge'; // Import Badge component
 
 const Header = () => {
   const location = useLocation();
@@ -31,8 +32,11 @@ const Header = () => {
             </Button>
           </Link>
           <Link to="/map">
-            <Button variant="ghost" className={getButtonClass("/map")}>
+            <Button variant="ghost" className={cn(getButtonClass("/map"), "flex items-center")}>
               Map
+              <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-semibold">
+                Beta
+              </Badge>
             </Button>
           </Link>
           <Link to="/contact">
