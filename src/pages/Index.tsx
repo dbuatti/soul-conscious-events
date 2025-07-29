@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,11 +51,16 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEventType, setSelectedEventType] = useState('All');
   const [selectedState, setSelectedState] = useState('All');
+  const [selectedDateFilter, setSelectedDateFilter] = useState('All Upcoming'); // New state for date filter
 
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
       let query = supabase.from('events').select('*');
+
+      // Always filter for events from today onwards by default
+      const today = new Date();
+      query = query.gte('event_date', format(today, 'yyyy-MM-dd'));
 
       if (selectedEventType !== 'All') {
         query = query.eq('event_type', selectedEventType);
@@ -65,9 +70,31 @@ const Index = () => {
         query = query.eq('state', selectedState);
       }
 
+      // Apply date filters
+      const now = new Date();
+      switch (selectedDateFilter) {
+        case 'Today':
+          query = query.eq('event_date', format(now, 'yyyy-MM-dd'));
+          break;
+        case 'This Week':
+          query = query
+            .gte('event_date', format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd')) // Monday as start of week
+            .lte('event_date', format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'));
+          break;
+        case 'This Month':
+          query = query
+            .gte('event_date', format(startOfMonth(now), 'yyyy-MM-dd'))
+            .lte('event_date', format(endOfMonth(now), 'yyyy-MM-dd'));
+          break;
+        case 'All Upcoming':
+        default:
+          // Already filtered by gte today's date above
+          break;
+      }
+
       if (searchTerm) {
         query = query.or(
-          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%` // Added full_address to search
+          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%`
         );
       }
 
@@ -83,7 +110,7 @@ const Index = () => {
     };
 
     fetchEvents();
-  }, [selectedEventType, selectedState, searchTerm]);
+  }, [selectedEventType, selectedState, searchTerm, selectedDateFilter]); // Add selectedDateFilter to dependencies
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -96,6 +123,7 @@ const Index = () => {
     setSearchTerm('');
     setSelectedEventType('All');
     setSelectedState('All');
+    setSelectedDateFilter('All Upcoming'); // Reset date filter
   };
 
   const handleShare = (event: Event) => {
@@ -155,7 +183,18 @@ const Index = () => {
             ))}
           </SelectContent>
         </Select>
-        {(searchTerm || selectedEventType !== 'All' || selectedState !== 'All') && (
+        <Select onValueChange={setSelectedDateFilter} value={selectedDateFilter}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by date" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All Upcoming">All Upcoming</SelectItem>
+            <SelectItem value="Today">Today</SelectItem>
+            <SelectItem value="This Week">This Week</SelectItem>
+            <SelectItem value="This Month">This Month</SelectItem>
+          </SelectContent>
+        </Select>
+        {(searchTerm || selectedEventType !== 'All' || selectedState !== 'All' || selectedDateFilter !== 'All Upcoming') && (
           <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
             Clear Filters
           </Button>
