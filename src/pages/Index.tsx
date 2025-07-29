@@ -20,6 +20,7 @@ interface Event {
   id: string;
   event_name: string;
   event_date: string;
+  end_date?: string; // Added end_date
   event_time?: string;
   location?: string;
   place_name?: string;
@@ -412,7 +413,7 @@ const Index = () => {
       </div>
 
       {/* Event Count Display */}
-      <p className="text-center text-gray-700 mb-4">
+      <div className="text-center text-gray-700 mb-4"> {/* Changed p to div */}
         {loading ? (
           <Skeleton className="h-5 w-48 mx-auto" />
         ) : events.length === 0 ? (
@@ -420,7 +421,7 @@ const Index = () => {
         ) : (
           `Showing ${events.length} event${events.length === 1 ? '' : 's'}.`
         )}
-      </p>
+      </div>
 
       {loading || isSessionLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
