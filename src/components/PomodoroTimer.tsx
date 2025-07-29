@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Play, Pause, RotateCcw, FastForward, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { playSimpleSound } from '@/utils/audio'; // Import the sound utility
 
 interface PomodoroTimerProps {
   onClose?: () => void;
@@ -28,37 +29,30 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
   const [isStarted, setIsStarted] = useState(false); // To differentiate initial state from paused
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
 
-  const playBellSound = useCallback((frequency: number = 440, durationMs: number = 200, volume: number = 0.5) => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
+  // Define distinct sounds for different phases
+  const playWorkSound = useCallback(() => {
+    playSimpleSound({ frequency: 880, duration: 0.2, volume: 0.5, type: 'sine', attack: 0.02, decay: 0.1 }); // Higher pitch, sharp start
+  }, []);
 
-    const oscillator = audioContextRef.current.createOscillator();
-    const gainNode = audioContextRef.current.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContextRef.current.destination);
-
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(frequency, audioContextRef.current.currentTime);
-
-    gainNode.gain.setValueAtTime(volume, audioContextRef.current.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + durationMs / 1000);
-
-    oscillator.start(audioContextRef.current.currentTime);
-    oscillator.stop(audioContextRef.current.currentTime + durationMs / 1000);
+  const playBreakSound = useCallback(() => {
+    playSimpleSound({ frequency: 660, duration: 0.5, volume: 0.4, type: 'sine', attack: 0.05, decay: 0.3 }); // Softer, more relaxing chime
   }, []);
 
   const startTimer = useCallback(() => {
     setIsRunning(true);
     if (!isStarted) {
       setIsStarted(true);
-      playBellSound(440, 200, 0.5); // Bell for initial start
-      toast.info(`Starting ${currentPhase === 'work' ? 'work' : 'break'} session!`);
+      // Play sound based on the current phase
+      if (currentPhase === 'work') {
+        playWorkSound();
+        toast.info('Work session started!');
+      } else {
+        playBreakSound();
+        toast.info(`${currentPhase === 'shortBreak' ? 'Short' : 'Long'} break started!`);
+      }
     }
-  }, [isStarted, currentPhase, playBellSound]);
+  }, [isStarted, currentPhase, playWorkSound, playBreakSound]);
 
   const pauseTimer = useCallback(() => {
     setIsRunning(false);
@@ -77,11 +71,14 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
     setPomodoroCount(0);
     setIsStarted(false);
     toast.info('Pomodoro timer reset.');
-  }, [pauseTimer, defaultWorkDuration, defaultShortBreakDuration, defaultLongBreakDuration]);
+    // Play a neutral reset sound
+    playSimpleSound({ frequency: 440, duration: 0.15, volume: 0.3, type: 'square', attack: 0.01, decay: 0.05 });
+  }, [pauseTimer, defaultWorkDuration, defaultShortBreakDuration, defaultLongBreakDuration, playSimpleSound]);
 
   const nextPhase = useCallback(() => {
     pauseTimer();
-    playBellSound(660, 500, 0.7); // Bell for phase transition
+    // Play a transition sound
+    playSimpleSound({ frequency: 770, duration: 0.3, volume: 0.4, type: 'sine', attack: 0.02, decay: 0.15 });
 
     if (currentPhase === 'work') {
       setPomodoroCount((prevCount) => prevCount + 1);
@@ -89,18 +86,21 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
         setCurrentPhase('longBreak');
         setTimeRemaining(longBreakDuration * 60);
         toast.success('Work session complete! Starting long break.');
+        playBreakSound(); // Play break sound for the new phase
       } else {
         setCurrentPhase('shortBreak');
         setTimeRemaining(shortBreakDuration * 60);
         toast.success('Work session complete! Starting short break.');
+        playBreakSound(); // Play break sound for the new phase
       }
     } else {
       setCurrentPhase('work');
       setTimeRemaining(workDuration * 60);
       toast.info('Break complete! Starting work session.');
+      playWorkSound(); // Play work sound for the new phase
     }
     setIsStarted(false); // Reset isStarted to allow bell sound on next auto-start
-  }, [currentPhase, pomodoroCount, workDuration, shortBreakDuration, longBreakDuration, pauseTimer, playBellSound, pomodorosBeforeLongBreak]);
+  }, [currentPhase, pomodoroCount, workDuration, shortBreakDuration, longBreakDuration, pauseTimer, playSimpleSound, playWorkSound, playBreakSound, pomodorosBeforeLongBreak]);
 
   useEffect(() => {
     if (isRunning && timeRemaining > 0) {
@@ -115,10 +115,6 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
       }
     };
   }, [isRunning, timeRemaining, nextPhase]);
@@ -150,12 +146,63 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
     };
   };
 
+  // Determine visual style based on current phase
+  const getPhaseStyles = () => {
+    switch (currentPhase) {
+      case 'work':
+        return {
+          bg: 'bg-red-50',
+          text: 'text-red-700',
+          border: 'border-red-200',
+          icon: <Timer className="h-6 w-6 text-red-600" />,
+        };
+      case 'shortBreak':
+        return {
+          bg: 'bg-blue-50',
+          text: 'text-blue-700',
+          border: 'border-blue-200',
+          icon: <Timer className="h-6 w-6 text-blue-600" />,
+        };
+      case 'longBreak':
+        return {
+          bg: 'bg-green-50',
+          text: 'text-green-700',
+          border: 'border-green-200',
+          icon: <Timer className="h-6 w-6 text-green-600" />,
+        };
+      default:
+        return {
+          bg: 'bg-gray-50',
+          text: 'text-gray-700',
+          border: 'border-gray-200',
+          icon: <Timer className="h-6 w-6 text-gray-600" />,
+        };
+    }
+  };
+
+  const { bg, text, border, icon } = getPhaseStyles();
+
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg border border-gray-200 max-w-md mx-auto">
+    <div className={`p-6 bg-white rounded-lg shadow-lg border ${border} max-w-md mx-auto`}>
       <h2 className="text-2xl font-bold text-center text-foreground mb-4">Pomodoro Timer</h2>
-      <p className="text-center text-gray-600 mb-6">
-        Current Phase: <span className="font-semibold text-purple-700">{currentPhase === 'work' ? 'Work' : currentPhase === 'shortBreak' ? 'Short Break' : 'Long Break'}</span>
-      </p>
+      
+      {/* Phase Indicator */}
+      <div className={`mb-6 p-4 rounded-lg ${bg} border ${border} text-center`}>
+        <div className="flex items-center justify-center mb-2">
+          {icon}
+          <span className={`ml-2 text-lg font-semibold ${text}`}>
+            {currentPhase === 'work' ? 'Work' : currentPhase === 'shortBreak' ? 'Short Break' : 'Long Break'}
+          </span>
+        </div>
+        <p className={`text-sm ${text}`}>
+          {currentPhase === 'work' 
+            ? 'Focus on your task' 
+            : currentPhase === 'shortBreak' 
+              ? 'Take a short rest' 
+              : 'Take a longer rest'
+          }
+        </p>
+      </div>
 
       <div className="flex flex-col items-center justify-center mb-6 space-y-4">
         <div className="flex items-center space-x-2">
@@ -199,7 +246,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onClose }) => {
         </div>
       </div>
 
-      <div className="text-6xl font-bold text-center text-purple-700 mb-6">
+      <div className={`text-6xl font-bold text-center ${text} mb-6`}>
         {formatTime(timeRemaining)}
       </div>
 
