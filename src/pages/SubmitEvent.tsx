@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'; // Corrected this line
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -69,11 +69,7 @@ const SubmitEvent = () => {
   const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
-  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
-  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const addressInputRef = useRef<HTMLInputElement>(null); // Ref for the input
-  const suggestionsListRef = useRef<HTMLUListElement>(null); // Ref for the suggestions list
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -91,78 +87,24 @@ const SubmitEvent = () => {
     },
   });
 
-  const fetchAddressSuggestions = async (query: string) => {
-    const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    console.log("Google Maps API Key:", GOOGLE_MAPS_API_KEY ? "Present" : "Missing");
-    if (!GOOGLE_MAPS_API_KEY) {
-      console.error("Google Maps API Key is not set. Please set VITE_GOOGLE_MAPS_API_KEY in your .env.local file.");
-      toast.error("Address suggestions are unavailable. API key missing.");
-      return;
+  useEffect(() => {
+    // Ensure google.maps is available before initializing Autocomplete
+    if (addressInputRef.current && window.google && window.google.maps && window.google.maps.places) {
+      const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+        componentRestrictions: { country: 'au' },
+        fields: ['formatted_address'], // Request only necessary fields
+      });
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (place.formatted_address) {
+          form.setValue('fullAddress', place.formatted_address, { shouldValidate: true });
+        } else {
+          form.setValue('fullAddress', '', { shouldValidate: true });
+        }
+      });
     }
-
-    if (query.length < 3) {
-      setAddressSuggestions([]);
-      return;
-    }
-
-    const googlePlacesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}&components=country:au`;
-    console.log("Google Places URL:", googlePlacesUrl);
-
-    try {
-      const response = await fetch(googlePlacesUrl);
-      console.log("Google Places API Response Status:", response.status, response.statusText);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Google Places API HTTP Error:', response.status, response.statusText, errorText);
-        toast.error(`Error fetching address suggestions: ${response.status} ${response.statusText}`);
-        setAddressSuggestions([]);
-        setShowAddressSuggestions(false);
-        return;
-      }
-
-      const data = await response.json();
-      console.log("Google Places API Response Data:", data);
-
-      if (data.status === 'OK') {
-        const suggestions = data.predictions.map((prediction: any) => prediction.description);
-        setAddressSuggestions(suggestions);
-        setShowAddressSuggestions(true);
-      } else if (data.status === 'ZERO_RESULTS') {
-        setAddressSuggestions([]);
-        setShowAddressSuggestions(false);
-      } else {
-        console.error('Google Places API error:', data.status, data.error_message);
-        toast.error(`Error fetching address suggestions: ${data.status}`);
-        setAddressSuggestions([]);
-        setShowAddressSuggestions(false);
-      }
-    } catch (error) {
-      console.error('Error fetching address suggestions (network/CORS):', error);
-      toast.error('Failed to fetch address suggestions. Please check your network and API key restrictions.');
-      setAddressSuggestions([]);
-      setShowAddressSuggestions(false);
-    }
-  };
-
-  const handleAddressInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    form.setValue('fullAddress', value);
-
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    debounceTimeoutRef.current = setTimeout(() => {
-      fetchAddressSuggestions(value);
-    }, 300);
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    form.setValue('fullAddress', suggestion);
-    setAddressSuggestions([]);
-    setShowAddressSuggestions(false);
-  };
+  }, [form]); // Depend on form to ensure setValue is stable
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     let formattedTicketLink = values.ticketLink;
@@ -278,40 +220,11 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel>Full Address</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input
-                      placeholder="e.g., 123 Main St, Suburb, State, Postcode"
-                      {...field}
-                      onChange={handleAddressInputChange}
-                      onFocus={() => setShowAddressSuggestions(addressSuggestions.length > 0)}
-                      onBlur={(e) => {
-                        // Check if the related target is within the suggestions list
-                        if (suggestionsListRef.current && suggestionsListRef.current.contains(e.relatedTarget as Node)) {
-                          // Do nothing, allow click on suggestion to register
-                        } else {
-                          // Hide suggestions if focus moves outside input and suggestions list
-                          setShowAddressSuggestions(false);
-                        }
-                      }}
-                      ref={addressInputRef} // Assign ref to input
-                    />
-                    {showAddressSuggestions && addressSuggestions.length > 0 && (
-                      <ul
-                        ref={suggestionsListRef} // Assign ref to suggestions list
-                        className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto"
-                      >
-                        {addressSuggestions.map((suggestion, index) => (
-                          <li
-                            key={index}
-                            className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                            onMouseDown={() => handleSuggestionClick(suggestion)} // Use onMouseDown to ensure click registers before blur
-                          >
-                            {suggestion}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                  <Input
+                    placeholder="e.g., 123 Main St, Suburb, State, Postcode"
+                    {...field}
+                    ref={addressInputRef} // Assign ref to input
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
