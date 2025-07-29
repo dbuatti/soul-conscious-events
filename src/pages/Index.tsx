@@ -6,13 +6,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import EventCalendar from '@/components/EventCalendar'; // Import the new EventCalendar component
-// Removed FormLabel import as it's not used outside of a Form context
+import EventCalendar from '@/components/EventCalendar';
 
 interface Event {
   id: string;
@@ -51,11 +50,20 @@ const Index = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEventType, setSelectedEventType] = useState('All');
-  const [selectedState, setSelectedState] = useState('All');
-  const [selectedDateFilter, setSelectedDateFilter] = useState('All Upcoming');
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list'); // New state for view mode
+
+  // States for filter inputs (draft values)
+  const [draftSearchTerm, setDraftSearchTerm] = useState('');
+  const [draftEventType, setDraftEventType] = useState('All');
+  const [draftState, setDraftState] = useState('All');
+  const [draftDateFilter, setDraftDateFilter] = useState('All Upcoming');
+
+  // States for applied filters (trigger data fetch)
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
+  const [appliedEventType, setAppliedEventType] = useState('All');
+  const [appliedState, setAppliedState] = useState('All');
+  const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
+
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
@@ -66,7 +74,7 @@ const Index = () => {
       const now = new Date();
       const todayFormatted = format(now, 'yyyy-MM-dd');
 
-      switch (selectedDateFilter) {
+      switch (appliedDateFilter) {
         case 'Today':
           query = query.eq('event_date', todayFormatted);
           break;
@@ -92,22 +100,22 @@ const Index = () => {
           break;
       }
 
-      if (selectedEventType !== 'All') {
-        query = query.eq('event_type', selectedEventType);
+      if (appliedEventType !== 'All') {
+        query = query.eq('event_type', appliedEventType);
       }
 
-      if (selectedState !== 'All') {
-        query = query.eq('state', selectedState);
+      if (appliedState !== 'All') {
+        query = query.eq('state', appliedState);
       }
 
-      if (searchTerm) {
+      if (appliedSearchTerm) {
         query = query.or(
-          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%`
+          `event_name.ilike.%${appliedSearchTerm}%,description.ilike.%${appliedSearchTerm}%,organizer_contact.ilike.%${appliedSearchTerm}%,full_address.ilike.%${appliedSearchTerm}%`
         );
       }
 
       // Default order for upcoming/all events
-      if (selectedDateFilter !== 'Past Events') {
+      if (appliedDateFilter !== 'Past Events') {
         query = query.order('event_date', { ascending: true });
       }
 
@@ -123,7 +131,7 @@ const Index = () => {
     };
 
     fetchEvents();
-  }, [selectedEventType, selectedState, searchTerm, selectedDateFilter]);
+  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]);
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -132,12 +140,52 @@ const Index = () => {
     }));
   };
 
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setSelectedEventType('All');
-    setSelectedState('All');
-    setSelectedDateFilter('All Upcoming');
+  const handleApplyFilters = () => {
+    setAppliedSearchTerm(draftSearchTerm);
+    setAppliedEventType(draftEventType);
+    setAppliedState(draftState);
+    setAppliedDateFilter(draftDateFilter);
   };
+
+  const handleClearFilters = () => {
+    setDraftSearchTerm('');
+    setDraftEventType('All');
+    setDraftState('All');
+    setDraftDateFilter('All Upcoming');
+    setAppliedSearchTerm('');
+    setAppliedEventType('All');
+    setAppliedState('All');
+    setAppliedDateFilter('All Upcoming');
+  };
+
+  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => {
+    switch (filterType) {
+      case 'search':
+        setDraftSearchTerm('');
+        setAppliedSearchTerm('');
+        break;
+      case 'eventType':
+        setDraftEventType('All');
+        setAppliedEventType('All');
+        break;
+      case 'state':
+        setDraftState('All');
+        setAppliedState('All');
+        break;
+      case 'dateFilter':
+        setDraftDateFilter('All Upcoming');
+        setAppliedDateFilter('All Upcoming');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const hasActiveFilters =
+    appliedSearchTerm !== '' ||
+    appliedEventType !== 'All' ||
+    appliedState !== 'All' ||
+    appliedDateFilter !== 'All Upcoming';
 
   const handleShare = (event: Event) => {
     const eventUrl = `${window.location.origin}/events/${event.id}`;
@@ -166,22 +214,32 @@ const Index = () => {
       <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-end">
           {/* Search Input */}
-          <div className="relative col-span-full"> {/* Spans full width on all screens */}
+          <div className="relative col-span-full">
             <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               id="search-events"
               placeholder="Search by name, description, organizer, or address..."
               className="pl-9 w-full"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={draftSearchTerm}
+              onChange={(e) => setDraftSearchTerm(e.target.value)}
             />
+            {draftSearchTerm && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-500 hover:bg-gray-200"
+                onClick={() => setDraftSearchTerm('')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
 
           {/* Event Type Select */}
           <div className="flex flex-col gap-1">
             <label htmlFor="event-type" className="text-sm font-medium text-gray-700">Event Type</label>
-            <Select onValueChange={setSelectedEventType} value={selectedEventType}>
+            <Select onValueChange={setDraftEventType} value={draftEventType}>
               <SelectTrigger id="event-type" className="w-full">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
@@ -198,7 +256,7 @@ const Index = () => {
           {/* State Select */}
           <div className="flex flex-col gap-1">
             <label htmlFor="event-state" className="text-sm font-medium text-gray-700">State</label>
-            <Select onValueChange={setSelectedState} value={selectedState}>
+            <Select onValueChange={setDraftState} value={draftState}>
               <SelectTrigger id="event-state" className="w-full">
                 <SelectValue placeholder="All States" />
               </SelectTrigger>
@@ -215,7 +273,7 @@ const Index = () => {
           {/* Date Range Select */}
           <div className="flex flex-col gap-1">
             <label htmlFor="date-range" className="text-sm font-medium text-gray-700">Date Range</label>
-            <Select onValueChange={setSelectedDateFilter} value={selectedDateFilter}>
+            <Select onValueChange={setDraftDateFilter} value={draftDateFilter}>
               <SelectTrigger id="date-range" className="w-full">
                 <SelectValue placeholder="All Upcoming" />
               </SelectTrigger>
@@ -230,11 +288,19 @@ const Index = () => {
             </Select>
           </div>
 
-          {/* Clear Filters Button and View Mode Toggle */}
+          {/* Action Buttons */}
           <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-end mt-4 md:mt-0">
-            {(searchTerm || selectedEventType !== 'All' || selectedState !== 'All' || selectedDateFilter !== 'All Upcoming') && (
+            {(draftSearchTerm !== appliedSearchTerm ||
+              draftEventType !== appliedEventType ||
+              draftState !== appliedState ||
+              draftDateFilter !== appliedDateFilter) && (
+                <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                  Apply Filters
+                </Button>
+              )}
+            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming') && (
               <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
-                Clear Filters
+                Clear All Filters
               </Button>
             )}
             <div className="flex flex-col gap-1 w-full sm:w-auto">
@@ -250,6 +316,45 @@ const Index = () => {
             </div>
           </div>
         </div>
+
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
+          <div className="mt-6 flex flex-wrap gap-2 items-center">
+            <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+            {appliedSearchTerm && (
+              <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1">
+                Search: "{appliedSearchTerm}"
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-purple-600 hover:bg-purple-200" onClick={() => removeFilter('search')}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {appliedEventType !== 'All' && (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1">
+                Type: {appliedEventType}
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-blue-600 hover:bg-blue-200" onClick={() => removeFilter('eventType')}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {appliedState !== 'All' && (
+              <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1">
+                State: {appliedState}
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-green-600 hover:bg-green-200" onClick={() => removeFilter('state')}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {appliedDateFilter !== 'All Upcoming' && (
+              <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1">
+                Date: {appliedDateFilter}
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-orange-600 hover:bg-orange-200" onClick={() => removeFilter('dateFilter')}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
       {loading ? (
