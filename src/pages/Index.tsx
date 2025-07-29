@@ -66,6 +66,17 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
+  // Debounce effect for search term
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setAppliedSearchTerm(draftSearchTerm);
+    }, 300); // 300ms debounce
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [draftSearchTerm]);
+
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
@@ -141,7 +152,7 @@ const Index = () => {
   };
 
   const handleApplyFilters = () => {
-    setAppliedSearchTerm(draftSearchTerm);
+    // Only apply dropdown filters here, search is handled by debounce
     setAppliedEventType(draftEventType);
     setAppliedState(draftState);
     setAppliedDateFilter(draftDateFilter);
@@ -149,12 +160,12 @@ const Index = () => {
 
   const handleClearFilters = () => {
     setDraftSearchTerm('');
+    setAppliedSearchTerm(''); // Clear applied search term immediately
     setDraftEventType('All');
-    setDraftState('All');
-    setDraftDateFilter('All Upcoming');
-    setAppliedSearchTerm('');
     setAppliedEventType('All');
+    setDraftState('All');
     setAppliedState('All');
+    setDraftDateFilter('All Upcoming');
     setAppliedDateFilter('All Upcoming');
   };
 
@@ -229,7 +240,10 @@ const Index = () => {
                 variant="ghost"
                 size="sm"
                 className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-500 hover:bg-gray-200"
-                onClick={() => setDraftSearchTerm('')}
+                onClick={() => {
+                  setDraftSearchTerm('');
+                  setAppliedSearchTerm('');
+                }}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -290,10 +304,11 @@ const Index = () => {
 
           {/* Action Buttons */}
           <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-end mt-4 md:mt-0">
-            {(draftSearchTerm !== appliedSearchTerm ||
+            {(
               draftEventType !== appliedEventType ||
               draftState !== appliedState ||
-              draftDateFilter !== appliedDateFilter) && (
+              draftDateFilter !== appliedDateFilter
+            ) && (
                 <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
                   Apply Filters
                 </Button>
