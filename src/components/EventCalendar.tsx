@@ -203,7 +203,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
+    <div className="flex flex-col lg:flex-row gap-8 lg:items-start"> {/* Added lg:items-start here */}
       <div className="lg:w-1/2 flex justify-center">
         <Calendar
           mode="single"
