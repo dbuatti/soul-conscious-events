@@ -481,16 +481,6 @@ const Index = () => {
                       )}
                       <CardHeader>
                         <CardTitle className="text-xl font-semibold text-purple-700">{event.event_name}</CardTitle>
-                        <CardDescription className="flex items-center text-gray-600 mt-2">
-                          <Calendar className="mr-2 h-4 w-4 text-blue-500" />
-                          {dateDisplay}
-                          {event.event_time && (
-                            <>
-                              <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
-                              {event.event_time}
-                            </>
-                          )}
-                        </CardDescription>
                         {(event.place_name || event.full_address) && (
                           <div className="flex flex-col items-start text-gray-600 mt-1">
                             {event.place_name && (
@@ -570,25 +560,37 @@ const Index = () => {
                           </p>
                         )}
                       </CardContent>
-                      <CardFooter className="flex justify-end space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
-                          <Share2 className="mr-2 h-4 w-4" /> Share
-                        </Button>
-                        <Link to={`/events/${event.id}`}>
-                          <Button size="sm">View Details</Button>
-                        </Link>
-                        {isCreatorOrAdmin && (
-                          <>
-                            <Link to={`/edit-event/${event.id}`}>
-                              <Button variant="outline" size="sm" title="Edit Event">
-                                <Edit className="h-4 w-4" />
+                      <CardFooter className="flex flex-col items-start pt-4">
+                        <div className="flex items-center text-gray-600 mb-2">
+                          <Calendar className="mr-2 h-4 w-4 text-blue-500" />
+                          {dateDisplay}
+                          {event.event_time && (
+                            <>
+                              <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
+                              {event.event_time}
+                            </>
+                          )}
+                        </div>
+                        <div className="flex justify-end w-full space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => handleShare(event)}>
+                            <Share2 className="mr-2 h-4 w-4" /> Share
+                          </Button>
+                          <Link to={`/events/${event.id}`}>
+                            <Button size="sm">View Details</Button>
+                          </Link>
+                          {isCreatorOrAdmin && (
+                            <>
+                              <Link to={`/edit-event/${event.id}`}>
+                                <Button variant="outline" size="sm" title="Edit Event">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                              <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)} title="Delete Event">
+                                <Trash2 className="h-4 w-4" />
                               </Button>
-                            </Link>
-                            <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)} title="Delete Event">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
+                            </>
+                          )}
+                        </div>
                       </CardFooter>
                     </Card>
                   );
