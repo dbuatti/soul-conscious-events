@@ -15,6 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
+import EditEvent from "./pages/EditEvent"; // New import
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,14 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
                     <AdminPanel />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/edit-event/:id"
+                element={
+                  <ProtectedRoute> {/* Protected for any logged-in user, component handles creator check */}
+                    <EditEvent />
                   </ProtectedRoute>
                 }
               />

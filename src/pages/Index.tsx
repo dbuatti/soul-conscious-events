@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +32,7 @@ interface Event {
   event_type?: string;
   state?: string;
   image_url?: string;
+  user_id?: string; // Added user_id to interface
 }
 
 const eventTypes = [
@@ -70,7 +71,7 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
-  const { user } = useSession(); // Get user from context
+  const { user, isLoading: isSessionLoading } = useSession(); // Get user from context
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
 
   useEffect(() => {
@@ -210,6 +211,20 @@ const Index = () => {
     navigator.clipboard.writeText(eventUrl)
       .then(() => toast.success('Event link copied to clipboard!'))
       .catch(() => toast.error('Failed to copy link. Please try again.'));
+  };
+
+  const handleDelete = async (eventId: string) => {
+    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      const { error } = await supabase.from('events').delete().eq('id', eventId);
+
+      if (error) {
+        console.error('Error deleting event:', error);
+        toast.error('Failed to delete event.');
+      } else {
+        toast.success('Event deleted successfully!');
+        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId)); // Optimistically update UI
+      }
+    }
   };
 
   return (
@@ -407,7 +422,7 @@ const Index = () => {
         )}
       </p>
 
-      {loading ? (
+      {loading || isSessionLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="flex flex-col justify-between shadow-md">
@@ -437,6 +452,7 @@ const Index = () => {
                   const googleMapsLink = event.full_address
                     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
                     : '#';
+                  const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
                   return (
                     <Card key={event.id} className="flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow duration-300">
                       {event.image_url && (
@@ -461,7 +477,7 @@ const Index = () => {
                             </>
                           )}
                         </CardDescription>
-                        {(event.place_name || event.full_address || event.state) && (
+                        {(event.place_name || event.full_address) && (
                           <div className="flex flex-col items-start text-gray-600 mt-1">
                             {event.place_name && (
                               <div className="flex items-center mb-1">
@@ -484,7 +500,6 @@ const Index = () => {
                                 </a>
                               </div>
                             )}
-                            {/* Removed event.state display */}
                           </div>
                         )}
                       </CardHeader>
@@ -548,6 +563,18 @@ const Index = () => {
                         <Link to={`/events/${event.id}`}>
                           <Button size="sm">View Details</Button>
                         </Link>
+                        {isCreatorOrAdmin && (
+                          <>
+                            <Link to={`/edit-event/${event.id}`}>
+                              <Button variant="outline" size="sm" title="Edit Event">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)} title="Delete Event">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </CardFooter>
                     </Card>
                   );

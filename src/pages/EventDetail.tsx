@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2 } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useSession } from '@/components/SessionContextProvider';
 
 interface Event {
   id: string;
@@ -23,7 +24,8 @@ interface Event {
   organizer_contact?: string;
   event_type?: string;
   state?: string;
-  image_url?: string; // Added image_url
+  image_url?: string;
+  user_id?: string; // Added user_id to interface
 }
 
 const EventDetail = () => {
@@ -31,6 +33,7 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user, isLoading: isSessionLoading } = useSession();
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -71,7 +74,22 @@ const EventDetail = () => {
     }
   };
 
-  if (loading) {
+  const handleDelete = async () => {
+    if (!event) return;
+    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      const { error } = await supabase.from('events').delete().eq('id', event.id);
+
+      if (error) {
+        console.error('Error deleting event:', error);
+        toast.error('Failed to delete event.');
+      } else {
+        toast.success('Event deleted successfully!');
+        navigate('/'); // Redirect to home page after deletion
+      }
+    }
+  };
+
+  if (loading || isSessionLoading) {
     return (
       <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
         <Skeleton className="h-10 w-3/4 mb-4" />
@@ -101,6 +119,8 @@ const EventDetail = () => {
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
     : '#';
 
+  const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
+
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-xl border border-gray-200">
       <h1 className="text-4xl font-bold text-center text-gray-800 mb-6">{event.event_name}</h1>
@@ -127,7 +147,7 @@ const EventDetail = () => {
               </>
             )}
           </CardDescription>
-          {(event.place_name || event.full_address || event.state) && (
+          {(event.place_name || event.full_address) && (
             <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
               {event.place_name && (
                 <div className="flex items-center mb-1">
@@ -150,7 +170,6 @@ const EventDetail = () => {
                   </a>
                 </div>
               )}
-              {/* Removed event.state display */}
             </CardDescription>
           )}
         </CardHeader>
@@ -208,6 +227,16 @@ const EventDetail = () => {
         <Button onClick={handleShare}>
           <Share2 className="mr-2 h-4 w-4" /> Share Event
         </Button>
+        {isCreatorOrAdmin && (
+          <>
+            <Button variant="outline" onClick={() => navigate(`/edit-event/${event.id}`)}>
+              <Edit className="mr-2 h-4 w-4" /> Edit
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
