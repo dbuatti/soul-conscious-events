@@ -32,7 +32,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useSession } from '@/components/SessionContextProvider';
+import { useSession } from '@/components/SessionContextProvider'; // Keep useSession for user_id in events table
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -71,7 +71,7 @@ const eventTypes = [
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
-  const { user } = useSession();
+  const { user } = useSession(); // Still useSession to potentially link event to user if logged in
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const placeNameInputRef = useRef<HTMLInputElement>(null);
@@ -175,30 +175,27 @@ const SubmitEvent = () => {
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     let imageUrl: string | null = null;
     if (selectedImage) {
-      if (!user) {
-        toast.error('You must be logged in to upload an image. Event details will be submitted without an image.');
-        // Continue without image upload if user is not logged in
-      } else {
-        const fileExtension = selectedImage.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExtension}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('event-images')
-          .upload(fileName, selectedImage, {
-            cacheControl: '3600',
-            upsert: false,
-          });
+      const fileExtension = selectedImage.name.split('.').pop();
+      // Use a UUID or timestamp for the filename, not user.id, since it's unauthenticated
+      const fileName = `${crypto.randomUUID()}.${fileExtension}`; 
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, selectedImage, {
+          cacheControl: '3600',
+          upsert: false,
+        });
 
-        if (uploadError) {
-          console.error('Error uploading image:', uploadError);
-          toast.error('Failed to upload image. Please try again.');
-          // Do not return here, allow event submission without image if upload fails
-        } else {
-          const { data: publicUrlData } = supabase.storage
-            .from('event-images')
-            .getPublicUrl(fileName);
-          imageUrl = publicUrlData.publicUrl;
-        }
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        toast.error('Failed to upload image. Please try again.');
+        return; // Stop submission if image upload fails
       }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(fileName);
+
+      imageUrl = publicUrlData.publicUrl;
     }
 
     let formattedTicketLink = values.ticketLink;
@@ -220,7 +217,7 @@ const SubmitEvent = () => {
         organizer_contact: values.organizerContact,
         event_type: values.eventType,
         state: values.state,
-        user_id: user?.id || null, // Associate event with the logged-in user or null
+        user_id: user?.id || null, // Associate event with the logged-in user if available, otherwise null
         image_url: imageUrl,
       },
     ]);
