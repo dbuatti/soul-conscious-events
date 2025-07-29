@@ -240,16 +240,7 @@ const Index = () => {
 
       {/* Filter and View Options Section */}
       <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
-        {/* Add New Event Button - Moved to top-left of filter section */}
-        <div className="mb-6">
-          <Link to="/submit-event">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
-              Add New Event
-            </Button>
-          </Link>
-        </div>
-
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Filter Events</h2> {/* New heading for filter section */}
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Filter Events</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start">
           {/* Search Input */}
@@ -329,54 +320,60 @@ const Index = () => {
               </SelectContent>
             </Select>
           </div>
-
-          {/* Filter Action Buttons and Hidden Events Checkbox */}
-          <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4 pt-4 border-t border-gray-200">
-            <div className="flex flex-col sm:flex-row gap-4 items-center"> {/* Grouped right-aligned elements */}
-              {isAdmin && !isViewingAsPublic && (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="show-hidden-events"
-                    checked={showHiddenEvents}
-                    onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
-                  />
-                  <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                    Show hidden/draft events
-                  </Label>
-                </div>
-              )}
-
-              {(
-                draftEventType !== appliedEventType ||
-                draftState !== appliedState ||
-                draftDateFilter !== appliedDateFilter ||
-                (isAdmin && showHiddenEvents !== false && !isViewingAsPublic)
-              ) && (
-                  <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
-                    Apply Filters
-                  </Button>
-                )}
-              {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming' || (isAdmin && showHiddenEvents && !isViewingAsPublic)) && (
-                <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
-                  Clear All Filters
-                </Button>
-              )}
-            </div>
-          </div>
         </div>
 
-        {/* View Mode Toggle - Separated for clarity */}
-        <div className="flex justify-end mt-6 pt-4 border-t border-gray-200">
-          <div className="flex flex-col gap-1 w-full sm:w-auto">
-            <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
-            <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
-              <ToggleGroupItem value="list" aria-label="Toggle list view">
-                <List className="h-4 w-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="calendar" aria-label="Toggle calendar view">
-                <CalendarDays className="h-4 w-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
+        {/* Action Buttons and View Mode Controls */}
+        <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-4 justify-between items-center">
+          {/* Left side: Add New Event Button */}
+          <Link to="/submit-event">
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
+              Add New Event
+            </Button>
+          </Link>
+
+          {/* Right side: Checkbox, Apply, Clear, View Mode */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
+            {isAdmin && !isViewingAsPublic && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show-hidden-events"
+                  checked={showHiddenEvents}
+                  onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
+                />
+                <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                  Show hidden/draft events
+                </Label>
+              </div>
+            )}
+
+            {(
+              draftEventType !== appliedEventType ||
+              draftState !== appliedState ||
+              draftDateFilter !== appliedDateFilter ||
+              (isAdmin && showHiddenEvents !== false && !isViewingAsPublic)
+            ) && (
+                <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                  Apply Filters
+                </Button>
+              )}
+            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming' || (isAdmin && showHiddenEvents && !isViewingAsPublic)) && (
+              <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
+                Clear All Filters
+              </Button>
+            )}
+
+            {/* View Mode Toggle */}
+            <div className="flex flex-col gap-1 w-full sm:w-auto">
+              <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
+              <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
+                <ToggleGroupItem value="list" aria-label="List View">
+                  <List className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="calendar" aria-label="Calendar View">
+                  <CalendarDays className="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
         </div>
 
@@ -463,7 +460,7 @@ const Index = () => {
       ) : (
         <>
           {viewMode === 'list' ? (
-            events.length === 0 ? null : ( // Removed "No events found" here as it's handled by the count display
+            events.length === 0 ? null : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {events.map((event) => {
                   const googleMapsLink = event.full_address
