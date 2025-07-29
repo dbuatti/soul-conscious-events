@@ -14,6 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import EventCalendar from '@/components/EventCalendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 
 interface Event {
   id: string;
@@ -66,8 +67,11 @@ const Index = () => {
   const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
   const [showHiddenEvents, setShowHiddenEvents] = useState(false); // New state for the checkbox
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar'); // Changed default to 'calendar'
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
+
+  const { user, isViewingAsPublic } = useSession(); // Get user and isViewingAsPublic from context
+  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -120,12 +124,12 @@ const Index = () => {
         query = query.eq('state', appliedState);
       }
 
-      // Conditionally filter by 'approved' state if showHiddenEvents is false
-      if (showHiddenEvents) {
-        // If showing hidden events, explicitly include 'approved', 'draft', 'pending', and NULL states
+      // Conditional filtering based on admin status and 'view as public' mode
+      if (isAdmin && showHiddenEvents && !isViewingAsPublic) {
+        // Admin viewing all events (including hidden/draft/null)
         query = query.or('state.eq.approved,state.eq.draft,state.eq.pending,state.is.null');
       } else {
-        // If not showing hidden events, only fetch 'approved' events.
+        // Public view, or non-admin user, or admin viewing as public: only show 'approved'
         query = query.eq('state', 'approved');
       }
 
@@ -151,7 +155,7 @@ const Index = () => {
     };
 
     fetchEvents();
-  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter, showHiddenEvents]); // Add showHiddenEvents to dependencies
+  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter, showHiddenEvents, isAdmin, isViewingAsPublic]); // Add new dependencies
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -209,7 +213,7 @@ const Index = () => {
     appliedEventType !== 'All' ||
     appliedState !== 'All' ||
     appliedDateFilter !== 'All Upcoming' ||
-    showHiddenEvents; // Include new filter in active check
+    (isAdmin && showHiddenEvents && !isViewingAsPublic); // Only consider 'showHiddenEvents' as active filter if admin and not viewing as public
 
   const handleShare = (event: Event) => {
     const eventUrl = `${window.location.origin}/events/${event.id}`;
@@ -236,7 +240,7 @@ const Index = () => {
 
       {/* Filter and View Options Section */}
       <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start"> {/* Changed items-end to items-start */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start">
           {/* Search Input */}
           <div className="relative col-span-full">
             <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
@@ -317,35 +321,37 @@ const Index = () => {
 
           {/* Action Buttons and View Mode */}
           <div className="col-span-full flex flex-col sm:flex-row gap-4 justify-end items-center mt-4 md:mt-0">
-            {/* Checkbox for Hidden Events - moved here */}
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="show-hidden-events"
-                checked={showHiddenEvents}
-                onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
-              />
-              <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                Show hidden/draft events
-              </Label>
-            </div>
+            {/* Checkbox for Hidden Events - only visible for admin and not in public view */}
+            {isAdmin && !isViewingAsPublic && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show-hidden-events"
+                  checked={showHiddenEvents}
+                  onCheckedChange={(checked) => setShowHiddenEvents(!!checked)}
+                />
+                <Label htmlFor="show-hidden-events" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                  Show hidden/draft events
+                </Label>
+              </div>
+            )}
 
             {(
               draftEventType !== appliedEventType ||
               draftState !== appliedState ||
               draftDateFilter !== appliedDateFilter ||
-              showHiddenEvents !== false
+              (isAdmin && showHiddenEvents !== false && !isViewingAsPublic) // Only consider this filter if admin and not viewing as public
             ) && (
                 <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
                   Apply Filters
                 </Button>
               )}
-            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming' || showHiddenEvents) && (
+            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming' || (isAdmin && showHiddenEvents && !isViewingAsPublic)) && (
               <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
                 Clear All Filters
               </Button>
             )}
             <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label> {/* Removed sr-only */}
+              <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
               <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
                 <ToggleGroupItem value="list" aria-label="Toggle list view">
                   <List className="h-4 w-4" />
@@ -394,7 +400,7 @@ const Index = () => {
                 </Button>
               </Badge>
             )}
-            {showHiddenEvents && (
+            {isAdmin && showHiddenEvents && !isViewingAsPublic && (
               <Badge variant="secondary" className="bg-red-100 text-red-800 flex items-center gap-1">
                 Showing Hidden
                 <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-red-600 hover:bg-red-200" onClick={() => removeFilter('hiddenEvents')}>
@@ -463,7 +469,7 @@ const Index = () => {
                           )}
                         </CardDescription>
                         {(event.place_name || event.full_address || event.state) && (
-                          <div className="flex flex-col items-start text-gray-600 mt-1"> {/* Changed from CardDescription (p) to div */}
+                          <div className="flex flex-col items-start text-gray-600 mt-1">
                             {event.place_name && (
                               <div className="flex items-center mb-1">
                                 <MapPin className="mr-2 h-4 w-4 text-red-500" />

@@ -7,6 +7,8 @@ interface SessionContextType {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
+  isViewingAsPublic: boolean; // New state
+  toggleViewAsPublic: () => void; // New function
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -15,6 +17,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isViewingAsPublic, setIsViewingAsPublic] = useState(false); // Initialize as false
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,10 +44,14 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location.pathname]); // Added location.pathname to dependencies
+  }, [navigate, location.pathname]);
+
+  const toggleViewAsPublic = () => {
+    setIsViewingAsPublic(prev => !prev);
+  };
 
   return (
-    <SessionContext.Provider value={{ session, user, isLoading }}>
+    <SessionContext.Provider value={{ session, user, isLoading, isViewingAsPublic, toggleViewAsPublic }}>
       {children}
     </SessionContext.Provider>
   );

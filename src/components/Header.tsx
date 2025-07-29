@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, Eye, EyeOff } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,9 @@ import { toast } from 'sonner';
 const Header = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { user } = useSession();
+  const { user, isViewingAsPublic, toggleViewAsPublic } = useSession();
+
+  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
 
   const getButtonClass = (path: string) => {
     return cn(
@@ -58,11 +60,31 @@ const Header = () => {
         </Button>
       </Link>
       {/* Admin button is always visible, ProtectedRoute handles access */}
-      <Link to="/admin/panel"> {/* Updated link path */}
+      <Link to="/admin/panel">
         <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white", location.pathname.startsWith("/admin") && "bg-blue-700")}>
           Admin
         </Button>
       </Link>
+      {isAdmin && (
+        <Button
+          variant="outline"
+          onClick={toggleViewAsPublic}
+          className={cn(
+            "flex items-center",
+            isViewingAsPublic ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+          )}
+        >
+          {isViewingAsPublic ? (
+            <>
+              <EyeOff className="mr-2 h-4 w-4" /> View as Admin
+            </>
+          ) : (
+            <>
+              <Eye className="mr-2 h-4 w-4" /> View as Public
+            </>
+          )}
+        </Button>
+      )}
       {user ? (
         <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700">
           <LogOut className="mr-2 h-4 w-4" /> Logout
