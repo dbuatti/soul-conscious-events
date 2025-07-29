@@ -468,7 +468,7 @@ const Index = () => {
                       : formattedDate;
 
                   return (
-                    <Card key={event.id} className="flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <Card key={event.id} className="group flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow duration-300 transform group-hover:scale-102 group-hover:shadow-xl">
                       {event.image_url && (
                         <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
                           <img

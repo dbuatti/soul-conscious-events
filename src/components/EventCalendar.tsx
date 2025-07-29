@@ -99,7 +99,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         : formattedStartDate;
 
     return (
-      <Card key={event.id} className="shadow-md">
+      <Card key={event.id} className="group shadow-md hover:shadow-lg transition-shadow duration-300 transform group-hover:scale-102 group-hover:shadow-xl">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
           <CardDescription className="flex items-center text-gray-600 mt-2">
@@ -203,7 +203,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 lg:items-start"> {/* Added lg:items-start here */}
+    <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
       <div className="lg:w-1/2 flex justify-center">
         <Calendar
           mode="single"

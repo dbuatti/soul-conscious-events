@@ -79,7 +79,7 @@ const Header = () => {
   );
 
   return (
-    <header className="w-full bg-white shadow-sm py-4 px-6 md:px-8 flex justify-center">
+    <header className="w-full bg-white shadow-md border-b border-gray-200 py-4 px-6 md:px-8 flex justify-center">
       <div className="w-full max-w-4xl flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold text-purple-700 hover:text-purple-800 transition-colors">
           SoulFlow
