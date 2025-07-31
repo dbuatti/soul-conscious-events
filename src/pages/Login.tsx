@@ -26,7 +26,7 @@ const Login = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8 bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Sign In to SoulFlow</h2>
         <Auth

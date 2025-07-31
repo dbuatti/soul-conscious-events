@@ -232,12 +232,22 @@ const Index = () => {
 
   return (
     <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-      <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Welcome to SoulFlow</h1>
-      <p className="text-xl text-gray-600 mb-6 text-center">
-        Connect with soulful events in your community.
-      </p>
+      {/* Hero Section */}
+      <div className="text-center mb-12 py-12 px-6 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white">
+        <h1 className="text-5xl font-extrabold mb-4 leading-tight">
+          Discover Your Next Soulful Experience
+        </h1>
+        <p className="text-xl font-light mb-8 opacity-90">
+          Connect with events that nourish your mind, body, and spirit across Australia.
+        </p>
+        <Link to="/submit-event">
+          <Button className="bg-white text-purple-700 hover:bg-gray-100 text-lg font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+            Add Your Event
+          </Button>
+        </Link>
+      </div>
 
-      {/* New App Description Clause */}
+      {/* App Description Clause */}
       <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center">
         <Lightbulb className="mr-3 h-6 w-6 text-blue-600 flex-shrink-0" />
         <p className="text-gray-700 text-base leading-relaxed">
@@ -484,22 +494,22 @@ const Index = () => {
                   return (
                     <Card
                       key={event.id}
-                      className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer"
-                      onClick={() => handleViewDetails(event)} // Make the whole card clickable
+                      className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden"
+                      onClick={() => handleViewDetails(event)}
                     >
                       {event.image_url && (
-                        <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
+                        <div className="relative w-full h-48 overflow-hidden">
                           <img
                             src={event.image_url}
                             alt={event.event_name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         </div>
                       )}
                       <CardHeader className="p-4 pb-2">
-                        <CardTitle className="text-2xl font-bold text-purple-700">{event.event_name}</CardTitle>
-                        <CardDescription className="flex items-center text-gray-600 text-base mt-2">
+                        <CardTitle className="text-2xl font-bold text-purple-700 mb-2">{event.event_name}</CardTitle>
+                        <CardDescription className="flex items-center text-gray-600 text-base">
                           <Calendar className="mr-2 h-5 w-5 text-blue-500" />
                           {dateDisplay}
                           {event.event_time && (
@@ -510,11 +520,11 @@ const Index = () => {
                           )}
                         </CardDescription>
                         {(event.place_name || event.full_address) && (
-                          <div className="flex flex-col items-start text-gray-600 mt-1">
+                          <div className="flex flex-col items-start text-gray-600 mt-2">
                             {event.place_name && (
                               <div className="flex items-center mb-1">
                                 <MapPin className="mr-2 h-5 w-5 text-red-500" />
-                                <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-lg py-2 px-3 font-semibold">
+                                <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-base py-1 px-2 font-semibold">
                                   {event.place_name}
                                 </Badge>
                               </div>
@@ -618,7 +628,7 @@ const Index = () => {
               events={events}
               selectedDate={selectedCalendarDate}
               onDateSelect={setSelectedCalendarDate}
-              onEventSelect={handleViewDetails} // Pass the handler to EventCalendar
+              onEventSelect={handleViewDetails}
             />
           )}
         </>
