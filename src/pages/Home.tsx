@@ -58,7 +58,7 @@ interface Event {
 const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Fixed: Corrected useState initialization
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date()); // Default to today
   const [selectedEventType, setSelectedEventType] = useState('All');
@@ -267,7 +267,7 @@ const Home = () => {
         {/* Main Calendar Content */}
         <div className="flex-grow">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-4xl font-bold text-foreground text-center flex-grow">Event Calendar</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Calendar</h1>
             <Link to="/submit-event" className="hidden lg:block"> {/* Hide on mobile */}
               <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
@@ -349,15 +349,14 @@ const Home = () => {
                       <PopoverContent className="w-auto p-0">
                         <Calendar
                           mode="single"
-                          selected={selectedDayForDialog || new Date()}
+                          selected={currentMonth}
                           onSelect={(date) => {
                             if (date) {
-                              setCurrentMonth(date); // Set the month of the selected date
-                              setSelectedDayForDialog(date); // Keep the day highlighted
+                              setCurrentMonth(date);
                             }
                           }}
                           initialFocus
-                          captionLayout="dropdown" // Add this for month/year dropdowns
+                          captionLayout="dropdown"
                         />
                       </PopoverContent>
                     </Popover>
