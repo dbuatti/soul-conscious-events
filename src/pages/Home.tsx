@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -50,7 +50,7 @@ interface Event {
   image_url?: string;
 }
 
-const CalendarView = () => {
+const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -210,6 +210,31 @@ const CalendarView = () => {
 
   return (
     <div className="w-full max-w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col lg:flex-row gap-8">
+      {/* Hero Section */}
+      <div className="text-center mb-12 py-12 px-6 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white w-full">
+        <h1 className="text-5xl font-extrabold mb-4 leading-tight">
+          Discover Your Next Soulful Experience
+        </h1>
+        <p className="text-xl font-light mb-8 opacity-90">
+          Connect with events that nourish your mind, body, and spirit across Australia.
+        </p>
+        <Link to="/submit-event">
+          <Button className="bg-white text-purple-700 hover:bg-gray-100 text-lg font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+            Add Your Event
+          </Button>
+        </Link>
+      </div>
+
+      {/* App Description Clause */}
+      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center w-full">
+        <Lightbulb className="mr-3 h-6 w-6 text-blue-600 flex-shrink-0" />
+        <p className="text-gray-700 text-base leading-relaxed">
+          SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
+          As this is a new project from an aspiring app developer, some features may not work as expected.
+          Your feedback is invaluable! Please visit the <Link to="/contact" className="text-blue-600 hover:underline font-medium">Contact Us</Link> page to share your suggestions or report any issues.
+        </p>
+      </div>
+
       {/* Sidebar */}
       <EventSidebar selectedEventType={selectedEventType} onSelectEventType={setSelectedEventType} />
 
@@ -452,4 +477,4 @@ const CalendarView = () => {
   );
 };
 
-export default CalendarView;
+export default Home;
