@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -43,6 +43,7 @@ interface Event {
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation(); // Get location object
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const { user, isLoading: isSessionLoading } = useSession();
@@ -146,6 +147,9 @@ const EventDetail = () => {
       ? `${formattedStartDate} - ${formattedEndDate}`
       : formattedStartDate;
 
+  // Determine if the user came from the calendar view
+  const cameFromCalendar = location.state?.from === '/calendar';
+
   return (
     <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h1 className="text-4xl font-bold text-foreground mb-6 text-center">{event.event_name}</h1>
@@ -248,8 +252,8 @@ const EventDetail = () => {
       </Card>
 
       <div className="flex justify-end mt-8 space-x-2">
-        <Button variant="outline" onClick={() => navigate('/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-          Back to Events
+        <Button variant="outline" onClick={() => navigate(cameFromCalendar ? '/calendar' : '/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+          {cameFromCalendar ? 'Back to Calendar View' : 'Back to Events'}
         </Button>
         {event.full_address && (
           <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
