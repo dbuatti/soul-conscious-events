@@ -318,7 +318,7 @@ const EditEvent = () => {
 
   if (isSessionLoading || loadingEvent) {
     return (
-      <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+      <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-border">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
         <div className="space-y-4">
@@ -340,7 +340,7 @@ const EditEvent = () => {
   }
 
   return (
-    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-border">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Edit Event</h2>
 
       <Form {...form}>
@@ -352,7 +352,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Event Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-purple-500" />
+                  <Input placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -445,7 +445,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Time (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-purple-500" />
+                  <Input placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -459,7 +459,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Place Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-purple-500" />
+                  <Input placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -477,7 +477,7 @@ const EditEvent = () => {
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
-                    className="focus-visible:ring-purple-500"
+                    className="focus-visible:ring-primary"
                   />
                 </FormControl>
                 <FormMessage />
@@ -492,7 +492,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Description (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -506,7 +506,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Ticket/Booking Link (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-purple-500" />
+                  <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -520,7 +520,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Price (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-purple-500" />
+                  <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -534,7 +534,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Special Notes (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -548,7 +548,7 @@ const EditEvent = () => {
               <FormItem>
                 <FormLabel>Organizer Name/Contact (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-purple-500" />
+                  <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -563,7 +563,7 @@ const EditEvent = () => {
                 <FormLabel>Event Type (Optional)</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="focus-visible:ring-purple-500">
+                    <SelectTrigger className="focus-visible:ring-primary">
                       <SelectValue placeholder="Select an event type" />
                     </SelectTrigger>
                   </FormControl>
@@ -616,7 +616,7 @@ const EditEvent = () => {
                         placeholder="e.g., https://example.com/image.jpg"
                         {...field}
                         onChange={handleImageUrlInputChange}
-                        className="focus-visible:ring-purple-500"
+                        className="focus-visible:ring-primary"
                       />
                     </FormControl>
                   )}
@@ -625,13 +625,13 @@ const EditEvent = () => {
             </Tabs>
             {imagePreviewUrl && (
               <div className="mt-2 flex items-center space-x-2">
-                <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-gray-200 shadow-md" />
+                <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-border shadow-md" />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleRemoveImage}
-                  className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
+                  className="text-destructive hover:text-destructive-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
                 >
                   <XCircle className="mr-1 h-4 w-4" /> Remove
                 </Button>
@@ -715,7 +715,7 @@ const EditEvent = () => {
                 {previewData.ticketLink && (
                   <div className="grid grid-cols-4 items-center gap-4">
                     <p className="text-right font-medium">Ticket Link:</p>
-                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-blue-600 hover:underline break-all">
+                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
                       {previewData.ticketLink}
                     </a>
                   </div>

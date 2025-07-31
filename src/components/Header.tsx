@@ -17,8 +17,8 @@ const Header = () => {
 
   const getButtonClass = (path: string) => {
     return cn(
-      "text-foreground hover:text-purple-700 transition-all duration-300 ease-in-out transform hover:scale-105",
-      location.pathname === path && "font-bold text-purple-700"
+      "text-foreground hover:text-primary transition-all duration-300 ease-in-out transform hover:scale-105",
+      location.pathname === path && "font-bold text-primary"
     );
   };
 
@@ -52,7 +52,7 @@ const Header = () => {
       <Link to="/map">
         <Button variant="ghost" className={cn(getButtonClass("/map"), "flex items-center")}>
           Map
-          <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-semibold">
+          <Badge variant="secondary" className="ml-2 bg-secondary text-secondary-foreground px-2 py-0.5 text-xs font-semibold">
             Beta
           </Badge>
         </Button>
@@ -71,9 +71,9 @@ const Header = () => {
   );
 
   return (
-    <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center">
+    <header className="w-full bg-white shadow-lg border-b border-border py-5 px-6 md:px-8 flex justify-center">
       <div className="w-full max-w-4xl flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-purple-700 hover:text-purple-800 transition-colors">
+        <Link to="/" className="text-2xl font-bold text-primary hover:text-primary-foreground transition-colors">
           SoulFlow
         </Link>
         {isMobile ? (
@@ -84,7 +84,7 @@ const Header = () => {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6">
+            <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6 bg-background">
               <nav className="flex flex-col space-y-4 mt-8">
                 {React.Children.map(mainNavLinks, (child) => (
                   <SheetClose asChild key={child.key}>
@@ -94,14 +94,14 @@ const Header = () => {
                 {/* Mobile Auth Button */}
                 {user ? (
                   <SheetClose asChild>
-                    <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                       <LogOut className="mr-2 h-4 w-4" /> Logout
                     </Button>
                   </SheetClose>
                 ) : (
                   <SheetClose asChild>
                     <Link to="/login">
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <Button className="w-full bg-primary hover:bg-primary-foreground text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                         Login
                       </Button>
                     </Link>
@@ -114,12 +114,12 @@ const Header = () => {
           <nav className="space-x-4 hidden md:flex items-center">
             {mainNavLinks}
             {user ? (
-              <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                 <LogOut className="mr-2 h-4 w-4" /> Logout
               </Button>
             ) : (
               <Link to="/login">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button className="bg-primary hover:bg-primary-foreground text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                   Login
                 </Button>
               </Link>

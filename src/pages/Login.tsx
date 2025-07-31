@@ -19,16 +19,16 @@ const Login = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
-        <p className="text-lg text-gray-700">Loading authentication...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted via-background to-muted">
+        <p className="text-lg text-foreground">Loading authentication...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8 bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Sign In to SoulFlow</h2>
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8 bg-gradient-to-br from-muted via-background to-muted">
+      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-border">
+        <h2 className="text-3xl font-bold text-foreground text-center mb-6">Sign In to SoulFlow</h2>
         <Auth
           supabaseClient={supabase}
           providers={['google']}
@@ -37,8 +37,8 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: 'hsl(252 96% 50%)', // A purple shade
-                  brandAccent: 'hsl(252 96% 40%)', // A darker purple shade
+                  brand: 'hsl(var(--primary))',
+                  brandAccent: 'hsl(var(--primary))',
                 },
               },
             },
