@@ -46,6 +46,11 @@ const Header = () => {
           Add Event
         </Button>
       </Link>
+      <Link to="/calendar"> {/* New Calendar link */}
+        <Button variant="ghost" className={getButtonClass("/calendar")}>
+          Calendar
+        </Button>
+      </Link>
       <Link to="/map">
         <Button variant="ghost" className={cn(getButtonClass("/map"), "flex items-center")}>
           Map
@@ -59,7 +64,7 @@ const Header = () => {
           Contact
         </Button>
       </Link>
-      <Link to="/about"> {/* New About link */}
+      <Link to="/about">
         <Button variant="ghost" className={getButtonClass("/about")}>
           About
         </Button>

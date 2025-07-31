@@ -16,7 +16,8 @@ import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import EditEvent from "./pages/EditEvent";
-import About from "./pages/About"; // New import
+import About from "./pages/About";
+import CalendarView from "./pages/CalendarView"; // New import
 
 const queryClient = new QueryClient();
 
@@ -33,7 +34,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/about" element={<About />} /> {/* New Route */}
+              <Route path="/about" element={<About />} />
+              <Route path="/calendar" element={<CalendarView />} /> {/* New Route */}
               <Route path="/login" element={<Login />} />
               <Route
                 path="/admin/panel"
