@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -592,24 +592,22 @@ const SubmitEvent = () => {
                 <TabsTrigger value="url">Image URL</TabsTrigger>
               </TabsList>
               <TabsContent value="upload" className="mt-4">
-                <FormControl>
+                <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
+                  <span className="flex items-center">
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    {selectedImage ? selectedImage.name : 'No file chosen'}
+                  </span>
+                  <Button type="button" variant="outline" size="sm" className="ml-4">
+                    Choose File
+                  </Button>
                   <Input
+                    id="image-upload"
                     type="file"
                     accept="image/*"
                     onChange={handleImageFileChange}
-                    className="
-                      block w-full text-sm text-gray-700
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-purple-50 file:text-purple-700
-                      hover:file:bg-purple-100
-                      border border-gray-300 rounded-md shadow-sm
-                      cursor-pointer
-                      focus-visible:ring-purple-500
-                    "
+                    className="sr-only" // Hide the default input
                   />
-                </FormControl>
+                </label>
               </TabsContent>
               <TabsContent value="url" className="mt-4">
                 <FormField
