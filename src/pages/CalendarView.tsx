@@ -312,19 +312,17 @@ const CalendarView = () => {
                   </span>
                   <div className="flex-grow overflow-hidden space-y-1">
                     {displayEvents.map(event => (
-                      <Button
+                      <Badge
                         key={event.id}
-                        variant="ghost"
-                        size="sm"
                         className={cn(
-                          "w-full text-left px-2 py-1 rounded-sm text-xs font-medium truncate h-auto",
+                          "w-full text-left px-2 py-1 rounded-sm text-xs font-medium truncate cursor-pointer",
                           isTodayDate ? "bg-purple-200 text-purple-800 hover:bg-purple-300" : "bg-blue-200 text-blue-800 hover:bg-blue-300"
                         )}
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
                       >
                         {event.event_time && <span className="mr-1">{event.event_time} - </span>}
                         {event.event_name}
-                      </Button>
+                      </Badge>
                     ))}
                     {moreEventsCount > 0 && (
                       <span className="text-xs text-gray-500 mt-1 block">
