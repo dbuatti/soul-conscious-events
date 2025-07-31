@@ -273,7 +273,7 @@ const CalendarView = () => {
               <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
             ))}
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-40 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+              <div key={i} className="h-48 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
                 <Skeleton className="h-5 w-1/2 mb-2" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-2/3 mt-1" />
@@ -295,7 +295,7 @@ const CalendarView = () => {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "group h-40 border rounded-md p-1 flex flex-col relative cursor-pointer transition-all duration-300 ease-in-out",
+                    "group h-48 border rounded-md p-1 flex flex-col relative cursor-pointer transition-all duration-300 ease-in-out",
                     isCurrentMonth ? "bg-white shadow-sm hover:bg-gray-50 hover:shadow-md" : "bg-gray-100 text-gray-400",
                     isTodayDate && "border-2 border-purple-600 bg-purple-100 shadow-lg",
                     dayEvents.length > 0 && isCurrentMonth && "border-blue-400 bg-blue-100 hover:bg-blue-200 shadow-md"
@@ -314,13 +314,13 @@ const CalendarView = () => {
                       <Badge
                         key={event.id}
                         className={cn(
-                          "w-full text-left px-1 py-0.5 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal shadow-xs",
+                          "w-full text-left px-2 py-1 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal shadow-xs",
                           isTodayDate ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-blue-600 text-white hover:bg-blue-700"
                         )}
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
                       >
                         {event.event_time && <span className="text-xs text-gray-200">{event.event_time}</span>}
-                        <span className="text-sm font-semibold leading-tight line-clamp-2">{event.event_name}</span>
+                        <span className="text-xs font-semibold leading-snug">{event.event_name}</span>
                       </Badge>
                     ))}
                     {dayEvents.length > 2 && (
