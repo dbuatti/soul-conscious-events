@@ -231,7 +231,7 @@ const Index = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-7xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       {/* Hero Section */}
       <div className="text-center mb-12 py-12 px-6 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white">
         <h1 className="text-5xl font-extrabold mb-4 leading-tight">
@@ -498,7 +498,7 @@ const Index = () => {
                       onClick={() => handleViewDetails(event)}
                     >
                       {event.image_url && (
-                        <div className="relative w-full h-48 overflow-hidden">
+                        <div className="relative w-full aspect-video overflow-hidden">
                           <img
                             src={event.image_url}
                             alt={event.event_name}
