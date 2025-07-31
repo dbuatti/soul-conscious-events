@@ -268,12 +268,12 @@ const CalendarView = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-7 gap-2 text-center">
+          <div className="grid grid-cols-7 gap-1 text-center">
             {daysOfWeek.map(day => (
               <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
             ))}
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-60 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+              <div key={i} className="h-32 border rounded-md p-1 flex flex-col items-center justify-center bg-gray-50">
                 <Skeleton className="h-4 w-1/2 mb-2" />
                 <Skeleton className="h-3 w-3/4" />
                 <Skeleton className="h-3 w-2/3 mt-1" />
@@ -281,7 +281,7 @@ const CalendarView = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-7 gap-2 text-center">
+          <div className="grid grid-cols-7 gap-1 text-center"> {/* Reduced gap to gap-1 */}
             {daysOfWeek.map(day => (
               <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
             ))}
@@ -295,7 +295,7 @@ const CalendarView = () => {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "h-60 border rounded-md p-2 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out", // Reduced height to h-60
+                    "h-32 border rounded-md p-1 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out", // Reduced height to h-32, padding to p-1
                     isCurrentMonth ? "bg-white hover:bg-gray-50" : "bg-gray-100 text-gray-400",
                     isTodayDate && "border-2 border-purple-500 bg-purple-50 shadow-md",
                     dayEvents.length > 0 && isCurrentMonth && "border-blue-300 bg-blue-50 hover:bg-blue-100"
@@ -309,22 +309,22 @@ const CalendarView = () => {
                   )}>
                     {format(day, 'd')}
                   </span>
-                  <div className="flex-grow overflow-hidden space-y-1">
+                  <div className="flex-grow overflow-hidden space-y-0.5"> {/* Reduced space-y to space-y-0.5 */}
                     {displayEvents.map(event => (
                       <Badge
                         key={event.id}
                         className={cn(
-                          "w-full text-left px-2 py-0.5 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal", // Reduced py-1 to py-0.5
+                          "w-full text-left px-1 py-0 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal", // Reduced px-2 py-0.5 to px-1 py-0
                           isTodayDate ? "bg-purple-200 text-purple-800 hover:bg-purple-300" : "bg-blue-200 text-blue-800 hover:bg-blue-300"
                         )}
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
                       >
-                        {event.event_time && <span className="text-[0.6rem] text-gray-600">{event.event_time}</span>} {/* Further reduced font for time */}
-                        <span className="text-xs font-semibold leading-tight">{event.event_name}</span> {/* Further reduced font for event name */}
+                        {event.event_time && <span className="text-[0.55rem] text-gray-600">{event.event_time}</span>} {/* Adjusted font for time */}
+                        <span className="text-[0.65rem] font-semibold leading-tight">{event.event_name}</span> {/* Adjusted font for event name */}
                       </Badge>
                     ))}
                     {dayEvents.length > 2 && ( // Only show "+X More" if there are more than 2 events
-                      <span className="text-[0.6rem] text-gray-500 mt-1 block">
+                      <span className="text-[0.65rem] text-gray-500 mt-1 block font-medium"> {/* Adjusted font and added font-medium */}
                         +{dayEvents.length - 2} More
                       </span>
                     )}
