@@ -209,7 +209,7 @@ const CalendarView = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col lg:flex-row gap-8">
+    <div className="w-full max-w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col lg:flex-row gap-8">
       {/* Sidebar */}
       <EventSidebar selectedEventType={selectedEventType} onSelectEventType={setSelectedEventType} />
 
@@ -273,7 +273,7 @@ const CalendarView = () => {
               <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
             ))}
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-64 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+              <div key={i} className="h-60 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
                 <Skeleton className="h-4 w-1/2 mb-2" />
                 <Skeleton className="h-3 w-3/4" />
                 <Skeleton className="h-3 w-2/3 mt-1" />
@@ -295,7 +295,7 @@ const CalendarView = () => {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "h-64 border rounded-md p-2 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out", // Increased height to h-64
+                    "h-60 border rounded-md p-2 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out", // Reduced height to h-60
                     isCurrentMonth ? "bg-white hover:bg-gray-50" : "bg-gray-100 text-gray-400",
                     isTodayDate && "border-2 border-purple-500 bg-purple-50 shadow-md",
                     dayEvents.length > 0 && isCurrentMonth && "border-blue-300 bg-blue-50 hover:bg-blue-100"
@@ -314,17 +314,17 @@ const CalendarView = () => {
                       <Badge
                         key={event.id}
                         className={cn(
-                          "w-full text-left px-2 py-1 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal", // Reduced px-3 py-1.5 to px-2 py-1
+                          "w-full text-left px-2 py-0.5 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal", // Reduced py-1 to py-0.5
                           isTodayDate ? "bg-purple-200 text-purple-800 hover:bg-purple-300" : "bg-blue-200 text-blue-800 hover:bg-blue-300"
                         )}
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
                       >
-                        {event.event_time && <span className="text-[0.65rem] text-gray-600">{event.event_time}</span>} {/* Smaller font for time */}
-                        <span className="text-xs font-semibold leading-tight">{event.event_name}</span> {/* Smaller font for event name */}
+                        {event.event_time && <span className="text-[0.6rem] text-gray-600">{event.event_time}</span>} {/* Further reduced font for time */}
+                        <span className="text-xs font-semibold leading-tight">{event.event_name}</span> {/* Further reduced font for event name */}
                       </Badge>
                     ))}
                     {dayEvents.length > 2 && ( // Only show "+X More" if there are more than 2 events
-                      <span className="text-xs text-gray-500 mt-1 block">
+                      <span className="text-[0.6rem] text-gray-500 mt-1 block">
                         +{dayEvents.length - 2} More
                       </span>
                     )}
