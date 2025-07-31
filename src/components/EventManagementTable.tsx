@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { Edit, Trash2, PlusCircle, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { Edit, Trash2, PlusCircle, ExternalLink, Image as ImageIcon, Loader2, Frown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -251,13 +251,20 @@ const EventManagementTable = () => {
       </div>
 
       {loading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
+        <div className="flex flex-col items-center justify-center min-h-[300px] bg-gray-50 rounded-lg border border-gray-200">
+          <Loader2 className="h-12 w-12 text-purple-600 animate-spin mb-4" />
+          <p className="text-xl font-semibold text-gray-700">Loading events...</p>
         </div>
       ) : events.length === 0 ? (
-        <p className="text-center text-gray-600">No events found.</p>
+        <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+          <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-lg font-semibold text-gray-700 mb-4">No events found.</p>
+          <Link to="/submit-event">
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+              <PlusCircle className="mr-2 h-4 w-4" /> Add the First Event!
+            </Button>
+          </Link>
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <Table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
@@ -286,9 +293,9 @@ const EventManagementTable = () => {
                   <TableCell className="text-foreground">{event.event_type || 'N/A'}</TableCell>
                   <TableCell>
                     {event.image_url ? (
-                      <img src={event.image_url} alt="Event" className="w-12 h-12 object-cover rounded-md" />
+                      <img src={event.image_url} alt={`Image for ${event.event_name}`} className="w-12 h-12 object-cover rounded-md" />
                     ) : (
-                      <ImageIcon className="h-8 w-8 text-gray-400" />
+                      <ImageIcon className="h-8 w-8 text-gray-400" aria-label="No image available" />
                     )}
                   </TableCell>
                   <TableCell>
@@ -583,7 +590,7 @@ const EventManagementTable = () => {
                 <FormItem>
                   <FormLabel>Current Image</FormLabel>
                   <div className="w-full h-32 overflow-hidden rounded-md border border-gray-200 flex items-center justify-center bg-gray-50">
-                    <img src={currentEvent.image_url} alt="Event Image" className="max-h-full max-w-full object-contain" />
+                    <img src={currentEvent.image_url} alt={`Current image for ${currentEvent.event_name}`} className="max-h-full max-w-full object-contain" />
                   </div>
                   <FormDescription>Image can only be updated by submitting a new event.</FormDescription>
                 </FormItem>
