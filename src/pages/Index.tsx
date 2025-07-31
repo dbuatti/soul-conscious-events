@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, ChevronDown, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,8 @@ import { Label } from '@/components/ui/label';
 import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 import EventDetailDialog from '@/components/EventDetailDialog'; // Import the new dialog component
 import { eventTypes, australianStates } from '@/lib/constants'; // Import from constants
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 
 interface Event {
   id: string;
@@ -52,10 +54,10 @@ const Index = () => {
   const [appliedEventType, setAppliedEventType] = useState('All');
   const [appliedState, setAppliedState] = useState('All');
   const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
-  // const [showHiddenEvents, setShowHiddenEvents] = useState(false); // Removed state for the checkbox
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
+  const [isFiltersOpen, setIsFiltersOpen] = useState(true); // State for collapsible filters
 
   const { user, isLoading: isSessionLoading } = useSession(); // Get user from context
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
@@ -140,7 +142,7 @@ const Index = () => {
     };
 
     fetchEvents();
-  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]); // Removed showHiddenEvents, isAdmin, isViewingAsPublic from dependencies
+  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]);
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -164,10 +166,9 @@ const Index = () => {
     setAppliedState('All');
     setDraftDateFilter('All Upcoming');
     setAppliedDateFilter('All Upcoming');
-    // setShowHiddenEvents(false); // Removed this
   };
 
-  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => { // Removed 'hiddenEvents'
+  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => {
     switch (filterType) {
       case 'search':
         setDraftSearchTerm('');
@@ -194,7 +195,7 @@ const Index = () => {
     appliedSearchTerm !== '' ||
     appliedEventType !== 'All' ||
     appliedState !== 'All' ||
-    appliedDateFilter !== 'All Upcoming'; // Removed showHiddenEvents logic
+    appliedDateFilter !== 'All Upcoming';
 
   const handleShare = (event: Event) => {
     const eventUrl = `${window.location.origin}/events/${event.id}`;
@@ -230,7 +231,8 @@ const Index = () => {
       </p>
 
       {/* New App Description Clause */}
-      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center">
+      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center">
+        <Lightbulb className="mr-3 h-6 w-6 text-blue-600 flex-shrink-0" />
         <p className="text-gray-700 text-base leading-relaxed">
           SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
           As this is a new project from an aspiring app developer, some features may not work as expected.
@@ -239,175 +241,185 @@ const Index = () => {
       </div>
 
       {/* Filter and View Options Section */}
-      <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-lg">
-        <h2 className="text-2xl font-bold text-foreground mb-6">Filter Events</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start">
-          {/* Search Input */}
-          <div className="relative col-span-full">
-            <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
-            {/* Removed Search icon */}
-            <Input
-              id="search-events"
-              placeholder="Search events..."
-              className="w-full focus-visible:ring-purple-500" // Removed pl-10 class
-              value={draftSearchTerm}
-              onChange={(e) => setDraftSearchTerm(e.target.value)}
-            />
-            {draftSearchTerm && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-500 hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105"
-                onClick={() => {
-                  setDraftSearchTerm('');
-                  setAppliedSearchTerm('');
-                }}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-
-          {/* Event Type Select */}
-          <div className="flex flex-col gap-1">
-            <label htmlFor="event-type" className="text-sm font-medium text-gray-700">Event Type</label>
-            <Select onValueChange={setDraftEventType} value={draftEventType}>
-              <SelectTrigger id="event-type" className="w-full focus-visible:ring-purple-500">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                {eventTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* State Select */}
-          <div className="flex flex-col gap-1">
-            <label htmlFor="event-state" className="text-sm font-medium text-gray-700">State</label>
-            <Select onValueChange={setDraftState} value={draftState}>
-              <SelectTrigger id="event-state" className="w-full focus-visible:ring-purple-500">
-                <SelectValue placeholder="All States" />
-              </SelectTrigger>
-              <SelectContent>
-                {australianStates.map((state) => (
-                  <SelectItem key={state} value={state}>
-                    {state}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Date Range Select */}
-          <div className="flex flex-col gap-1">
-            <label htmlFor="date-range" className="text-sm font-medium text-gray-700">Date Range</label>
-            <Select onValueChange={setDraftDateFilter} value={draftDateFilter}>
-              <SelectTrigger id="date-range" className="w-full focus-visible:ring-purple-500">
-                <SelectValue placeholder="All Upcoming" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Upcoming">All Upcoming</SelectItem>
-                <SelectItem value="Today">Today</SelectItem>
-                <SelectItem value="This Week">This Week</SelectItem>
-                <SelectItem value="This Month">This Month</SelectItem>
-                <SelectItem value="Past Events">Past Events</SelectItem>
-                <SelectItem value="All Events">All Events</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <Collapsible
+        open={isFiltersOpen}
+        onOpenChange={setIsFiltersOpen}
+        className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-lg"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-foreground">Filter Events</h2>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-9 p-0">
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFiltersOpen ? 'rotate-180' : ''}`} />
+              <span className="sr-only">Toggle filters</span>
+            </Button>
+          </CollapsibleTrigger>
         </div>
 
-        {/* Action Buttons and View Mode Controls */}
-        <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-4 justify-between items-center">
-          {/* Left side: Add New Event Button */}
-          <Link to="/submit-event">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
-              Add New Event
-            </Button>
-          </Link>
-
-          {/* Right side: Apply, Clear, View Mode */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center">
-            {/* Removed isAdmin && !isViewingAsPublic checkbox */}
-
-            {(
-              draftEventType !== appliedEventType ||
-              draftState !== appliedState ||
-              draftDateFilter !== appliedDateFilter
-            ) && (
-                <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
-                  Apply Filters
+        <CollapsibleContent className="CollapsibleContent">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start mt-6">
+            {/* Search Input */}
+            <div className="relative col-span-full">
+              <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
+              <Input
+                id="search-events"
+                placeholder="Search events..."
+                className="w-full focus-visible:ring-purple-500"
+                value={draftSearchTerm}
+                onChange={(e) => setDraftSearchTerm(e.target.value)}
+              />
+              {draftSearchTerm && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-500 hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105"
+                  onClick={() => {
+                    setDraftSearchTerm('');
+                    setAppliedSearchTerm('');
+                  }}
+                >
+                  <X className="h-3 w-3" />
                 </Button>
               )}
-            {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming') && (
-              <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105">
-                Clear All Filters
-              </Button>
-            )}
+            </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
-              <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
-                <ToggleGroupItem value="list" aria-label="List View">
-                  <List className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="calendar" aria-label="Calendar View">
-                  <CalendarDays className="h-4 w-4" />
-                </ToggleGroupItem>
-              </ToggleGroup>
+            {/* Event Type Select */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="event-type" className="text-sm font-medium text-gray-700">Event Type</label>
+              <Select onValueChange={setDraftEventType} value={draftEventType}>
+                <SelectTrigger id="event-type" className="w-full focus-visible:ring-purple-500">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  {eventTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* State Select */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="event-state" className="text-sm font-medium text-gray-700">State</label>
+              <Select onValueChange={setDraftState} value={draftState}>
+                <SelectTrigger id="event-state" className="w-full focus-visible:ring-purple-500">
+                  <SelectValue placeholder="All States" />
+                </SelectTrigger>
+                <SelectContent>
+                  {australianStates.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {state}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Date Range Select */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="date-range" className="text-sm font-medium text-gray-700">Date Range</label>
+              <Select onValueChange={setDraftDateFilter} value={draftDateFilter}>
+                <SelectTrigger id="date-range" className="w-full focus-visible:ring-purple-500">
+                  <SelectValue placeholder="All Upcoming" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All Upcoming">All Upcoming</SelectItem>
+                  <SelectItem value="Today">Today</SelectItem>
+                  <SelectItem value="This Week">This Week</SelectItem>
+                  <SelectItem value="This Month">This Month</SelectItem>
+                  <SelectItem value="Past Events">Past Events</SelectItem>
+                  <SelectItem value="All Events">All Events</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </div>
 
-        {/* Active Filters Display */}
-        {hasActiveFilters && (
-          <div className="mt-6 flex flex-wrap gap-2 items-center">
-            <span className="text-sm font-medium text-gray-700">Active Filters:</span>
-            {appliedSearchTerm && (
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1">
-                Search: "{appliedSearchTerm}"
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
-                  <X className="h-3 w-3" />
+          {/* Action Buttons and View Mode Controls */}
+          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-4 justify-between items-center">
+            {/* Left side: Add New Event Button */}
+            <Link to="/submit-event">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
+                Add New Event
+              </Button>
+            </Link>
+
+            {/* Right side: Apply, Clear, View Mode */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              {(
+                draftEventType !== appliedEventType ||
+                draftState !== appliedState ||
+                draftDateFilter !== appliedDateFilter
+              ) && (
+                  <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                    Apply Filters
+                  </Button>
+                )}
+              {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming') && (
+                <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105">
+                  Clear All Filters
                 </Button>
-              </Badge>
-            )}
-            {appliedEventType !== 'All' && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1">
-                Type: {appliedEventType}
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </Badge>
-            )}
-            {appliedState !== 'All' && (
-              <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1">
-                State: {appliedState}
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </Badge>
-            )}
-            {appliedDateFilter !== 'All Upcoming' && (
-              <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1">
-                Date: {appliedDateFilter}
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </Badge>
-            )}
-            {/* Removed showHiddenEvents badge */}
+              )}
+
+              {/* View Mode Toggle */}
+              <div className="flex flex-col gap-1 w-full sm:w-auto">
+                <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
+                <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
+                  <ToggleGroupItem value="list" aria-label="List View">
+                    <List className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="calendar" aria-label="Calendar View">
+                    <CalendarDays className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Active Filters Display */}
+          {hasActiveFilters && (
+            <div className="mt-6 flex flex-wrap gap-2 items-center">
+              <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+              {appliedSearchTerm && (
+                <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1">
+                  Search: "{appliedSearchTerm}"
+                  <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
+              {appliedEventType !== 'All' && (
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1">
+                  Type: {appliedEventType}
+                  <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
+              {appliedState !== 'All' && (
+                <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1">
+                  State: {appliedState}
+                  <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
+              {appliedDateFilter !== 'All Upcoming' && (
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1">
+                  Date: {appliedDateFilter}
+                  <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
+            </div>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Event Count Display */}
-      <div className="text-center text-gray-700 mb-4"> {/* Changed p to div */}
+      <div className="text-center text-gray-700 mb-4">
         {loading ? (
           <Skeleton className="h-5 w-48 mx-auto" />
         ) : events.length === 0 ? (
