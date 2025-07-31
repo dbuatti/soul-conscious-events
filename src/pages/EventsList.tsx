@@ -231,26 +231,26 @@ const EventsList = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-7xl bg-white p-4 sm:p-8 rounded-xl shadow-lg border border-gray-200">
       {/* Hero Section */}
-      <div className="text-center mb-12 py-12 px-6 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white">
-        <h1 className="text-5xl font-extrabold mb-4 leading-tight">
+      <div className="text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white">
+        <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">
           Discover Your Next Soulful Experience
         </h1>
-        <p className="text-xl font-light mb-8 opacity-90">
+        <p className="text-lg sm:text-xl font-light mb-8 opacity-90">
           Connect with events that nourish your mind, body, and spirit across Australia.
         </p>
         <Link to="/submit-event">
-          <Button className="bg-white text-purple-700 hover:bg-gray-100 text-lg font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+          <Button className="bg-white text-purple-700 hover:bg-gray-100 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
             Add Your Event
           </Button>
         </Link>
       </div>
 
       {/* App Description Clause */}
-      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center">
-        <Lightbulb className="mr-3 h-6 w-6 text-blue-600 flex-shrink-0" />
-        <p className="text-gray-700 text-base leading-relaxed">
+      <div className="mb-8 p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center">
+        <Lightbulb className="mr-3 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+        <p className="text-sm sm:text-base leading-relaxed">
           SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
           As this is a new project from an aspiring app developer, some features may not work as expected.
           Your feedback is invaluable! Please visit the <Link to="/contact" className="text-blue-600 hover:underline font-medium">Contact Us</Link> page to share your suggestions or report any issues.
@@ -261,10 +261,10 @@ const EventsList = () => {
       <Collapsible
         open={isFiltersOpen}
         onOpenChange={setIsFiltersOpen}
-        className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-lg"
+        className="mb-8 p-4 sm:p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-lg"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">Filter Events</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Filter Events</h2>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm" className="w-9 p-0">
               <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFiltersOpen ? 'rotate-180' : ''}`} />
@@ -274,14 +274,14 @@ const EventsList = () => {
         </div>
 
         <CollapsibleContent className="CollapsibleContent">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 items-start mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-4 items-start mt-6">
             {/* Search Input */}
             <div className="relative col-span-full">
-              <label htmlFor="search-events" className="text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
+              <label htmlFor="search-events" className="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
               <Input
                 id="search-events"
                 placeholder="Search events..."
-                className="w-full focus-visible:ring-purple-500"
+                className="w-full focus-visible:ring-purple-500 text-sm sm:text-base"
                 value={draftSearchTerm}
                 onChange={(e) => setDraftSearchTerm(e.target.value)}
               />
@@ -302,9 +302,9 @@ const EventsList = () => {
 
             {/* Event Type Select */}
             <div className="flex flex-col gap-1">
-              <label htmlFor="event-type" className="text-sm font-medium text-gray-700">Event Type</label>
+              <label htmlFor="event-type" className="text-xs sm:text-sm font-medium text-gray-700">Event Type</label>
               <Select onValueChange={setDraftEventType} value={draftEventType}>
-                <SelectTrigger id="event-type" className="w-full focus-visible:ring-purple-500">
+                <SelectTrigger id="event-type" className="w-full focus-visible:ring-purple-500 text-sm sm:text-base">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
@@ -319,9 +319,9 @@ const EventsList = () => {
 
             {/* State Select */}
             <div className="flex flex-col gap-1">
-              <label htmlFor="event-state" className="text-sm font-medium text-gray-700">State</label>
+              <label htmlFor="event-state" className="text-xs sm:text-sm font-medium text-gray-700">State</label>
               <Select onValueChange={setDraftState} value={draftState}>
-                <SelectTrigger id="event-state" className="w-full focus-visible:ring-purple-500">
+                <SelectTrigger id="event-state" className="w-full focus-visible:ring-purple-500 text-sm sm:text-base">
                   <SelectValue placeholder="All States" />
                 </SelectTrigger>
                 <SelectContent>
@@ -336,9 +336,9 @@ const EventsList = () => {
 
             {/* Date Range Select */}
             <div className="flex flex-col gap-1">
-              <label htmlFor="date-range" className="text-sm font-medium text-gray-700">Date Range</label>
+              <label htmlFor="date-range" className="text-xs sm:text-sm font-medium text-gray-700">Date Range</label>
               <Select onValueChange={setDraftDateFilter} value={draftDateFilter}>
-                <SelectTrigger id="date-range" className="w-full focus-visible:ring-purple-500">
+                <SelectTrigger id="date-range" className="w-full focus-visible:ring-purple-500 text-sm sm:text-base">
                   <SelectValue placeholder="All Upcoming" />
                 </SelectTrigger>
                 <SelectContent>
@@ -354,39 +354,39 @@ const EventsList = () => {
           </div>
 
           {/* Action Buttons and View Mode Controls */}
-          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-4 justify-between items-center">
+          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-center">
             {/* Left side: Add New Event Button */}
             <Link to="/submit-event">
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto text-sm sm:text-base">
                 Add New Event
               </Button>
             </Link>
 
             {/* Right side: Apply, Clear, View Mode */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center w-full sm:w-auto">
               {(
                 draftEventType !== appliedEventType ||
                 draftState !== appliedState ||
                 draftDateFilter !== appliedDateFilter
               ) && (
-                  <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base">
                     Apply Filters
                   </Button>
                 )}
               {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming') && (
-                <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base">
                   Clear All Filters
                 </Button>
               )}
 
               {/* View Mode Toggle */}
               <div className="flex flex-col gap-1 w-full sm:w-auto">
-                <label htmlFor="view-mode" className="text-sm font-medium text-gray-700">View Mode</label>
+                <label htmlFor="view-mode" className="text-xs sm:text-sm font-medium text-gray-700">View Mode</label>
                 <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
-                  <ToggleGroupItem value="list" aria-label="List View">
+                  <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9">
                     <List className="h-4 w-4" />
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="calendar" aria-label="Calendar View">
+                  <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9">
                     <CalendarDays className="h-4 w-4" />
                   </ToggleGroupItem>
                 </ToggleGroup>
@@ -396,37 +396,37 @@ const EventsList = () => {
 
           {/* Active Filters Display */}
           {hasActiveFilters && (
-            <div className="mt-6 flex flex-wrap gap-2 items-center">
-              <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+            <div className="mt-6 flex flex-wrap gap-1 sm:gap-2 items-center">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">Active Filters:</span>
               {appliedSearchTerm && (
-                <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1">
+                <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                   Search: "{appliedSearchTerm}"
-                  <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
-                    <X className="h-3 w-3" />
+                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <X className="h-2.5 w-2.5" />
                   </Button>
                 </Badge>
               )}
               {appliedEventType !== 'All' && (
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1">
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                   Type: {appliedEventType}
-                  <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
-                    <X className="h-3 w-3" />
+                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <X className="h-2.5 w-2.5" />
                   </Button>
                 </Badge>
               )}
               {appliedState !== 'All' && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1">
+                <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                   State: {appliedState}
-                  <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
-                    <X className="h-3 w-3" />
+                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <X className="h-2.5 w-2.5" />
                   </Button>
                 </Badge>
               )}
               {appliedDateFilter !== 'All Upcoming' && (
-                <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1">
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                   Date: {appliedDateFilter}
-                  <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
-                    <X className="h-3 w-3" />
+                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <X className="h-2.5 w-2.5" />
                   </Button>
                 </Badge>
               )}
@@ -436,7 +436,7 @@ const EventsList = () => {
       </Collapsible>
 
       {/* Event Count Display */}
-      <div className="text-center text-gray-700 mb-4">
+      <div className="text-center text-gray-700 mb-4 text-sm sm:text-base">
         {loading ? (
           <Skeleton className="h-5 w-48 mx-auto" />
         ) : events.length === 0 ? (
@@ -507,36 +507,36 @@ const EventsList = () => {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         </div>
                       )}
-                      <CardHeader className="p-4 pb-2">
-                        <CardTitle className="text-2xl font-bold text-purple-700 mb-2">{event.event_name}</CardTitle>
-                        <CardDescription className="flex items-center text-gray-600 text-base">
-                          <Calendar className="mr-2 h-5 w-5 text-blue-500" />
+                      <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2">
+                        <CardTitle className="text-xl sm:text-2xl font-bold text-purple-700 mb-1 sm:mb-2">{event.event_name}</CardTitle>
+                        <CardDescription className="flex items-center text-gray-600 text-sm sm:text-base">
+                          <Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
                           {dateDisplay}
                           {event.event_time && (
                             <>
-                              <Clock className="ml-4 mr-2 h-5 w-5 text-green-500" />
+                              <Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                               {event.event_time}
                             </>
                           )}
                         </CardDescription>
                         {(event.place_name || event.full_address) && (
-                          <div className="flex flex-col items-start text-gray-600 mt-2">
+                          <div className="flex flex-col items-start text-gray-600 mt-1 sm:mt-2">
                             {event.place_name && (
-                              <div className="flex items-center mb-1">
-                                <MapPin className="mr-2 h-5 w-5 text-red-500" />
-                                <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-base py-1 px-2 font-semibold">
+                              <div className="flex items-center mb-0.5 sm:mb-1">
+                                <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+                                <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-sm sm:text-base py-0.5 px-1 sm:py-1 sm:px-2 font-semibold">
                                   {event.place_name}
                                 </Badge>
                               </div>
                             )}
                             {event.full_address && (
                               <div className="flex items-center">
-                                {!event.place_name && <MapPin className="mr-2 h-5 w-5 text-red-500" />}
+                                {!event.place_name && <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-red-500" />}
                                 <a
                                   href={googleMapsLink}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline text-base"
+                                  className="text-blue-600 hover:underline text-sm sm:text-base"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   {event.full_address}
@@ -546,34 +546,34 @@ const EventsList = () => {
                           </div>
                         )}
                       </CardHeader>
-                      <CardContent className="p-4 pt-2 space-y-2">
+                      <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
                         {event.description && (
                           <div>
-                            <p className="text-gray-700 leading-relaxed">
+                            <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                               {expandedDescriptions[event.id] || event.description.length < 150
                                 ? event.description
                                 : `${event.description.substring(0, 150)}...`}
                             </p>
                             {event.description.length >= 150 && (
-                              <Button variant="link" onClick={(e) => { e.stopPropagation(); toggleDescription(event.id); }} className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
+                              <Button variant="link" onClick={(e) => { e.stopPropagation(); toggleDescription(event.id); }} className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105 text-xs sm:text-sm">
                                 {expandedDescriptions[event.id] ? 'Read Less' : 'Read More'}
                               </Button>
                             )}
                           </div>
                         )}
                         {event.price && (
-                          <p className="flex items-center text-gray-700 text-base">
-                            <DollarSign className="mr-2 h-5 w-5 text-green-600" />
+                          <p className="flex items-center text-gray-700 text-sm sm:text-base">
+                            <DollarSign className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                             <span className="font-medium">Price:</span> {event.price}
                             {event.price.toLowerCase() === 'free' && (
-                              <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
+                              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-green-100 text-green-800 text-xs sm:text-sm">Free</Badge>
                             )}
                           </p>
                         )}
                         {event.ticket_link && (
                           <div className="flex items-center">
-                            <LinkIcon className="mr-2 h-5 w-5 text-purple-600" />
-                            <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-base transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <LinkIcon className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                            <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-sm sm:text-base transition-all duration-300 ease-in-out transform hover:scale-105">
                               <a href={event.ticket_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                 Ticket/Booking Link
                               </a>
@@ -581,38 +581,38 @@ const EventsList = () => {
                           </div>
                         )}
                         {event.special_notes && (
-                          <p className="flex items-start text-gray-700 text-base">
-                            <Info className="mr-2 h-5 w-5 text-orange-500 mt-1" />
+                          <p className="flex items-start text-gray-700 text-sm sm:text-base">
+                            <Info className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 mt-0.5 sm:mt-1" />
                             <span className="font-medium">Special Notes:</span> {event.special_notes}
                           </p>
                         )}
                         {event.organizer_contact && (
-                          <p className="flex items-center text-gray-700 text-base">
-                            <User className="mr-2 h-5 w-5 text-indigo-500" />
+                          <p className="flex items-center text-gray-700 text-sm sm:text-base">
+                            <User className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
                             <span className="font-medium">Organizer:</span> {event.organizer_contact}
                           </p>
                         )}
                         {event.event_type && (
-                          <p className="flex items-center text-gray-700 text-base">
-                            <Tag className="mr-2 h-5 w-5 text-pink-500" />
+                          <p className="flex items-center text-gray-700 text-sm sm:text-base">
+                            <Tag className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-pink-500" />
                             <span className="font-medium">Type:</span> {event.event_type}
                           </p>
                         )}
                       </CardContent>
-                      <CardFooter className="flex flex-col items-start pt-4">
-                        <div className="flex justify-end w-full space-x-2">
-                          <Button variant="outline" size="icon" onClick={(e) => handleShare(event, e)} title="Share Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                            <Share2 className="h-4 w-4" />
+                      <CardFooter className="flex flex-col items-start pt-2 sm:pt-4">
+                        <div className="flex justify-end w-full space-x-1 sm:space-x-2">
+                          <Button variant="outline" size="icon" onClick={(e) => handleShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <Share2 className="h-3.5 w-3.5 sm:h-4 w-4" />
                           </Button>
                           {isCreatorOrAdmin && (
                             <>
                               <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
-                                <Button variant="outline" size="icon" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                                  <Edit className="h-4 w-4" />
+                                <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                                  <Edit className="h-3.5 w-3.5 sm:h-4 w-4" />
                                 </Button>
                               </Link>
-                              <Button variant="destructive" size="icon" onClick={(e) => handleDelete(event.id, e)} title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                                <Trash2 className="h-4 w-4" />
+                              <Button variant="destructive" size="icon" onClick={(e) => handleDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                                <Trash2 className="h-3.5 w-3.5 sm:h-4 w-4" />
                               </Button>
                             </>
                           )}
