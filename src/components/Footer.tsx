@@ -39,8 +39,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="inline-flex items-center text-sm hover:text-purple-400 transition-colors"
           >
-            {/* Placeholder for Buy Me a Coffee image */}
-            <img src="/placeholder.svg" alt="Buy Me a Coffee" className="h-8 w-auto" />
+            <img src="/buy-me-a-coffee.png" alt="Buy Me a Coffee" className="h-8 w-auto" />
           </a>
         </div>
       </div>
