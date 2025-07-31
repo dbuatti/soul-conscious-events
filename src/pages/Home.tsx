@@ -357,6 +357,7 @@ const Home = () => {
                             }
                           }}
                           initialFocus
+                          captionLayout="dropdown" // Add this for month/year dropdowns
                         />
                       </PopoverContent>
                     </Popover>
