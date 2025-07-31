@@ -30,9 +30,10 @@ interface EventCalendarProps {
   events: Event[];
   selectedDate: Date | undefined;
   onDateSelect: (date: Date | undefined) => void;
+  onEventSelect: (event: Event) => void; // New prop to handle event selection
 }
 
-const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onDateSelect }) => {
+const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onDateSelect, onEventSelect }) => {
   // Debugging logs
   console.log('EventCalendar Debug: All events passed:', events);
   console.log('EventCalendar Debug: Selected date:', selectedDate);
@@ -196,9 +197,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             <Button variant="outline" size="sm" onClick={() => handleShare(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               <Share2 className="mr-2 h-4 w-4" /> Share
             </Button>
-            <Link to={`/events/${event.id}`}>
-              <Button size="sm" className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
-            </Link>
+            <Button size="sm" onClick={() => onEventSelect(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
           </div>
         </CardContent>
       </Card>

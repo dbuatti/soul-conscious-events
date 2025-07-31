@@ -28,6 +28,7 @@ import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIco
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import EventDetailDialog from '@/components/EventDetailDialog'; // Import the new dialog component
 
 interface Event {
   id: string;
@@ -54,6 +55,10 @@ const CalendarView = () => {
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [isDayDetailDialogOpen, setIsDayDetailDialogOpen] = useState(false);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(null);
+
+  // State for EventDetailDialog
+  const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -130,6 +135,11 @@ const CalendarView = () => {
     setIsDayDetailDialogOpen(true);
   };
 
+  const handleViewDetails = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEventDetailDialogOpen(true);
+  };
+
   const renderEventCard = (event: Event) => {
     const googleMapsLink = event.full_address
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
@@ -183,9 +193,7 @@ const CalendarView = () => {
             <p className="text-foreground text-sm line-clamp-2 mb-2">{event.description}</p>
           )}
           <div className="flex justify-end">
-            <Link to={`/events/${event.id}`} state={{ from: '/calendar' }}> {/* Pass state to EventDetail */}
-              <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 text-xs">View Details</Button>
-            </Link>
+            <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 text-xs" onClick={() => handleViewDetails(event)}>View Details</Button>
           </div>
         </CardContent>
       </Card>
@@ -291,18 +299,19 @@ const CalendarView = () => {
                 </span>
                 <div className="flex-grow overflow-hidden space-y-1">
                   {displayEvents.map(event => (
-                    <Link to={`/events/${event.id}`} key={event.id} className="block" state={{ from: '/calendar' }}>
-                      <Badge
-                        variant="secondary"
-                        className={cn(
-                          "w-full text-left px-2 py-1 rounded-sm text-xs font-medium truncate",
-                          isTodayDate ? "bg-purple-200 text-purple-800" : "bg-blue-200 text-blue-800"
-                        )}
-                      >
-                        {event.event_time && <span className="mr-1">{event.event_time} - </span>}
-                        {event.event_name}
-                      </Badge>
-                    </Link>
+                    <Button
+                      key={event.id}
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "w-full text-left px-2 py-1 rounded-sm text-xs font-medium truncate h-auto",
+                        isTodayDate ? "bg-purple-200 text-purple-800 hover:bg-purple-300" : "bg-blue-200 text-blue-800 hover:bg-blue-300"
+                      )}
+                      onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
+                    >
+                      {event.event_time && <span className="mr-1">{event.event_time} - </span>}
+                      {event.event_name}
+                    </Button>
                   ))}
                   {moreEventsCount > 0 && (
                     <span className="text-xs text-gray-500 mt-1 block">
@@ -316,7 +325,7 @@ const CalendarView = () => {
         </div>
       )}
 
-      {/* Day Detail Dialog */}
+      {/* Day Detail Dialog (remains for listing all events on a day) */}
       <Dialog open={isDayDetailDialogOpen} onOpenChange={setIsDayDetailDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -403,9 +412,7 @@ const CalendarView = () => {
                         </p>
                       )}
                       <div className="flex justify-end mt-2">
-                        <Link to={`/events/${event.id}`} state={{ from: '/calendar' }}>
-                          <Button size="sm" className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
-                        </Link>
+                        <Button size="sm" onClick={() => { setIsDayDetailDialogOpen(false); handleViewDetails(event); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -422,6 +429,14 @@ const CalendarView = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Event Detail Dialog (for individual event details) */}
+      <EventDetailDialog
+        event={selectedEvent}
+        isOpen={isEventDetailDialogOpen}
+        onClose={() => setIsEventDetailDialogOpen(false)}
+        cameFromCalendar={true} // Indicate that it's opened from calendar context
+      />
     </div>
   );
 };

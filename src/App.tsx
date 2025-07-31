@@ -8,7 +8,7 @@ import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
 import AdminPanel from "./pages/AdminPanel";
-import EventDetail from "./pages/EventDetail";
+// import EventDetail from "./pages/EventDetail"; // Removed direct import
 import MapPage from "./pages/MapPage";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -17,7 +17,7 @@ import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import EditEvent from "./pages/EditEvent";
 import About from "./pages/About";
-import CalendarView from "./pages/CalendarView"; // New import
+import CalendarView from "./pages/CalendarView";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +35,7 @@ const App = () => (
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
-              <Route path="/calendar" element={<CalendarView />} /> {/* New Route */}
+              <Route path="/calendar" element={<CalendarView />} />
               <Route path="/login" element={<Login />} />
               <Route
                 path="/admin/panel"
@@ -53,7 +53,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              <Route path="/events/:id" element={<EventDetail />} />
+              {/* Removed the direct route for EventDetail */}
               <Route path="/map" element={<MapPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

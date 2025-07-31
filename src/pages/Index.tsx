@@ -15,6 +15,7 @@ import EventCalendar from '@/components/EventCalendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useSession } from '@/components/SessionContextProvider'; // Import useSession
+import EventDetailDialog from '@/components/EventDetailDialog'; // Import the new dialog component
 
 interface Event {
   id: string;
@@ -74,6 +75,10 @@ const Index = () => {
 
   const { user, isLoading: isSessionLoading } = useSession(); // Get user from context
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
+
+  // State for EventDetailDialog
+  const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -226,6 +231,11 @@ const Index = () => {
         setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId)); // Optimistically update UI
       }
     }
+  };
+
+  const handleViewDetails = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEventDetailDialogOpen(true);
   };
 
   return (
@@ -576,9 +586,7 @@ const Index = () => {
                           <Button variant="outline" size="sm" onClick={() => handleShare(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                             <Share2 className="mr-2 h-4 w-4" /> Share
                           </Button>
-                          <Link to={`/events/${event.id}`}>
-                            <Button size="sm" className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
-                          </Link>
+                          <Button size="sm" onClick={() => handleViewDetails(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
                           {isCreatorOrAdmin && (
                             <>
                               <Link to={`/edit-event/${event.id}`}>
@@ -603,10 +611,18 @@ const Index = () => {
               events={events}
               selectedDate={selectedCalendarDate}
               onDateSelect={setSelectedCalendarDate}
+              onEventSelect={handleViewDetails} // Pass the handler to EventCalendar
             />
           )}
         </>
       )}
+
+      {/* Event Detail Dialog */}
+      <EventDetailDialog
+        event={selectedEvent}
+        isOpen={isEventDetailDialogOpen}
+        onClose={() => setIsEventDetailDialogOpen(false)}
+      />
     </div>
   );
 };

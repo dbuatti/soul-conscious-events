@@ -1,0 +1,258 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useSession } from '@/components/SessionContextProvider';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription as DialogDescriptionUI,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+
+interface Event {
+  id: string;
+  event_name: string;
+  event_date: string;
+  end_date?: string;
+  event_time?: string;
+  place_name?: string;
+  full_address?: string;
+  description?: string;
+  ticket_link?: string;
+  price?: string;
+  special_notes?: string;
+  organizer_contact?: string;
+  event_type?: string;
+  state?: string;
+  image_url?: string;
+  user_id?: string;
+}
+
+interface EventDetailDialogProps {
+  event: Event | null;
+  isOpen: boolean;
+  onClose: () => void;
+  cameFromCalendar?: boolean; // Prop to indicate if opened from calendar
+}
+
+const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose, cameFromCalendar = false }) => {
+  const navigate = useNavigate();
+  const { user, isLoading: isSessionLoading } = useSession();
+
+  const handleDelete = async () => {
+    if (!event) return;
+    const { error } = await supabase.from('events').delete().eq('id', event.id);
+
+    if (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Failed to delete event.');
+    } else {
+      toast.success('Event deleted successfully!');
+      onClose(); // Close the dialog after deletion
+      navigate('/'); // Redirect to home page after deletion
+    }
+  };
+
+  if (!event) {
+    return null; // Or a loading skeleton if preferred, but event should be passed when opening
+  }
+
+  const googleMapsLink = event.full_address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
+    : '#';
+
+  const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
+
+  const formattedStartDate = event.event_date
+    ? format(new Date(event.event_date), 'PPP')
+    : 'Date TBD';
+  const formattedEndDate = event.end_date
+    ? format(new Date(event.end_date), 'PPP')
+    : '';
+
+  const dateDisplay =
+    event.end_date && event.event_date !== event.end_date
+      ? `${formattedStartDate} - ${formattedEndDate}`
+      : formattedStartDate;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-3xl font-bold text-foreground text-center">{event.event_name}</DialogTitle>
+          <DialogDescriptionUI>
+            Details about this soulful event.
+          </DialogDescriptionUI>
+        </DialogHeader>
+
+        {event.image_url && (
+          <div className="mb-4">
+            <a href={event.image_url} target="_blank" rel="noopener noreferrer">
+              <img
+                src={event.image_url}
+                alt={event.event_name}
+                className="w-full h-64 object-cover rounded-lg shadow-lg"
+              />
+            </a>
+          </div>
+        )}
+
+        <Card className="shadow-lg rounded-lg border-none">
+          <CardHeader>
+            <CardDescription className="flex items-center text-gray-600 mt-2">
+              <Calendar className="mr-2 h-4 w-4 text-blue-500" />
+              {dateDisplay}
+              {event.event_time && (
+                <>
+                  <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
+                  {event.event_time}
+                </>
+              )}
+            </CardDescription>
+            {(event.place_name || event.full_address) && (
+              <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
+                {event.place_name && (
+                  <div className="flex items-center mb-1">
+                    <MapPin className="mr-2 h-4 w-4 text-red-500" />
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-base py-1 px-2">
+                      {event.place_name}
+                    </Badge>
+                  </div>
+                )}
+                {event.full_address && (
+                  <div className="flex items-center">
+                    {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-red-500" />}
+                    <a
+                      href={googleMapsLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-base"
+                    >
+                      {event.full_address}
+                    </a>
+                  </div>
+                )}
+              </CardDescription>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {event.description && (
+              <div>
+                <h3 className="font-semibold text-foreground mb-2">Description:</h3>
+                <p className="text-gray-700 whitespace-pre-wrap">{event.description}</p>
+              </div>
+            )}
+            {event.price && (
+              <p className="flex items-center text-gray-700">
+                <DollarSign className="mr-2 h-5 w-5 text-green-600" />
+                <span className="font-medium">Price:</span> {event.price}
+                {event.price.toLowerCase() === 'free' && (
+                  <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
+                )}
+              </p>
+            )}
+            {event.ticket_link && (
+              <div className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5 text-purple-600" />
+                <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-base transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
+                    Ticket/Booking Link
+                  </a>
+                </Button>
+              </div>
+            )}
+            {event.special_notes && (
+              <p className="flex items-start text-gray-700">
+                <Info className="mr-2 h-5 w-5 text-orange-500 mt-1" />
+                <span className="font-medium">Special Notes:</span> {event.special_notes}
+              </p>
+            )}
+            {event.organizer_contact && (
+              <p className="flex items-center text-gray-700">
+                <User className="mr-2 h-5 w-5 text-indigo-500" />
+                <span className="font-medium">Organizer:</span> {event.organizer_contact}
+              </p>
+            )}
+            {event.event_type && (
+              <p className="flex items-center text-gray-700">
+                <Tag className="mr-2 h-5 w-5 text-pink-500" />
+                <span className="font-medium">Event Type:</span> {event.event_type}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <DialogFooter className="flex flex-wrap justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            {cameFromCalendar ? 'Back to Calendar' : 'Close'}
+          </Button>
+          {event.full_address && (
+            <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
+              <Button className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Globe className="mr-2 h-4 w-4" /> View on Map
+              </Button>
+            </a>
+          )}
+          <Button onClick={() => {
+            const eventUrl = `${window.location.origin}/events/${event.id}`; // Still provide a direct link for sharing
+            navigator.clipboard.writeText(eventUrl)
+              .then(() => toast.success('Event link copied to clipboard!'))
+              .catch(() => toast.error('Failed to copy link. Please try again.'));
+          }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Share2 className="mr-2 h-4 w-4" /> Share Event
+          </Button>
+          {isCreatorOrAdmin && (
+            <>
+              <Button variant="outline" onClick={() => { onClose(); navigate(`/edit-event/${event.id}`); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Edit className="mr-2 h-4 w-4" /> Edit
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your event
+                      and remove its data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default EventDetailDialog;
