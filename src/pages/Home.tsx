@@ -35,7 +35,8 @@ import { eventTypes } from '@/lib/constants';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar'; // Re-import Calendar for the full date picker dialog
+import { Calendar } from '@/components/ui/calendar'; // Keep this for the full calendar dialog if needed
+import { MonthPickerCalendar } from '@/components/MonthPickerCalendar'; // Import the new component
 
 interface Event {
   id: string;
@@ -347,7 +348,7 @@ const Home = () => {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
-                        <Calendar
+                        <MonthPickerCalendar // Use the new component here
                           mode="single"
                           selected={currentMonth}
                           onSelect={(date) => {
