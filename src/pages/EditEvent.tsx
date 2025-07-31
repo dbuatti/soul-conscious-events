@@ -306,7 +306,7 @@ const EditEvent = () => {
       toast.error('Failed to update event.');
     } else {
       toast.success('Event updated successfully!');
-      navigate(`/events/${id}`);
+      navigate(`/`); // Redirect to the home page
     }
   };
 
