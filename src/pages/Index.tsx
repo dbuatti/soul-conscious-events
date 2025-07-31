@@ -197,14 +197,16 @@ const Index = () => {
     appliedState !== 'All' ||
     appliedDateFilter !== 'All Upcoming';
 
-  const handleShare = (event: Event) => {
+  const handleShare = (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click from triggering
     const eventUrl = `${window.location.origin}/events/${event.id}`;
     navigator.clipboard.writeText(eventUrl)
       .then(() => toast.success('Event link copied to clipboard!'))
       .catch(() => toast.error('Failed to copy link. Please try again.'));
   };
 
-  const handleDelete = async (eventId: string) => {
+  const handleDelete = async (eventId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click from triggering
     if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
       const { error } = await supabase.from('events').delete().eq('id', eventId);
 
@@ -216,6 +218,11 @@ const Index = () => {
         setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId)); // Optimistically update UI
       }
     }
+  };
+
+  const handleEdit = (eventId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click from triggering
+    // Navigate to edit page
   };
 
   const handleViewDetails = (event: Event) => {
@@ -475,7 +482,11 @@ const Index = () => {
                       : formattedDate;
 
                   return (
-                    <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102">
+                    <Card
+                      key={event.id}
+                      className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer"
+                      onClick={() => handleViewDetails(event)} // Make the whole card clickable
+                    >
                       {event.image_url && (
                         <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
                           <img
@@ -516,6 +527,7 @@ const Index = () => {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-blue-600 hover:underline"
+                                  onClick={(e) => e.stopPropagation()} // Prevent card click when clicking link
                                 >
                                   {event.full_address}
                                 </a>
@@ -533,7 +545,7 @@ const Index = () => {
                                 : `${event.description.substring(0, 150)}...`}
                             </p>
                             {event.description.length >= 150 && (
-                              <Button variant="link" onClick={() => toggleDescription(event.id)} className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
+                              <Button variant="link" onClick={(e) => { e.stopPropagation(); toggleDescription(event.id); }} className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
                                 {expandedDescriptions[event.id] ? 'Read Less' : 'Read More'}
                               </Button>
                             )}
@@ -552,7 +564,7 @@ const Index = () => {
                           <div className="flex items-center">
                             <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
                             <Button asChild variant="link" className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
-                              <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
+                              <a href={event.ticket_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                 Ticket/Booking Link
                               </a>
                             </Button>
@@ -579,18 +591,17 @@ const Index = () => {
                       </CardContent>
                       <CardFooter className="flex flex-col items-start pt-4">
                         <div className="flex justify-end w-full space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => handleShare(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                            <Share2 className="mr-2 h-4 w-4" /> Share
+                          <Button variant="outline" size="icon" onClick={(e) => handleShare(event, e)} title="Share Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <Share2 className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" onClick={() => handleViewDetails(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
                           {isCreatorOrAdmin && (
                             <>
-                              <Link to={`/edit-event/${event.id}`}>
-                                <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                              <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
+                                <Button variant="outline" size="icon" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </Link>
-                              <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)} title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                              <Button variant="destructive" size="icon" onClick={(e) => handleDelete(event.id, e)} title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </>

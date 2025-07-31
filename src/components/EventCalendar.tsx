@@ -82,6 +82,14 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
   console.log('EventCalendar Debug: Events on selected date:', eventsOnSelectedDate);
   console.log('EventCalendar Debug: More upcoming events:', moreUpcomingEvents);
 
+  const handleShare = (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click from triggering
+    const eventUrl = `${window.location.origin}/events/${event.id}`;
+    navigator.clipboard.writeText(eventUrl)
+      .then(() => toast.success('Event link copied to clipboard!'))
+      .catch(() => toast.error('Failed to copy link. Please try again.'));
+  };
+
   const renderEventCard = (event: Event) => {
     const googleMapsLink = event.full_address
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
@@ -100,7 +108,11 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         : formattedStartDate;
 
     return (
-      <Card key={event.id} className="group shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102">
+      <Card
+        key={event.id}
+        className="group shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer"
+        onClick={() => onEventSelect(event)} // Make the whole card clickable
+      >
         {event.image_url && (
           <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
             <img
@@ -141,6 +153,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline"
+                    onClick={(e) => e.stopPropagation()} // Prevent card click when clicking link
                   >
                     {event.full_address}
                   </a>
@@ -169,7 +182,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             <div className="flex items-center">
               <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
               <Button asChild variant="link" className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
-                <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
+                <a href={event.ticket_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                   Ticket/Booking Link
                 </a>
               </Button>
@@ -194,21 +207,13 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             </p>
           )}
           <div className="flex justify-end space-x-2 mt-4">
-            <Button variant="outline" size="sm" onClick={() => handleShare(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              <Share2 className="mr-2 h-4 w-4" /> Share
+            <Button variant="outline" size="icon" onClick={(e) => handleShare(event, e)} title="Share Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Share2 className="h-4 w-4" />
             </Button>
-            <Button size="sm" onClick={() => onEventSelect(event)} className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
           </div>
         </CardContent>
       </Card>
     );
-  };
-
-  const handleShare = (event: Event) => {
-    const eventUrl = `${window.location.origin}/events/${event.id}`;
-    navigator.clipboard.writeText(eventUrl)
-      .then(() => toast.success('Event link copied to clipboard!'))
-      .catch(() => toast.error('Failed to copy link. Please try again.'));
   };
 
   return (
