@@ -58,7 +58,7 @@ interface Event {
 const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true); // Fixed: Corrected useState initialization
+  const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date()); // Default to today
   const [selectedEventType, setSelectedEventType] = useState('All');
@@ -355,7 +355,7 @@ const Home = () => {
                               setCurrentMonth(date);
                             }
                           }}
-                          initialFocus
+                          // Removed initialFocus="month" to fix TypeScript error
                           captionLayout="dropdown"
                         />
                       </PopoverContent>
