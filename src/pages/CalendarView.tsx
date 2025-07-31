@@ -273,10 +273,10 @@ const CalendarView = () => {
               <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
             ))}
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-28 border rounded-md p-0.5 flex flex-col items-center justify-center bg-gray-50">
-                <Skeleton className="h-4 w-1/2 mb-2" />
-                <Skeleton className="h-3 w-3/4" />
-                <Skeleton className="h-3 w-2/3 mt-1" />
+              <div key={i} className="h-40 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+                <Skeleton className="h-5 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-2/3 mt-1" />
               </div>
             ))}
           </div>
@@ -295,7 +295,7 @@ const CalendarView = () => {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "group h-28 border rounded-md p-0.5 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-300 ease-in-out", // Reduced height to h-28, padding to p-0.5
+                    "group h-40 border rounded-md p-1 flex flex-col relative cursor-pointer transition-all duration-300 ease-in-out",
                     isCurrentMonth ? "bg-white shadow-sm hover:bg-gray-50 hover:shadow-md" : "bg-gray-100 text-gray-400",
                     isTodayDate && "border-2 border-purple-600 bg-purple-100 shadow-lg",
                     dayEvents.length > 0 && isCurrentMonth && "border-blue-400 bg-blue-100 hover:bg-blue-200 shadow-md"
@@ -303,28 +303,28 @@ const CalendarView = () => {
                   onClick={() => openDayDetailDialog(day)}
                 >
                   <span className={cn(
-                    "font-bold text-sm mb-1",
+                    "font-bold text-base mb-1",
                     isTodayDate && "text-purple-700",
                     dayEvents.length > 0 && isCurrentMonth && "text-blue-700"
                   )}>
                     {format(day, 'd')}
                   </span>
-                  <div className="flex-grow overflow-hidden space-y-0.5">
+                  <div className="flex-grow overflow-hidden space-y-1">
                     {displayEvents.map(event => (
                       <Badge
                         key={event.id}
                         className={cn(
-                          "w-full text-left px-0.5 py-0 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal shadow-xs", // Reduced px-1 py-0 to px-0.5 py-0, added shadow-xs
+                          "w-full text-left px-1 py-0.5 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal shadow-xs",
                           isTodayDate ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-blue-600 text-white hover:bg-blue-700"
                         )}
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
                       >
-                        {event.event_time && <span className="text-[0.5rem] text-gray-200">{event.event_time}</span>} {/* Further reduced font for time, adjusted color */}
-                        <span className="text-[0.6rem] font-semibold leading-tight line-clamp-1">{event.event_name}</span> {/* Further reduced font for event name, added line-clamp-1 */}
+                        {event.event_time && <span className="text-xs text-gray-200">{event.event_time}</span>}
+                        <span className="text-sm font-semibold leading-tight line-clamp-2">{event.event_name}</span>
                       </Badge>
                     ))}
-                    {dayEvents.length > 2 && ( // Only show "+X More" if there are more than 2 events
-                      <span className="text-[0.55rem] text-gray-500 mt-1 block font-semibold"> {/* Adjusted font and added font-semibold */}
+                    {dayEvents.length > 2 && (
+                      <span className="text-xs text-gray-500 mt-1 block font-semibold">
                         +{dayEvents.length - 2} More
                       </span>
                     )}
