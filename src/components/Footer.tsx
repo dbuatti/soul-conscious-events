@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Coffee } from 'lucide-react';
+import { Coffee } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -32,25 +32,15 @@ const Footer = () => {
 
         {/* Section 3: Connect & Support */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Connect & Support</h3>
-          <div className="flex space-x-4">
-            <a href="https://facebook.com/yourpage" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">
-              <Facebook size={20} />
-            </a>
-            <a href="https://instagram.com/yourpage" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">
-              <Instagram size={20} />
-            </a>
-            <a href="https://twitter.com/yourpage" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">
-              <Twitter size={20} />
-            </a>
-          </div>
+          <h3 className="text-lg font-semibold text-white">Support Us</h3>
           <a
             href="https://buymeacoffee.com/danielebuatti"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center text-sm hover:text-purple-400 transition-colors"
           >
-            <Coffee className="mr-2 h-4 w-4" /> Support Us
+            {/* Placeholder for Buy Me a Coffee image */}
+            <img src="/placeholder.svg" alt="Buy Me a Coffee" className="h-8 w-auto" />
           </a>
         </div>
       </div>
