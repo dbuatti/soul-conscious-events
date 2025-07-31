@@ -497,14 +497,14 @@ const Index = () => {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         </div>
                       )}
-                      <CardHeader className="p-4 pb-2"> {/* Adjusted padding */}
-                        <CardTitle className="text-xl font-semibold text-purple-700">{event.event_name}</CardTitle>
-                        <CardDescription className="flex items-center text-gray-600 mt-2">
-                          <Calendar className="mr-2 h-4 w-4 text-blue-500" />
+                      <CardHeader className="p-4 pb-2">
+                        <CardTitle className="text-2xl font-bold text-purple-700">{event.event_name}</CardTitle>
+                        <CardDescription className="flex items-center text-gray-600 text-base mt-2">
+                          <Calendar className="mr-2 h-5 w-5 text-blue-500" />
                           {dateDisplay}
                           {event.event_time && (
                             <>
-                              <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
+                              <Clock className="ml-4 mr-2 h-5 w-5 text-green-500" />
                               {event.event_time}
                             </>
                           )}
@@ -513,21 +513,21 @@ const Index = () => {
                           <div className="flex flex-col items-start text-gray-600 mt-1">
                             {event.place_name && (
                               <div className="flex items-center mb-1">
-                                <MapPin className="mr-2 h-4 w-4 text-red-500" />
-                                <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-base py-1 px-2"> {/* Enhanced badge */}
+                                <MapPin className="mr-2 h-5 w-5 text-red-500" />
+                                <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-lg py-2 px-3 font-semibold">
                                   {event.place_name}
                                 </Badge>
                               </div>
                             )}
                             {event.full_address && (
                               <div className="flex items-center">
-                                {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-red-500" />}
+                                {!event.place_name && <MapPin className="mr-2 h-5 w-5 text-red-500" />}
                                 <a
                                   href={googleMapsLink}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline"
-                                  onClick={(e) => e.stopPropagation()} // Prevent card click when clicking link
+                                  className="text-blue-600 hover:underline text-base"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   {event.full_address}
                                 </a>
@@ -536,10 +536,10 @@ const Index = () => {
                           </div>
                         )}
                       </CardHeader>
-                      <CardContent className="p-4 pt-2 space-y-2"> {/* Adjusted padding */}
+                      <CardContent className="p-4 pt-2 space-y-2">
                         {event.description && (
                           <div>
-                            <p className="text-foreground">
+                            <p className="text-gray-700 leading-relaxed">
                               {expandedDescriptions[event.id] || event.description.length < 150
                                 ? event.description
                                 : `${event.description.substring(0, 150)}...`}
@@ -552,9 +552,9 @@ const Index = () => {
                           </div>
                         )}
                         {event.price && (
-                          <p className="flex items-center text-foreground">
-                            <DollarSign className="mr-2 h-4 w-4 text-green-600" />
-                            Price: {event.price}
+                          <p className="flex items-center text-gray-700 text-base">
+                            <DollarSign className="mr-2 h-5 w-5 text-green-600" />
+                            <span className="font-medium">Price:</span> {event.price}
                             {event.price.toLowerCase() === 'free' && (
                               <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
                             )}
@@ -562,8 +562,8 @@ const Index = () => {
                         )}
                         {event.ticket_link && (
                           <div className="flex items-center">
-                            <LinkIcon className="mr-2 h-4 w-4 text-purple-600" />
-                            <Button asChild variant="link" className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <LinkIcon className="mr-2 h-5 w-5 text-purple-600" />
+                            <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-base transition-all duration-300 ease-in-out transform hover:scale-105">
                               <a href={event.ticket_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                 Ticket/Booking Link
                               </a>
@@ -571,21 +571,21 @@ const Index = () => {
                           </div>
                         )}
                         {event.special_notes && (
-                          <p className="flex items-start text-foreground">
-                            <Info className="mr-2 h-4 w-4 text-orange-500 mt-1" />
-                            Special Notes: {event.special_notes}
+                          <p className="flex items-start text-gray-700 text-base">
+                            <Info className="mr-2 h-5 w-5 text-orange-500 mt-1" />
+                            <span className="font-medium">Special Notes:</span> {event.special_notes}
                           </p>
                         )}
                         {event.organizer_contact && (
-                          <p className="flex items-center text-foreground">
-                            <User className="mr-2 h-4 w-4 text-indigo-500" />
-                            Organizer: {event.organizer_contact}
+                          <p className="flex items-center text-gray-700 text-base">
+                            <User className="mr-2 h-5 w-5 text-indigo-500" />
+                            <span className="font-medium">Organizer:</span> {event.organizer_contact}
                           </p>
                         )}
                         {event.event_type && (
-                          <p className="flex items-center text-foreground">
-                            <Tag className="mr-2 h-4 w-4 text-pink-500" />
-                            Type: {event.event_type}
+                          <p className="flex items-center text-gray-700 text-base">
+                            <Tag className="mr-2 h-5 w-5 text-pink-500" />
+                            <span className="font-medium">Type:</span> {event.event_type}
                           </p>
                         )}
                       </CardContent>
