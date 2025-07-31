@@ -352,11 +352,10 @@ const Home = () => {
                           selected={currentMonth}
                           onSelect={(date) => {
                             if (date) {
-                              setCurrentMonth(date);
+                              setCurrentMonth(date); // Update current month
                             }
                           }}
-                          // Removed initialFocus="month" to fix TypeScript error
-                          captionLayout="dropdown"
+                          defaultView="month" // Set default view to month
                         />
                       </PopoverContent>
                     </Popover>
