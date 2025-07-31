@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -184,7 +184,14 @@ const CalendarView = () => {
 
   return (
     <div className="w-full max-w-6xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-      <h1 className="text-4xl font-bold text-foreground mb-6 text-center">Event Calendar</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold text-foreground text-center flex-grow">Event Calendar</h1>
+        <Link to="/submit-event">
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+            <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
+          </Button>
+        </Link>
+      </div>
 
       {/* Calendar Navigation */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-100">
