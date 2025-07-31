@@ -123,7 +123,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           </div>
         )}
-        <CardHeader>
+        <CardHeader className="p-4 pb-2"> {/* Adjusted padding */}
           <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
           <CardDescription className="flex items-center text-gray-600 mt-2">
             <CalendarIcon className="mr-2 h-4 w-4 text-blue-500" />
@@ -140,7 +140,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
               {event.place_name && (
                 <div className="flex items-center mb-1">
                   <MapPin className="mr-2 h-4 w-4 text-red-500" />
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-base py-1 px-2"> {/* Enhanced badge */}
                     {event.place_name}
                   </Badge>
                 </div>
@@ -163,7 +163,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             </CardDescription>
           )}
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="p-4 pt-2 space-y-2"> {/* Adjusted padding */}
           {event.description && (
             <div>
               <p className="text-foreground line-clamp-3">{event.description}</p>
