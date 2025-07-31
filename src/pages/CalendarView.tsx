@@ -225,7 +225,7 @@ const CalendarView = () => {
         </div>
 
         {/* Calendar Navigation */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-100">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-lg border border-purple-200">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               <ArrowLeft className="h-4 w-4" />
@@ -268,12 +268,12 @@ const CalendarView = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-7 gap-1 text-center">
+          <div className="grid grid-cols-7 gap-2 text-center p-2">
             {daysOfWeek.map(day => (
               <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
             ))}
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-32 border rounded-md p-1 flex flex-col items-center justify-center bg-gray-50">
+              <div key={i} className="h-28 border rounded-md p-0.5 flex flex-col items-center justify-center bg-gray-50">
                 <Skeleton className="h-4 w-1/2 mb-2" />
                 <Skeleton className="h-3 w-3/4" />
                 <Skeleton className="h-3 w-2/3 mt-1" />
@@ -281,7 +281,7 @@ const CalendarView = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-7 gap-1 text-center"> {/* Reduced gap to gap-1 */}
+          <div className="grid grid-cols-7 gap-2 text-center p-2">
             {daysOfWeek.map(day => (
               <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
             ))}
@@ -295,10 +295,10 @@ const CalendarView = () => {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "h-32 border rounded-md p-1 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out", // Reduced height to h-32, padding to p-1
-                    isCurrentMonth ? "bg-white hover:bg-gray-50" : "bg-gray-100 text-gray-400",
-                    isTodayDate && "border-2 border-purple-500 bg-purple-50 shadow-md",
-                    dayEvents.length > 0 && isCurrentMonth && "border-blue-300 bg-blue-50 hover:bg-blue-100"
+                    "group h-28 border rounded-md p-0.5 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-300 ease-in-out", // Reduced height to h-28, padding to p-0.5
+                    isCurrentMonth ? "bg-white shadow-sm hover:bg-gray-50 hover:shadow-md" : "bg-gray-100 text-gray-400",
+                    isTodayDate && "border-2 border-purple-600 bg-purple-100 shadow-lg",
+                    dayEvents.length > 0 && isCurrentMonth && "border-blue-400 bg-blue-100 hover:bg-blue-200 shadow-md"
                   )}
                   onClick={() => openDayDetailDialog(day)}
                 >
@@ -309,22 +309,22 @@ const CalendarView = () => {
                   )}>
                     {format(day, 'd')}
                   </span>
-                  <div className="flex-grow overflow-hidden space-y-0.5"> {/* Reduced space-y to space-y-0.5 */}
+                  <div className="flex-grow overflow-hidden space-y-0.5">
                     {displayEvents.map(event => (
                       <Badge
                         key={event.id}
                         className={cn(
-                          "w-full text-left px-1 py-0 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal", // Reduced px-2 py-0.5 to px-1 py-0
-                          isTodayDate ? "bg-purple-200 text-purple-800 hover:bg-purple-300" : "bg-blue-200 text-blue-800 hover:bg-blue-300"
+                          "w-full text-left px-0.5 py-0 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal shadow-xs", // Reduced px-1 py-0 to px-0.5 py-0, added shadow-xs
+                          isTodayDate ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-blue-600 text-white hover:bg-blue-700"
                         )}
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
                       >
-                        {event.event_time && <span className="text-[0.55rem] text-gray-600">{event.event_time}</span>} {/* Adjusted font for time */}
-                        <span className="text-[0.65rem] font-semibold leading-tight">{event.event_name}</span> {/* Adjusted font for event name */}
+                        {event.event_time && <span className="text-[0.5rem] text-gray-200">{event.event_time}</span>} {/* Further reduced font for time, adjusted color */}
+                        <span className="text-[0.6rem] font-semibold leading-tight line-clamp-1">{event.event_name}</span> {/* Further reduced font for event name, added line-clamp-1 */}
                       </Badge>
                     ))}
                     {dayEvents.length > 2 && ( // Only show "+X More" if there are more than 2 events
-                      <span className="text-[0.65rem] text-gray-500 mt-1 block font-medium"> {/* Adjusted font and added font-medium */}
+                      <span className="text-[0.55rem] text-gray-500 mt-1 block font-semibold"> {/* Adjusted font and added font-semibold */}
                         +{dayEvents.length - 2} More
                       </span>
                     )}
