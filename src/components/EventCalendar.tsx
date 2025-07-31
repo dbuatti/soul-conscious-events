@@ -4,7 +4,7 @@ import { format, isSameDay, isAfter, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2, Globe, Calendar as CalendarIcon } from 'lucide-react';
+import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2, Globe, Calendar as CalendarIcon, PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
@@ -233,7 +233,16 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           Events on {selectedDate ? format(selectedDate, 'PPP') : 'Selected Date'}
         </h3>
         {eventsOnSelectedDate.length === 0 ? (
-          <p className="text-gray-600 text-center lg:text-left">No events on this date.</p>
+          <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+            <p className="text-lg font-semibold text-gray-700 mb-4">
+              No events found on this date.
+            </p>
+            <Link to="/submit-event">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
+              </Button>
+            </Link>
+          </div>
         ) : (
           <div className="space-y-4">
             {eventsOnSelectedDate.map((event) => renderEventCard(event))}

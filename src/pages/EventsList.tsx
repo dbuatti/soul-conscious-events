@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, ChevronDown, Lightbulb } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, ChevronDown, Lightbulb, Loader2, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -401,7 +401,7 @@ const EventsList = () => {
               {appliedSearchTerm && (
                 <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                   Search: "{appliedSearchTerm}"
-                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
                     <X className="h-2.5 w-2.5" />
                   </Button>
                 </Badge>
@@ -409,7 +409,7 @@ const EventsList = () => {
               {appliedEventType !== 'All' && (
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                   Type: {appliedEventType}
-                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
                     <X className="h-2.5 w-2.5" />
                   </Button>
                 </Badge>
@@ -417,7 +417,7 @@ const EventsList = () => {
               {appliedState !== 'All' && (
                 <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                   State: {appliedState}
-                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
                     <X className="h-2.5 w-2.5" />
                   </Button>
                 </Badge>
@@ -425,7 +425,7 @@ const EventsList = () => {
               {appliedDateFilter !== 'All Upcoming' && (
                 <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                   Date: {appliedDateFilter}
-                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
                     <X className="h-2.5 w-2.5" />
                   </Button>
                 </Badge>
@@ -437,10 +437,27 @@ const EventsList = () => {
 
       {/* Event Count Display */}
       <div className="text-center text-gray-700 mb-4 text-sm sm:text-base">
-        {loading ? (
-          <Skeleton className="h-5 w-48 mx-auto" />
+        {loading || isSessionLoading ? (
+          <p className="text-lg font-semibold text-purple-600 flex items-center justify-center">
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading events...
+          </p>
         ) : events.length === 0 ? (
-          'No events found matching your criteria.'
+          <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+            <p className="text-lg font-semibold text-gray-700 mb-4">
+              No events found matching your criteria.
+            </p>
+            {hasActiveFilters ? (
+              <Button onClick={handleClearFilters} className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                Clear Filters to See More Events
+              </Button>
+            ) : (
+              <Link to="/submit-event">
+                <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Be the First to Add an Event!
+                </Button>
+              </Link>
+            )}
+          </div>
         ) : (
           `Showing ${events.length} event${events.length === 1 ? '' : 's'}.`
         )}
@@ -471,7 +488,7 @@ const EventsList = () => {
       ) : (
         <>
           {viewMode === 'list' ? (
-            events.length === 0 ? null : (
+            events.length === 0 ? null : ( // This null will be replaced by the improved message above
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {events.map((event) => {
                   const googleMapsLink = event.full_address
