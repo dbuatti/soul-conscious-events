@@ -209,9 +209,9 @@ const Home = () => {
   };
 
   return (
-    <div className="w-full max-w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col lg:flex-row gap-8">
+    <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       {/* Hero Section */}
-      <div className="text-center mb-12 py-12 px-6 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white w-full">
+      <div className="text-center mb-12 py-12 px-6 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white">
         <h1 className="text-5xl font-extrabold mb-4 leading-tight">
           Discover Your Next Soulful Experience
         </h1>
@@ -226,7 +226,7 @@ const Home = () => {
       </div>
 
       {/* App Description Clause */}
-      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center w-full">
+      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center">
         <Lightbulb className="mr-3 h-6 w-6 text-blue-600 flex-shrink-0" />
         <p className="text-gray-700 text-base leading-relaxed">
           SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
@@ -235,130 +235,132 @@ const Home = () => {
         </p>
       </div>
 
-      {/* Sidebar */}
-      <EventSidebar selectedEventType={selectedEventType} onSelectEventType={setSelectedEventType} />
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Sidebar */}
+        <EventSidebar selectedEventType={selectedEventType} onSelectEventType={setSelectedEventType} />
 
-      {/* Main Calendar Content */}
-      <div className="flex-grow">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold text-foreground text-center flex-grow">Event Calendar</h1>
-          <Link to="/submit-event">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
-            </Button>
-          </Link>
-        </div>
-
-        {/* Calendar Navigation */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-lg border border-purple-200">
-          <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              This Month
-            </Button>
+        {/* Main Calendar Content */}
+        <div className="flex-grow">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-4xl font-bold text-foreground text-center flex-grow">Event Calendar</h1>
+            <Link to="/submit-event">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
+              </Button>
+            </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <Select onValueChange={handleMonthChange} value={getMonth(currentMonth).toString()}>
-              <SelectTrigger className="w-[140px] focus-visible:ring-purple-500">
-                <SelectValue placeholder="Month" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 12 }, (_, i) => (
-                  <SelectItem key={i} value={i.toString()}>
-                    {format(setMonth(new Date(), i), 'MMMM')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Calendar Navigation */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-lg border border-purple-200">
+            <div className="flex items-center space-x-2 mb-4 sm:mb-0">
+              <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                This Month
+              </Button>
+            </div>
 
-            <Select onValueChange={handleYearChange} value={getYear(currentMonth).toString()}>
-              <SelectTrigger className="w-[100px] focus-visible:ring-purple-500">
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center space-x-4">
+              <Select onValueChange={handleMonthChange} value={getMonth(currentMonth).toString()}>
+                <SelectTrigger className="w-[140px] focus-visible:ring-purple-500">
+                  <SelectValue placeholder="Month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <SelectItem key={i} value={i.toString()}>
+                      {format(setMonth(new Date(), i), 'MMMM')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select onValueChange={handleYearChange} value={getYear(currentMonth).toString()}>
+                <SelectTrigger className="w-[100px] focus-visible:ring-purple-500">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
 
-        {loading ? (
-          <div className="grid grid-cols-7 gap-2 text-center p-2">
-            {daysOfWeek.map(day => (
-              <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
-            ))}
-            {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-48 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
-                <Skeleton className="h-5 w-1/2 mb-2" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-2/3 mt-1" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-7 gap-2 text-center p-2">
-            {daysOfWeek.map(day => (
-              <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
-            ))}
-            {daysInMonthView.map((day) => {
-              const dayEvents = getEventsForDay(day);
-              const isCurrentMonth = isSameMonth(day, currentMonth);
-              const isTodayDate = isToday(day);
-              const displayEvents = dayEvents.slice(0, 2); // Show up to 2 events
-
-              return (
-                <div
-                  key={day.toISOString()}
-                  className={cn(
-                    "group h-48 border rounded-md p-1 flex flex-col relative cursor-pointer transition-all duration-300 ease-in-out",
-                    isCurrentMonth ? "bg-white shadow-sm hover:bg-gray-50 hover:shadow-md" : "bg-gray-100 text-gray-400",
-                    isTodayDate && "border-2 border-purple-600 bg-purple-100 shadow-lg",
-                    dayEvents.length > 0 && isCurrentMonth && "border-blue-400 bg-blue-100 hover:bg-blue-200 shadow-md"
-                  )}
-                  onClick={() => openDayDetailDialog(day)}
-                >
-                  <span className={cn(
-                    "font-bold text-base mb-1",
-                    isTodayDate && "text-purple-700",
-                    dayEvents.length > 0 && isCurrentMonth && "text-blue-700"
-                  )}>
-                    {format(day, 'd')}
-                  </span>
-                  <div className="flex-grow overflow-hidden space-y-1">
-                    {displayEvents.map(event => (
-                      <Badge
-                        key={event.id}
-                        className={cn(
-                          "w-full text-left px-2 py-1 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal shadow-xs",
-                          isTodayDate ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-blue-600 text-white hover:bg-blue-700"
-                        )}
-                        onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
-                      >
-                        {event.event_time && <span className="text-xs text-gray-200">{event.event_time}</span>}
-                        <span className="text-xs font-semibold leading-snug">{event.event_name}</span>
-                      </Badge>
-                    ))}
-                    {dayEvents.length > 2 && (
-                      <span className="text-xs text-gray-500 mt-1 block font-semibold">
-                        +{dayEvents.length - 2} More
-                      </span>
-                    )}
-                  </div>
+          {loading ? (
+            <div className="grid grid-cols-7 gap-2 text-center p-2">
+              {daysOfWeek.map(day => (
+                <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
+              ))}
+              {Array.from({ length: 35 }).map((_, i) => (
+                <div key={i} className="h-48 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+                  <Skeleton className="h-5 w-1/2 mb-2" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-2/3 mt-1" />
                 </div>
-              );
-            })}
-          </div>
-        )}
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 gap-2 text-center p-2">
+              {daysOfWeek.map(day => (
+                <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
+              ))}
+              {daysInMonthView.map((day) => {
+                const dayEvents = getEventsForDay(day);
+                const isCurrentMonth = isSameMonth(day, currentMonth);
+                const isTodayDate = isToday(day);
+                const displayEvents = dayEvents.slice(0, 2); // Show up to 2 events
+
+                return (
+                  <div
+                    key={day.toISOString()}
+                    className={cn(
+                      "group h-48 border rounded-md p-1 flex flex-col relative cursor-pointer transition-all duration-300 ease-in-out",
+                      isCurrentMonth ? "bg-white shadow-sm hover:bg-gray-50 hover:shadow-md" : "bg-gray-100 text-gray-400",
+                      isTodayDate && "border-2 border-purple-600 bg-purple-100 shadow-lg",
+                      dayEvents.length > 0 && isCurrentMonth && "border-blue-400 bg-blue-100 hover:bg-blue-200 shadow-md"
+                    )}
+                    onClick={() => openDayDetailDialog(day)}
+                  >
+                    <span className={cn(
+                      "font-bold text-base mb-1",
+                      isTodayDate && "text-purple-700",
+                      dayEvents.length > 0 && isCurrentMonth && "text-blue-700"
+                    )}>
+                      {format(day, 'd')}
+                    </span>
+                    <div className="flex-grow overflow-hidden space-y-1">
+                      {displayEvents.map(event => (
+                        <Badge
+                          key={event.id}
+                          className={cn(
+                            "w-full text-left px-2 py-1 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal shadow-xs",
+                            isTodayDate ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-blue-600 text-white hover:bg-blue-700"
+                          )}
+                          onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
+                        >
+                          {event.event_time && <span className="text-xs text-gray-200">{event.event_time}</span>}
+                          <span className="text-xs font-semibold leading-snug">{event.event_name}</span>
+                        </Badge>
+                      ))}
+                      {dayEvents.length > 2 && (
+                        <span className="text-xs text-gray-500 mt-1 block font-semibold">
+                          +{dayEvents.length - 2} More
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Day Detail Dialog (remains for listing all events on a day) */}
