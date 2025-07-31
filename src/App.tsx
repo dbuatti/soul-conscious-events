@@ -3,12 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import Home from "./pages/Home"; // This is now the CalendarView
+import EventsList from "./pages/EventsList"; // This is the old Index.tsx
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
 import AdminPanel from "./pages/AdminPanel";
-// import EventDetail from "./pages/EventDetail"; // Removed direct import
 import MapPage from "./pages/MapPage";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -17,7 +17,6 @@ import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import EditEvent from "./pages/EditEvent";
 import About from "./pages/About";
-import CalendarView from "./pages/CalendarView";
 
 const queryClient = new QueryClient();
 
@@ -31,11 +30,11 @@ const App = () => (
         <SessionContextProvider>
           <Layout>
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Home />} /> {/* New Home is Calendar */}
+              <Route path="/events" element={<EventsList />} /> {/* Old Index is now EventsList */}
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
-              <Route path="/calendar" element={<CalendarView />} />
               <Route path="/login" element={<Login />} />
               <Route
                 path="/admin/panel"
@@ -53,7 +52,6 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              {/* Removed the direct route for EventDetail */}
               <Route path="/map" element={<MapPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

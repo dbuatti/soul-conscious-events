@@ -53,6 +53,7 @@ import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import EventDetailDialog from './EventDetailDialog'; // Import EventDetailDialog
 
 interface Event {
   id: string;
@@ -109,6 +110,10 @@ const EventManagementTable = () => {
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+
+  // State for EventDetailDialog
+  const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -230,6 +235,11 @@ const EventManagementTable = () => {
     }
   };
 
+  const handleViewDetails = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEventDetailDialogOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
@@ -288,11 +298,9 @@ const EventManagementTable = () => {
                   </TableCell>
                   <TableCell className="text-foreground text-sm">{event.user_id || 'N/A'}</TableCell>
                   <TableCell className="text-right flex justify-end space-x-2">
-                    <Link to={`/events/${event.id}`} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleEdit(event)} title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -589,6 +597,13 @@ const EventManagementTable = () => {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Event Detail Dialog */}
+      <EventDetailDialog
+        event={selectedEvent}
+        isOpen={isEventDetailDialogOpen}
+        onClose={() => setIsEventDetailDialogOpen(false)}
+      />
     </div>
   );
 };
