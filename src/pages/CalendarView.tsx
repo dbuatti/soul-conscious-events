@@ -242,7 +242,7 @@ const CalendarView = () => {
             <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
           ))}
           {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className="h-32 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+            <div key={i} className="h-40 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
               <Skeleton className="h-4 w-1/2 mb-2" />
               <Skeleton className="h-3 w-3/4" />
               <Skeleton className="h-3 w-2/3 mt-1" />
