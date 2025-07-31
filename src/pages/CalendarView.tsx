@@ -149,6 +149,16 @@ const CalendarView = () => {
 
     return (
       <Card key={event.id} className="group shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200">
+        {event.image_url && (
+          <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
+            <img
+              src={event.image_url}
+              alt={event.event_name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+          </div>
+        )}
         <CardHeader className="p-3 pb-0">
           <CardTitle className="text-base font-semibold text-purple-700 line-clamp-1">{event.event_name}</CardTitle>
           <CardDescription className="flex items-center text-gray-600 text-xs mt-1">
@@ -173,7 +183,7 @@ const CalendarView = () => {
             <p className="text-foreground text-sm line-clamp-2 mb-2">{event.description}</p>
           )}
           <div className="flex justify-end">
-            <Link to={`/events/${event.id}`}>
+            <Link to={`/events/${event.id}`} state={{ from: '/calendar' }}> {/* Pass state to EventDetail */}
               <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 text-xs">View Details</Button>
             </Link>
           </div>
@@ -281,7 +291,7 @@ const CalendarView = () => {
                 </span>
                 <div className="flex-grow overflow-hidden space-y-1">
                   {displayEvents.map(event => (
-                    <Link to={`/events/${event.id}`} key={event.id} className="block">
+                    <Link to={`/events/${event.id}`} key={event.id} className="block" state={{ from: '/calendar' }}>
                       <Badge
                         variant="secondary"
                         className={cn(
@@ -324,6 +334,16 @@ const CalendarView = () => {
               <div className="space-y-4">
                 {selectedDayEvents.map(event => (
                   <Card key={event.id} className="shadow-sm rounded-lg border border-gray-100">
+                    {event.image_url && (
+                      <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
+                        <img
+                          src={event.image_url}
+                          alt={event.event_name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                      </div>
+                    )}
                     <CardHeader className="p-4 pb-2">
                       <CardTitle className="text-xl font-semibold text-purple-700">{event.event_name}</CardTitle>
                       <CardDescription className="flex items-center text-gray-600 text-sm mt-1">
@@ -383,7 +403,7 @@ const CalendarView = () => {
                         </p>
                       )}
                       <div className="flex justify-end mt-2">
-                        <Link to={`/events/${event.id}`}>
+                        <Link to={`/events/${event.id}`} state={{ from: '/calendar' }}>
                           <Button size="sm" className="transition-all duration-300 ease-in-out transform hover:scale-105">View Details</Button>
                         </Link>
                       </div>

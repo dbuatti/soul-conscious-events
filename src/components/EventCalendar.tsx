@@ -100,6 +100,16 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
 
     return (
       <Card key={event.id} className="group shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102">
+        {event.image_url && (
+          <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
+            <img
+              src={event.image_url}
+              alt={event.event_name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+          </div>
+        )}
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-purple-700">{event.event_name}</CardTitle>
           <CardDescription className="flex items-center text-gray-600 mt-2">
