@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -102,13 +102,15 @@ const Home = () => {
 
   useEffect(() => {
     // When events load or filter changes, update selected day events if a day is already selected
-    if (selectedDayForDialog) {
-      setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
-    } else {
-      // If no day is selected, default to today's events
-      setSelectedDayEvents(getEventsForDay(new Date()));
+    if (!isMobile) { // Only for desktop view
+      if (selectedDayForDialog) {
+        setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
+      } else {
+        setSelectedDayEvents(getEventsForDay(new Date()));
+      }
     }
-  }, [events, selectedDayForDialog]);
+    // For mobile, the list will use eventsForCurrentMonth directly
+  }, [events, selectedDayForDialog, isMobile]);
 
 
   const startOfCurrentMonth = startOfMonth(currentMonth);
@@ -154,9 +156,39 @@ const Home = () => {
     });
   };
 
+  const getEventsForMonth = (month: Date) => {
+    const monthStart = startOfMonth(month);
+    const monthEnd = endOfMonth(month);
+
+    return events.filter(event => {
+      const eventStartDate = parseISO(event.event_date);
+      const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+
+      // Check if the event's date range overlaps with the current month's range
+      return (
+        (eventStartDate <= monthEnd && eventEndDate >= monthStart)
+      );
+    }).sort((a, b) => {
+      const dateA = parseISO(a.event_date);
+      const dateB = parseISO(b.event_date);
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateA.getTime() - dateB.getTime();
+      }
+      const timeA = a.event_time || '';
+      const timeB = b.event_time || '';
+      if (timeA && timeB) return timeA.localeCompare(timeB);
+      return a.event_name.localeCompare(b.event_name);
+    });
+  };
+
+  const eventsForCurrentMonth = getEventsForMonth(currentMonth);
+
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
-    setSelectedDayEvents(getEventsForDay(day));
+    // For desktop, this will update the list. For mobile, the list is month-centric.
+    if (!isMobile) {
+      setSelectedDayEvents(getEventsForDay(day));
+    }
   };
 
   const handleViewDetails = (event: Event) => {
@@ -187,7 +219,7 @@ const Home = () => {
           <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
             <img
               src={event.image_url}
-              alt={event.event_name}
+              alt={`Image for ${event.event_name}`}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -310,7 +342,7 @@ const Home = () => {
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
-                          {selectedDayForDialog ? format(selectedDayForDialog, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}
+                          {format(currentMonth, 'MMMM yyyy')} {/* Display current month/year */}
                           <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
                         </Button>
                       </PopoverTrigger>
@@ -320,8 +352,8 @@ const Home = () => {
                           selected={selectedDayForDialog || new Date()}
                           onSelect={(date) => {
                             if (date) {
-                              handleDayClick(date);
-                              setCurrentMonth(date); // Keep month in sync
+                              setCurrentMonth(date); // Set the month of the selected date
+                              setSelectedDayForDialog(date); // Keep the day highlighted
                             }
                           }}
                           initialFocus
@@ -360,8 +392,8 @@ const Home = () => {
                             selected={selectedDayForDialog || new Date()}
                             onSelect={(date) => {
                               if (date) {
-                                handleDayClick(date);
-                                setCurrentMonth(date);
+                                setCurrentMonth(date); // Update current month
+                                setSelectedDayForDialog(date); // Update selected day
                                 setIsFullCalendarDialogOpen(false);
                               }
                             }}
@@ -423,16 +455,24 @@ const Home = () => {
                     })}
                   </div>
 
-                  {/* Events for Selected Day (Mobile) */}
+                  {/* Events for Selected Month (Mobile) */}
                   <div className="mt-6">
                     <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
-                      Events on {selectedDayForDialog ? format(selectedDayForDialog, 'PPP') : 'Selected Date'}
+                      Events in {format(currentMonth, 'MMMM yyyy')}
                     </h3>
-                    {selectedDayEvents.length === 0 ? (
-                      <p className="text-gray-600 text-center">No events on this date.</p>
+                    {eventsForCurrentMonth.length === 0 ? (
+                      <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                        <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-lg font-semibold text-gray-700 mb-4">No events found for this month.</p>
+                        <Link to="/submit-event">
+                          <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
+                          </Button>
+                        </Link>
+                      </div>
                     ) : (
                       <div className="space-y-4">
-                        {selectedDayEvents.map((event) => renderEventCard(event))}
+                        {eventsForCurrentMonth.map((event) => renderEventCard(event))}
                       </div>
                     )}
                   </div>
