@@ -273,7 +273,7 @@ const CalendarView = () => {
               <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
             ))}
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-40 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+              <div key={i} className="h-48 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
                 <Skeleton className="h-4 w-1/2 mb-2" />
                 <Skeleton className="h-3 w-3/4" />
                 <Skeleton className="h-3 w-2/3 mt-1" />
@@ -289,14 +289,14 @@ const CalendarView = () => {
               const dayEvents = getEventsForDay(day);
               const isCurrentMonth = isSameMonth(day, currentMonth);
               const isTodayDate = isToday(day);
-              const displayEvents = dayEvents.slice(0, 2); // Show up to 2 events
+              const displayEvents = dayEvents.slice(0, 3); // Show up to 3 events
               const moreEventsCount = dayEvents.length - displayEvents.length;
 
               return (
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "h-40 border rounded-md p-2 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out",
+                    "h-48 border rounded-md p-2 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out",
                     isCurrentMonth ? "bg-white hover:bg-gray-50" : "bg-gray-100 text-gray-400",
                     isTodayDate && "border-2 border-purple-500 bg-purple-50 shadow-md",
                     dayEvents.length > 0 && isCurrentMonth && "border-blue-300 bg-blue-50 hover:bg-blue-100"
@@ -315,7 +315,7 @@ const CalendarView = () => {
                       <Badge
                         key={event.id}
                         className={cn(
-                          "w-full text-left px-2 py-1 rounded-sm text-xs font-medium truncate cursor-pointer",
+                          "w-full text-left px-3 py-1.5 rounded-md text-sm font-medium truncate cursor-pointer", // Increased padding and text size
                           isTodayDate ? "bg-purple-200 text-purple-800 hover:bg-purple-300" : "bg-blue-200 text-blue-800 hover:bg-blue-300"
                         )}
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
