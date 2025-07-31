@@ -152,11 +152,13 @@ const EventDetail = () => {
 
       {event.image_url && (
         <div className="mb-6">
-          <img
-            src={event.image_url}
-            alt={event.event_name}
-            className="w-full h-64 object-cover rounded-lg shadow-lg"
-          />
+          <a href={event.image_url} target="_blank" rel="noopener noreferrer">
+            <img
+              src={event.image_url}
+              alt={event.event_name}
+              className="w-full h-64 object-cover rounded-lg shadow-lg"
+            />
+          </a>
         </div>
       )}
 

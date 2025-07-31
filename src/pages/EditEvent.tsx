@@ -629,11 +629,13 @@ const EditEvent = () => {
               <>
                 {imagePreviewUrl && (
                   <div className="col-span-full flex justify-center mb-4">
-                    <img
-                      src={imagePreviewUrl}
-                      alt="Event Preview"
-                      className="max-w-full h-auto rounded-lg shadow-lg"
-                    />
+                    <a href={imagePreviewUrl} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={imagePreviewUrl}
+                        alt="Event Preview"
+                        className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
+                    </a>
                   </div>
                 )}
                 <div className="grid grid-cols-4 items-center gap-4">

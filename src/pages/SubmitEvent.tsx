@@ -169,6 +169,13 @@ const SubmitEvent = () => {
         if (parsed_data.organizerContact) form.setValue('organizerContact', parsed_data.organizerContact);
         if (parsed_data.eventType) form.setValue('eventType', parsed_data.eventType);
 
+        // Handle image_url from AI
+        if (parsed_data.image_url) {
+          setImagePreviewUrl(parsed_data.image_url);
+          // Note: We don't set imageFile here as it's a File object, not a URL.
+          // The image_url will be saved directly to the DB if no file is uploaded.
+        }
+
         toast.success('Event details parsed successfully!');
       } else {
         toast.info('No event details could be extracted from the text.');
@@ -203,8 +210,9 @@ const SubmitEvent = () => {
   };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
-    let imageUrl: string | null = null;
-    if (selectedImage) {
+    let imageUrl: string | null = imagePreviewUrl; // Use imagePreviewUrl as the source of truth for the URL
+    
+    if (selectedImage) { // If a new file was selected, upload it
       const fileExtension = selectedImage.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExtension}`; 
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -225,7 +233,13 @@ const SubmitEvent = () => {
         .getPublicUrl(fileName);
 
       imageUrl = publicUrlData.publicUrl;
+    } else if (imagePreviewUrl === null) { // If image was explicitly removed
+      imageUrl = null;
     }
+    // If no new file was selected and imagePreviewUrl is not null, it means
+    // either an AI-suggested URL is present or an existing image URL was kept.
+    // In this case, imageUrl already holds the correct value from imagePreviewUrl.
+
 
     let formattedTicketLink = values.ticketLink;
     if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
@@ -289,9 +303,11 @@ const SubmitEvent = () => {
           <Sparkles className="mr-2 h-6 w-6 text-purple-600" />
           AI Event Parser <Badge variant="secondary" className="ml-2 bg-purple-200 text-purple-800">Beta</Badge>
         </h3>
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 mb-2">
           Paste a large block of event text below, and our AI will try to automatically fill out the form fields for you.
-          This feature is in beta, so please review the parsed details carefully!
+        </p>
+        <p className="text-sm text-gray-600 mb-4 italic">
+          Note: This AI parses text content. It cannot extract information directly from external links (e.g., Humanitix URLs).
         </p>
         <div className="space-y-4">
           <Textarea
@@ -629,11 +645,13 @@ const SubmitEvent = () => {
               <>
                 {imagePreviewUrl && (
                   <div className="col-span-full flex justify-center mb-4">
-                    <img
-                      src={imagePreviewUrl}
-                      alt="Event Preview"
-                      className="max-w-full h-auto rounded-lg shadow-lg"
-                    />
+                    <a href={imagePreviewUrl} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={imagePreviewUrl}
+                        alt="Event Preview"
+                        className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
+                    </a>
                   </div>
                 )}
                 <div className="grid grid-cols-4 items-center gap-4">
