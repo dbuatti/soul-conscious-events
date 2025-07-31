@@ -350,9 +350,9 @@ const EditEvent = () => {
             name="eventName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Event Name</FormLabel>
+                <FormLabel htmlFor="eventName">Event Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="eventName" placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -365,11 +365,12 @@ const EditEvent = () => {
               name="eventDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Start Date</FormLabel>
+                  <FormLabel htmlFor="eventDate">Start Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
+                          id="eventDate"
                           variant={'outline'}
                           className={cn(
                             'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
@@ -406,11 +407,12 @@ const EditEvent = () => {
               name="endDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>End Date (Optional)</FormLabel>
+                  <FormLabel htmlFor="endDate">End Date (Optional)</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
+                          id="endDate"
                           variant={'outline'}
                           className={cn(
                             'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
@@ -443,9 +445,9 @@ const EditEvent = () => {
             name="eventTime"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Time (Optional)</FormLabel>
+                <FormLabel htmlFor="eventTime">Time (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -457,9 +459,9 @@ const EditEvent = () => {
             name="placeName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Place Name (Optional)</FormLabel>
+                <FormLabel htmlFor="placeName">Place Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-purple-500" />
+                  <Input id="placeName" placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -471,9 +473,10 @@ const EditEvent = () => {
             name="fullAddress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Address (Optional)</FormLabel>
+                <FormLabel htmlFor="fullAddress">Full Address (Optional)</FormLabel>
                 <FormControl>
                   <Input
+                    id="fullAddress"
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
@@ -490,9 +493,9 @@ const EditEvent = () => {
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description (Optional)</FormLabel>
+                <FormLabel htmlFor="description">Description (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -504,9 +507,9 @@ const EditEvent = () => {
             name="ticketLink"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ticket/Booking Link (Optional)</FormLabel>
+                <FormLabel htmlFor="ticketLink">Ticket/Booking Link (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -518,9 +521,9 @@ const EditEvent = () => {
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Price (Optional)</FormLabel>
+                <FormLabel htmlFor="price">Price (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="price" placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -532,9 +535,9 @@ const EditEvent = () => {
             name="specialNotes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Special Notes (Optional)</FormLabel>
+                <FormLabel htmlFor="specialNotes">Special Notes (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea id="specialNotes" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -546,9 +549,9 @@ const EditEvent = () => {
             name="organizerContact"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Organizer Name/Contact (Optional)</FormLabel>
+                <FormLabel htmlFor="organizerContact">Organizer Name/Contact (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -560,10 +563,10 @@ const EditEvent = () => {
             name="eventType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Event Type (Optional)</FormLabel>
+                <FormLabel htmlFor="eventType">Event Type (Optional)</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="focus-visible:ring-purple-500">
+                    <SelectTrigger id="eventType" className="focus-visible:ring-purple-500">
                       <SelectValue placeholder="Select an event type" />
                     </SelectTrigger>
                   </FormControl>
@@ -613,6 +616,7 @@ const EditEvent = () => {
                   render={({ field }) => (
                     <FormControl>
                       <Input
+                        id="imageUrl" // Added ID
                         placeholder="e.g., https://example.com/image.jpg"
                         {...field}
                         onChange={handleImageUrlInputChange}

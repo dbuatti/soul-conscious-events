@@ -4,7 +4,7 @@ import { format, isSameDay, isAfter, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2, Globe, Calendar as CalendarIcon, PlusCircle } from 'lucide-react';
+import { MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, Share2, Globe, Calendar as CalendarIcon, PlusCircle, Frown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
@@ -117,7 +117,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           <div className="relative w-full h-48 overflow-hidden">
             <img
               src={event.image_url}
-              alt={event.event_name}
+              alt={`Image for ${event.event_name}`}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -234,6 +234,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         </h3>
         {eventsOnSelectedDate.length === 0 ? (
           <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+            <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-lg font-semibold text-gray-700 mb-4">
               No events found on this date.
             </p>

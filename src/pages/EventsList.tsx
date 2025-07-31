@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, ChevronDown, Lightbulb, Loader2, PlusCircle } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, ChevronDown, Lightbulb, Loader2, PlusCircle, Frown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -443,6 +443,7 @@ const EventsList = () => {
           </p>
         ) : events.length === 0 ? (
           <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+            <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-lg font-semibold text-gray-700 mb-4">
               No events found matching your criteria.
             </p>
@@ -518,7 +519,7 @@ const EventsList = () => {
                         <div className="relative w-full aspect-video overflow-hidden">
                           <img
                             src={event.image_url}
-                            alt={event.event_name}
+                            alt={`Image for ${event.event_name}`}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
