@@ -34,14 +34,14 @@ const Header = () => {
 
   const mainNavLinks = (
     <>
-      <Link to="/"> {/* Now points to the new Home (Calendar) */}
+      <Link to="/"> {/* Now points to the Events List */}
         <Button variant="ghost" className={getButtonClass("/")}>
-          Calendar
+          Events
         </Button>
       </Link>
-      <Link to="/events"> {/* New link for the Events List */}
-        <Button variant="ghost" className={getButtonClass("/events")}>
-          Events
+      <Link to="/calendar"> {/* Calendar is now at /calendar */}
+        <Button variant="ghost" className={getButtonClass("/calendar")}>
+          Calendar
         </Button>
       </Link>
       <Link to="/submit-event">

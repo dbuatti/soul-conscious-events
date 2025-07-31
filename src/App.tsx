@@ -3,8 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home"; // This is now the CalendarView
-import EventsList from "./pages/EventsList"; // This is the old Index.tsx
+import CalendarView from "./pages/Home"; // Renamed for clarity, this is the old Home.tsx
+import Home from "./pages/EventsList"; // Renamed for clarity, this is the old Index.tsx
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
@@ -30,8 +30,8 @@ const App = () => (
         <SessionContextProvider>
           <Layout>
             <Routes>
-              <Route path="/" element={<Home />} /> {/* New Home is Calendar */}
-              <Route path="/events" element={<EventsList />} /> {/* Old Index is now EventsList */}
+              <Route path="/" element={<Home />} /> {/* New Home is EventsList */}
+              <Route path="/calendar" element={<CalendarView />} /> {/* Calendar is now at /calendar */}
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />

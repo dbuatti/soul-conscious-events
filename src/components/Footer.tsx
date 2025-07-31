@@ -21,8 +21,8 @@ const Footer = () => {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Quick Links</h3>
           <nav className="flex flex-col space-y-2">
-            <Link to="/" className="hover:text-purple-400 transition-colors text-sm">Calendar</Link> {/* Now points to the new Home (Calendar) */}
-            <Link to="/events" className="hover:text-purple-400 transition-colors text-sm">Events</Link> {/* New link for the Events List */}
+            <Link to="/" className="hover:text-purple-400 transition-colors text-sm">Events</Link> {/* Now points to the Events List */}
+            <Link to="/calendar" className="hover:text-purple-400 transition-colors text-sm">Calendar</Link> {/* Calendar is now at /calendar */}
             <Link to="/submit-event" className="hover:text-purple-400 transition-colors text-sm">Add Event</Link>
             <Link to="/map" className="hover:text-purple-400 transition-colors text-sm">Map</Link>
             <Link to="/contact" className="hover:text-purple-400 transition-colors text-sm">Contact</Link>

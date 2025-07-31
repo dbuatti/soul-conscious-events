@@ -40,7 +40,7 @@ interface Event {
   user_id?: string; // Added user_id to interface
 }
 
-const Index = () => {
+const EventsList = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
@@ -55,7 +55,7 @@ const Index = () => {
   const [appliedState, setAppliedState] = useState('All');
   const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list'); // Default to list view
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
   const [isFiltersOpen, setIsFiltersOpen] = useState(true); // State for collapsible filters
 
@@ -644,4 +644,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default EventsList;

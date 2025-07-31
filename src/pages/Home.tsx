@@ -226,31 +226,6 @@ const Home = () => {
 
   return (
     <div className="w-full max-w-7xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-      {/* Hero Section */}
-      <div className="text-center mb-12 py-12 px-6 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white">
-        <h1 className="text-5xl font-extrabold mb-4 leading-tight">
-          Discover Your Next Soulful Experience
-        </h1>
-        <p className="text-xl font-light mb-8 opacity-90">
-          Connect with events that nourish your mind, body, and spirit across Australia.
-        </p>
-        <Link to="/submit-event">
-          <Button className="bg-white text-purple-700 hover:bg-gray-100 text-lg font-semibold py-3 px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-            Add Your Event
-          </Button>
-        </Link>
-      </div>
-
-      {/* App Description Clause */}
-      <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center">
-        <Lightbulb className="mr-3 h-6 w-6 text-blue-600 flex-shrink-0" />
-        <p className="text-gray-700 text-base leading-relaxed">
-          SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
-          As this is a new project from an aspiring app developer, some features may not work as expected.
-          Your feedback is invaluable! Please visit the <Link to="/contact" className="text-blue-600 hover:underline font-medium">Contact Us</Link> page to share your suggestions or report any issues.
-        </p>
-      </div>
-
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar for Desktop */}
         {!isMobile && (
