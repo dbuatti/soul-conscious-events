@@ -56,9 +56,9 @@ const Contact = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-border">
-      <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Contact Us</h2>
-      <p className="text-center text-muted-foreground mb-8">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+      <h2 className="text-3xl font-bold text-center text-foreground mb-6">Contact Us</h2>
+      <p className="text-center text-gray-600 mb-8">
         We'd love to hear from you! Please use the form below to send us your suggestions, recommendations, or feedback.
       </p>
 
@@ -71,7 +71,7 @@ const Contact = () => {
               <FormItem>
                 <FormLabel>Your Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} className="focus-visible:ring-primary" />
+                  <Input placeholder="John Doe" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -85,7 +85,7 @@ const Contact = () => {
               <FormItem>
                 <FormLabel>Your Email (Optional)</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="you@example.com" {...field} className="focus-visible:ring-primary" />
+                  <Input type="email" placeholder="you@example.com" {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -100,7 +100,7 @@ const Contact = () => {
                 <FormLabel>Subject</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="focus-visible:ring-primary">
+                    <SelectTrigger className="focus-visible:ring-purple-500">
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                   </FormControl>
@@ -123,7 +123,7 @@ const Contact = () => {
               <FormItem>
                 <FormLabel>Message</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Type your message here..." rows={5} {...field} className="focus-visible:ring-primary" />
+                  <Textarea placeholder="Type your message here..." rows={5} {...field} className="focus-visible:ring-purple-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -131,16 +131,16 @@ const Contact = () => {
           />
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary-foreground text-primary-foreground">
+            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
             </Button>
           </div>
         </form>
       </Form>
 
-      <div className="mt-10 text-center text-foreground">
+      <div className="mt-10 text-center text-gray-700">
         <p className="flex items-center justify-center text-lg font-medium">
-          <Mail className="mr-2 h-5 w-5 text-primary" />
+          <Mail className="mr-2 h-5 w-5 text-purple-600" />
           For direct inquiries, you can reach us at:
         </p>
         <p className="text-xl font-semibold">

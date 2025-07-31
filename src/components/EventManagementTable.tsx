@@ -234,7 +234,7 @@ const EventManagementTable = () => {
     <div className="space-y-6">
       <div className="flex justify-end">
         <Link to="/submit-event">
-          <Button className="bg-primary hover:bg-primary-foreground text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
           </Button>
         </Link>
@@ -247,22 +247,22 @@ const EventManagementTable = () => {
           <Skeleton className="h-10 w-full" />
         </div>
       ) : events.length === 0 ? (
-        <p className="text-center text-foreground">No events found.</p>
+        <p className="text-center text-gray-600">No events found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <Table className="min-w-full bg-white border border-border rounded-lg shadow-lg">
+          <Table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px] text-foreground">Event Name</TableHead>
-                <TableHead className="text-foreground">Start Date</TableHead>
-                <TableHead className="text-foreground">End Date</TableHead>
-                <TableHead className="text-foreground">Time</TableHead>
-                <TableHead className="text-foreground">Location</TableHead>
-                <TableHead className="text-foreground">Type</TableHead>
-                <TableHead className="text-foreground">Image</TableHead>
-                <TableHead className="text-foreground">Status</TableHead>
-                <TableHead className="text-foreground">Submitted By</TableHead>
-                <TableHead className="text-right text-foreground">Actions</TableHead>
+                <TableHead className="w-[200px]">Event Name</TableHead>
+                <TableHead>Start Date</TableHead>
+                <TableHead>End Date</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Image</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Submitted By</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -278,7 +278,7 @@ const EventManagementTable = () => {
                     {event.image_url ? (
                       <img src={event.image_url} alt="Event" className="w-12 h-12 object-cover rounded-md" />
                     ) : (
-                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                      <ImageIcon className="h-8 w-8 text-gray-400" />
                     )}
                   </TableCell>
                   <TableCell>
@@ -342,7 +342,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Event Name</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-primary" />
+                      <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -426,7 +426,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Time (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-primary" />
+                      <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -439,7 +439,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Place Name (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-primary" />
+                      <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -452,7 +452,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Full Address (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-primary" />
+                      <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -465,7 +465,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Description (Optional)</FormLabel>
                     <FormControl>
-                      <Textarea {...field} className="focus-visible:ring-primary" />
+                      <Textarea {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -478,7 +478,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Ticket/Booking Link (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-primary" />
+                      <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -491,7 +491,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Price (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-primary" />
+                      <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -504,7 +504,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Special Notes (Optional)</FormLabel>
                     <FormControl>
-                      <Textarea {...field} className="focus-visible:ring-primary" />
+                      <Textarea {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -517,7 +517,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Organizer Name/Contact (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-primary" />
+                      <Input {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -531,7 +531,7 @@ const EventManagementTable = () => {
                     <FormLabel>Event Type (Optional)</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-primary">
+                        <SelectTrigger className="focus-visible:ring-purple-500">
                           <SelectValue placeholder="Select an event type" />
                         </SelectTrigger>
                       </FormControl>
@@ -555,7 +555,7 @@ const EventManagementTable = () => {
                     <FormLabel>Status</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-primary">
+                        <SelectTrigger className="focus-visible:ring-purple-500">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
@@ -574,14 +574,14 @@ const EventManagementTable = () => {
               {currentEvent?.image_url && (
                 <FormItem>
                   <FormLabel>Current Image</FormLabel>
-                  <div className="w-full h-32 overflow-hidden rounded-md border border-border flex items-center justify-center bg-muted">
+                  <div className="w-full h-32 overflow-hidden rounded-md border border-gray-200 flex items-center justify-center bg-gray-50">
                     <img src={currentEvent.image_url} alt="Event Image" className="max-h-full max-w-full object-contain" />
                   </div>
-                  <FormDescription className="text-muted-foreground">Image can only be updated by submitting a new event.</FormDescription>
+                  <FormDescription>Image can only be updated by submitting a new event.</FormDescription>
                 </FormItem>
               )}
               <DialogFooter>
-                <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary-foreground text-primary-foreground">
+                <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                   {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
                 </Button>
               </DialogFooter>

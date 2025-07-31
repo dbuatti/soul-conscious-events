@@ -101,7 +101,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold text-foreground text-center">{event.event_name}</DialogTitle>
-          <DialogDescriptionUI className="text-muted-foreground">
+          <DialogDescriptionUI>
             Details about this soulful event.
           </DialogDescriptionUI>
         </DialogHeader>
@@ -118,36 +118,36 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
           </div>
         )}
 
-        <Card className="shadow-lg rounded-lg border border-border">
+        <Card className="shadow-lg rounded-lg border-none">
           <CardHeader>
-            <CardDescription className="flex items-center text-muted-foreground mt-2">
-              <Calendar className="mr-2 h-4 w-4 text-accent-foreground" />
+            <CardDescription className="flex items-center text-gray-600 mt-2">
+              <Calendar className="mr-2 h-4 w-4 text-blue-500" />
               {dateDisplay}
               {event.event_time && (
                 <>
-                  <Clock className="ml-4 mr-2 h-4 w-4 text-accent-foreground" />
+                  <Clock className="ml-4 mr-2 h-4 w-4 text-green-500" />
                   {event.event_time}
                 </>
               )}
             </CardDescription>
             {(event.place_name || event.full_address) && (
-              <CardDescription className="flex flex-col items-start text-muted-foreground mt-1">
+              <CardDescription className="flex flex-col items-start text-gray-600 mt-1">
                 {event.place_name && (
                   <div className="flex items-center mb-1">
-                    <MapPin className="mr-2 h-4 w-4 text-accent-foreground" />
-                    <Badge variant="secondary" className="bg-secondary text-secondary-foreground text-base py-1 px-2">
+                    <MapPin className="mr-2 h-4 w-4 text-red-500" />
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-base py-1 px-2">
                       {event.place_name}
                     </Badge>
                   </div>
                 )}
                 {event.full_address && (
                   <div className="flex items-center">
-                    {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-accent-foreground" />}
+                    {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-red-500" />}
                     <a
                       href={googleMapsLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline text-base"
+                      className="text-blue-600 hover:underline text-base"
                     >
                       {event.full_address}
                     </a>
@@ -160,22 +160,22 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.description && (
               <div>
                 <h3 className="font-semibold text-foreground mb-2">Description:</h3>
-                <p className="text-foreground whitespace-pre-wrap">{event.description}</p>
+                <p className="text-gray-700 whitespace-pre-wrap">{event.description}</p>
               </div>
             )}
             {event.price && (
-              <p className="flex items-center text-foreground">
-                <DollarSign className="mr-2 h-5 w-5 text-accent-foreground" />
+              <p className="flex items-center text-gray-700">
+                <DollarSign className="mr-2 h-5 w-5 text-green-600" />
                 <span className="font-medium">Price:</span> {event.price}
                 {event.price.toLowerCase() === 'free' && (
-                  <Badge variant="secondary" className="ml-2 bg-secondary text-secondary-foreground">Free</Badge>
+                  <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
                 )}
               </p>
             )}
             {event.ticket_link && (
               <div className="flex items-center">
-                <LinkIcon className="mr-2 h-5 w-5 text-accent-foreground" />
-                <Button asChild variant="link" className="p-0 h-auto text-primary text-base transition-all duration-300 ease-in-out transform hover:scale-105">
+                <LinkIcon className="mr-2 h-5 w-5 text-purple-600" />
+                <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-base transition-all duration-300 ease-in-out transform hover:scale-105">
                   <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
                     Ticket/Booking Link
                   </a>
@@ -183,20 +183,20 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </div>
             )}
             {event.special_notes && (
-              <p className="flex items-start text-foreground">
-                <Info className="mr-2 h-5 w-5 text-accent-foreground mt-1" />
+              <p className="flex items-start text-gray-700">
+                <Info className="mr-2 h-5 w-5 text-orange-500 mt-1" />
                 <span className="font-medium">Special Notes:</span> {event.special_notes}
               </p>
             )}
             {event.organizer_contact && (
-              <p className="flex items-center text-foreground">
-                <User className="mr-2 h-5 w-5 text-accent-foreground" />
+              <p className="flex items-center text-gray-700">
+                <User className="mr-2 h-5 w-5 text-indigo-500" />
                 <span className="font-medium">Organizer:</span> {event.organizer_contact}
               </p>
             )}
             {event.event_type && (
-              <p className="flex items-center text-foreground">
-                <Tag className="mr-2 h-5 w-5 text-accent-foreground" />
+              <p className="flex items-center text-gray-700">
+                <Tag className="mr-2 h-5 w-5 text-pink-500" />
                 <span className="font-medium">Event Type:</span> {event.event_type}
               </p>
             )}
@@ -209,7 +209,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
           </Button>
           {event.full_address && (
             <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
-              <Button className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary-foreground text-primary-foreground">
+              <Button className="transition-all duration-300 ease-in-out transform hover:scale-105">
                 <Globe className="mr-2 h-4 w-4" /> View on Map
               </Button>
             </a>
@@ -219,7 +219,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             navigator.clipboard.writeText(eventUrl)
               .then(() => toast.success('Event link copied to clipboard!'))
               .catch(() => toast.error('Failed to copy link. Please try again.'));
-          }} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary-foreground text-primary-foreground">
+          }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
             <Share2 className="mr-2 h-4 w-4" /> Share Event
           </Button>
           {isCreatorOrAdmin && (
