@@ -15,11 +15,9 @@ const Header = () => {
   const isMobile = useIsMobile();
   const { user } = useSession();
 
-  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
-
   const getButtonClass = (path: string) => {
     return cn(
-      "text-foreground hover:text-purple-700 transition-all duration-300 ease-in-out transform hover:scale-105", // Added transition and transform
+      "text-foreground hover:text-purple-700 transition-all duration-300 ease-in-out transform hover:scale-105",
       location.pathname === path && "font-bold text-purple-700"
     );
   };
@@ -34,7 +32,7 @@ const Header = () => {
     }
   };
 
-  const navLinks = (
+  const mainNavLinks = (
     <>
       <Link to="/">
         <Button variant="ghost" className={getButtonClass("/")}>
@@ -46,7 +44,7 @@ const Header = () => {
           Add Event
         </Button>
       </Link>
-      <Link to="/calendar"> {/* New Calendar link */}
+      <Link to="/calendar">
         <Button variant="ghost" className={getButtonClass("/calendar")}>
           Calendar
         </Button>
@@ -69,17 +67,6 @@ const Header = () => {
           About
         </Button>
       </Link>
-      {/* Admin button is always visible, ProtectedRoute handles access */}
-      <Link to="/admin/panel">
-        <Button className={cn("bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105", location.pathname.startsWith("/admin") && "bg-blue-700")}>
-          Admin
-        </Button>
-      </Link>
-      {user ? (
-        <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105">
-          <LogOut className="mr-2 h-4 w-4" /> Logout
-        </Button>
-      ) : null}
     </>
   );
 
@@ -99,17 +86,44 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6">
               <nav className="flex flex-col space-y-4 mt-8">
-                {React.Children.map(navLinks, (child) => (
+                {React.Children.map(mainNavLinks, (child) => (
                   <SheetClose asChild key={child.key}>
                     {child}
                   </SheetClose>
                 ))}
+                {/* Mobile Auth Button */}
+                {user ? (
+                  <SheetClose asChild>
+                    <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <LogOut className="mr-2 h-4 w-4" /> Logout
+                    </Button>
+                  </SheetClose>
+                ) : (
+                  <SheetClose asChild>
+                    <Link to="/login">
+                      <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                        Login
+                      </Button>
+                    </Link>
+                  </SheetClose>
+                )}
               </nav>
             </SheetContent>
           </Sheet>
         ) : (
-          <nav className="space-x-4 hidden md:flex">
-            {navLinks}
+          <nav className="space-x-4 hidden md:flex items-center">
+            {mainNavLinks}
+            {user ? (
+              <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105">
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+              </Button>
+            ) : (
+              <Link to="/login">
+                <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                  Login
+                </Button>
+              </Link>
+            )}
           </nav>
         )}
       </div>
