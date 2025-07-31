@@ -34,6 +34,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -43,7 +44,7 @@ interface Event {
   id: string;
   event_name: string;
   event_date: string;
-  end_date?: string; // Added end_date
+  end_date?: string;
   event_time?: string;
   place_name?: string;
   full_address?: string;
@@ -65,18 +66,18 @@ const eventFormSchema = z.object({
   eventDate: z.date({
     required_error: 'A date is required.',
   }),
-  endDate: z.date().optional(), // Added endDate to schema
-  eventTime: z.string().optional(),
-  placeName: z.string().optional(),
-  fullAddress: z.string().optional(),
-  description: z.string().optional(),
-  ticketLink: z.string().optional(),
-  price: z.string().optional(),
-  specialNotes: z.string().optional(),
-  organizerContact: z.string().optional(),
-  eventType: z.string().optional(),
+  endDate: z.date().optional(),
+  eventTime: z.string().optional().or(z.literal('')),
+  placeName: z.string().optional().or(z.literal('')),
+  fullAddress: z.string().optional().or(z.literal('')),
+  description: z.string().optional().or(z.literal('')),
+  ticketLink: z.string().optional().or(z.literal('')),
+  price: z.string().optional().or(z.literal('')),
+  specialNotes: z.string().optional().or(z.literal('')),
+  organizerContact: z.string().optional().or(z.literal('')),
+  eventType: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(), // For new image upload
-  image_url: z.string().optional(), // For displaying existing image
+  imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // For image URL input
 });
 
 const eventTypes = [
@@ -101,6 +102,7 @@ const EditEvent = () => {
   const placeNameInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload'); // New state for tabs
 
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
@@ -116,7 +118,7 @@ const EditEvent = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      image_url: '',
+      imageUrl: '', // Initialize new field
     },
   });
 
@@ -144,7 +146,7 @@ const EditEvent = () => {
         form.reset({
           eventName: data.event_name,
           eventDate: new Date(data.event_date),
-          endDate: data.end_date ? new Date(data.end_date) : undefined, // Set endDate
+          endDate: data.end_date ? new Date(data.end_date) : undefined,
           eventTime: data.event_time || '',
           placeName: data.place_name || '',
           fullAddress: data.full_address || '',
@@ -154,9 +156,12 @@ const EditEvent = () => {
           specialNotes: data.special_notes || '',
           organizerContact: data.organizer_contact || '',
           eventType: data.event_type || '',
-          image_url: data.image_url || '',
+          imageUrl: data.image_url || '', // Set imageUrl from fetched data
         });
         setImagePreviewUrl(data.image_url || null); // Set initial preview URL
+        if (data.image_url) {
+          setImageInputMode('url'); // If existing image is a URL, default to URL tab
+        }
       } else {
         navigate('/404');
       }
@@ -187,12 +192,13 @@ const EditEvent = () => {
     }
   }, [form]);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setSelectedImage(file);
       setImagePreviewUrl(URL.createObjectURL(file)); // Update preview URL
       form.setValue('imageFile', file);
+      form.setValue('imageUrl', ''); // Clear URL field if file is selected
     } else {
       setSelectedImage(null);
       setImagePreviewUrl(currentEvent?.image_url || null); // Revert to original if cleared
@@ -200,18 +206,31 @@ const EditEvent = () => {
     }
   };
 
+  const handleImageUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    form.setValue('imageUrl', url);
+    if (url) {
+      setImagePreviewUrl(url);
+      setSelectedImage(null); // Clear file if URL is entered
+      form.setValue('imageFile', undefined);
+    } else {
+      setImagePreviewUrl(null);
+    }
+  };
+
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreviewUrl(null);
     form.setValue('imageFile', undefined);
-    form.setValue('image_url', ''); // Explicitly clear the image_url in the form state
+    form.setValue('imageUrl', ''); // Clear the URL field
   };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
 
-    let imageUrl: string | null = currentEvent.image_url || null;
-    if (selectedImage) {
+    let finalImageUrl: string | null = null;
+    
+    if (selectedImage) { // If a new file was selected, upload it
       // Delete old image if it exists and is different
       if (currentEvent.image_url) {
         const oldFileName = currentEvent.image_url.split('/').pop();
@@ -243,9 +262,10 @@ const EditEvent = () => {
         .from('event-images')
         .getPublicUrl(fileName);
 
-      imageUrl = publicUrlData.publicUrl;
-    } else if (values.image_url === '') { // User explicitly cleared the image
-      if (currentEvent.image_url) {
+      finalImageUrl = publicUrlData.publicUrl;
+    } else if (values.imageUrl) { // If a URL was provided
+      // If the old image was a file and a new URL is provided, delete the old file
+      if (currentEvent.image_url && !currentEvent.image_url.startsWith('http')) { // Check if it's a Supabase storage URL
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
           const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
@@ -254,7 +274,19 @@ const EditEvent = () => {
           }
         }
       }
-      imageUrl = null;
+      finalImageUrl = values.imageUrl;
+    } else if (currentEvent.image_url && !selectedImage && !values.imageUrl) { // If no new image and no URL, but there was an old image
+      // This means the user explicitly removed the image or it was never set
+      const oldFileName = currentEvent.image_url.split('/').pop();
+      if (oldFileName) {
+        const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
+        if (deleteError) {
+          console.error('Error deleting old image:', deleteError);
+        }
+      }
+      finalImageUrl = null;
+    } else { // Keep existing image if no changes
+      finalImageUrl = currentEvent.image_url;
     }
 
 
@@ -266,7 +298,7 @@ const EditEvent = () => {
     const { error } = await supabase.from('events').update({
       event_name: values.eventName,
       event_date: values.eventDate.toISOString().split('T')[0],
-      end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null, // Save end_date
+      end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null,
       event_time: values.eventTime || null,
       place_name: values.placeName || null,
       full_address: values.fullAddress || null,
@@ -276,7 +308,7 @@ const EditEvent = () => {
       special_notes: values.specialNotes || null,
       organizer_contact: values.organizerContact || null,
       event_type: values.eventType || null,
-      image_url: imageUrl,
+      image_url: finalImageUrl,
     }).eq('id', id);
 
     if (error) {
@@ -558,19 +590,20 @@ const EditEvent = () => {
             )}
           />
 
-          {/* Image Upload Field */}
-          <FormField
-            control={form.control}
-            name="imageFile"
-            render={({ field: { value, onChange, ...fieldProps } }) => (
-              <FormItem>
-                <FormLabel>Event Image (Optional)</FormLabel>
+          {/* Image Upload/URL Field */}
+          <FormItem>
+            <FormLabel>Event Image (Optional)</FormLabel>
+            <Tabs value={imageInputMode} onValueChange={(value) => setImageInputMode(value as 'upload' | 'url')} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">Upload Image</TabsTrigger>
+                <TabsTrigger value="url">Image URL</TabsTrigger>
+              </TabsList>
+              <TabsContent value="upload" className="mt-4">
                 <FormControl>
                   <Input
-                    {...fieldProps}
                     type="file"
                     accept="image/*"
-                    onChange={handleImageChange}
+                    onChange={handleImageFileChange}
                     className="
                       block w-full text-sm text-gray-700
                       file:mr-4 file:py-2 file:px-4
@@ -584,24 +617,40 @@ const EditEvent = () => {
                     "
                   />
                 </FormControl>
-                {imagePreviewUrl && (
-                  <div className="mt-2 flex items-center space-x-2">
-                    <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-gray-200 shadow-md" />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRemoveImage}
-                      className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
-                    >
-                      <XCircle className="mr-1 h-4 w-4" /> Remove
-                    </Button>
-                  </div>
-                )}
-                <FormMessage />
-              </FormItem>
+              </TabsContent>
+              <TabsContent value="url" className="mt-4">
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., https://example.com/image.jpg"
+                        {...field}
+                        onChange={handleImageUrlInputChange}
+                        className="focus-visible:ring-purple-500"
+                      />
+                    </FormControl>
+                  )}
+                />
+              </TabsContent>
+            </Tabs>
+            {imagePreviewUrl && (
+              <div className="mt-2 flex items-center space-x-2">
+                <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-gray-200 shadow-md" />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveImage}
+                  className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
+                >
+                  <XCircle className="mr-1 h-4 w-4" /> Remove
+                </Button>
+              </div>
             )}
-          />
+            <FormMessage />
+          </FormItem>
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => navigate(`/events/${id}`)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -622,7 +671,9 @@ const EditEvent = () => {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>
-            {/* Removed DialogDescription to fix compile error */}
+            <DialogDescription>
+              Review your event details before submitting.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             {previewData && (

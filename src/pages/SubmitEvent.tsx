@@ -32,7 +32,8 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useSession } from '@/components/SessionContextProvider'; // Keep useSession for user_id in events table
+import { useSession } from '@/components/SessionContextProvider';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -42,7 +43,7 @@ interface Event {
   id: string;
   event_name: string;
   event_date: string;
-  end_date?: string; // Added end_date
+  end_date?: string;
   event_time?: string;
   place_name?: string;
   full_address?: string;
@@ -63,17 +64,18 @@ const eventFormSchema = z.object({
   eventDate: z.date({
     required_error: 'A date is required.',
   }),
-  endDate: z.date().optional(), // Added endDate to schema
-  eventTime: z.string().optional(),
-  placeName: z.string().optional(),
-  fullAddress: z.string().optional(),
-  description: z.string().optional(),
-  ticketLink: z.string().optional(),
-  price: z.string().optional(),
-  specialNotes: z.string().optional(),
-  organizerContact: z.string().optional(),
-  eventType: z.string().optional(),
-  imageFile: z.any().optional(),
+  endDate: z.date().optional(),
+  eventTime: z.string().optional().or(z.literal('')),
+  placeName: z.string().optional().or(z.literal('')),
+  fullAddress: z.string().optional().or(z.literal('')),
+  description: z.string().optional().or(z.literal('')),
+  ticketLink: z.string().optional().or(z.literal('')),
+  price: z.string().optional().or(z.literal('')),
+  specialNotes: z.string().optional().or(z.literal('')),
+  organizerContact: z.string().optional().or(z.literal('')),
+  eventType: z.string().optional().or(z.literal('')),
+  imageFile: z.any().optional(), // For new image upload
+  imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // For image URL input
 });
 
 const eventTypes = [
@@ -93,11 +95,11 @@ const SubmitEvent = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const placeNameInputRef = useRef<HTMLInputElement>(null);
-  const [aiText, setAiText] = useState(''); // Declared aiText
-  const [isAiParsing, setIsAiParsing] = useState(false); // Declared isAiParsing
+  const [aiText, setAiText] = useState('');
+  const [isAiParsing, setIsAiParsing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-
+  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload'); // New state for tabs
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -112,6 +114,7 @@ const SubmitEvent = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
+      imageUrl: '', // Initialize new field
     },
   });
 
@@ -158,7 +161,7 @@ const SubmitEvent = () => {
         // Map parsed data to form fields
         if (parsed_data.eventName) form.setValue('eventName', parsed_data.eventName);
         if (parsed_data.eventDate) form.setValue('eventDate', new Date(parsed_data.eventDate));
-        if (parsed_data.endDate) form.setValue('endDate', new Date(parsed_data.endDate)); // Set endDate
+        if (parsed_data.endDate) form.setValue('endDate', new Date(parsed_data.endDate));
         if (parsed_data.eventTime) form.setValue('eventTime', parsed_data.eventTime);
         if (parsed_data.placeName) form.setValue('placeName', parsed_data.placeName);
         if (parsed_data.fullAddress) form.setValue('fullAddress', parsed_data.fullAddress);
@@ -171,9 +174,9 @@ const SubmitEvent = () => {
 
         // Handle image_url from AI
         if (parsed_data.image_url) {
-          setImagePreviewUrl(parsed_data.image_url);
-          // Note: We don't set imageFile here as it's a File object, not a URL.
-          // The image_url will be saved directly to the DB if no file is uploaded.
+          form.setValue('imageUrl', parsed_data.image_url); // Set the imageUrl form field
+          setImagePreviewUrl(parsed_data.image_url); // Update preview
+          setImageInputMode('url'); // Switch to URL tab
         }
 
         toast.success('Event details parsed successfully!');
@@ -188,12 +191,13 @@ const SubmitEvent = () => {
     }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setSelectedImage(file);
       setImagePreviewUrl(URL.createObjectURL(file));
       form.setValue('imageFile', file);
+      form.setValue('imageUrl', ''); // Clear URL field if file is selected
     } else {
       setSelectedImage(null);
       setImagePreviewUrl(null);
@@ -201,16 +205,27 @@ const SubmitEvent = () => {
     }
   };
 
+  const handleImageUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    form.setValue('imageUrl', url);
+    if (url) {
+      setImagePreviewUrl(url);
+      setSelectedImage(null); // Clear file if URL is entered
+      form.setValue('imageFile', undefined);
+    } else {
+      setImagePreviewUrl(null);
+    }
+  };
+
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreviewUrl(null);
     form.setValue('imageFile', undefined);
-    // If you also have an image_url field in your form schema for existing images, clear it here too
-    // form.setValue('image_url', ''); 
+    form.setValue('imageUrl', '');
   };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
-    let imageUrl: string | null = imagePreviewUrl; // Use imagePreviewUrl as the source of truth for the URL
+    let finalImageUrl: string | null = null;
     
     if (selectedImage) { // If a new file was selected, upload it
       const fileExtension = selectedImage.name.split('.').pop();
@@ -232,14 +247,10 @@ const SubmitEvent = () => {
         .from('event-images')
         .getPublicUrl(fileName);
 
-      imageUrl = publicUrlData.publicUrl;
-    } else if (imagePreviewUrl === null) { // If image was explicitly removed
-      imageUrl = null;
+      finalImageUrl = publicUrlData.publicUrl;
+    } else if (values.imageUrl) { // If a URL was provided
+      finalImageUrl = values.imageUrl;
     }
-    // If no new file was selected and imagePreviewUrl is not null, it means
-    // either an AI-suggested URL is present or an existing image URL was kept.
-    // In this case, imageUrl already holds the correct value from imagePreviewUrl.
-
 
     let formattedTicketLink = values.ticketLink;
     if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
@@ -250,19 +261,19 @@ const SubmitEvent = () => {
       {
         event_name: values.eventName,
         event_date: values.eventDate.toISOString().split('T')[0],
-        end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null, // Save end_date
-        event_time: values.eventTime,
-        place_name: values.placeName,
-        full_address: values.fullAddress,
-        description: values.description,
-        ticket_link: formattedTicketLink,
-        price: values.price,
-        special_notes: values.specialNotes,
-        organizer_contact: values.organizerContact,
-        event_type: values.eventType,
+        end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null,
+        event_time: values.eventTime || null,
+        place_name: values.placeName || null,
+        full_address: values.fullAddress || null,
+        description: values.description || null,
+        ticket_link: formattedTicketLink || null,
+        price: values.price || null,
+        special_notes: values.specialNotes || null,
+        organizer_contact: values.organizerContact || null,
+        event_type: values.eventType || null,
         state: 'approved',
         user_id: user?.id || null,
-        image_url: imageUrl,
+        image_url: finalImageUrl,
       },
     ]);
 
@@ -275,6 +286,7 @@ const SubmitEvent = () => {
       setAiText('');
       setSelectedImage(null);
       setImagePreviewUrl(null);
+      form.setValue('imageUrl', ''); // Clear the URL field
       navigate('/');
     }
   };
@@ -290,6 +302,7 @@ const SubmitEvent = () => {
     setAiText('');
     setSelectedImage(null);
     setImagePreviewUrl(null);
+    form.setValue('imageUrl', ''); // Clear the URL field
     toast.info('Form cleared!');
   };
 
@@ -414,10 +427,10 @@ const SubmitEvent = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
-                        key={field.name} // Added key
+                        key={field.name}
                         mode="single"
-                        selected={field.value as Date | undefined} // Explicit cast
-                        onSelect={(date) => field.onChange(date)} // Explicit callback
+                        selected={field.value as Date | undefined}
+                        onSelect={(date) => field.onChange(date)}
                         initialFocus
                       />
                     </PopoverContent>
@@ -570,18 +583,20 @@ const SubmitEvent = () => {
             )}
           />
 
-          {/* New Image Upload Field */}
-          <FormField
-            control={form.control}
-            name="imageFile"
-            render={() => (
-              <FormItem>
-                <FormLabel>Event Image (Optional)</FormLabel>
+          {/* Image Upload/URL Field */}
+          <FormItem>
+            <FormLabel>Event Image (Optional)</FormLabel>
+            <Tabs value={imageInputMode} onValueChange={(value) => setImageInputMode(value as 'upload' | 'url')} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">Upload Image</TabsTrigger>
+                <TabsTrigger value="url">Image URL</TabsTrigger>
+              </TabsList>
+              <TabsContent value="upload" className="mt-4">
                 <FormControl>
                   <Input
                     type="file"
                     accept="image/*"
-                    onChange={handleImageChange}
+                    onChange={handleImageFileChange}
                     className="
                       block w-full text-sm text-gray-700
                       file:mr-4 file:py-2 file:px-4
@@ -595,24 +610,40 @@ const SubmitEvent = () => {
                     "
                   />
                 </FormControl>
-                {imagePreviewUrl && (
-                  <div className="mt-2 flex items-center space-x-2">
-                    <img src={imagePreviewUrl} alt="Image Preview" className="h-20 w-20 object-cover rounded-md shadow-md border border-gray-200" />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRemoveImage}
-                      className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
-                    >
-                      <XCircle className="mr-1 h-4 w-4" /> Remove
-                    </Button>
-                  </div>
-                )}
-                <FormMessage />
-              </FormItem>
+              </TabsContent>
+              <TabsContent value="url" className="mt-4">
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., https://example.com/image.jpg"
+                        {...field}
+                        onChange={handleImageUrlInputChange}
+                        className="focus-visible:ring-purple-500"
+                      />
+                    </FormControl>
+                  )}
+                />
+              </TabsContent>
+            </Tabs>
+            {imagePreviewUrl && (
+              <div className="mt-2 flex items-center space-x-2">
+                <img src={imagePreviewUrl} alt="Image Preview" className="h-20 w-20 object-cover rounded-md shadow-md border border-gray-200" />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveImage}
+                  className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
+                >
+                  <XCircle className="mr-1 h-4 w-4" /> Remove
+                </Button>
+              </div>
             )}
-          />
+            <FormMessage />
+          </FormItem>
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={handleClearForm} className="transition-all duration-300 ease-in-out transform hover:scale-105">
