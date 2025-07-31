@@ -28,7 +28,9 @@ import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIco
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import EventDetailDialog from '@/components/EventDetailDialog'; // Import the new dialog component
+import EventDetailDialog from '@/components/EventDetailDialog';
+import EventSidebar from '@/components/EventSidebar'; // Import the new sidebar
+import { eventTypes } from '@/lib/constants'; // Import eventTypes from constants
 
 interface Event {
   id: string;
@@ -55,6 +57,7 @@ const CalendarView = () => {
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [isDayDetailDialogOpen, setIsDayDetailDialogOpen] = useState(false);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(null);
+  const [selectedEventType, setSelectedEventType] = useState('All'); // New state for event type filter
 
   // State for EventDetailDialog
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -64,12 +67,17 @@ const CalendarView = () => {
 
   const fetchEvents = async () => {
     setLoading(true);
-    // Fetch all approved events for now, filter by month client-side
-    const { data, error } = await supabase
+    let query = supabase
       .from('events')
       .select('*')
       .eq('state', 'approved')
       .order('event_date', { ascending: true });
+
+    if (selectedEventType !== 'All') {
+      query = query.eq('event_type', selectedEventType);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching events:', error);
@@ -82,7 +90,7 @@ const CalendarView = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [selectedEventType]); // Re-fetch events when selectedEventType changes
 
   const startOfCurrentMonth = startOfMonth(currentMonth);
   const endOfCurrentMonth = endOfMonth(currentMonth);
@@ -201,129 +209,135 @@ const CalendarView = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-bold text-foreground text-center flex-grow">Event Calendar</h1>
-        <Link to="/submit-event">
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
-          </Button>
-        </Link>
-      </div>
+    <div className="w-full max-w-6xl bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col lg:flex-row gap-8">
+      {/* Sidebar */}
+      <EventSidebar selectedEventType={selectedEventType} onSelectEventType={setSelectedEventType} />
 
-      {/* Calendar Navigation */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-100">
-        <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-          <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-            This Month
-          </Button>
+      {/* Main Calendar Content */}
+      <div className="flex-grow">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-4xl font-bold text-foreground text-center flex-grow">Event Calendar</h1>
+          <Link to="/submit-event">
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+              <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
+            </Button>
+          </Link>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <Select onValueChange={handleMonthChange} value={getMonth(currentMonth).toString()}>
-            <SelectTrigger className="w-[140px] focus-visible:ring-purple-500">
-              <SelectValue placeholder="Month" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 12 }, (_, i) => (
-                <SelectItem key={i} value={i.toString()}>
-                  {format(setMonth(new Date(), i), 'MMMM')}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Calendar Navigation */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-100">
+          <div className="flex items-center space-x-2 mb-4 sm:mb-0">
+            <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              This Month
+            </Button>
+          </div>
 
-          <Select onValueChange={handleYearChange} value={getYear(currentMonth).toString()}>
-            <SelectTrigger className="w-[100px] focus-visible:ring-purple-500">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {years.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center space-x-4">
+            <Select onValueChange={handleMonthChange} value={getMonth(currentMonth).toString()}>
+              <SelectTrigger className="w-[140px] focus-visible:ring-purple-500">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <SelectItem key={i} value={i.toString()}>
+                    {format(setMonth(new Date(), i), 'MMMM')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select onValueChange={handleYearChange} value={getYear(currentMonth).toString()}>
+              <SelectTrigger className="w-[100px] focus-visible:ring-purple-500">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
 
-      {loading ? (
-        <div className="grid grid-cols-7 gap-2 text-center">
-          {daysOfWeek.map(day => (
-            <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
-          ))}
-          {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className="h-40 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
-              <Skeleton className="h-4 w-1/2 mb-2" />
-              <Skeleton className="h-3 w-3/4" />
-              <Skeleton className="h-3 w-2/3 mt-1" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-7 gap-2 text-center">
-          {daysOfWeek.map(day => (
-            <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
-          ))}
-          {daysInMonthView.map((day) => {
-            const dayEvents = getEventsForDay(day);
-            const isCurrentMonth = isSameMonth(day, currentMonth);
-            const isTodayDate = isToday(day);
-            const displayEvents = dayEvents.slice(0, 2); // Show up to 2 events
-            const moreEventsCount = dayEvents.length - displayEvents.length;
-
-            return (
-              <div
-                key={day.toISOString()}
-                className={cn(
-                  "h-40 border rounded-md p-2 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out",
-                  isCurrentMonth ? "bg-white hover:bg-gray-50" : "bg-gray-100 text-gray-400",
-                  isTodayDate && "border-2 border-purple-500 bg-purple-50 shadow-md",
-                  dayEvents.length > 0 && isCurrentMonth && "border-blue-300 bg-blue-50 hover:bg-blue-100"
-                )}
-                onClick={() => openDayDetailDialog(day)}
-              >
-                <span className={cn(
-                  "font-bold text-sm mb-1",
-                  isTodayDate && "text-purple-700",
-                  dayEvents.length > 0 && isCurrentMonth && "text-blue-700"
-                )}>
-                  {format(day, 'd')}
-                </span>
-                <div className="flex-grow overflow-hidden space-y-1">
-                  {displayEvents.map(event => (
-                    <Button
-                      key={event.id}
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "w-full text-left px-2 py-1 rounded-sm text-xs font-medium truncate h-auto",
-                        isTodayDate ? "bg-purple-200 text-purple-800 hover:bg-purple-300" : "bg-blue-200 text-blue-800 hover:bg-blue-300"
-                      )}
-                      onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
-                    >
-                      {event.event_time && <span className="mr-1">{event.event_time} - </span>}
-                      {event.event_name}
-                    </Button>
-                  ))}
-                  {moreEventsCount > 0 && (
-                    <span className="text-xs text-gray-500 mt-1 block">
-                      +{moreEventsCount} More
-                    </span>
-                  )}
-                </div>
+        {loading ? (
+          <div className="grid grid-cols-7 gap-2 text-center">
+            {daysOfWeek.map(day => (
+              <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
+            ))}
+            {Array.from({ length: 35 }).map((_, i) => (
+              <div key={i} className="h-40 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-3 w-3/4" />
+                <Skeleton className="h-3 w-2/3 mt-1" />
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-7 gap-2 text-center">
+            {daysOfWeek.map(day => (
+              <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
+            ))}
+            {daysInMonthView.map((day) => {
+              const dayEvents = getEventsForDay(day);
+              const isCurrentMonth = isSameMonth(day, currentMonth);
+              const isTodayDate = isToday(day);
+              const displayEvents = dayEvents.slice(0, 2); // Show up to 2 events
+              const moreEventsCount = dayEvents.length - displayEvents.length;
+
+              return (
+                <div
+                  key={day.toISOString()}
+                  className={cn(
+                    "h-40 border rounded-md p-2 flex flex-col overflow-hidden relative cursor-pointer transition-all duration-200 ease-in-out",
+                    isCurrentMonth ? "bg-white hover:bg-gray-50" : "bg-gray-100 text-gray-400",
+                    isTodayDate && "border-2 border-purple-500 bg-purple-50 shadow-md",
+                    dayEvents.length > 0 && isCurrentMonth && "border-blue-300 bg-blue-50 hover:bg-blue-100"
+                  )}
+                  onClick={() => openDayDetailDialog(day)}
+                >
+                  <span className={cn(
+                    "font-bold text-sm mb-1",
+                    isTodayDate && "text-purple-700",
+                    dayEvents.length > 0 && isCurrentMonth && "text-blue-700"
+                  )}>
+                    {format(day, 'd')}
+                  </span>
+                  <div className="flex-grow overflow-hidden space-y-1">
+                    {displayEvents.map(event => (
+                      <Button
+                        key={event.id}
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "w-full text-left px-2 py-1 rounded-sm text-xs font-medium truncate h-auto",
+                          isTodayDate ? "bg-purple-200 text-purple-800 hover:bg-purple-300" : "bg-blue-200 text-blue-800 hover:bg-blue-300"
+                        )}
+                        onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation to prevent opening day dialog
+                      >
+                        {event.event_time && <span className="mr-1">{event.event_time} - </span>}
+                        {event.event_name}
+                      </Button>
+                    ))}
+                    {moreEventsCount > 0 && (
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        +{moreEventsCount} More
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Day Detail Dialog (remains for listing all events on a day) */}
       <Dialog open={isDayDetailDialogOpen} onOpenChange={setIsDayDetailDialogOpen}>

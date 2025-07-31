@@ -34,6 +34,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { eventTypes } from '@/lib/constants'; // Import from constants
 
 const australianStates = [
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
@@ -77,17 +78,6 @@ const eventFormSchema = z.object({
   imageFile: z.any().optional(), // For new image upload
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // For image URL input
 });
-
-const eventTypes = [
-  'Music',
-  'Workshop',
-  'Meditation',
-  'Open Mic',
-  'Sound Bath',
-  'Foraging',
-  'Community Gathering',
-  'Other',
-];
 
 const SubmitEvent = () => {
   const navigate = useNavigate();

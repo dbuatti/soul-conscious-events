@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 import EventDetailDialog from '@/components/EventDetailDialog'; // Import the new dialog component
+import { eventTypes, australianStates } from '@/lib/constants'; // Import from constants
 
 interface Event {
   id: string;
@@ -36,23 +37,6 @@ interface Event {
   image_url?: string;
   user_id?: string; // Added user_id to interface
 }
-
-const eventTypes = [
-  'All',
-  'Music',
-  'Workshop',
-  'Meditation',
-  'Open Mic',
-  'Sound Bath',
-  'Foraging',
-  'Community Gathering',
-  'Other',
-];
-
-const australianStates = [
-  'All',
-  'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
-];
 
 const Index = () => {
   const [events, setEvents] = useState<Event[]>([]);
