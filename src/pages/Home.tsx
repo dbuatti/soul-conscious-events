@@ -19,7 +19,7 @@ import {
   subWeeks,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/components/ui/button'; // Import buttonVariants
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, PlusCircle, Filter as FilterIcon, ChevronDown, Frown, List, X } from 'lucide-react';
@@ -31,17 +31,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import FilterOverlay from '@/components/FilterOverlay';
 import AgendaOverlay from '@/components/AgendaOverlay';
-import { Calendar } from '@/components/ui/calendar'; // Import Calendar component
-import { DayContentProps } from 'react-day-picker'; // Import DayContentProps
+import { Calendar } from '@/components/ui/calendar';
+import { DayContentProps } from 'react-day-picker';
 
-// Custom type for Day component props to include modifiers
 interface CustomDayContentProps extends DayContentProps {
   modifiers: {
-    events?: Date[]; // Corrected type: events is an array of Dates, not a boolean
+    events?: Date[];
     past?: boolean;
     today?: boolean;
     selected?: boolean;
-    // Add other modifiers if needed that are passed by shadcn/ui's Calendar
   };
 }
 
@@ -89,7 +87,7 @@ const Home = () => {
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const daysOfWeekShort = ['M', 'T', 'W', 'T', 'F', 'S', 'S']; // Changed to single letters
+  const daysOfWeekShort = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -297,7 +295,6 @@ const Home = () => {
   const eventsForCurrentMonth = getEventsForMonth(currentMonth);
   const eventsForCurrentWeek = getEventsForWeek(currentWeek);
 
-  // Render a pill; multi-day uses a track spanning borders; single-day uses subtle outline
   const renderDayEventPill = (event: Event, day: Date) => {
     const eventStartDate = parseISO(event.event_date);
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -306,11 +303,9 @@ const Home = () => {
     const isEventEndDay = isSameDay(day, eventEndDate);
     const isContinuationDay = isMultiDay && !isEventStartDay && !isEventEndDay;
 
-    // Base classes for all pills, including vertical margin
     const basePillClasses = "py-1 px-2 text-xs font-medium whitespace-normal min-h-[1.5rem] mb-1";
 
     if (!isMultiDay) {
-      // Single-day: transparent background, no border
       return (
         <div
           key={event.id + format(day, 'yyyy-MM-dd')}
@@ -328,7 +323,6 @@ const Home = () => {
       );
     }
 
-    // Multi-day: solid bar with seamless track
     const trackClasses = cn("relative z-30 -mx-[1px] w-[calc(100%+2px)]");
     let rounding = "rounded-md";
     if (isEventStartDay && isEventEndDay) {
@@ -350,7 +344,7 @@ const Home = () => {
             rounding
           )}
         >
-          {(isEventStartDay) && ( // Only show text on the start day of a multi-day event
+          {(isEventStartDay) && (
             <span className="flex flex-col text-left pl-1">
               {event.event_time && <span className="font-bold">{event.event_time}</span>}
               <span>{event.event_name}</span>
@@ -371,9 +365,7 @@ const Home = () => {
           </div>
 
           {isMobile ? (
-            // MOBILE CALENDAR VIEW
             <div className="flex flex-col items-center w-full px-0">
-              {/* Custom Header for Mobile Calendar */}
               <div className="w-full flex justify-between items-center px-2 py-2 mb-2">
                 <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                   <PopoverTrigger asChild>
@@ -396,7 +388,6 @@ const Home = () => {
                 </Button>
               </div>
 
-              {/* Shadcn Calendar Component */}
               <Calendar
                 mode="single"
                 month={currentMonth}
@@ -412,7 +403,7 @@ const Home = () => {
                 }}
                 modifiersClassNames={{
                   today: "rdp-day_today",
-                  events: "rdp-day_has_events", // Corrected: moved from classNames
+                  events: "rdp-day_has_events",
                 }}
                 classNames={{
                   months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
@@ -421,33 +412,33 @@ const Home = () => {
                   caption_label: "text-sm font-medium",
                   nav: "space-x-1 flex items-center",
                   nav_button: cn(
-                    buttonVariants({ variant: "outline" }), // Fixed: buttonVariants is now imported
+                    buttonVariants({ variant: "outline" }),
                     "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
                   ),
                   nav_button_previous: "absolute left-1",
                   nav_button_next: "absolute right-1",
-                  table: "w-full border-collapse", // Ensure table takes full width
-                  head_row: "flex w-full", // Ensure header row is a flex container and takes full width
-                  head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-2", // Make head cells take equal width
-                  row: "flex w-full mt-0", // Ensure row is a flex container and takes full width
+                  table: "w-full border-collapse",
+                  head_row: "flex w-full",
+                  head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-2",
+                  row: "flex w-full mt-0",
                   cell: "h-14 flex-1 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-range-start)]:rounded-l-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
                   day: cn(
-                    buttonVariants({ variant: "ghost" }), // Fixed: buttonVariants is now imported
-                    "h-full w-full p-0 font-normal aria-selected:opacity-100 flex flex-col items-center justify-center" // Ensure day button takes full height/width of cell and centers content
+                    buttonVariants({ variant: "ghost" }),
+                    "h-full w-full p-0 font-normal aria-selected:opacity-100 flex flex-col items-center justify-center"
                   ),
                   day_range_end: "day-range-end",
                   day_selected:
                     "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                   day_today: "bg-accent text-accent-foreground",
                   day_outside:
-                    "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+                    "day-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
                   day_disabled: "text-muted-foreground opacity-50",
                   day_range_middle:
                     "aria-selected:bg-accent aria-selected:text-accent-foreground",
                   day_hidden: "invisible",
                 }}
                 components={{
-                  Caption: () => null, // Hide default caption
+                  Caption: () => null,
                   Day: ({ date, modifiers, ...props }: CustomDayContentProps) => {
                     const isPastDate = modifiers?.past === true;
                     const isTodayDate = isToday(date);
@@ -457,7 +448,7 @@ const Home = () => {
                     return (
                       <div
                         className={cn(
-                          "relative flex flex-col items-center justify-center h-full w-full rounded-md text-foreground", // Changed w-14 to w-full, h-14 to h-full
+                          "relative flex flex-col items-center justify-center h-full w-full rounded-md text-foreground",
                           "hover:bg-accent hover:text-accent-foreground",
                           isPastDate && "text-muted-foreground opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
@@ -469,9 +460,9 @@ const Home = () => {
                         <span className="font-bold text-lg">{format(date, 'd')}</span>
                         {hasEvents && (
                           <span className={cn(
-                            "absolute bottom-2 w-2 h-2 rounded-full", // Increased size to w-2 h-2, moved up to bottom-2
+                            "absolute bottom-2 w-2 h-2 rounded-full",
                             "left-1/2 -translate-x-1/2",
-                            "bg-primary" // Changed color to bg-primary for better visibility
+                            "bg-primary"
                           )} />
                         )}
                       </div>
@@ -495,10 +486,10 @@ const Home = () => {
                   ),
                 }}
                 className="w-full border-none shadow-none"
+                weekStartsOn={1}
               />
             </div>
           ) : (
-            // DESKTOP CALENDAR VIEW (Existing logic)
             <div className="flex-grow">
               <div className="mb-8 p-5 bg-secondary rounded-xl shadow-lg border border-border flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -598,8 +589,7 @@ const Home = () => {
                         {daysOfWeekShort[index]}
                       </div>
                     ))}
-                    {viewMode === 'month'
-                      ? daysInMonthView.map((day) => {
+                    {viewMode === 'month' && daysInMonthView.map((day) => {
                           const dayEvents = getEventsForDay(day);
                           const isCurrentMonth = isSameMonth(day, currentMonth);
                           const isTodayDate = isToday(day);
@@ -632,8 +622,8 @@ const Home = () => {
                               </div>
                             </div>
                           );
-                        })
-                      : currentWeek.map((day) => {
+                        })}
+                    {viewMode !== 'month' && currentWeek.map((day) => {
                           const dayEvents = getEventsForDay(day);
                           const isTodayDate = isToday(day);
                           const isSelected = isSameDay(day, selectedDayForDialog || new Date());
