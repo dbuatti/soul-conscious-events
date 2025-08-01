@@ -373,7 +373,7 @@ const Home = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar for Desktop */}
         {!isMobile && (

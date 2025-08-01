@@ -41,7 +41,7 @@ const AdminPanel = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h2 className="text-3xl font-bold text-center text-foreground mb-6">Admin Panel</h2>
       <p className="text-center text-gray-600 mb-8">
         Manage contact submissions and events from here.
