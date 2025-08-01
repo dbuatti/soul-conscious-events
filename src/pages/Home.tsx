@@ -79,7 +79,7 @@ const Home = () => {
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const daysOfWeekShort = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']; // Updated to match image
+  const daysOfWeekShort = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']; // Reverted to full abbreviations
 
   // Helper functions
   const fetchEvents = async () => {
@@ -605,11 +605,9 @@ const Home = () => {
                     const dayEvents = getEventsForDay(day);
                     const isCurrentMonth = isSameMonth(day, currentMonth);
                     const isTodayDate = isToday(day);
-                    const hasEvents = dayEvents.length > 0;
+                    const hasEvents = dayEvents.length > 0; // Defined here
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
-
-                    const maxEventsToShow = isMobile ? 1 : 2; // Show 1 event on mobile, 2 on desktop
 
                     return (
                       <div
@@ -631,8 +629,8 @@ const Home = () => {
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-1 mt-1 flex-grow overflow-hidden">
-                          {dayEvents.slice(0, maxEventsToShow).map(event => (
+                        <div className="flex flex-col gap-0.5 mt-8 flex-grow overflow-y-auto scrollbar-hide">
+                          {dayEvents.map(event => (
                             <span
                                 key={event.id}
                                 className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate flex items-center"
@@ -642,11 +640,6 @@ const Home = () => {
                                 {event.event_name}
                             </span>
                           ))}
-                          {dayEvents.length > maxEventsToShow && (
-                            <span className="text-xs text-muted-foreground mt-1">
-                                +{dayEvents.length - maxEventsToShow} more
-                            </span>
-                          )}
                         </div>
                         {hasEvents && (
                           <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary">
@@ -661,11 +654,9 @@ const Home = () => {
                   currentWeek.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isTodayDate = isToday(day);
-                    const hasEvents = dayEvents.length > 0;
+                    const hasEvents = dayEvents.length > 0; // Defined here
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
-
-                    const maxEventsToShow = isMobile ? 1 : 2; // Show 1 event on mobile, 2 on desktop
 
                     return (
                       <div
@@ -687,8 +678,8 @@ const Home = () => {
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-1 mt-1 flex-grow overflow-hidden">
-                          {dayEvents.slice(0, maxEventsToShow).map(event => (
+                        <div className="flex flex-col gap-0.5 mt-8 flex-grow overflow-y-auto scrollbar-hide">
+                          {dayEvents.map(event => (
                             <span
                                 key={event.id}
                                 className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate flex items-center"
@@ -698,11 +689,6 @@ const Home = () => {
                                 {event.event_name}
                             </span>
                           ))}
-                          {dayEvents.length > maxEventsToShow && (
-                            <span className="text-xs text-muted-foreground mt-1">
-                                +{dayEvents.length - maxEventsToShow} more
-                            </span>
-                          )}
                         </div>
                         {hasEvents && (
                           <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary">
