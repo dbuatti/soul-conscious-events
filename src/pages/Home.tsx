@@ -631,7 +631,7 @@ const Home = () => {
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-6 flex-grow overflow-y-auto scrollbar-hide"> {/* Adjusted mt-8 to mt-6 */}
+                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide"> {/* Adjusted mt-6 to mt-8 */}
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -711,7 +711,7 @@ const Home = () => {
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-6 flex-grow overflow-y-auto scrollbar-hide"> {/* Adjusted mt-8 to mt-6 */}
+                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide"> {/* Adjusted mt-6 to mt-8 */}
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
