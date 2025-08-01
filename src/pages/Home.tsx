@@ -504,7 +504,7 @@ const Home = () => {
                 <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="h-20 aspect-square border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
+                <div key={i} className="h-24 aspect-square border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
                   <Skeleton className="h-5 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-2/3 mt-1" />
@@ -599,7 +599,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col items-center justify-center h-20 aspect-square rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-24 aspect-square rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isCurrentMonth ? "bg-white" : "bg-gray-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
@@ -609,17 +609,17 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "absolute top-2 left-1/2 -translate-x-1/2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="absolute bottom-2"> {/* Adjusted bottom for better spacing */}
-                            <div className={cn(
-                              "h-2 w-2 rounded-full", // Small solid dot
-                              isTodayDate ? "bg-white" : (isSelected && !isTodayDate ? "bg-blue-800" : "bg-purple-600")
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                            <CircleDot className={cn(
+                              "h-4 w-4",
+                              isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-purple-600")
                             )} />
                           </div>
                         )}
@@ -627,7 +627,7 @@ const Home = () => {
                     );
                   })
                 ) : (
-                  // Week View - apply similar changes
+                  // Week View
                   currentWeek.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isTodayDate = isToday(day);
@@ -639,7 +639,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col items-center justify-center h-20 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-24 aspect-square rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
@@ -648,7 +648,7 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "absolute top-2 left-1/2 -translate-x-1/2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
@@ -656,10 +656,10 @@ const Home = () => {
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="absolute bottom-2"> {/* Adjusted bottom for better spacing */}
-                            <div className={cn(
-                              "h-2 w-2 rounded-full", // Small solid dot
-                              isTodayDate ? "bg-white" : (isSelected && !isTodayDate ? "bg-blue-800" : "bg-purple-600")
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                            <CircleDot className={cn(
+                              "h-4 w-4",
+                              isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-purple-600")
                             )} />
                           </div>
                         )}
