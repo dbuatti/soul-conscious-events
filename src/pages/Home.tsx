@@ -617,13 +617,11 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full overflow-hidden cursor-pointer transition-colors duration-200",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full cursor-pointer transition-colors duration-200", // Removed overflow-hidden
                           isCurrentMonth ? "bg-card" : "bg-secondary opacity-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
-                          "hover:bg-muted hover:shadow-md hover:border-primary",
-                          // Removed individual cell borders here, relying on grid gap-px
                         )}
                         onClick={() => handleDayClick(day)}
                       >
@@ -700,12 +698,10 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full overflow-hidden cursor-pointer transition-colors duration-200",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full cursor-pointer transition-colors duration-200", // Removed overflow-hidden
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
-                          "hover:bg-muted hover:shadow-md hover:border-primary",
-                          // Removed individual cell borders here, relying on grid gap-px
                         )}
                         onClick={() => handleDayClick(day)}
                       >
