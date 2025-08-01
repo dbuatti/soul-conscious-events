@@ -139,7 +139,8 @@ const Home = () => {
     }
   };
 
-  const onTouchStart = (e: React.TouchEvent) => {
+  // Modified onTouchStart to accept native TouchEvent
+  const onTouchStart = (e: TouchEvent) => {
     if (!isMobile) return;
     const touch = e.touches[0];
     const startX = touch.clientX;
@@ -176,14 +177,11 @@ const Home = () => {
 
   useEffect(() => {
     if (isMobile && calendarRef.current) {
-      const wrappedOnTouchStart = (e: Event) => {
-        const nativeEvent = e as unknown as TouchEvent;
-        onTouchStart(nativeEvent as React.TouchEvent);
-      };
-      calendarRef.current.addEventListener('touchstart', wrappedOnTouchStart as EventListener);
+      // Now, onTouchStart directly accepts a native TouchEvent
+      calendarRef.current.addEventListener('touchstart', onTouchStart);
       return () => {
         if (calendarRef.current) {
-          calendarRef.current.removeEventListener('touchstart', wrappedOnTouchStart as EventListener);
+          calendarRef.current.removeEventListener('touchstart', onTouchStart);
         }
       };
     }
