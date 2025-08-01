@@ -23,13 +23,15 @@ import {
   startOfDay,
   endOfDay,
   isWithinInterval,
+  addWeeks, // Added for week navigation
+  subWeeks, // Added for week navigation
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight, X, ChevronsLeft, ChevronsRight, CircleDot } from 'lucide-react'; // Added CircleDot
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight, X, ChevronsLeft, ChevronsRight, CircleDot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,8 +41,8 @@ import { eventTypes } from '@/lib/constants';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar'; // Keep this for the full calendar dialog
-import { MonthYearPicker } from '@/components/MonthYearPicker'; // New import for month picker
+import { Calendar } from '@/components/ui/calendar';
+import { MonthYearPicker } from '@/components/MonthYearPicker';
 
 interface Event {
   id: string;
@@ -62,19 +64,19 @@ interface Event {
 
 const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
+  const [currentWeek, setCurrentWeek] = useState<Date[]>([]); // This will now represent the start of the week
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
-  const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date()); // Default to today
+  const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date());
   const [selectedEventType, setSelectedEventType] = useState('All');
-  const [showAgenda, setShowAgenda] = useState(false); // Changed to false to hide by default
+  const [showAgenda, setShowAgenda] = useState(false);
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isMobileFilterSheetOpen, setIsMobileFilterSheetOpen] = useState(false);
-  const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false); // New state for popover
+  const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
 
   const isMobile = useIsMobile();
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -110,37 +112,45 @@ const Home = () => {
   }, [selectedEventType]);
 
   useEffect(() => {
-    // When events load or filter changes, update selected day events if a day is already selected
-    if (!isMobile) { // Only for desktop view
+    if (!isMobile) {
       if (selectedDayForDialog) {
         setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
       } else {
         setSelectedDayEvents(getEventsForDay(new Date()));
       }
     }
-    // For mobile, the list will use eventsForCurrentMonth directly
   }, [events, selectedDayForDialog, isMobile]);
 
+  // Initialize currentWeek based on currentMonth or today
   useEffect(() => {
-    // Update current week when currentMonth or viewMode changes
     if (viewMode === 'week') {
-      const today = new Date();
-      const start = startOfWeek(today, { weekStartsOn: 1 });
-      const weekDays = eachDayOfInterval({ start, end: endOfWeek(today, { weekStartsOn: 1 }) });
+      const start = startOfWeek(currentMonth, { weekStartsOn: 1 });
+      const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
       setCurrentWeek(weekDays);
+    } else {
+      // When switching to month view, ensure currentWeek is reset or not used
+      setCurrentWeek([]);
     }
   }, [currentMonth, viewMode]);
 
+
   // Swipe gesture handlers for mobile
   const handleSwipe = (direction: 'left' | 'right') => {
-    if (direction === 'left') {
-      handleNextMonth();
-    } else if (direction === 'right') {
-      handlePrevMonth();
+    if (viewMode === 'month') {
+      if (direction === 'left') {
+        handleNextMonth();
+      } else if (direction === 'right') {
+        handlePrevMonth();
+      }
+    } else { // week view
+      if (direction === 'left') {
+        handleNextWeek();
+      } else if (direction === 'right') {
+        handlePrevWeek();
+      }
     }
   };
 
-  // Modified onTouchStart to accept native TouchEvent
   const onTouchStart = (e: TouchEvent) => {
     if (!isMobile) return;
     const touch = e.touches[0];
@@ -152,7 +162,6 @@ const Home = () => {
       const deltaX = touch.clientX - startX;
       const deltaY = touch.clientY - startY;
 
-      // Only handle horizontal swipes (limit vertical movement)
       if (Math.abs(deltaY) > Math.abs(deltaX) * 2) return;
 
       if (Math.abs(deltaX) > 50) {
@@ -178,7 +187,6 @@ const Home = () => {
 
   useEffect(() => {
     if (isMobile && calendarRef.current) {
-      // Now, onTouchStart directly accepts a native TouchEvent
       calendarRef.current.addEventListener('touchstart', onTouchStart);
       return () => {
         if (calendarRef.current) {
@@ -186,7 +194,7 @@ const Home = () => {
         }
       };
     }
-  }, [isMobile]);
+  }, [isMobile, viewMode]); // Added viewMode to dependencies
 
   const startOfCurrentMonth = startOfMonth(currentMonth);
   const endOfCurrentMonth = endOfMonth(currentMonth);
@@ -206,6 +214,18 @@ const Home = () => {
 
   const handleThisMonth = () => {
     setCurrentMonth(new Date());
+  };
+
+  const handlePrevWeek = () => {
+    setCurrentMonth(subWeeks(currentMonth, 1)); // Adjust currentMonth to reflect the new week
+  };
+
+  const handleNextWeek = () => {
+    setCurrentMonth(addWeeks(currentMonth, 1)); // Adjust currentMonth to reflect the new week
+  };
+
+  const handleThisWeek = () => {
+    setCurrentMonth(new Date()); // Set currentMonth to today, which will re-calculate currentWeek
   };
 
   const handleMonthChange = (value: string) => {
@@ -239,7 +259,6 @@ const Home = () => {
       const eventStartDate = parseISO(event.event_date);
       const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
 
-      // Check if the event's date range overlaps with the current month's range
       return (
         (eventStartDate <= monthEnd && eventEndDate >= monthStart)
       );
@@ -256,13 +275,12 @@ const Home = () => {
     });
   };
 
-  const getEventsForWeek = (week: Date[]) => {
+  const getEventsForWeek = (weekDays: Date[]) => { // Changed parameter name to weekDays for clarity
     return events.filter(event => {
       const eventStartDate = parseISO(event.event_date);
       const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
 
-      // Check if the event's date range overlaps with any day in the week
-      return week.some(day => {
+      return weekDays.some(day => {
         return isSameDay(eventStartDate, day) || isSameDay(eventEndDate, day) ||
                (day >= eventStartDate && day <= eventEndDate);
       });
@@ -284,7 +302,6 @@ const Home = () => {
 
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
-    // For desktop, this will update the list. For mobile, the list is month-centric.
     if (!isMobile) {
       setSelectedDayEvents(getEventsForDay(day));
     }
@@ -367,7 +384,7 @@ const Home = () => {
         <div className="flex-grow">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Calendar</h1>
-            <Link to="/submit-event" className="hidden lg:block"> {/* Hide on mobile */}
+            <Link to="/submit-event" className="hidden lg:block">
               <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
               </Button>
@@ -378,19 +395,34 @@ const Home = () => {
           {!isMobile && (
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-lg border border-purple-200">
               <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-                <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                  This Month
-                </Button>
+                {viewMode === 'month' ? (
+                  <>
+                    <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      This Month
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" size="icon" onClick={handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" onClick={handleThisWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      This Week
+                    </Button>
+                  </>
+                )}
               </div>
 
               <div className="flex items-center space-x-4">
-                {/* Integrated MonthYearPicker for desktop */}
                 <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-[180px] justify-between focus-visible:ring-purple-500">
@@ -468,37 +500,55 @@ const Home = () => {
               {isMobile && (
                 <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
+                    {viewMode === 'month' ? (
+                      <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="icon" onClick={handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                       <PopoverTrigger asChild>
                         <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
-                          {format(currentMonth, 'MMMM yyyy')}
+                          {viewMode === 'month' ? format(currentMonth, 'MMMM yyyy') : `${format(currentWeek[0], 'MMM d')} - ${format(currentWeek[6], 'MMM d, yyyy')}`}
                           <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[360px] p-0"> {/* Adjusted width for 4x3 grid */}
+                      <PopoverContent className="w-[360px] p-0">
                         <MonthYearPicker
                           date={currentMonth}
                           onDateChange={(date) => {
                             if (date) {
                               setCurrentMonth(date);
-                              setIsMonthPickerPopoverOpen(false); // Close popover after selection
+                              setIsMonthPickerPopoverOpen(false);
                             }
                           }}
                         />
                       </PopoverContent>
                     </Popover>
-                    <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+                    {viewMode === 'month' ? (
+                      <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="icon" onClick={handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      Today
-                    </Button>
+                    {viewMode === 'month' ? (
+                      <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                        Today
+                      </Button>
+                    ) : (
+                      <Button variant="outline" onClick={handleThisWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                        This Week
+                      </Button>
+                    )}
                     <Sheet open={isMobileFilterSheetOpen} onOpenChange={setIsMobileFilterSheetOpen}>
                       <SheetTrigger asChild>
                         <Button variant="outline" size="icon" className="transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -591,6 +641,7 @@ const Home = () => {
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
+                          <span className="block text-sm font-semibold">{format(day, 'EEE')}</span> {/* Day of week */}
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
