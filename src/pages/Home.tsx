@@ -69,7 +69,7 @@ const Home = () => {
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date()); // Default to today
   const [selectedEventType, setSelectedEventType] = useState('All');
-  const [showAgenda, setShowAgenda] = useState(true); // New state for agenda visibility
+  const [showAgenda, setShowAgenda] = useState(false); // Changed to false to hide by default
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
