@@ -1,5 +1,5 @@
 import React from 'react';
-import { DayPicker, DayPickerProps, DayPickerDefaultProps } from 'react-day-picker'; // Import DayPickerProps and DayPickerDefaultProps
+import { DayPicker, DayPickerProps } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -21,7 +21,7 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
   console.log('MonthYearPicker: Props received - selected:', selected, 'defaultMonth:', defaultMonth);
   console.log('MonthYearPicker: DayPicker props - view: "months"');
 
-  const classNames: DayPickerProps['classNames'] = { // Use DayPickerProps['classNames'] for comprehensive typing
+  const classNames = { // Removed explicit type annotation here
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
@@ -43,12 +43,12 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
     month_today: "bg-accent text-accent-foreground",
     month_outside: "text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
     month_disabled: "text-muted-foreground opacity-50",
-  };
+  } as DayPickerProps['classNames']; // Assert to the correct type here
 
-  const dayPickerProps: DayPickerDefaultProps = { // Explicitly type the props object
+  const dayPickerProps = {
     view: "months",
     selected: selected,
-    onMonthSelect: onSelect, // Use onMonthSelect for month selection
+    onMonthSelect: onSelect,
     defaultMonth: defaultMonth,
     className: cn("p-3", className),
     classNames: classNames,
