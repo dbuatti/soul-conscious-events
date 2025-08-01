@@ -282,9 +282,9 @@ const Home = () => {
         : formattedStartDate;
 
     return (
-      <Card key={event.id} className="group shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200">
+      <Card key={event.id} className="group flex flex-col justify-between shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 overflow-hidden">
         {event.image_url && (
-          <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
+          <div className="relative w-full h-32 overflow-hidden">
             <img
               src={event.image_url}
               alt={`Image for ${event.event_name}`}
@@ -578,13 +578,12 @@ const Home = () => {
                         </span>
                         <div className="flex flex-col gap-1 mt-1 flex-grow overflow-hidden">
                           {dayEvents.slice(0, maxEventsToShow).map(event => (
-                            <Badge
+                            <span
                                 key={event.id}
-                                variant="secondary"
-                                className="bg-purple-100 text-purple-800 text-xs font-medium px-1 py-0.5 rounded-sm truncate"
+                                className="text-xs font-medium text-purple-800 bg-purple-100 px-1 py-0.5 rounded-sm truncate"
                             >
                                 {event.event_name}
-                            </Badge>
+                            </span>
                           ))}
                           {dayEvents.length > maxEventsToShow && (
                             <span className="text-xs text-gray-500 mt-1">
@@ -628,13 +627,12 @@ const Home = () => {
                         </span>
                         <div className="flex flex-col gap-1 mt-1 flex-grow overflow-hidden">
                           {dayEvents.slice(0, maxEventsToShow).map(event => (
-                            <Badge
+                            <span
                                 key={event.id}
-                                variant="secondary"
-                                className="bg-purple-100 text-purple-800 text-xs font-medium px-1 py-0.5 rounded-sm truncate"
+                                className="text-xs font-medium text-purple-800 bg-purple-100 px-1 py-0.5 rounded-sm truncate"
                             >
                                 {event.event_name}
-                            </Badge>
+                            </span>
                           ))}
                           {dayEvents.length > maxEventsToShow && (
                             <span className="text-xs text-gray-500 mt-1">
@@ -670,7 +668,7 @@ const Home = () => {
                     </Link>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {(viewMode === 'month' ? eventsForCurrentMonth : eventsForCurrentWeek).map((event) => renderEventCard(event))}
                   </div>
                 )}
