@@ -390,10 +390,10 @@ const Home = () => {
 
   const renderAgendaEventItem = (event: Event) => {
     const formattedStartDate = event.event_date
-      ? format(parseISO(event.event_date), 'PPP')
+      ? format(parseISO(event.event_date), 'EEEE, MMMM d')
       : 'Date TBD';
     const formattedEndDate = event.end_date
-      ? format(parseISO(event.end_date), 'PPP')
+      ? format(parseISO(event.end_date), 'EEEE, MMMM d')
       : '';
 
     const dateDisplay =
@@ -402,32 +402,17 @@ const Home = () => {
         : formattedStartDate;
 
     return (
-      <div key={event.id} className="py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-lg transition-colors duration-200" onClick={() => handleViewDetails(event)}>
-        {/* Event Name - Make it more prominent */}
-        <p className="text-xl font-bold text-foreground leading-tight mb-1">
+      <div key={event.id} className="py-1.5 px-2 cursor-pointer hover:bg-accent/50 rounded-lg transition-colors duration-200" onClick={() => handleViewDetails(event)}>
+        <p className="text-sm text-muted-foreground mb-0.5">
+          {dateDisplay} {event.event_time && `@ ${event.event_time}`}
+        </p>
+        <p className="text-base font-bold text-foreground leading-tight">
           {event.event_name}
         </p>
-
-        {/* Date */}
-        <div className="flex items-center text-muted-foreground text-sm mb-1">
-          <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-          <span>{dateDisplay}</span>
-        </div>
-
-        {/* Time (Optional) */}
-        {event.event_time && (
-          <div className="flex items-center text-muted-foreground text-sm mb-1">
-            <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-            <span>{event.event_time}</span>
-          </div>
-        )}
-
-        {/* Location (Optional) */}
         {(event.place_name || event.full_address) && (
-          <div className="flex items-center text-muted-foreground text-sm"> {/* No mb-1 here if it's the last item */}
-            <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
-            <span>{event.place_name || event.full_address}</span>
-          </div>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {event.place_name || event.full_address}
+          </p>
         )}
       </div>
     );
@@ -502,7 +487,7 @@ const Home = () => {
                   nav_button_next: "absolute right-1",
                   table: "w-full border-collapse",
                   head_row: "flex w-full",
-                  head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-2",
+                  head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-1",
                   row: "flex w-full mt-0",
                   cell: "h-14 flex-1 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-range-start)]:rounded-l-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
                   day: cn(
@@ -546,10 +531,10 @@ const Home = () => {
                         )}
                         onClick={() => handleDayClick(date)}
                       >
-                        <span className="font-bold text-lg">{format(date, 'd')}</span>
+                        <span className="font-bold text-xl">{format(date, 'd')}</span>
                         {hasEvents && (
                           <span className={cn(
-                            "absolute bottom-2 w-2 h-2 rounded-full",
+                            "absolute bottom-1 w-1.5 h-1.5 rounded-full",
                             "left-1/2 -translate-x-1/2",
                             "bg-primary"
                           )} />
@@ -564,7 +549,7 @@ const Home = () => {
                           <th
                             key={dayName + index} // Fixed: Use dayName + index for unique keys
                             scope="col"
-                            className="text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-2"
+                            className="text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-1"
                             aria-label={daysOfWeekFull[index]}
                           >
                             {dayName}
@@ -745,11 +730,11 @@ const Home = () => {
 
           {/* Agenda List Section - Renders directly below the calendar */}
           {showAgendaList && selectedDayForAgendaList && (
-            <div className="mt-8 p-6 bg-secondary rounded-xl shadow-lg border border-border dark:bg-card dark:border-border">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-bold text-foreground">
-                  Events on {format(selectedDayForAgendaList, 'EEEE, MMMM d')}
-                </h3>
+            <div className="mt-8 p-4 bg-secondary rounded-xl shadow-lg border border-border dark:bg-card dark:border-border">
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-xl font-bold text-foreground">
+                  {format(selectedDayForAgendaList, 'EEEE, MMMM d')}
+                </p>
                 <Button variant="ghost" size="icon" onClick={() => setShowAgendaList(false)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                   <X className="h-5 w-5" />
                 </Button>
@@ -767,11 +752,11 @@ const Home = () => {
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {selectedDayEvents.map((event, index) => (
                     <React.Fragment key={event.id}>
                       {renderAgendaEventItem(event)}
-                      {index < selectedDayEvents.length - 1 && <Separator className="my-2 dark:bg-border" />}
+                      {index < selectedDayEvents.length - 1 && <Separator className="my-1 dark:bg-border" />}
                     </React.Fragment>
                   ))}
                 </div>
