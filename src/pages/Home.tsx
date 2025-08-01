@@ -67,8 +67,8 @@ const Home = () => {
   const [events, setEvents] = useState<Event[]>([]); // This will now hold ALL approved events
   const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
-  const [selectedDayForAgendaList, setSelectedDayForAgendaList] = useState<Date | null>(null); // New state for agenda list
-  const [showAgendaList, setShowAgendaList] = useState(false); // New state to control agenda list visibility
+  const [selectedDayForAgendaList, setSelectedDayForAgendaList] = useState<Date>(new Date()); // New state for agenda list
+  const [showAgendaList, setShowAgendaList] = useState(true); // New state to control agenda list visibility
 
   const [searchTerm, setSearchTerm] = useState('');
   const [eventType, setEventType] = useState('All');
@@ -239,9 +239,14 @@ const Home = () => {
   };
 
   const handleDayClick = (day: Date) => {
+    console.log("handleDayClick called for day:", day);
     setSelectedDayForAgendaList(day);
-    setSelectedDayEvents(getEventsForDay(day));
+    const eventsForClickedDay = getEventsForDay(day);
+    setSelectedDayEvents(eventsForClickedDay);
     setShowAgendaList(true); // Show the agenda list
+    console.log("handleDayClick: new selectedDayForAgendaList =", day);
+    console.log("handleDayClick: new selectedDayEvents.length =", eventsForClickedDay.length);
+    console.log("handleDayClick: new showAgendaList =", true);
   };
 
   const handleViewDetails = (event: Event) => {
@@ -289,13 +294,16 @@ const Home = () => {
   }, []); // Empty dependency array means it runs once on mount
 
   useEffect(() => {
+    console.log("useEffect for selectedDayForAgendaList triggered.");
     if (selectedDayForAgendaList) {
       setSelectedDayEvents(getEventsForDay(selectedDayForAgendaList));
     } else {
-      // If no day is explicitly selected, default to today's events
+      // This block should ideally not be hit if selectedDayForAgendaList is initialized
       setSelectedDayForAgendaList(new Date());
       setSelectedDayEvents(getEventsForDay(new Date()));
     }
+    console.log("Current selectedDayForAgendaList in useEffect:", selectedDayForAgendaList);
+    console.log("Current selectedDayEvents.length in useEffect:", selectedDayEvents.length);
   }, [events, selectedDayForAgendaList]); // Depend on 'events' to update when new data arrives
 
   useEffect(() => {
@@ -405,6 +413,11 @@ const Home = () => {
     );
   };
 
+  console.log("Home render: showAgendaList =", showAgendaList);
+  console.log("Home render: selectedDayForAgendaList =", selectedDayForAgendaList);
+  console.log("Home render: selectedDayEvents.length =", selectedDayEvents.length);
+
+
   return (
     <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <div className="flex flex-col gap-8">
@@ -505,7 +518,7 @@ const Home = () => {
                         className={cn(
                           "relative flex flex-col items-center justify-center h-full w-full rounded-md text-foreground",
                           "hover:bg-accent hover:text-accent-foreground",
-                          isPastDate && "text-muted-foreground opacity-70",
+                          isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
                           hasEvents && "rdp-day_has_events", // Manually apply the class
@@ -529,7 +542,7 @@ const Home = () => {
                       <tr className="flex w-full">
                         {daysOfWeekShort.map((dayName, index) => (
                           <th
-                            key={index}
+                            key={dayName + index} // Fixed: Use dayName + index for unique keys
                             scope="col"
                             className="text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-2"
                             aria-label={daysOfWeekFull[index]}
@@ -598,26 +611,23 @@ const Home = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-border">
+                <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto pt-4 border-t border-border">
                   <Button variant="outline" onClick={handleToday} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105">
                     Today
                   </Button>
-                  <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                    <Button
-                      onClick={() => setIsFilterOverlayOpen(true)}
-                      className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
-                    >
-                      <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
-                    </Button>
-                    {/* Removed Agenda button as it's now integrated */}
-                  </div>
+                  <Button
+                    onClick={() => setIsFilterOverlayOpen(true)}
+                    className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
+                  >
+                    <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
+                  </Button>
                 </div>
               </div>
 
               {loading ? (
                 <div className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
-                  {daysOfWeekShort.map((day) => (
-                    <div key={day} className="font-semibold text-foreground py-2 border-r border-b border-border bg-secondary">
+                  {daysOfWeekShort.map((day, index) => (
+                    <div key={day + index} className="font-semibold text-foreground py-2 border-r border-b border-border bg-secondary">
                       {day}
                     </div>
                   ))}
@@ -632,9 +642,9 @@ const Home = () => {
               ) : (
                 <>
                   <div ref={calendarRef} className="grid grid-cols-7 gap-px text-center border border-border rounded-lg overflow-visible">
-                    {daysOfWeekShort.map((_, index) => (
+                    {daysOfWeekShort.map((dayName, index) => (
                       <div
-                        key={daysOfWeekFull[index]}
+                        key={dayName + index} // Fixed: Use dayName + index for unique keys
                         className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary"
                       >
                         {daysOfWeekShort[index]}
@@ -708,134 +718,134 @@ const Home = () => {
                           );
                         })}
                   </div>
-
-                  {/* Agenda List Section - Renders directly below the calendar */}
-                  {showAgendaList && selectedDayForAgendaList && (
-                    <div className="mt-8 p-6 bg-secondary rounded-xl shadow-lg border border-border dark:bg-card dark:border-border">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-2xl font-bold text-foreground">
-                          Events on {format(selectedDayForAgendaList, 'EEEE, MMMM d')}
-                        </h3>
-                        <Button variant="ghost" size="icon" onClick={() => setShowAgendaList(false)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                          <X className="h-5 w-5" />
-                        </Button>
-                      </div>
-                      {selectedDayEvents.length === 0 ? (
-                        <div className="p-8 bg-secondary rounded-lg border border-border text-center">
-                          <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <p className="text-lg font-semibold text-foreground mb-4">
-                            No events found for this date.
-                          </p>
-                          <Link to="/submit-event">
-                            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-                              Add a New Event
-                            </Button>
-                          </Link>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {selectedDayEvents.map((event, index) => (
-                            <React.Fragment key={event.id}>
-                              {renderAgendaEventItem(event)}
-                              {index < selectedDayEvents.length - 1 && <Separator className="my-2 dark:bg-border" />}
-                            </React.Fragment>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="mt-6">
-                    <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
-                      {viewMode === 'month'
-                        ? `Events in ${format(currentMonth, 'MMMM yyyy')}`
-                        : `Events for the Week of ${format(currentWeek[0], 'MMM d')}`}
-                    </h3>
-                    {(viewMode === 'month' ? eventsForCurrentMonthDisplay : eventsForCurrentWeekDisplay).length === 0 ? (
-                      <div className="p-8 bg-secondary rounded-lg border border-border text-center">
-                        <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-lg font-semibold text-foreground mb-4">
-                          {viewMode === 'month' ? 'No events found for this month.' : 'No events found for this week.'}
-                        </p>
-                        <Link to="/submit-event">
-                          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-                            <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
-                          </Button>
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(viewMode === 'month' ? eventsForCurrentMonthDisplay : eventsForCurrentWeekDisplay).map((event) => (
-                          <Card key={event.id} className="group flex flex-col justify-between shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 overflow-hidden dark:bg-card dark:border-border">
-                            {event.image_url && (
-                              <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
-                                <img
-                                  src={event.image_url}
-                                  alt={`Image for ${event.event_name}`}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                              </div>
-                            )}
-                            <CardHeader className="p-3 pb-0">
-                              <CardTitle className="text-base font-semibold text-primary line-clamp-1 overflow-hidden text-ellipsis">{event.event_name}</CardTitle>
-                              <CardDescription className="flex items-center text-muted-foreground text-xs mt-1">
-                                <CalendarIcon className="mr-1 h-3 w-3 text-primary" />
-                                {format(parseISO(event.event_date), 'PPP')}
-                                {event.event_time && (
-                                  <>
-                                    <Clock className="ml-2 mr-1 h-3 w-3 text-primary" />
-                                    {event.event_time}
-                                  </>
-                                )}
-                              </CardDescription>
-                              {(event.place_name || event.full_address) && (
-                                <CardDescription className="flex items-center text-muted-foreground text-xs mt-1">
-                                  <MapPin className="mr-1 h-3 w-3 text-primary" />
-                                  {event.place_name || event.full_address}
-                                </CardDescription>
-                              )}
-                            </CardHeader>
-                            <CardContent className="p-3 pt-2">
-                              {event.description && <p className="text-foreground text-sm line-clamp-2 mb-2">{event.description}</p>}
-                              <div className="flex justify-end">
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  className="p-0 h-auto text-primary text-xs"
-                                  onClick={() => handleViewDetails(event)}
-                                >
-                                  View Details
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </>
               )}
             </div>
           )}
 
-          <EventDetailDialog
-            event={selectedEvent}
-            isOpen={isEventDetailDialogOpen}
-            onClose={() => setIsEventDetailDialogOpen(false)}
-            cameFromCalendar={true}
-          />
+          {/* Agenda List Section - Renders directly below the calendar */}
+          {showAgendaList && selectedDayForAgendaList && (
+            <div className="mt-8 p-6 bg-secondary rounded-xl shadow-lg border border-border dark:bg-card dark:border-border">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Events on {format(selectedDayForAgendaList, 'EEEE, MMMM d')}
+                </h3>
+                <Button variant="ghost" size="icon" onClick={() => setShowAgendaList(false)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              {selectedDayEvents.length === 0 ? (
+                <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+                  <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-semibold text-foreground mb-4">
+                    No events found for this date.
+                  </p>
+                  <Link to="/submit-event">
+                    <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {selectedDayEvents.map((event, index) => (
+                    <React.Fragment key={event.id}>
+                      {renderAgendaEventItem(event)}
+                      {index < selectedDayEvents.length - 1 && <Separator className="my-2 dark:bg-border" />}
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-          <FilterOverlay
-            isOpen={isFilterOverlayOpen}
-            onClose={() => setIsFilterOverlayOpen(false)}
-            currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }}
-            onApplyFilters={handleApplyFilters}
-            onClearAllFilters={handleClearAllFilters}
-          />
+          <div className="mt-6">
+            <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
+              {viewMode === 'month'
+                ? `Events in ${format(currentMonth, 'MMMM yyyy')}`
+                : `Events for the Week of ${format(currentWeek[0], 'MMM d')}`}
+            </h3>
+            {(viewMode === 'month' ? eventsForCurrentMonthDisplay : eventsForCurrentWeekDisplay).length === 0 ? (
+              <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+                <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-lg font-semibold text-foreground mb-4">
+                  {viewMode === 'month' ? 'No events found for this month.' : 'No events found for this week.'}
+                </p>
+                <Link to="/submit-event">
+                  <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(viewMode === 'month' ? eventsForCurrentMonthDisplay : eventsForCurrentWeekDisplay).map((event) => (
+                  <Card key={event.id} className="group flex flex-col justify-between shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 overflow-hidden dark:bg-card dark:border-border">
+                    {event.image_url && (
+                      <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
+                        <img
+                          src={event.image_url}
+                          alt={`Image for ${event.event_name}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                      </div>
+                    )}
+                    <CardHeader className="p-3 pb-0">
+                      <CardTitle className="text-base font-semibold text-primary line-clamp-1 overflow-hidden text-ellipsis">{event.event_name}</CardTitle>
+                      <CardDescription className="flex items-center text-muted-foreground text-xs mt-1">
+                        <CalendarIcon className="mr-1 h-3 w-3 text-primary" />
+                        {format(parseISO(event.event_date), 'PPP')}
+                        {event.event_time && (
+                          <>
+                            <Clock className="ml-2 mr-1 h-3 w-3 text-primary" />
+                            {event.event_time}
+                          </>
+                        )}
+                      </CardDescription>
+                      {(event.place_name || event.full_address) && (
+                        <CardDescription className="flex items-center text-muted-foreground text-xs mt-1">
+                          <MapPin className="mr-1 h-3 w-3 text-primary" />
+                          {event.place_name || event.full_address}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent className="p-3 pt-2">
+                      {event.description && <p className="text-foreground text-sm line-clamp-2 mb-2">{event.description}</p>}
+                      <div className="flex justify-end">
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="p-0 h-auto text-primary text-xs"
+                          onClick={() => handleViewDetails(event)}
+                        >
+                          View Details
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      <EventDetailDialog
+        event={selectedEvent}
+        isOpen={isEventDetailDialogOpen}
+        onClose={() => setIsEventDetailDialogOpen(false)}
+        cameFromCalendar={true}
+      />
+
+      <FilterOverlay
+        isOpen={isFilterOverlayOpen}
+        onClose={() => setIsFilterOverlayOpen(false)}
+        currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }}
+        onApplyFilters={handleApplyFilters}
+        onClearAllFilters={handleClearAllFilters}
+      />
     </div>
   );
 };
