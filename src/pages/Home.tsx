@@ -79,7 +79,7 @@ const Home = () => {
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const daysOfWeekShort = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']; // Updated to match image
+  const daysOfWeekShort = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']; // Updated to be more concise
 
   // Helper functions
   const fetchEvents = async () => {
@@ -147,6 +147,10 @@ const Home = () => {
       setLoading(false);
     };
 
+  const handleGoToToday = () => {
+    setCurrentMonth(new Date());
+  };
+
   const handlePrevMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1));
   };
@@ -155,24 +159,12 @@ const Home = () => {
     setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  const handleThisMonth = () => {
-    setCurrentMonth(new Date());
-  };
-
   const handlePrevWeek = () => {
     setCurrentMonth(subWeeks(currentMonth, 1));
   };
 
   const handleNextWeek = () => {
     setCurrentMonth(addWeeks(currentMonth, 1));
-  };
-
-  const handleThisWeek = () => {
-    setCurrentMonth(new Date());
-  };
-
-  const handleMonthChange = (date: Date) => {
-    setCurrentMonth(date);
   };
 
   const getEventsForDay = (day: Date) => {
@@ -263,6 +255,31 @@ const Home = () => {
     setStateFilter('All');
     setDateFilter('All Upcoming');
   };
+
+  const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => {
+    switch (filterType) {
+      case 'search':
+        setSearchTerm('');
+        break;
+      case 'eventType':
+        setEventType('All');
+        break;
+      case 'state':
+        setStateFilter('All');
+        break;
+      case 'dateFilter':
+        setDateFilter('All Upcoming');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const hasActiveFilters =
+    searchTerm !== '' ||
+    eventType !== 'All' ||
+    stateFilter !== 'All' ||
+    dateFilter !== 'All Upcoming';
 
   const renderEventCard = (event: Event) => {
     const googleMapsLink = event.full_address
@@ -431,89 +448,135 @@ const Home = () => {
         <div className="flex-grow">
           {/* New Header Section */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">Community Events</h1>
-            <p className="text-lg text-muted-foreground">All events in our community.</p>
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground mb-2">Community Events</h1>
+            <p className="text-lg text-muted-foreground mb-6">Browse events by month or week, and filter to find your perfect experience.</p>
           </div>
 
           {/* Calendar Navigation and Controls */}
-          <div className="mb-6 p-5 bg-secondary rounded-xl shadow-lg border border-border flex flex-col sm:flex-row justify-between items-center gap-4">
-            {/* Left: Navigation and Today button */}
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                Today
+          <div className="mb-8 p-5 bg-secondary rounded-xl shadow-lg border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
+              {/* Left: Navigation and "Today" button */}
+              <div className="flex items-center space-x-2 mb-4 sm:mb-0">
+                <Button variant="default" onClick={handleGoToToday} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  Today
+                </Button>
+                <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handlePrevMonth : handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" className="w-[180px] justify-center text-lg font-bold focus-visible:ring-primary">
+                      {viewMode === 'month' ? format(currentMonth, 'MMMM yyyy') : `${format(currentWeek[0], 'MMM d')} - ${format(currentWeek[6], 'MMM d, yyyy')}`}
+                      <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
+                    <MonthYearPicker
+                      date={currentMonth}
+                      onDateChange={(date) => {
+                        setCurrentMonth(date);
+                        setIsMonthPickerPopoverOpen(false);
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handleNextMonth : handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Right: View Toggle Buttons */}
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant={viewMode === 'month' ? 'default' : 'outline'}
+                  onClick={() => setViewMode('month')}
+                  className="transition-all duration-300 ease-in-out transform hover:scale-105 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  <List className="mr-2 h-4 w-4" /> Month
+                </Button>
+                <Button
+                  variant={viewMode === 'week' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setViewMode('week');
+                    const start = startOfWeek(currentMonth, { weekStartsOn: 1 });
+                    const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
+                    setCurrentWeek(weekDays);
+                  }}
+                  className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  <CalendarIcon2 className="mr-2 h-4 w-4" /> Week
+                </Button>
+              </div>
+            </div>
+
+            {/* Filter and Agenda Buttons */}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4 pt-4 border-t border-border">
+              <Button
+                onClick={() => setIsFilterOverlayOpen(true)}
+                className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
+              >
+                <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
               </Button>
-              <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handlePrevMonth : handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                <ArrowLeft className="h-4 w-4" />
+              <Button
+                onClick={() => setIsAgendaOverlayOpen(true)}
+                className="w-full sm:w-auto bg-accent hover:bg-accent/80 text-accent-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
+              >
+                <List className="mr-2 h-4 w-4" /> View Agenda
               </Button>
-              <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" className="w-[180px] justify-center text-lg font-bold focus-visible:ring-primary">
-                    {viewMode === 'month' ? format(currentMonth, 'MMMM yyyy') : `${format(currentWeek[0], 'MMM d')} - ${format(currentWeek[6], 'MMM d, yyyy')}`}
-                    <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+            </div>
+
+            {/* Active Filters Display */}
+            {hasActiveFilters && (
+              <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-1 sm:gap-2 items-center">
+                <span className="text-xs sm:text-sm font-medium text-foreground">Active Filters:</span>
+                {searchTerm !== '' && (
+                  <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+                    Search: "{searchTerm}"
+                    <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-foreground hover:bg-accent/80 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
+                      <X className="h-2.5 w-2.5" />
+                    </Button>
+                  </Badge>
+                )}
+                {eventType !== 'All' && (
+                  <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+                    Type: {eventType}
+                    <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-foreground hover:bg-accent/80 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
+                      <X className="h-2.5 w-2.5" />
+                    </Button>
+                  </Badge>
+                )}
+                {stateFilter !== 'All' && (
+                  <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+                    State: {stateFilter}
+                    <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-foreground hover:bg-accent/80 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
+                      <X className="h-2.5 w-2.5" />
+                    </Button>
+                  </Badge>
+                )}
+                {dateFilter !== 'All Upcoming' && (
+                  <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+                    Date: {dateFilter}
+                    <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-foreground hover:bg-accent/80 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
+                      <X className="h-2.5 w-2.5" />
+                    </Button>
+                  </Badge>
+                )}
+                {hasActiveFilters && (
+                  <Button variant="outline" onClick={handleClearAllFilters} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base mt-2 sm:mt-0">
+                    Clear All Filters
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
-                  <MonthYearPicker
-                    date={currentMonth}
-                    onDateChange={(date) => {
-                      setCurrentMonth(date);
-                      setIsMonthPickerPopoverOpen(false);
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-              <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handleNextMonth : handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Right: View Toggle Buttons */}
-            <div className="flex items-center space-x-4">
-              <Button
-                variant={viewMode === 'month' ? 'default' : 'outline'}
-                onClick={() => setViewMode('month')}
-                className="transition-all duration-300 ease-in-out transform hover:scale-105 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-              >
-                <List className="mr-2 h-4 w-4" /> Month
-              </Button>
-              <Button
-                variant={viewMode === 'week' ? 'default' : 'outline'}
-                onClick={() => {
-                  setViewMode('week');
-                  const start = startOfWeek(currentMonth, { weekStartsOn: 1 });
-                  const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
-                  setCurrentWeek(weekDays);
-                }}
-                className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-              >
-                <CalendarIcon2 className="mr-2 h-4 w-4" /> Week
-              </Button>
-            </div>
-          </div>
-
-          {/* Filter and Agenda Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6 p-5 bg-secondary rounded-xl shadow-lg border border-border">
-            <Button
-              onClick={() => setIsFilterOverlayOpen(true)}
-              className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
-            >
-              <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
-            </Button>
-            <Button
-              onClick={() => setIsAgendaOverlayOpen(true)}
-              className="w-full sm:w-auto bg-accent hover:bg-accent/80 text-accent-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
-            >
-              <List className="mr-2 h-4 w-4" /> View Agenda
-            </Button>
+                )}
+              </div>
+            )}
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
+            <div className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-secondary rounded-xl shadow-inner">
               {daysOfWeekShort.map(day => (
-                <div key={day} className="font-semibold text-foreground py-2 border-r border-b border-border bg-secondary">{day}</div>
+                <div key={day} className="font-semibold text-foreground py-2">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="h-48 border-r border-b border-border p-2 flex flex-col items-center justify-center bg-muted">
+                <div key={i} className="h-28 sm:h-40 md:h-48 lg:h-56 border rounded-lg p-2 flex flex-col items-center justify-center bg-muted">
                   <Skeleton className="h-5 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-2/3 mt-1" />
@@ -523,49 +586,62 @@ const Home = () => {
           ) : (
             <>
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
+              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-secondary rounded-xl shadow-inner">
                 {daysOfWeekShort.map((day, index) => (
-                  <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-r border-b border-border bg-secondary">{daysOfWeekShort[index]}</div>
+                  <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2">{daysOfWeekShort[index]}</div>
                 ))}
                 {viewMode === 'month' ? (
                   daysInMonthView.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isCurrentMonth = isSameMonth(day, currentMonth);
                     const isTodayDate = isToday(day);
+                    const hasEvents = dayEvents.length > 0;
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
+
+                    const maxEventsToShow = isMobile ? 1 : 2; // Show 1 event on mobile, 2 on desktop
 
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-48 w-full border-r border-b border-border p-2 overflow-hidden cursor-pointer transition-colors duration-200",
-                          isCurrentMonth ? "bg-card" : "bg-secondary opacity-50",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-border shadow-sm p-2 overflow-hidden",
+                          isCurrentMonth ? "bg-card" : "bg-secondary",
                           isPastDate && "opacity-70",
-                          isTodayDate && "bg-primary/10 text-primary border-primary",
-                          isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
+                          isTodayDate && "bg-primary text-primary-foreground",
+                          isSelected && !isTodayDate && "bg-accent border-primary border-2",
                           "hover:bg-muted hover:shadow-md hover:border-primary"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
                           "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
-                          isTodayDate ? "text-primary" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
+                          isTodayDate ? "text-primary-foreground" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
                           isPastDate && "text-muted-foreground"
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-1 mt-8 flex-grow overflow-y-auto scrollbar-hide">
-                          {dayEvents.map(event => (
-                            <div
+                        <div className="flex flex-col gap-1 mt-1 flex-grow overflow-hidden">
+                          {dayEvents.slice(0, maxEventsToShow).map(event => (
+                            <span
                                 key={event.id}
-                                className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate bg-accent/20"
+                                className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate"
                             >
                                 {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
                                 {event.event_name}
-                            </div>
+                            </span>
                           ))}
+                          {dayEvents.length > maxEventsToShow && (
+                            <span className="text-xs text-muted-foreground mt-1">
+                                +{dayEvents.length - maxEventsToShow} more
+                            </span>
+                          )}
                         </div>
+                        {hasEvents && (
+                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary">
+                            {/* Small dot to indicate events */}
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -574,43 +650,84 @@ const Home = () => {
                   currentWeek.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isTodayDate = isToday(day);
+                    const hasEvents = dayEvents.length > 0;
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
+
+                    const maxEventsToShow = isMobile ? 1 : 2; // Show 1 event on mobile, 2 on desktop
 
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-48 w-full border-r border-b border-border p-2 overflow-hidden cursor-pointer transition-colors duration-200",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-border shadow-sm p-2 overflow-hidden",
                           isPastDate && "opacity-70",
-                          isTodayDate && "bg-primary/10 text-primary border-primary",
-                          isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
+                          isTodayDate && "bg-primary text-primary-foreground",
+                          isSelected && !isTodayDate ? "bg-accent border-primary border-2" : "bg-card",
                           "hover:bg-muted hover:shadow-md hover:border-primary"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
                           "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
-                          isTodayDate ? "text-primary" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
+                          isTodayDate ? "text-primary-foreground" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
                           isPastDate && "text-muted-foreground"
                         )}>
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-1 mt-8 flex-grow overflow-y-auto scrollbar-hide">
-                          {dayEvents.map(event => (
-                            <div
+                        <div className="flex flex-col gap-1 mt-1 flex-grow overflow-hidden">
+                          {dayEvents.slice(0, maxEventsToShow).map(event => (
+                            <span
                                 key={event.id}
-                                className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate bg-accent/20"
+                                className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate"
                             >
                                 {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
                                 {event.event_name}
-                            </div>
+                            </span>
                           ))}
+                          {dayEvents.length > maxEventsToShow && (
+                            <span className="text-xs text-muted-foreground mt-1">
+                                +{dayEvents.length - maxEventsToShow} more
+                            </span>
+                          )}
                         </div>
+                        {hasEvents && (
+                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary">
+                            {/* Small dot to indicate events */}
+                          </div>
+                        )}
                       </div>
                     );
                   })
+                )}
+              </div>
+
+              {/* Events for Selected Month/Week (Mobile/Desktop) */}
+              <div className="mt-6">
+                <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
+                  {viewMode === 'month'
+                    ? `Events in ${format(currentMonth, 'MMMM yyyy')}`
+                    : `Events for the Week of ${format(currentWeek[0], 'MMM d')}`}
+                </h3>
+                {(viewMode === 'month' ? eventsForCurrentMonth : eventsForCurrentWeek).length === 0 ? (
+                  <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-foreground mb-4">
+                      {viewMode === 'month'
+                        ? 'No events found for this month.'
+                        : 'No events found for this week.'}
+                    </p>
+                    <Link to="/submit-event">
+                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(viewMode === 'month' ? eventsForCurrentMonth : eventsForCurrentWeek).map((event) => renderEventCard(event))}
+                  </div>
                 )}
               </div>
             </>
