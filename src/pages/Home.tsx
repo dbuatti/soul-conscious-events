@@ -788,7 +788,7 @@ const Home = () => {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {(viewMode === 'month' ? eventsForCurrentMonthDisplay : eventsForCurrentWeekDisplay).map((event) => (
                   <Card key={event.id} className="group flex flex-col justify-between shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 overflow-hidden dark:bg-card dark:border-border">
                     {event.image_url && (
