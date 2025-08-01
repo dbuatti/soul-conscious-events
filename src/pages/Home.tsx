@@ -346,7 +346,7 @@ const Home = () => {
                         <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent className="w-[320px] p-0"> {/* Adjusted width for 4x3 grid */}
                       <MonthYearPicker
                         defaultMonth={currentMonth}
                         onSelect={(date) => {

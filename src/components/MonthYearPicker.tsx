@@ -5,7 +5,6 @@ import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MonthYearPickerProps {
-  // Removed 'selected' prop as it's for day selection and can conflict with view="months"
   onSelect?: (date: Date | undefined) => void;
   defaultMonth?: Date;
   className?: string;
@@ -16,10 +15,6 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
   defaultMonth,
   className,
 }) => {
-  console.log('MonthYearPicker: Component rendering.');
-  console.log('MonthYearPicker: Props received - defaultMonth:', defaultMonth);
-  console.log('MonthYearPicker: DayPicker props - view: "months"');
-
   const classNames: any = { // Assert to 'any' to resolve TypeScript error for months_grid/month_cell
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
@@ -46,8 +41,9 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
 
   const dayPickerProps = {
     view: "months",
-    onMonthSelect: onSelect,
+    onSelect: onSelect, // Corrected: Use onSelect for month selection in 'months' view
     defaultMonth: defaultMonth,
+    numberOfMonths: 12, // Added: Ensure all 12 months are displayed in the grid
     className: cn("p-3", className),
     classNames: classNames,
     components: {
