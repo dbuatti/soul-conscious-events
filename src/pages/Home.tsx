@@ -612,12 +612,12 @@ const Home = () => {
                                 className={cn(
                                   "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
                                   isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                  "line-clamp-1" // Changed to line-clamp-1 for compactness
+                                  "line-clamp-2" // Changed to line-clamp-2 for better fit
                                 )}
                                 onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation and open dialog
                               >
-                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" />
-                                {!isMobile ? event.event_name : ''} {/* Show name on desktop, hide on mobile */}
+                                {/* Removed CircleDot */}
+                                {event.event_name} {/* Always show event name */}
                               </div>
                             ))}
                           </div>
@@ -662,12 +662,12 @@ const Home = () => {
                                 className={cn(
                                   "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
                                   isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                  "line-clamp-1" // Changed to line-clamp-1 for compactness
+                                  "line-clamp-2" // Changed to line-clamp-2 for better fit
                                 )}
                                 onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation and open dialog
                               >
-                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" />
-                                {!isMobile ? event.event_name : ''} {/* Show name on desktop, hide on mobile */}
+                                {/* Removed CircleDot */}
+                                {event.event_name} {/* Always show event name */}
                               </div>
                             ))}
                           </div>
