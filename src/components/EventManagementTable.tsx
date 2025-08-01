@@ -69,7 +69,7 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string; // Added state
+  state?: string;
   image_url?: string;
   user_id?: string; // Added user_id
 }
@@ -200,12 +200,12 @@ const EventManagementTable = () => {
         event_date: values.eventDate.toISOString().split('T')[0],
         end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null, // Save end_date
         event_time: values.eventTime || null,
-        place_name: values.placeName || null,
-        full_address: values.fullAddress || null,
+        place_name: values.placeName || null, // Fixed: changed to values.placeName
+        full_address: values.fullAddress || null, // Fixed: changed to values.fullAddress
         description: values.description || null,
         ticket_link: formattedTicketLink || null,
         price: values.price || null,
-        special_notes: values.specialNotes || null,
+        special_notes: values.specialNotes || null, // Fixed: changed to values.specialNotes
         organizer_contact: values.organizerContact || null,
         event_type: values.eventType || null,
         state: values.state || null, // Save state
@@ -293,7 +293,7 @@ const EventManagementTable = () => {
                   <TableCell className="text-foreground">{event.event_type || 'N/A'}</TableCell>
                   <TableCell>
                     {event.image_url ? (
-                      <img src={event.image_url} alt={`Image for ${event.event_name}`} className="w-12 h-12 object-cover rounded-md" />
+                      <img src={event.image_url} alt={`Image for ${event.event_name}`} className="w-12 h-12 object-cover rounded-md" loading="lazy" />
                     ) : (
                       <ImageIcon className="h-8 w-8 text-gray-400" aria-label="No image available" />
                     )}

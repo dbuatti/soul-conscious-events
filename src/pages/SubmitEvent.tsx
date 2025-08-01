@@ -167,6 +167,8 @@ const SubmitEvent = () => {
           form.setValue('imageUrl', parsed_data.image_url); // Set the imageUrl form field
           setImagePreviewUrl(parsed_data.image_url); // Update preview
           setImageInputMode('url'); // Switch to URL tab
+          setSelectedImage(null); // Clear selected file if AI provides URL
+          form.setValue('imageFile', undefined); // Clear imageFile field
         }
 
         toast.success('Event details parsed successfully!');
@@ -229,7 +231,7 @@ const SubmitEvent = () => {
 
       if (uploadError) {
         console.error('Error uploading image:', uploadError);
-        toast.error('Failed to upload image. Please try again.');
+        toast.error(`Failed to upload image: ${uploadError.message}. Please try again.`);
         return;
       }
 
@@ -292,6 +294,7 @@ const SubmitEvent = () => {
     setAiText('');
     setSelectedImage(null);
     setImagePreviewUrl(null);
+    form.setValue('imageFile', undefined); // Ensure file input is cleared
     form.setValue('imageUrl', ''); // Clear the URL field
     toast.info('Form cleared!');
   };
@@ -580,7 +583,18 @@ const SubmitEvent = () => {
           {/* Image Upload/URL Field */}
           <FormItem>
             <FormLabel>Event Image (Optional)</FormLabel>
-            <Tabs value={imageInputMode} onValueChange={(value) => setImageInputMode(value as 'upload' | 'url')} className="w-full">
+            <Tabs value={imageInputMode} onValueChange={(value) => {
+              setImageInputMode(value as 'upload' | 'url');
+              // Clear the other input type when switching tabs
+              if (value === 'upload') {
+                form.setValue('imageUrl', '');
+                setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : null);
+              } else { // value === 'url'
+                setSelectedImage(null);
+                form.setValue('imageFile', undefined);
+                setImagePreviewUrl(form.getValues('imageUrl') || null);
+              }
+            }} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="upload">Upload Image</TabsTrigger>
                 <TabsTrigger value="url">Image URL</TabsTrigger>

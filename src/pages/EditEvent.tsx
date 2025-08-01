@@ -150,7 +150,16 @@ const EditEvent = () => {
         });
         setImagePreviewUrl(data.image_url || null); // Set initial preview URL
         if (data.image_url) {
-          setImageInputMode('url'); // If existing image is a URL, default to URL tab
+          // Determine if the existing image is a Supabase storage URL or an external URL
+          if (data.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
+            setImageInputMode('upload'); // Treat as if it was uploaded (even if it's a URL, it's from our storage)
+            // We don't have the original file, so selectedImage remains null.
+            // The preview will show the URL.
+          } else {
+            setImageInputMode('url'); // It's an external URL
+          }
+        } else {
+          setImageInputMode('upload'); // Default to upload if no image
         }
       } else {
         navigate('/404');
@@ -186,7 +195,7 @@ const EditEvent = () => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setSelectedImage(file);
-      setImagePreviewUrl(URL.createObjectURL(file)); // Update preview URL
+      setImagePreviewUrl(URL.createObjectURL(file));
       form.setValue('imageFile', file);
       form.setValue('imageUrl', ''); // Clear URL field if file is selected
     } else {
@@ -222,7 +231,7 @@ const EditEvent = () => {
     
     if (selectedImage) { // If a new file was selected, upload it
       // Delete old image if it exists and is different
-      if (currentEvent.image_url) {
+      if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
           const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
@@ -244,7 +253,7 @@ const EditEvent = () => {
 
       if (uploadError) {
         console.error('Error uploading new image:', uploadError);
-        toast.error('Failed to upload new image. Please try again.');
+        toast.error(`Failed to upload new image: ${uploadError.message}. Please try again.`);
         return;
       }
 
@@ -255,7 +264,7 @@ const EditEvent = () => {
       finalImageUrl = publicUrlData.publicUrl;
     } else if (values.imageUrl) { // If a URL was provided
       // If the old image was a file and a new URL is provided, delete the old file
-      if (currentEvent.image_url && !currentEvent.image_url.startsWith('http')) { // Check if it's a Supabase storage URL
+      if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) { // Check if it's a Supabase storage URL
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
           const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
@@ -267,11 +276,13 @@ const EditEvent = () => {
       finalImageUrl = values.imageUrl;
     } else if (currentEvent.image_url && !selectedImage && !values.imageUrl) { // If no new image and no URL, but there was an old image
       // This means the user explicitly removed the image or it was never set
-      const oldFileName = currentEvent.image_url.split('/').pop();
-      if (oldFileName) {
-        const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
-        if (deleteError) {
-          console.error('Error deleting old image:', deleteError);
+      if (currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
+        const oldFileName = currentEvent.image_url.split('/').pop();
+        if (oldFileName) {
+          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
+          if (deleteError) {
+            console.error('Error deleting old image:', deleteError);
+          }
         }
       }
       finalImageUrl = null;
@@ -586,7 +597,18 @@ const EditEvent = () => {
           {/* Image Upload/URL Field */}
           <FormItem>
             <FormLabel>Event Image (Optional)</FormLabel>
-            <Tabs value={imageInputMode} onValueChange={(value) => setImageInputMode(value as 'upload' | 'url')} className="w-full">
+            <Tabs value={imageInputMode} onValueChange={(value) => {
+              setImageInputMode(value as 'upload' | 'url');
+              // Clear the other input type when switching tabs
+              if (value === 'upload') {
+                form.setValue('imageUrl', '');
+                setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : null);
+              } else { // value === 'url'
+                setSelectedImage(null);
+                form.setValue('imageFile', undefined);
+                setImagePreviewUrl(form.getValues('imageUrl') || null);
+              }
+            }} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="upload">Upload Image</TabsTrigger>
                 <TabsTrigger value="url">Image URL</TabsTrigger>
@@ -595,7 +617,7 @@ const EditEvent = () => {
                 <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
                   <span className="flex items-center">
                     <ImageIcon className="mr-2 h-4 w-4" />
-                    {selectedImage ? selectedImage.name : (currentEvent?.image_url && !currentEvent.image_url.startsWith('http') ? currentEvent.image_url.split('/').pop() : 'No file chosen')}
+                    {selectedImage ? selectedImage.name : (currentEvent?.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images') ? currentEvent.image_url.split('/').pop() : 'No file chosen')}
                   </span>
                   <Button type="button" variant="outline" size="sm" className="ml-4">
                     Choose File
@@ -645,8 +667,8 @@ const EditEvent = () => {
           </FormItem>
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => navigate(`/events/${id}`)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              Cancel
+            <Button type="button" variant="outline" onClick={() => navigate('/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              Back to Events
             </Button>
             <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Preview
