@@ -1,5 +1,5 @@
 import React from 'react';
-import { DayPicker, ClassNames } from 'react-day-picker';
+import { DayPicker, ClassNames } from 'react-day-picker'; // Removed SelectEventHandler import
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -50,22 +50,13 @@ const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
     day_disabled: "text-muted-foreground opacity-50",
     day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
     day_hidden: "invisible",
-    // These are for when view="month" is active
-    months_grid: "grid w-full grid-cols-3 gap-1",
-    month_cell: cn(
-      buttonVariants({ variant: "ghost" }),
-      "h-16 w-full p-0 font-normal aria-selected:opacity-100 flex items-center justify-center text-sm rounded-md"
-    ),
-    month_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-    month_today: "bg-accent text-accent-foreground",
-    month_outside: "text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-    month_disabled: "text-muted-foreground opacity-50",
+    // Removed months_grid and month_cell as 'view="month"' is not supported
   };
 
   return (
     <DayPicker
       mode="single" // Set to "single" mode
-      view="month" // Use 'view' to force month grid display
+      captionLayout="dropdown" // Added dropdown for month/year selection
       selected={selected} // Pass selected prop
       onSelect={onSelect} // Pass onSelect prop directly
       defaultMonth={defaultMonth} // Pass defaultMonth prop
