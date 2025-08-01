@@ -49,6 +49,7 @@ interface Event {
   event_type?: string;
   state?: string;
   image_url?: string;
+  user_id?: string;
 }
 
 const Home = () => {
@@ -622,6 +623,7 @@ const Home = () => {
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
+                          "group" // Add group class here
                         )}
                         onClick={() => handleDayClick(day)}
                       >
@@ -664,7 +666,7 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "py-1 px-1 text-xs font-medium whitespace-normal relative z-10", // Removed mb-0.5
+                                  "py-1 px-1 text-xs font-medium whitespace-normal relative z-20", // Increased z-index to 20
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
@@ -702,6 +704,7 @@ const Home = () => {
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
+                          "group" // Add group class here
                         )}
                         onClick={() => handleDayClick(day)}
                       >
@@ -745,7 +748,7 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "py-1 px-1 text-xs font-medium whitespace-normal relative z-10", // Removed mb-0.5
+                                  "py-1 px-1 text-xs font-medium whitespace-normal relative z-20", // Increased z-index to 20
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
