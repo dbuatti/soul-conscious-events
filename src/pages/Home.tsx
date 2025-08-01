@@ -293,27 +293,24 @@ const Home = () => {
     const isEventEndDay = isSameDay(day, eventEndDate);
     const isContinuationDay = isMultiDay && !isEventStartDay && !isEventEndDay;
 
+    // Base classes for all pills
+    const basePillClasses = "py-1 px-2 text-xs font-medium whitespace-normal min-h-[1.5rem] mb-1"; // Added mb-1 here
+
     if (!isMultiDay) {
-      // Single-day: transparent background with subtle border
+      // Single-day: transparent background, no border
       return (
         <div
           key={event.id + format(day, 'yyyy-MM-dd')}
           className={cn(
             "relative z-10 w-full",
+            basePillClasses,
+            "bg-accent/20 text-foreground rounded-md" // No border
           )}
         >
-          <div
-            className={cn(
-              "py-1 px-2 text-xs font-medium whitespace-normal",
-              "min-h-[1.5rem]",
-              "bg-transparent border border-blue-600/40 text-foreground dark:border-blue-400/40 rounded-md"
-            )}
-          >
-            <span className="flex flex-col text-left">
-              {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
-              <span className="text-foreground">{event.event_name}</span>
-            </span>
-          </div>
+          <span className="flex flex-col text-left">
+            {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
+            <span className="text-foreground">{event.event_name}</span>
+          </span>
         </div>
       );
     }
@@ -335,8 +332,7 @@ const Home = () => {
       <div key={event.id + format(day, 'yyyy-MM-dd')} className={trackClasses}>
         <div
           className={cn(
-            "py-1 px-1 text-xs font-medium whitespace-normal",
-            "min-h-[1.5rem]",
+            basePillClasses, // Apply base classes including mb-1
             "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100",
             rounding
           )}
