@@ -430,47 +430,44 @@ const Home = () => {
         {/* Main Calendar Content */}
         <div className="flex-grow">
           {/* New Header Section */}
-          <div className="mb-6 text-center">
-            <h1 className="text-5xl font-extrabold text-foreground mb-2">Community Events</h1>
-            <p className="text-lg text-muted-foreground">Discover and connect with soulful events in your community.</p>
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-foreground mb-2">Community Events</h1>
+            <p className="text-lg text-muted-foreground">All events in our community.</p>
           </div>
 
           {/* Calendar Navigation and Controls */}
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-secondary rounded-xl shadow-lg border border-border">
-            <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-              {/* "This Month" button */}
+          <div className="mb-6 p-5 bg-secondary rounded-xl shadow-lg border border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+            {/* Left: Navigation and Today button */}
+            <div className="flex items-center space-x-2">
               <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                This Month
+                Today
               </Button>
-              {/* Month/Year Display and Navigation Arrows */}
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handlePrevMonth : handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" className="w-[180px] justify-center text-lg font-bold focus-visible:ring-primary">
-                      {viewMode === 'month' ? format(currentMonth, 'MMMM yyyy') : `${format(currentWeek[0], 'MMM d')} - ${format(currentWeek[6], 'MMM d, yyyy')}`}
-                      <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
-                    <MonthYearPicker
-                      date={currentMonth}
-                      onDateChange={(date) => {
-                        setCurrentMonth(date);
-                        setIsMonthPickerPopoverOpen(false);
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handleNextMonth : handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
+              <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handlePrevMonth : handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" className="w-[180px] justify-center text-lg font-bold focus-visible:ring-primary">
+                    {viewMode === 'month' ? format(currentMonth, 'MMMM yyyy') : `${format(currentWeek[0], 'MMM d')} - ${format(currentWeek[6], 'MMM d, yyyy')}`}
+                    <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
+                  <MonthYearPicker
+                    date={currentMonth}
+                    onDateChange={(date) => {
+                      setCurrentMonth(date);
+                      setIsMonthPickerPopoverOpen(false);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handleNextMonth : handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <ArrowRight className="h-4 w-4" />
+              </Button>
             </div>
 
-            {/* View Toggle Buttons (Moved to the right) */}
+            {/* Right: View Toggle Buttons */}
             <div className="flex items-center space-x-4">
               <Button
                 variant={viewMode === 'month' ? 'default' : 'outline'}
@@ -495,16 +492,16 @@ const Home = () => {
           </div>
 
           {/* Filter and Agenda Buttons */}
-          <div className="flex justify-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6 p-5 bg-secondary rounded-xl shadow-lg border border-border">
             <Button
               onClick={() => setIsFilterOverlayOpen(true)}
-              className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
             >
               <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
             </Button>
             <Button
               onClick={() => setIsAgendaOverlayOpen(true)}
-              className="bg-accent hover:bg-accent/80 text-accent-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
+              className="w-full sm:w-auto bg-accent hover:bg-accent/80 text-accent-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
             >
               <List className="mr-2 h-4 w-4" /> View Agenda
             </Button>
