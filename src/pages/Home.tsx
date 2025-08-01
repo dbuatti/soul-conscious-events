@@ -415,18 +415,16 @@ const Home = () => {
                 }}
                 components={{
                   Caption: () => null, // Hide default caption
-                  // Removed Navigation component as it's not a valid override
                   Day: ({ date, modifiers, ...props }: CustomDayContentProps) => {
-                    // Safely access modifiers properties
                     const isPastDate = modifiers?.past === true;
                     const isTodayDate = modifiers?.today === true;
                     const isSelected = isSameDay(date, selectedDayForDialog || new Date());
-                    const hasEvents = modifiers?.events && modifiers.events.length > 0;
+                    const hasEvents = modifiers?.events && modifiers.events.some(eventDate => isSameDay(eventDate, date));
 
                     return (
                       <div
                         className={cn(
-                          "relative flex flex-col items-center justify-center h-12 w-12 rounded-md text-foreground",
+                          "relative flex flex-col items-center justify-between h-16 w-16 rounded-md text-foreground p-2", // Increased size, changed justify-center to justify-between, added p-2
                           "hover:bg-accent hover:text-accent-foreground",
                           isPastDate && "text-muted-foreground opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
@@ -438,28 +436,26 @@ const Home = () => {
                         <span className="font-bold text-lg">{format(date, 'd')}</span>
                         {hasEvents && (
                           <span className={cn(
-                            "w-2 h-2 rounded-full mt-1", // Larger dot, with margin-top
-                            isPastDate ? "bg-gray-400" : "bg-blue-500" // Conditional color for dot
+                            "w-2 h-2 rounded-full", // Adjusted dot size, no mt-1
+                            isPastDate ? "bg-gray-400" : "bg-blue-500"
                           )} />
                         )}
                       </div>
                     );
                   },
                   Head: () => (
-                    <thead>
-                      <tr className="flex">
-                        {daysOfWeekShort.map((dayName, index) => (
-                          <th
-                            key={index}
-                            scope="col"
-                            className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1"
-                            aria-label={daysOfWeekFull[index]}
-                          >
-                            {dayName}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
+                    <div className="flex"> {/* Changed from <thead> and <tr> to <div> */}
+                      {daysOfWeekShort.map((dayName, index) => (
+                        <div
+                          key={index}
+                          role="columnheader" // Semantically correct for a grid header
+                          className="text-muted-foreground font-normal text-[0.8rem] flex-1 py-2 flex items-center justify-center" // Added flex, items-center, justify-center
+                          aria-label={daysOfWeekFull[index]}
+                        >
+                          {dayName}
+                        </div>
+                      ))}
+                    </div>
                   ),
                 }}
                 className="w-full border-none shadow-none"
