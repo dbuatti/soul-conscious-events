@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Filter as FilterIcon, ChevronDown, Frown, List, Calendar as CalendarIcon2, X } from 'lucide-react'; // Removed CircleDot
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Filter as FilterIcon, ChevronDown, Frown, List, Calendar as CalendarIcon2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -644,15 +644,19 @@ const Home = () => {
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
 
-                            // Determine rounding classes
+                            // Determine rounding classes and width/margin for multi-day events
                             let roundingClasses = "";
+                            let widthAndMarginClasses = "w-full"; // Default for single-day or end of multi-day
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
+                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover border
                               } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
+                                // No extra width needed, it should align with the cell's right edge
                               } else if (day > eventStartDate && day < eventEndDate) { // If it's a continuation day
                                 roundingClasses = "rounded-none";
+                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover border
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
@@ -662,15 +666,15 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full py-1 px-1 text-xs font-medium whitespace-normal mb-0.5",
+                                  "py-1 px-1 text-xs font-medium whitespace-normal mb-0.5",
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
+                                  widthAndMarginClasses // Apply calculated width and margin
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
                                   <span className="flex flex-col text-left pl-1">
-                                    {/* Removed CircleDot icon */}
                                     {event.event_time && <span className="font-bold">{event.event_time}</span>}
                                     <span>{event.event_name}</span>
                                   </span>
@@ -725,15 +729,19 @@ const Home = () => {
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
 
-                            // Determine rounding classes
+                            // Determine rounding classes and width/margin for multi-day events
                             let roundingClasses = "";
+                            let widthAndMarginClasses = "w-full"; // Default for single-day or end of multi-day
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
+                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover border
                               } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
+                                // No extra width needed, it should align with the cell's right edge
                               } else if (day > eventStartDate && day < eventEndDate) { // If it's a continuation day
                                 roundingClasses = "rounded-none";
+                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover border
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
@@ -743,15 +751,15 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full py-1 px-1 text-xs font-medium whitespace-normal mb-0.5",
+                                  "py-1 px-1 text-xs font-medium whitespace-normal mb-0.5",
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
+                                  widthAndMarginClasses // Apply calculated width and margin
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
                                   <span className="flex flex-col text-left pl-1">
-                                    {/* Removed CircleDot icon */}
                                     <span className="flex flex-col">
                                       {event.event_time && <span className="font-bold">{event.event_time}</span>}
                                       <span>{event.event_name}</span>
