@@ -432,7 +432,7 @@ const Home = () => {
           {/* New Header Section */}
           <div className="mb-6">
             <h1 className="text-4xl font-bold text-foreground mb-2">Community Events</h1>
-            <p className="text-lg text-muted-foreground mb-6">WHAT'S ON in the JCOM. All event listings in our community.</p>
+            <p className="text-lg text-muted-foreground mb-6"></p>
           </div>
 
           {/* Calendar Navigation and Controls */}
