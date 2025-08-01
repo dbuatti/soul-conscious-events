@@ -67,7 +67,7 @@ const Home = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isMobileFilterSheetOpen, setIsMobileFilterSheetOpen] = useState(false);
-  const [isFullCalendarDialogOpen, setIsFullCalendarDialogOpen] = useState(false);
+  // const [isFullCalendarDialogOpen, setIsFullCalendarDialogOpen] = useState(false); // Removed state
 
   const isMobile = useIsMobile();
 
@@ -342,24 +342,9 @@ const Home = () => {
                 <>
                   {/* Mobile Calendar Header */}
                   <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
-                          {format(currentMonth, 'MMMM yyyy')} {/* Display current month/year */}
-                          <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <MonthYearPicker // Use the new component here
-                          onSelect={(date: Date | undefined) => {
-                            if (date) {
-                              setCurrentMonth(date);
-                            }
-                          }}
-                          defaultMonth={currentMonth}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <span className="text-lg font-semibold text-foreground">
+                      {format(currentMonth, 'MMMM yyyy')} {/* Display current month/year */}
+                    </span>
 
                     <div className="flex items-center space-x-2">
                       <Sheet open={isMobileFilterSheetOpen} onOpenChange={setIsMobileFilterSheetOpen}>
@@ -373,37 +358,7 @@ const Home = () => {
                           <EventSidebar selectedEventType={selectedEventType} onSelectEventType={(type) => { setSelectedEventType(type); setIsMobileFilterSheetOpen(false); }} />
                         </SheetContent>
                       </Sheet>
-                      <Dialog open={isFullCalendarDialogOpen} onOpenChange={setIsFullCalendarDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                            <CalendarIcon className="h-4 w-4" />
-                            <span className="sr-only">Full Calendar</span>
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[400px]">
-                          <DialogHeader>
-                            <DialogTitle>Select Month</DialogTitle> {/* Changed title */}
-                            <DialogDescription>
-                              Choose a specific month from the calendar. {/* Changed description */}
-                            </DialogDescription>
-                          </DialogHeader>
-                          <MonthYearPicker // Replaced Calendar with MonthYearPicker
-                            onSelect={(date) => {
-                              if (date) {
-                                setCurrentMonth(date); // Update current month
-                                // No need to update selectedDayForDialog as it's a month picker
-                                setIsFullCalendarDialogOpen(false);
-                              }
-                            }}
-                            defaultMonth={currentMonth}
-                          />
-                          <DialogFooter>
-                            <DialogClose asChild>
-                              <Button type="button" variant="secondary">Close</Button>
-                            </DialogClose>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                      {/* Removed Dialog for full calendar */}
                     </div>
                   </div>
 
