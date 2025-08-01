@@ -33,43 +33,14 @@ const Header = () => {
     }
   };
 
-  const mainNavLinks = (
-    <>
-      <Link to="/"> {/* Now points to the Events List */}
-        <Button variant="ghost" className={getButtonClass("/")}>
-          Events
-        </Button>
-      </Link>
-      <Link to="/calendar"> {/* Calendar is now at /calendar */}
-        <Button variant="ghost" className={getButtonClass("/calendar")}>
-          Calendar
-        </Button>
-      </Link>
-      <Link to="/submit-event">
-        <Button variant="ghost" className={getButtonClass("/submit-event")}>
-          Add Event
-        </Button>
-      </Link>
-      <Link to="/map">
-        <Button variant="ghost" className={cn(getButtonClass("/map"), "flex items-center")}>
-          Map
-          <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
-            Beta
-          </Badge>
-        </Button>
-      </Link>
-      <Link to="/contact">
-        <Button variant="ghost" className={getButtonClass("/contact")}>
-          Contact
-        </Button>
-      </Link>
-      <Link to="/about">
-        <Button variant="ghost" className={getButtonClass("/about")}>
-          About
-        </Button>
-      </Link>
-    </>
-  );
+  const navItems = [
+    { to: "/", label: "Events" },
+    { to: "/calendar", label: "Calendar" },
+    { to: "/submit-event", label: "Add Event" },
+    { to: "/map", label: "Map", badge: "Beta" },
+    { to: "/contact", label: "Contact" },
+    { to: "/about", label: "About" },
+  ];
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
@@ -87,18 +58,27 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6 dark:bg-sidebar-background dark:border-sidebar-border">
               <nav className="flex flex-col space-y-4 mt-8">
-                {React.Children.map(mainNavLinks, (child) => (
-                  <SheetClose asChild key={child.key}>
-                    {child}
+                {navItems.map((item) => (
+                  <SheetClose asChild key={item.to}>
+                    <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")} asChild>
+                      <Link to={item.to}>
+                        {item.label}
+                        {item.badge && (
+                          <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Link>
+                    </Button>
                   </SheetClose>
                 ))}
                 {user?.email === 'daniele.buatti@gmail.com' && (
                   <SheetClose asChild>
-                    <Link to="/admin/panel">
-                      <Button variant="ghost" className={getButtonClass("/admin/panel")}>
+                    <Button variant="ghost" className={getButtonClass("/admin/panel")} asChild>
+                      <Link to="/admin/panel">
                         Admin
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </SheetClose>
                 )}
                 {/* Mobile Auth Button */}
@@ -110,11 +90,11 @@ const Header = () => {
                   </SheetClose>
                 ) : (
                   <SheetClose asChild>
-                    <Link to="/login">
-                      <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80">
+                    <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80" asChild>
+                      <Link to="/login">
                         Login
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </SheetClose>
                 )}
                 <ThemeToggle />
@@ -124,7 +104,18 @@ const Header = () => {
         ) : (
           <nav className="hidden md:flex items-center w-full">
             <div className="flex items-center space-x-4"> {/* Group main nav links */}
-              {mainNavLinks}
+              {navItems.map((item) => (
+                <Link to={item.to} key={item.to}>
+                  <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")}>
+                    {item.label}
+                    {item.badge && (
+                      <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+              ))}
             </div>
             <div className="flex items-center space-x-4 ml-auto"> {/* Group auth/theme, pushed right */}
               {user?.email === 'daniele.buatti@gmail.com' && (
