@@ -77,6 +77,7 @@ const Home = () => {
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
 
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
@@ -347,6 +348,7 @@ const Home = () => {
             basePillClasses,
             "bg-accent/20 text-foreground rounded-md"
           )}
+          onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Added onClick
         >
           <span className="flex flex-col text-left">
             {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
@@ -373,9 +375,10 @@ const Home = () => {
         <div
           className={cn(
             basePillClasses,
-            "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100",
+            "bg-primary text-primary-foreground dark:bg-primary/80 dark:text-primary-foreground", // Changed color to primary
             rounding
           )}
+          onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Added onClick
         >
           {(isEventStartDay) && (
             <span className="flex flex-col text-left pl-1">
