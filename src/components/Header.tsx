@@ -53,7 +53,7 @@ const Header = () => {
       <Link to="/map">
         <Button variant="ghost" className={cn(getButtonClass("/map"), "flex items-center")}>
           Map
-          <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 text-xs font-semibold">
+          <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
             Beta
           </Badge>
         </Button>
@@ -73,7 +73,7 @@ const Header = () => {
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
-      <div className="w-full max-w-4xl flex justify-between items-center">
+      <div className="w-full max-w-screen-lg flex justify-between items-center"> {/* Changed max-w-4xl to max-w-screen-lg */}
         <Link to="/" className="text-2xl font-bold text-purple-700 hover:text-purple-800 transition-colors dark:text-primary dark:hover:text-primary/80">
           SoulFlow
         </Link>
@@ -92,6 +92,15 @@ const Header = () => {
                     {child}
                   </SheetClose>
                 ))}
+                {user?.email === 'daniele.buatti@gmail.com' && (
+                  <SheetClose asChild>
+                    <Link to="/admin/panel">
+                      <Button variant="ghost" className={getButtonClass("/admin/panel")}>
+                        Admin
+                      </Button>
+                    </Link>
+                  </SheetClose>
+                )}
                 {/* Mobile Auth Button */}
                 {user ? (
                   <SheetClose asChild>
@@ -108,27 +117,36 @@ const Header = () => {
                     </Link>
                   </SheetClose>
                 )}
-                <div className="mt-4">
-                  <ThemeToggle />
-                </div>
+                <ThemeToggle /> {/* Removed extra div around ThemeToggle */}
               </nav>
             </SheetContent>
           </Sheet>
         ) : (
-          <nav className="space-x-4 hidden md:flex items-center">
-            {mainNavLinks}
-            {user ? (
-              <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </Button>
-            ) : (
-              <Link to="/login">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80">
-                  Login
+          <nav className="hidden md:flex items-center w-full">
+            <div className="flex items-center space-x-4"> {/* Group main nav links */}
+              {mainNavLinks}
+            </div>
+            <div className="flex items-center space-x-4 ml-auto"> {/* Group auth/theme, pushed right */}
+              {user?.email === 'daniele.buatti@gmail.com' && (
+                <Link to="/admin/panel">
+                  <Button variant="ghost" className={getButtonClass("/admin/panel")}>
+                    Admin
+                  </Button>
+                </Link>
+              )}
+              {user ? (
+                <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
+                  <LogOut className="mr-2 h-4 w-4" /> Logout
                 </Button>
-              </Link>
-            )}
-            <ThemeToggle />
+              ) : (
+                <Link to="/login">
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80">
+                    Login
+                  </Button>
+                </Link>
+              )}
+              <ThemeToggle />
+            </div>
           </nav>
         )}
       </div>
