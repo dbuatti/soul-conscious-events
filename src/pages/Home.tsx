@@ -613,14 +613,12 @@ const Home = () => {
                         key={day.toISOString()}
                         className={cn(
                           "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full p-2 overflow-hidden cursor-pointer transition-colors duration-200",
+                          "border-r border-b border-border", // Apply borders to all cells
                           isCurrentMonth ? "bg-card" : "bg-secondary opacity-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
-                          "hover:bg-muted hover:shadow-md hover:border-primary",
-                          // Apply right and bottom borders to cells, except for the last column/row
-                          (day.getDay() !== 0) && "border-r border-border", // Sunday is 0, so apply to Mon-Sat
-                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border" // Apply bottom border unless it's the last row
+                          "hover:bg-muted hover:shadow-md hover:border-primary"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
@@ -638,22 +636,32 @@ const Home = () => {
                             const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
-                            const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
+                            const isEventMiddleDay = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
+
+                            // Determine rounding classes
+                            let roundingClasses = "rounded-md"; // Default for single day
+                            if (isMultiDay) {
+                              if (isEventStartDay) {
+                                roundingClasses = "rounded-l-md rounded-r-none";
+                              } else if (isEventEndDay) {
+                                roundingClasses = "rounded-r-md rounded-l-none";
+                              } else if (isEventMiddleDay) {
+                                roundingClasses = "rounded-none";
+                              }
+                            }
 
                             return (
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center px-1 py-0.5 text-xs font-medium truncate",
+                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate", // Removed px-1
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
-                                  isEventStartDay && "rounded-l-md",
-                                  isEventEndDay && "rounded-r-md",
-                                  !isEventStartDay && !isEventEndDay && isMultiDay && "rounded-none", // Middle segments
-                                  !isMultiDay && "rounded-md", // Single day events
-                                  isEventContinuation && "justify-center" // Center text for continuation
+                                  roundingClasses, // Apply calculated rounding
+                                  isEventMiddleDay && "justify-center" // Center text for continuation
                                 )}
                               >
-                                {isMultiDay && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
+                                {/* Only show CircleDot on the start day of a multi-day event or for single-day events */}
+                                {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                 {isEventStartDay || !isMultiDay ? (
                                   <>
                                     {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
@@ -682,13 +690,11 @@ const Home = () => {
                         key={day.toISOString()}
                         className={cn(
                           "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full p-2 overflow-hidden cursor-pointer transition-colors duration-200",
+                          "border-r border-b border-border", // Apply borders to all cells
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
-                          "hover:bg-muted hover:shadow-md hover:border-primary",
-                          // Apply right and bottom borders to cells, except for the last column/row
-                          (day.getDay() !== 0) && "border-r border-border", // Sunday is 0, so apply to Mon-Sat
-                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border" // Apply bottom border unless it's the last row
+                          "hover:bg-muted hover:shadow-md hover:border-primary"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
@@ -707,22 +713,32 @@ const Home = () => {
                             const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
-                            const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
+                            const isEventMiddleDay = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
+
+                            // Determine rounding classes
+                            let roundingClasses = "rounded-md"; // Default for single day
+                            if (isMultiDay) {
+                              if (isEventStartDay) {
+                                roundingClasses = "rounded-l-md rounded-r-none";
+                              } else if (isEventEndDay) {
+                                roundingClasses = "rounded-r-md rounded-l-none";
+                              } else if (isEventMiddleDay) {
+                                roundingClasses = "rounded-none";
+                              }
+                            }
 
                             return (
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center px-1 py-0.5 text-xs font-medium truncate",
+                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate", // Removed px-1
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
-                                  isEventStartDay && "rounded-l-md",
-                                  isEventEndDay && "rounded-r-md",
-                                  !isEventStartDay && !isEventEndDay && isMultiDay && "rounded-none", // Middle segments
-                                  !isMultiDay && "rounded-md", // Single day events
-                                  isEventContinuation && "justify-center" // Center text for continuation
+                                  roundingClasses, // Apply calculated rounding
+                                  isEventMiddleDay && "justify-center" // Center text for continuation
                                 )}
                               >
-                                {isMultiDay && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
+                                {/* Only show CircleDot on the start day of a multi-day event or for single-day events */}
+                                {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                 {isEventStartDay || !isMultiDay ? (
                                   <>
                                     {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
