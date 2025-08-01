@@ -511,7 +511,7 @@ const Home = () => {
               )}
 
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-sm shadow-inner">
+              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-lg shadow-inner">
                 {daysOfWeekShort.map((day, index) => (
                   <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-1">{day}</div>
                 ))}
@@ -531,7 +531,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col items-start pt-1 px-1 h-24 w-full rounded-sm cursor-pointer transition-colors duration-200 overflow-hidden", // Increased height, changed alignment, reduced padding, less round
+                          "relative flex flex-col items-start pt-1 px-1 h-20 w-full rounded-md cursor-pointer transition-colors duration-200 overflow-hidden", // Adjusted height and roundness
                           isCurrentMonth ? "text-gray-800" : "text-gray-400 opacity-50",
                           isPastDate && "text-gray-400 opacity-50", // Faded for past dates
                           isTodayDate && "bg-blue-500 text-white font-bold", // Highlight today
@@ -557,11 +557,11 @@ const Home = () => {
                               )} />
                             )}
                             {showEventTitles && (
-                              <div className="flex flex-col w-full mt-1 space-y-0.5"> {/* Changed to flex column, removed absolute positioning */}
+                              <div className="flex flex-col w-full mt-0.5 space-y-0.5"> {/* Adjusted margin-top */}
                                 {dayEvents.map((event, index) => (
                                   <div key={event.id} className={cn(
-                                    "text-[0.65rem] leading-tight text-gray-700 truncate", // Smaller font, tighter line height
-                                    index < dayEvents.length - 1 ? "mb-0" : "" // Removed margin-bottom
+                                    "text-xs leading-tight text-gray-700 truncate", // Adjusted font size and line height
+                                    index < dayEvents.length - 1 ? "mb-0" : ""
                                   )}>
                                     {event.event_name}
                                   </div>
@@ -589,7 +589,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col items-start pt-1 px-1 h-24 w-full rounded-sm cursor-pointer transition-colors duration-200 overflow-hidden", // Increased height, changed alignment, reduced padding, less round
+                          "relative flex flex-col items-start pt-1 px-1 h-20 w-full rounded-md cursor-pointer transition-colors duration-200 overflow-hidden", // Adjusted height and roundness
                           isPastDate && "text-gray-400 opacity-50", // Faded for past dates
                           isTodayDate && "bg-blue-500 text-white font-bold", // Highlight today
                           isSelected && !isTodayDate && "bg-blue-100 text-blue-800 font-semibold", // Selected but not today
@@ -614,11 +614,11 @@ const Home = () => {
                               )} />
                             )}
                             {showEventTitles && (
-                              <div className="flex flex-col w-full mt-1 space-y-0.5"> {/* Changed to flex column, removed absolute positioning */}
+                              <div className="flex flex-col w-full mt-0.5 space-y-0.5"> {/* Adjusted margin-top */}
                                 {dayEvents.map((event, index) => (
                                   <div key={event.id} className={cn(
-                                    "text-[0.65rem] leading-tight text-gray-700 truncate", // Smaller font, tighter line height
-                                    index < dayEvents.length - 1 ? "mb-0" : "" // Removed margin-bottom
+                                    "text-xs leading-tight text-gray-700 truncate", // Adjusted font size and line height
+                                    index < dayEvents.length - 1 ? "mb-0" : ""
                                   )}>
                                     {event.event_name}
                                   </div>
