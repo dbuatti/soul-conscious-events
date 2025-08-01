@@ -382,22 +382,20 @@ const Home = () => {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[400px]">
                           <DialogHeader>
-                            <DialogTitle>Select Date</DialogTitle>
+                            <DialogTitle>Select Month</DialogTitle> {/* Changed title */}
                             <DialogDescription>
-                              Choose a specific date from the full calendar.
+                              Choose a specific month from the calendar. {/* Changed description */}
                             </DialogDescription>
                           </DialogHeader>
-                          <Calendar
-                            mode="single"
-                            selected={selectedDayForDialog || new Date()}
+                          <MonthYearPicker // Replaced Calendar with MonthYearPicker
                             onSelect={(date) => {
                               if (date) {
                                 setCurrentMonth(date); // Update current month
-                                setSelectedDayForDialog(date); // Update selected day
+                                // No need to update selectedDayForDialog as it's a month picker
                                 setIsFullCalendarDialogOpen(false);
                               }
                             }}
-                            initialFocus
+                            defaultMonth={currentMonth}
                           />
                           <DialogFooter>
                             <DialogClose asChild>
