@@ -644,19 +644,15 @@ const Home = () => {
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
 
-                            // Determine rounding classes and width/margin for multi-day events
+                            // Determine rounding classes
                             let roundingClasses = "";
-                            let widthAndMarginClasses = "w-full"; // Default for single-day or end of multi-day
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
-                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover border
                               } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
-                                // No extra width needed, it should align with the cell's right edge
-                              } else if (day > eventStartDate && day < eventEndDate) { // If it's a continuation day
+                              } else { // If it's a continuation day
                                 roundingClasses = "rounded-none";
-                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover border
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
@@ -670,7 +666,7 @@ const Home = () => {
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
-                                  widthAndMarginClasses // Apply calculated width and margin
+                                  isMultiDay && "w-[calc(100%+1px)] ml-[-1px]" // Apply width and negative margin for multi-day events
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
@@ -679,8 +675,6 @@ const Home = () => {
                                     <span>{event.event_name}</span>
                                   </span>
                                 ) : (
-                                  // For continuation days, no content is needed inside the div.
-                                  // The div itself will render as a colored bar due to its background and min-h/padding.
                                   null
                                 )}
                               </div>
@@ -729,19 +723,15 @@ const Home = () => {
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
 
-                            // Determine rounding classes and width/margin for multi-day events
+                            // Determine rounding classes
                             let roundingClasses = "";
-                            let widthAndMarginClasses = "w-full"; // Default for single-day or end of multi-day
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
-                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover border
                               } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
-                                // No extra width needed, it should align with the cell's right edge
-                              } else if (day > eventStartDate && day < eventEndDate) { // If it's a continuation day
+                              } else { // If it's a continuation day
                                 roundingClasses = "rounded-none";
-                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover border
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
@@ -755,7 +745,7 @@ const Home = () => {
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
-                                  widthAndMarginClasses // Apply calculated width and margin
+                                  isMultiDay && "w-[calc(100%+1px)] ml-[-1px]" // Apply width and negative margin for multi-day events
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
@@ -766,8 +756,6 @@ const Home = () => {
                                     </span>
                                   </span>
                                 ) : (
-                                  // For continuation days, no content is needed inside the div.
-                                  // The div itself will render as a colored bar due to its background and min-h/padding.
                                   null
                                 )}
                               </div>
