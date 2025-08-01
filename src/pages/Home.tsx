@@ -642,18 +642,17 @@ const Home = () => {
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
                             const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
                             const isEventStartDay = isSameDay(day, eventStartDate);
-                            // const isEventEndDay = isSameDay(day, eventEndDate); // Not used in new logic
-                            // const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate; // Not used in new logic
+                            const isEventEndDay = isSameDay(day, eventEndDate);
 
                             // Determine rounding classes
                             let roundingClasses = "";
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
-                              } else if (day > eventStartDate && day <= eventEndDate) { // If it's a continuation day
-                                roundingClasses = "rounded-none";
-                              } else { // If it's the end day
+                              } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
+                              } else if (day > eventStartDate && day < eventEndDate) { // If it's a continuation day
+                                roundingClasses = "rounded-none";
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
@@ -668,11 +667,16 @@ const Home = () => {
                                   roundingClasses, // Apply calculated rounding
                                 )}
                               >
-                                <span className="flex items-center pl-1">
-                                  {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
-                                  {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
-                                  {event.event_name}
-                                </span>
+                                {isEventStartDay || !isMultiDay ? (
+                                  <span className="flex items-center pl-1">
+                                    {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
+                                    {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
+                                    {event.event_name}
+                                  </span>
+                                ) : (
+                                  // For continuation days, render an empty span to just show the colored bar
+                                  <span className="flex-grow h-full"></span>
+                                )}
                               </div>
                             );
                           })}
@@ -717,18 +721,17 @@ const Home = () => {
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
                             const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
                             const isEventStartDay = isSameDay(day, eventStartDate);
-                            // const isEventEndDay = isSameDay(day, eventEndDate); // Not used in new logic
-                            // const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate; // Not used in new logic
+                            const isEventEndDay = isSameDay(day, eventEndDate);
 
                             // Determine rounding classes
                             let roundingClasses = "";
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
-                              } else if (day > eventStartDate && day <= eventEndDate) { // If it's a continuation day
-                                roundingClasses = "rounded-none";
-                              } else { // If it's the end day
+                              } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
+                              } else if (day > eventStartDate && day < eventEndDate) { // If it's a continuation day
+                                roundingClasses = "rounded-none";
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
@@ -743,11 +746,16 @@ const Home = () => {
                                   roundingClasses, // Apply calculated rounding
                                 )}
                               >
-                                <span className="flex items-center pl-1">
-                                  {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
-                                  {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
-                                  {event.event_name}
-                                </span>
+                                {isEventStartDay || !isMultiDay ? (
+                                  <span className="flex items-center pl-1">
+                                    {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
+                                    {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
+                                    {event.event_name}
+                                  </span>
+                                ) : (
+                                  // For continuation days, render an empty span to just show the colored bar
+                                  <span className="flex-grow h-full"></span>
+                                )}
                               </div>
                             );
                           })}
