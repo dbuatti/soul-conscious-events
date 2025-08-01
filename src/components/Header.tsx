@@ -18,8 +18,8 @@ const Header = () => {
 
   const getButtonClass = (path: string) => {
     return cn(
-      "text-foreground hover:text-purple-700 transition-all duration-300 ease-in-out transform hover:scale-105",
-      location.pathname === path && "font-bold text-purple-700"
+      "text-foreground hover:text-primary transition-all duration-300 ease-in-out transform hover:scale-105",
+      location.pathname === path && "font-bold text-primary"
     );
   };
 
@@ -73,8 +73,8 @@ const Header = () => {
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
-      <div className="w-full max-w-screen-lg flex justify-between items-center"> {/* Changed max-w-4xl to max-w-screen-lg */}
-        <Link to="/" className="text-2xl font-bold text-purple-700 hover:text-purple-800 transition-colors dark:text-primary dark:hover:text-primary/80 md:mr-6">
+      <div className="w-full max-w-screen-lg flex justify-between items-center">
+        <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80 md:mr-6">
           SoulFlow
         </Link>
         {isMobile ? (
@@ -104,20 +104,20 @@ const Header = () => {
                 {/* Mobile Auth Button */}
                 {user ? (
                   <SheetClose asChild>
-                    <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
+                    <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
                       <LogOut className="mr-2 h-4 w-4" /> Logout
                     </Button>
                   </SheetClose>
                 ) : (
                   <SheetClose asChild>
                     <Link to="/login">
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80">
+                      <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80">
                         Login
                       </Button>
                     </Link>
                   </SheetClose>
                 )}
-                <ThemeToggle /> {/* Removed extra div around ThemeToggle */}
+                <ThemeToggle />
               </nav>
             </SheetContent>
           </Sheet>
@@ -135,12 +135,12 @@ const Header = () => {
                 </Link>
               )}
               {user ? (
-                <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
+                <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
                   <LogOut className="mr-2 h-4 w-4" /> Logout
                 </Button>
               ) : (
                 <Link to="/login">
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80">
+                  <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80">
                     Login
                   </Button>
                 </Link>

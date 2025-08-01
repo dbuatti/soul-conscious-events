@@ -37,17 +37,17 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: 'hsl(var(--primary))', // A purple shade
-                  brandAccent: 'hsl(var(--primary-foreground))', // A darker purple shade
+                  brand: 'hsl(var(--primary))',
+                  brandAccent: 'hsl(var(--primary-foreground))',
                   inputBackground: 'hsl(var(--input))',
                   inputBorder: 'hsl(var(--border))',
                   inputPlaceholder: 'hsl(var(--muted-foreground))',
                   messageText: 'hsl(var(--foreground))',
                   messageBackground: 'hsl(var(--secondary))',
-                  defaultButtonBackground: 'hsl(var(--primary))', // Fixed property name
-                  defaultButtonBorder: 'hsl(var(--primary))', // Fixed property name
+                  defaultButtonBackground: 'hsl(var(--primary))',
+                  defaultButtonBorder: 'hsl(var(--primary))',
                   defaultButtonBackgroundHover: 'hsl(var(--primary)/80%)',
-                  defaultButtonText: 'hsl(var(--primary-foreground))', // Fixed property name
+                  defaultButtonText: 'hsl(var(--primary-foreground))',
                 },
               },
             },
