@@ -531,29 +531,29 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-sm cursor-pointer transition-colors duration-200 border border-gray-200", // Increased height to h-56
-                          isCurrentMonth ? "bg-white" : "bg-gray-50", // Different background for current month vs. other months
-                          isPastDate && "opacity-70", // Faded for past dates, but not too much
-                          isTodayDate && "bg-blue-600 text-white", // Stronger highlight for today
-                          isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2", // Selected but not today
-                          "hover:bg-gray-100" // General hover effect
+                          "relative flex flex-col h-56 w-full rounded-md cursor-pointer transition-colors duration-200 border border-gray-200", // Changed to rounded-md
+                          isCurrentMonth ? "bg-white" : "bg-gray-50",
+                          isPastDate && "opacity-70",
+                          isTodayDate && "bg-blue-600 text-white",
+                          isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
+                          "hover:bg-gray-100"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-1 left-2 text-lg font-bold", // Larger, bold day number, top-left
-                          isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"), // Conditional text color
-                          isPastDate && "text-gray-500" // Past dates day number
+                          "absolute top-2 left-2 text-xl font-bold", // Changed to top-2 left-2 and text-xl
+                          isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
+                          isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-8 px-1 overflow-y-auto scrollbar-hide"> {/* Space for day number, scrollable events */}
+                          <div className="flex flex-col w-full mt-10 px-2 overflow-y-auto scrollbar-hide"> {/* Changed mt-8 to mt-10, px-1 to px-2 */}
                             {dayEvents.map((event) => (
                               <div key={event.id} className={cn(
-                                "text-sm leading-tight font-medium text-left px-1 py-0.5 rounded-sm mb-0.5", // Event title styling
-                                isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"), // Event background/text color
-                                "line-clamp-3" // Allow up to 3 lines for event title
+                                "text-xs leading-tight font-medium text-left px-1 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, mb-0.5 to mb-1
+                                isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
+                                "line-clamp-3"
                               )}>
                                 {event.event_name}
                               </div>
@@ -579,28 +579,28 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-sm cursor-pointer transition-colors duration-200 border border-gray-200", // Increased height to h-56
-                          isPastDate && "opacity-70", // Faded for past dates
-                          isTodayDate && "bg-blue-600 text-white", // Highlight today
-                          isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2", // Selected but not today
-                          "hover:bg-gray-100" // General hover effect
+                          "relative flex flex-col h-56 w-full rounded-md cursor-pointer transition-colors duration-200 border border-gray-200", // Changed to rounded-md
+                          isPastDate && "opacity-70",
+                          isTodayDate && "bg-blue-600 text-white",
+                          isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
+                          "hover:bg-gray-100"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-1 left-2 text-lg font-bold", // Larger, bold day number, top-left
-                          isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"), // Conditional text color
-                          isPastDate && "text-gray-500" // Past dates day number
+                          "absolute top-2 left-2 text-xl font-bold", // Changed to top-2 left-2 and text-xl
+                          isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
+                          isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-8 px-1 overflow-y-auto scrollbar-hide"> {/* Space for day number, scrollable events */}
+                          <div className="flex flex-col w-full mt-10 px-2 overflow-y-auto scrollbar-hide"> {/* Changed mt-8 to mt-10, px-1 to px-2 */}
                             {dayEvents.map((event, index) => (
                               <div key={event.id} className={cn(
-                                "text-sm leading-tight font-medium text-left px-1 py-0.5 rounded-sm mb-0.5", // Event title styling
-                                isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"), // Event background/text color
-                                "line-clamp-3" // Allow up to 3 lines for event title
+                                "text-xs leading-tight font-medium text-left px-1 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, mb-0.5 to mb-1
+                                isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
+                                "line-clamp-3"
                               )}>
                                 {event.event_name}
                               </div>
