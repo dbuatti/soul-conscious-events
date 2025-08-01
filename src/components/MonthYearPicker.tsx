@@ -1,12 +1,12 @@
 import React from 'react';
-import { DayPicker, ClassNames, DayModifiers, DayPickerDefaultProps } from 'react-day-picker'; // Import DayPickerDefaultProps
+import { DayPicker, DayPickerProps, DayPickerDefaultProps } from 'react-day-picker'; // Import DayPickerProps and DayPickerDefaultProps
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MonthYearPickerProps {
   selected?: Date;
-  onSelect?: (date: Date | undefined) => void; // Simplified onSelect for this component
+  onSelect?: (date: Date | undefined) => void;
   defaultMonth?: Date;
   className?: string;
 }
@@ -17,7 +17,11 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
   defaultMonth,
   className,
 }) => {
-  const classNames: ClassNames = {
+  console.log('MonthYearPicker: Component rendering.');
+  console.log('MonthYearPicker: Props received - selected:', selected, 'defaultMonth:', defaultMonth);
+  console.log('MonthYearPicker: DayPicker props - view: "months"');
+
+  const classNames: DayPickerProps['classNames'] = { // Use DayPickerProps['classNames'] for comprehensive typing
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
@@ -39,27 +43,23 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
     month_today: "bg-accent text-accent-foreground",
     month_outside: "text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
     month_disabled: "text-muted-foreground opacity-50",
-  } as ClassNames; // Explicitly cast to ClassNames
+  };
+
+  const dayPickerProps: DayPickerDefaultProps = { // Explicitly type the props object
+    view: "months",
+    selected: selected,
+    onMonthSelect: onSelect, // Use onMonthSelect for month selection
+    defaultMonth: defaultMonth,
+    className: cn("p-3", className),
+    classNames: classNames,
+    components: {
+      IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+      IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+    },
+  };
 
   return (
-    <DayPicker
-      {...{
-        view: "months", // Set view to 'months'
-        selected: selected,
-        onSelect: (date, modifiers, e) => { // Adapt onSelect to match DayPickerDefaultProps
-          if (onSelect) {
-            onSelect(date);
-          }
-        },
-        defaultMonth: defaultMonth,
-        className: cn("p-3", className),
-        classNames: classNames,
-        components: {
-          IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-          IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-        },
-      } as DayPickerDefaultProps} // Explicitly cast the entire props object
-    />
+    <DayPicker {...dayPickerProps} />
   );
 };
 
