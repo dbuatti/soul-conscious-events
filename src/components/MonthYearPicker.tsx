@@ -27,13 +27,13 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
   return (
-    <div className={cn("p-4", className)}>
+    <div className={cn("p-4 dark:bg-card dark:border-border", className)}>
       {/* Year Selector */}
       <div className="mb-4">
         <select
           value={currentYear}
           onChange={(e) => onDateChange(setYear(date, parseInt(e.target.value)))}
-          className="w-full p-2 border rounded-md bg-background text-foreground focus:ring-purple-500 focus:border-purple-500"
+          className="w-full p-2 border rounded-md bg-input text-foreground focus:ring-primary focus:border-primary dark:bg-secondary dark:border-border"
         >
           {years.map((year) => (
             <option key={year} value={year}>

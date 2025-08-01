@@ -41,14 +41,14 @@ const AdminPanel = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-      <h2 className="text-3xl font-bold text-center text-foreground mb-6">Admin Panel</h2>
-      <p className="text-center text-gray-600 mb-8">
+    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+      <h2 className="text-3xl font-bold text-foreground text-center mb-6">Admin Panel</h2>
+      <p className="text-center text-muted-foreground mb-8">
         Manage contact submissions and events from here.
       </p>
 
       <Tabs defaultValue="events" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
           <TabsTrigger value="events">Manage Events</TabsTrigger>
           <TabsTrigger value="submissions">Contact Submissions</TabsTrigger>
         </TabsList>
@@ -59,7 +59,7 @@ const AdminPanel = () => {
           {loadingSubmissions ? (
             <div className="grid grid-cols-1 gap-6">
               {[...Array(3)].map((_, i) => (
-                <Card key={i} className="shadow-lg rounded-lg">
+                <Card key={i} className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
                   <CardHeader>
                     <Skeleton className="h-6 w-3/4 mb-2" />
                     <Skeleton className="h-4 w-1/2" />
@@ -73,14 +73,14 @@ const AdminPanel = () => {
               ))}
             </div>
           ) : submissions.length === 0 ? (
-            <p className="text-center text-gray-600">No contact submissions found.</p>
+            <p className="text-center text-muted-foreground">No contact submissions found.</p>
           ) : (
             <div className="grid grid-cols-1 gap-6">
               {submissions.map((submission) => (
-                <Card key={submission.id} className="shadow-lg rounded-lg">
+                <Card key={submission.id} className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
                   <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-purple-700">{submission.subject}</CardTitle>
-                    <p className="text-sm text-gray-500">
+                    <CardTitle className="text-xl font-semibold text-primary">{submission.subject}</CardTitle>
+                    <p className="text-sm text-muted-foreground">
                       Submitted on: {format(new Date(submission.created_at), 'PPP p')}
                     </p>
                   </CardHeader>
@@ -93,7 +93,7 @@ const AdminPanel = () => {
                     {submission.email && (
                       <p className="text-foreground">
                         <span className="font-medium">Email:</span>{' '}
-                        <a href={`mailto:${submission.email}`} className="text-blue-600 hover:underline">
+                        <a href={`mailto:${submission.email}`} className="text-primary hover:underline">
                           {submission.email}
                         </a>
                       </p>

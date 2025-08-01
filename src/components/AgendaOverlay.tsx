@@ -69,7 +69,7 @@ const AgendaOverlay: React.FC<AgendaOverlayProps> = ({
         : formattedStartDate;
 
     return (
-      <Card key={event.id} className="group shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 cursor-pointer" onClick={() => onEventSelect(event)}>
+      <Card key={event.id} className="group shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 cursor-pointer dark:bg-secondary dark:border-border" onClick={() => onEventSelect(event)}>
         {event.image_url && (
           <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
             <img
@@ -82,20 +82,20 @@ const AgendaOverlay: React.FC<AgendaOverlayProps> = ({
           </div>
         )}
         <CardHeader className="p-3 pb-0">
-          <CardTitle className="text-base font-semibold text-purple-700 line-clamp-1">{event.event_name}</CardTitle>
-          <CardDescription className="flex items-center text-gray-600 text-xs mt-1">
-            <CalendarIcon className="mr-1 h-3 w-3 text-blue-500" />
+          <CardTitle className="text-base font-semibold text-primary line-clamp-1">{event.event_name}</CardTitle>
+          <CardDescription className="flex items-center text-muted-foreground text-xs mt-1">
+            <CalendarIcon className="mr-1 h-3 w-3 text-primary" />
             {dateDisplay}
             {event.event_time && (
               <>
-                <Clock className="ml-2 mr-1 h-3 w-3 text-green-500" />
+                <Clock className="ml-2 mr-1 h-3 w-3 text-primary" />
                 {event.event_time}
               </>
             )}
           </CardDescription>
           {(event.place_name || event.full_address) && (
-            <CardDescription className="flex items-center text-gray-600 text-xs mt-1">
-              <MapPin className="mr-1 h-3 w-3 text-red-500" />
+            <CardDescription className="flex items-center text-muted-foreground text-xs mt-1">
+              <MapPin className="mr-1 h-3 w-3 text-primary" />
               {event.place_name || event.full_address}
             </CardDescription>
           )}
@@ -105,7 +105,7 @@ const AgendaOverlay: React.FC<AgendaOverlayProps> = ({
             <p className="text-foreground text-sm line-clamp-2 mb-2">{event.description}</p>
           )}
           <div className="flex justify-end">
-            <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 text-xs">View Details</Button>
+            <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs">View Details</Button>
           </div>
         </CardContent>
       </Card>
@@ -114,7 +114,7 @@ const AgendaOverlay: React.FC<AgendaOverlayProps> = ({
 
   return (
     <Wrapper open={isOpen} onOpenChange={onClose}>
-      <Content className="sm:max-w-[450px] max-h-[90vh] overflow-y-auto">
+      <Content className="sm:max-w-[450px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
         <Header>
           <Title className="text-3xl font-bold text-foreground text-center">
             Agenda for {selectedDate ? format(selectedDate, 'PPP') : 'Selected Day'}
@@ -122,13 +122,13 @@ const AgendaOverlay: React.FC<AgendaOverlayProps> = ({
         </Header>
         <div className="p-4 space-y-4">
           {events.length === 0 ? (
-            <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
-              <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-semibold text-gray-700 mb-4">
+            <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+              <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg font-semibold text-foreground mb-4">
                 No events found for this date.
               </p>
               <Link to="/submit-event">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                   Add a New Event
                 </Button>
               </Link>
@@ -137,7 +137,7 @@ const AgendaOverlay: React.FC<AgendaOverlayProps> = ({
             events.map((event) => renderEventCard(event))
           )}
         </div>
-        <Footer className="flex justify-end p-4 border-t border-gray-200">
+        <Footer className="flex justify-end p-4 border-t border-border">
           <Close asChild>
             <Button variant="secondary" className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Close

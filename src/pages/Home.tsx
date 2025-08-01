@@ -282,7 +282,7 @@ const Home = () => {
         : formattedStartDate;
 
     return (
-      <Card key={event.id} className="group flex flex-col justify-between shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 overflow-hidden">
+      <Card key={event.id} className="group flex flex-col justify-between shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 overflow-hidden dark:bg-card dark:border-border">
         {event.image_url && (
           <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
             <img
@@ -295,20 +295,20 @@ const Home = () => {
           </div>
         )}
         <CardHeader className="p-3 pb-0">
-          <CardTitle className="text-base font-semibold text-purple-700 line-clamp-1 overflow-hidden text-ellipsis">{event.event_name}</CardTitle>
-          <CardDescription className="flex items-center text-gray-600 text-xs mt-1">
-            <CalendarIcon className="mr-1 h-3 w-3 text-blue-500" />
+          <CardTitle className="text-base font-semibold text-primary line-clamp-1 overflow-hidden text-ellipsis">{event.event_name}</CardTitle>
+          <CardDescription className="flex items-center text-muted-foreground text-xs mt-1">
+            <CalendarIcon className="mr-1 h-3 w-3 text-primary" />
             {dateDisplay}
             {event.event_time && (
               <>
-                <Clock className="ml-2 mr-1 h-3 w-3 text-green-500" />
+                <Clock className="ml-2 mr-1 h-3 w-3 text-primary" />
                 {event.event_time}
               </>
             )}
           </CardDescription>
           {(event.place_name || event.full_address) && (
-            <CardDescription className="flex items-center text-gray-600 text-xs mt-1">
-              <MapPin className="mr-1 h-3 w-3 text-red-500" />
+            <CardDescription className="flex items-center text-muted-foreground text-xs mt-1">
+              <MapPin className="mr-1 h-3 w-3 text-primary" />
               {event.place_name || event.full_address}
             </CardDescription>
           )}
@@ -318,7 +318,7 @@ const Home = () => {
             <p className="text-foreground text-sm line-clamp-2 mb-2">{event.description}</p>
           )}
           <div className="flex justify-end">
-            <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 text-xs" onClick={() => handleViewDetails(event)}>View Details</Button>
+            <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" onClick={() => handleViewDetails(event)}>View Details</Button>
           </div>
         </CardContent>
       </Card>
@@ -350,6 +350,7 @@ const Home = () => {
 
   // Swipe gesture handlers for mobile
   const handleSwipe = (direction: 'left' | 'right') => {
+    if (!isMobile) return; // Only enable swipe on mobile
     if (direction === 'left') {
       if (viewMode === 'month') {
         handleNextMonth();
@@ -376,15 +377,17 @@ const Home = () => {
       const deltaX = touch.clientX - startX;
       const deltaY = touch.clientY - startY;
 
+      // Prevent vertical scrolling from triggering horizontal swipe
       if (Math.abs(deltaY) > Math.abs(deltaX) * 2) return;
 
-      if (Math.abs(deltaX) > 50) {
-        e.preventDefault();
+      if (Math.abs(deltaX) > 50) { // Threshold for horizontal swipe
+        e.preventDefault(); // Prevent default scroll behavior
         if (deltaX > 0) {
           handleSwipe('right');
         } else {
           handleSwipe('left');
         }
+        // Remove listeners after a successful swipe to prevent multiple triggers
         window.removeEventListener('touchmove', onTouchMove);
         window.removeEventListener('touchend', onTouchEnd);
       }
@@ -408,7 +411,7 @@ const Home = () => {
         }
       };
     }
-  }, [isMobile, viewMode]);
+  }, [isMobile, viewMode]); // Re-attach listener if viewMode changes
 
   const startOfCurrentMonth = startOfMonth(currentMonth);
   const endOfCurrentMonth = endOfMonth(currentMonth);
@@ -422,21 +425,21 @@ const Home = () => {
   const eventsForCurrentWeek = getEventsForWeek(currentWeek);
 
   return (
-    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <div className="flex flex-col gap-8">
         {/* Main Calendar Content */}
         <div className="flex-grow">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Calendar</h1>
             <Link to="/submit-event" className="hidden lg:block">
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
               </Button>
             </Link>
           </div>
 
           {/* Calendar Navigation and Controls */}
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gray-50 rounded-xl shadow-lg border border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-secondary rounded-xl shadow-lg border border-border">
             <div className="flex items-center space-x-2 mb-4 sm:mb-0">
               {viewMode === 'month' ? (
                 <>
@@ -468,12 +471,12 @@ const Home = () => {
             <div className="flex items-center space-x-4">
               <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-[180px] justify-between focus-visible:ring-purple-500">
+                  <Button variant="outline" className="w-[180px] justify-between focus-visible:ring-primary">
                     {viewMode === 'month' ? format(currentMonth, 'MMMM yyyy') : `${format(currentWeek[0], 'MMM d')} - ${format(currentWeek[6], 'MMM d, yyyy')}`}
                     <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
                   <MonthYearPicker
                     date={currentMonth}
                     onDateChange={(date) => {
@@ -489,7 +492,7 @@ const Home = () => {
                 <Button
                   variant={viewMode === 'month' ? 'default' : 'outline'}
                   onClick={() => setViewMode('month')}
-                  className="transition-all duration-300 ease-in-out transform hover:scale-105"
+                  className="transition-all duration-300 ease-in-out transform hover:scale-105 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   <List className="mr-2 h-4 w-4" /> Month
                 </Button>
@@ -501,7 +504,7 @@ const Home = () => {
                     const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
                     setCurrentWeek(weekDays);
                   }}
-                  className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105"
+                  className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   <CalendarIcon2 className="mr-2 h-4 w-4" /> Week
                 </Button>
@@ -513,25 +516,25 @@ const Home = () => {
           <div className="flex justify-center gap-4 mb-6">
             <Button
               onClick={() => setIsFilterOverlayOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+              className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
             >
               <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
             </Button>
             <Button
               onClick={() => setIsAgendaOverlayOpen(true)}
-              className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+              className="bg-accent hover:bg-accent/80 text-accent-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
             >
               <List className="mr-2 h-4 w-4" /> View Agenda
             </Button>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-xl shadow-inner">
+            <div className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-secondary rounded-xl shadow-inner">
               {daysOfWeekFull.map(day => (
-                <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
+                <div key={day} className="font-semibold text-foreground py-2">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="h-28 sm:h-40 md:h-48 lg:h-56 border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
+                <div key={i} className="h-28 sm:h-40 md:h-48 lg:h-56 border rounded-lg p-2 flex flex-col items-center justify-center bg-muted">
                   <Skeleton className="h-5 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-2/3 mt-1" />
@@ -541,9 +544,9 @@ const Home = () => {
           ) : (
             <>
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-xl shadow-inner">
+              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-secondary rounded-xl shadow-inner">
                 {daysOfWeekShort.map((day, index) => (
-                  <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-1 sm:text-base sm:py-2">{daysOfWeekFull[index]}</div>
+                  <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2">{daysOfWeekFull[index]}</div>
                 ))}
                 {viewMode === 'month' ? (
                   daysInMonthView.map((day) => {
@@ -560,19 +563,19 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm p-2 overflow-hidden",
-                          isCurrentMonth ? "bg-white" : "bg-gray-50",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-border shadow-sm p-2 overflow-hidden",
+                          isCurrentMonth ? "bg-card" : "bg-secondary",
                           isPastDate && "opacity-70",
-                          isTodayDate && "bg-blue-600 text-white",
-                          isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
-                          "hover:bg-gray-100 hover:shadow-md hover:border-purple-300"
+                          isTodayDate && "bg-primary text-primary-foreground",
+                          isSelected && !isTodayDate && "bg-accent border-primary border-2",
+                          "hover:bg-muted hover:shadow-md hover:border-primary"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
                           "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
-                          isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
-                          isPastDate && "text-gray-500"
+                          isTodayDate ? "text-primary-foreground" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
+                          isPastDate && "text-muted-foreground"
                         )}>
                           {format(day, 'd')}
                         </span>
@@ -580,19 +583,19 @@ const Home = () => {
                           {dayEvents.slice(0, maxEventsToShow).map(event => (
                             <span
                                 key={event.id}
-                                className="text-xs font-medium text-gray-700 px-1 py-0.5 rounded-sm truncate"
+                                className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate"
                             >
                                 {event.event_name}
                             </span>
                           ))}
                           {dayEvents.length > maxEventsToShow && (
-                            <span className="text-xs text-gray-500 mt-1">
+                            <span className="text-xs text-muted-foreground mt-1">
                                 +{dayEvents.length - maxEventsToShow} more
                             </span>
                           )}
                         </div>
                         {hasEvents && (
-                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-purple-600">
+                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary">
                             {/* Small dot to indicate events */}
                           </div>
                         )}
@@ -614,18 +617,18 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm p-2 overflow-hidden",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-border shadow-sm p-2 overflow-hidden",
                           isPastDate && "opacity-70",
-                          isTodayDate && "bg-blue-600 text-white",
-                          isSelected && !isTodayDate ? "bg-blue-100 border-blue-500 border-2" : "bg-white",
-                          "hover:bg-gray-100 hover:shadow-md hover:border-purple-300"
+                          isTodayDate && "bg-primary text-primary-foreground",
+                          isSelected && !isTodayDate ? "bg-accent border-primary border-2" : "bg-card",
+                          "hover:bg-muted hover:shadow-md hover:border-primary"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
                           "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
-                          isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
-                          isPastDate && "text-gray-500"
+                          isTodayDate ? "text-primary-foreground" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
+                          isPastDate && "text-muted-foreground"
                         )}>
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
@@ -634,19 +637,19 @@ const Home = () => {
                           {dayEvents.slice(0, maxEventsToShow).map(event => (
                             <span
                                 key={event.id}
-                                className="text-xs font-medium text-gray-700 px-1 py-0.5 rounded-sm truncate"
+                                className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate"
                             >
                                 {event.event_name}
                             </span>
                           ))}
                           {dayEvents.length > maxEventsToShow && (
-                            <span className="text-xs text-gray-500 mt-1">
+                            <span className="text-xs text-muted-foreground mt-1">
                                 +{dayEvents.length - maxEventsToShow} more
                             </span>
                           )}
                         </div>
                         {hasEvents && (
-                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-purple-600">
+                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary">
                             {/* Small dot to indicate events */}
                           </div>
                         )}
@@ -664,15 +667,15 @@ const Home = () => {
                     : `Events for the Week of ${format(currentWeek[0], 'MMM d')}`}
                 </h3>
                 {(viewMode === 'month' ? eventsForCurrentMonth : eventsForCurrentWeek).length === 0 ? (
-                  <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
-                    <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-lg font-semibold text-gray-700 mb-4">
+                  <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-foreground mb-4">
                       {viewMode === 'month'
                         ? 'No events found for this month.'
                         : 'No events found for this week.'}
                     </p>
                     <Link to="/submit-event">
-                      <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                         <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
                       </Button>
                     </Link>

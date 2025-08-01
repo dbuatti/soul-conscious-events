@@ -98,10 +98,10 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
 
   return (
     <Wrapper open={isOpen} onOpenChange={onClose}>
-      <Content className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <Content className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
         <Header>
           <Title className="text-3xl font-bold text-foreground text-center">
-            <FilterIcon className="inline-block mr-2 h-7 w-7 text-purple-600" /> Filter Events
+            <FilterIcon className="inline-block mr-2 h-7 w-7 text-primary" /> Filter Events
           </Title>
         </Header>
         <div className="p-4 space-y-6">
@@ -114,7 +114,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                   <FormItem>
                     <FormLabel>Search Events</FormLabel>
                     <FormControl>
-                      <Input placeholder="Search by name, location, organizer..." {...field} className="focus-visible:ring-purple-500" />
+                      <Input placeholder="Search by name, location, organizer..." {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -128,11 +128,11 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                     <FormLabel>Event Type</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-purple-500">
+                        <SelectTrigger className="focus-visible:ring-primary">
                           <SelectValue placeholder="All Types" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-card dark:border-border">
                         {eventTypes.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
@@ -152,11 +152,11 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                     <FormLabel>State</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-purple-500">
+                        <SelectTrigger className="focus-visible:ring-primary">
                           <SelectValue placeholder="All States" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-card dark:border-border">
                         {australianStates.map((state) => (
                           <SelectItem key={state} value={state}>
                             {state}
@@ -176,11 +176,11 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                     <FormLabel>Date Range</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-purple-500">
+                        <SelectTrigger className="focus-visible:ring-primary">
                           <SelectValue placeholder="All Upcoming" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-card dark:border-border">
                         <SelectItem value="All Upcoming">All Upcoming</SelectItem>
                         <SelectItem value="Today">Today</SelectItem>
                         <SelectItem value="This Week">This Week</SelectItem>
@@ -199,14 +199,14 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                     Clear All
                   </Button>
                 )}
-                <Button type="submit" disabled={!hasDraftChanges} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button type="submit" disabled={!hasDraftChanges} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
                   Apply Filters
                 </Button>
               </div>
             </form>
           </Form>
         </div>
-        <Footer className="flex justify-end p-4 border-t border-gray-200">
+        <Footer className="flex justify-end p-4 border-t border-border">
           <Close asChild>
             <Button variant="secondary" className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Close

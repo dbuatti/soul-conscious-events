@@ -216,9 +216,9 @@ const EventsList = () => {
   };
 
   return (
-    <div className="w-full max-w-screen-lg bg-white p-4 sm:p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-screen-lg bg-white p-4 sm:p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       {/* Hero Section */}
-      <div className="text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-xl text-white">
+      <div className="text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 bg-gradient-to-br from-primary to-blue-800 rounded-xl shadow-xl text-white">
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">
           Discover Your Next Soulful Experience
         </h1>
@@ -226,41 +226,41 @@ const EventsList = () => {
           Connect with events that nourish your mind, body, and spirit across Australia.
         </p>
         <Link to="/submit-event">
-          <Button className="bg-white text-purple-700 hover:bg-gray-100 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+          <Button className="bg-white text-primary hover:bg-gray-100 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
             Add Your Event
           </Button>
         </Link>
       </div>
 
       {/* App Description Clause */}
-      <div className="mb-8 p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-lg shadow-lg text-center flex items-center justify-center">
-        <Lightbulb className="mr-3 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
-        <p className="text-sm sm:text-base leading-relaxed">
+      <div className="mb-8 p-4 sm:p-6 bg-secondary border border-border rounded-lg shadow-lg text-center flex items-center justify-center">
+        <Lightbulb className="mr-3 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-primary" />
+        <p className="text-sm sm:text-base leading-relaxed text-foreground">
           SoulFlow is a prototype app designed to help you discover and connect with soul-nourishing events across Australia.
           As this is a new project from an aspiring app developer, some features may not work as expected.
-          Your feedback is invaluable! Please visit the <Link to="/contact" className="text-blue-600 hover:underline font-medium">Contact Us</Link> page to share your suggestions or report any issues.
+          Your feedback is invaluable! Please visit the <Link to="/contact" className="text-primary hover:underline font-medium">Contact Us</Link> page to share your suggestions or report any issues.
         </p>
       </div>
 
       {/* Filter and View Options Section */}
-      <div className="mb-8 rounded-xl shadow-lg border border-gray-200 bg-gray-50 p-4 sm:p-6">
+      <div className="mb-8 rounded-xl shadow-lg border border-border bg-card p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           {/* Filter Button */}
           <Button
             onClick={() => setIsFilterOverlayOpen(true)}
-            className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base"
+            className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base"
           >
             <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
           </Button>
 
           {/* View Mode Toggle */}
           <div className="flex flex-col gap-1 w-full sm:w-auto">
-            <label htmlFor="view-mode" className="text-xs sm:text-sm font-medium text-gray-700 text-center sm:text-right">View Mode</label>
+            <label htmlFor="view-mode" className="text-xs sm:text-sm font-medium text-foreground text-center sm:text-right">View Mode</label>
             <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-center sm:justify-end">
-              <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9">
+              <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 <List className="h-4 w-4" />
               </ToggleGroupItem>
-              <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9">
+              <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 <CalendarDays className="h-4 w-4" />
               </ToggleGroupItem>
             </ToggleGroup>
@@ -269,36 +269,36 @@ const EventsList = () => {
 
         {/* Active Filters Display */}
         {hasActiveFilters && (
-          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-wrap gap-1 sm:gap-2 items-center">
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Active Filters:</span>
+          <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-1 sm:gap-2 items-center">
+            <span className="text-xs sm:text-sm font-medium text-foreground">Active Filters:</span>
             {searchTerm !== '' && (
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+              <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                 Search: "{searchTerm}"
-                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
+                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-foreground hover:bg-accent/80 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
                   <X className="h-2.5 w-2.5" />
                 </Button>
               </Badge>
             )}
             {eventType !== 'All' && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+              <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                 Type: {eventType}
-                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
+                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-foreground hover:bg-accent/80 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
                   <X className="h-2.5 w-2.5" />
                 </Button>
               </Badge>
             )}
             {stateFilter !== 'All' && (
-              <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+              <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                 State: {stateFilter}
-                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
+                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-foreground hover:bg-accent/80 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
                   <X className="h-2.5 w-2.5" />
                 </Button>
               </Badge>
             )}
             {dateFilter !== 'All Upcoming' && (
-              <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+              <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
                 Date: {dateFilter}
-                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
+                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-foreground hover:bg-accent/80 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
                   <X className="h-2.5 w-2.5" />
                 </Button>
               </Badge>
@@ -313,24 +313,24 @@ const EventsList = () => {
       </div>
 
       {/* Event Count Display */}
-      <div className="text-center text-gray-700 mb-4 text-sm sm:text-base">
+      <div className="text-center text-foreground mb-4 text-sm sm:text-base">
         {loading || isSessionLoading ? (
-          <p className="text-lg font-semibold text-purple-600 flex items-center justify-center">
+          <p className="text-lg font-semibold text-primary flex items-center justify-center">
             <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading events...
           </p>
         ) : events.length === 0 ? (
-          <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
-            <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-lg font-semibold text-gray-700 mb-4">
+          <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+            <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-lg font-semibold text-foreground mb-4">
               No events found matching your criteria.
             </p>
             {hasActiveFilters ? (
-              <Button onClick={handleClearAllFilters} className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button onClick={handleClearAllFilters} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                 Clear Filters to See More Events
               </Button>
             ) : (
               <Link to="/submit-event">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                   <PlusCircle className="mr-2 h-4 w-4" /> Be the First to Add an Event!
                 </Button>
               </Link>
@@ -344,8 +344,8 @@ const EventsList = () => {
       {loading || isSessionLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="flex flex-col justify-between shadow-lg rounded-lg">
-              <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-gray-200 animate-pulse"></div>
+            <Card key={i} className="flex flex-col justify-between shadow-lg rounded-lg dark:bg-card dark:border-border">
+              <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-muted animate-pulse"></div>
               <CardHeader>
                 <Skeleton className="h-6 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-1/2" />
@@ -389,7 +389,7 @@ const EventsList = () => {
                   return (
                     <Card
                       key={event.id}
-                      className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden"
+                      className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border"
                       onClick={() => handleViewDetails(event)}
                     >
                       {event.image_url && (
@@ -404,35 +404,35 @@ const EventsList = () => {
                         </div>
                       )}
                       <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2">
-                        <CardTitle className="text-xl sm:text-2xl font-bold text-purple-700 mb-1 sm:mb-2">{event.event_name}</CardTitle>
-                        <CardDescription className="flex items-center text-gray-600 text-sm sm:text-base">
-                          <Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-blue-500" />
+                        <CardTitle className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">{event.event_name}</CardTitle>
+                        <CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base">
+                          <Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
                           {dateDisplay}
                           {event.event_time && (
                             <>
-                              <Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-green-500" />
+                              <Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
                               {event.event_time}
                             </>
                           )}
                         </CardDescription>
                         {(event.place_name || event.full_address) && (
-                          <div className="flex flex-col items-start text-gray-600 mt-1 sm:mt-2">
+                          <div className="flex flex-col items-start text-muted-foreground mt-1 sm:mt-2">
                             {event.place_name && (
                               <div className="flex items-center mb-0.5 sm:mb-1">
-                                <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-red-500" />
-                                <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-sm sm:text-base py-0.5 px-1 sm:py-1 sm:px-2 font-semibold">
+                                <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+                                <Badge variant="secondary" className="bg-accent text-accent-foreground text-sm sm:text-base py-0.5 px-1 sm:py-1 sm:px-2 font-semibold">
                                   {event.place_name}
                                 </Badge>
                               </div>
                             )}
                             {event.full_address && (
                               <div className="flex items-center">
-                                {!event.place_name && <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-red-500" />}
+                                {!event.place_name && <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />}
                                 <a
                                   href={googleMapsLink}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline text-sm sm:text-base"
+                                  className="text-primary hover:underline text-sm sm:text-base"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   {event.full_address}
@@ -445,29 +445,29 @@ const EventsList = () => {
                       <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
                         {event.description && (
                           <div>
-                            <p className="text-gray-700 leading-relaxed text-sm sm:text-base line-clamp-3">
+                            <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">
                               {event.description}
                             </p>
                             {event.description.length > 150 && ( // Only show if description is long
-                              <Button variant="link" onClick={(e) => { e.stopPropagation(); toggleDescription(event.id); }} className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105 text-xs sm:text-sm">
+                              <Button variant="link" onClick={(e) => { e.stopPropagation(); toggleDescription(event.id); }} className="p-0 h-auto text-primary transition-all duration-300 ease-in-out transform hover:scale-105 text-xs sm:text-sm">
                                 {expandedDescriptions[event.id] ? 'Read Less' : 'Read More'}
                               </Button>
                             )}
                           </div>
                         )}
                         {event.price && (
-                          <p className="flex items-center text-gray-700 text-sm sm:text-base">
-                            <DollarSign className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-green-600" />
+                          <p className="flex items-center text-foreground text-sm sm:text-base">
+                            <DollarSign className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
                             <span className="font-medium">Price:</span> {event.price}
                             {event.price.toLowerCase() === 'free' && (
-                              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-green-100 text-green-800 text-xs sm:text-sm">Free</Badge>
+                              <Badge variant="secondary" className="ml-1 sm:ml-2 bg-accent text-accent-foreground text-xs sm:text-sm">Free</Badge>
                             )}
                           </p>
                         )}
                         {event.ticket_link && (
                           <div className="flex items-center">
-                            <LinkIcon className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-purple-600" />
-                            <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-sm sm:text-base transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <LinkIcon className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+                            <Button asChild variant="link" className="p-0 h-auto text-primary text-sm sm:text-base transition-all duration-300 ease-in-out transform hover:scale-105">
                               <a href={event.ticket_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                 Ticket/Booking Link
                               </a>
@@ -475,20 +475,20 @@ const EventsList = () => {
                           </div>
                         )}
                         {event.special_notes && (
-                          <p className="flex items-start text-gray-700 text-sm sm:text-base">
-                            <Info className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 mt-0.5 sm:mt-1" />
+                          <p className="flex items-start text-foreground text-sm sm:text-base">
+                            <Info className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 mt-0.5 sm:mt-1 text-primary" />
                             <span className="font-medium">Special Notes:</span> {event.special_notes}
                           </p>
                         )}
                         {event.organizer_contact && (
-                          <p className="flex items-center text-gray-700 text-sm sm:text-base">
-                            <User className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-indigo-500" />
+                          <p className="flex items-center text-foreground text-sm sm:text-base">
+                            <User className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
                             <span className="font-medium">Organizer:</span> {event.organizer_contact}
                           </p>
                         )}
                         {event.event_type && (
-                          <p className="flex items-center text-gray-700 text-sm sm:text-base">
-                            <Tag className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-pink-500" />
+                          <p className="flex items-center text-foreground text-sm sm:text-base">
+                            <Tag className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
                             <span className="font-medium">Type:</span> {event.event_type}
                           </p>
                         )}

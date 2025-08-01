@@ -110,7 +110,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
     return (
       <Card
         key={event.id}
-        className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden"
+        className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border"
         onClick={() => onEventSelect(event)}
       >
         {event.image_url && (
@@ -125,35 +125,35 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           </div>
         )}
         <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-2xl font-bold text-purple-700 mb-2 line-clamp-1 overflow-hidden text-ellipsis">{event.event_name}</CardTitle>
-          <CardDescription className="flex items-center text-gray-600 text-base">
-            <CalendarIcon className="mr-2 h-5 w-5 text-blue-500" />
+          <CardTitle className="text-2xl font-bold text-primary mb-2 line-clamp-1 overflow-hidden text-ellipsis">{event.event_name}</CardTitle>
+          <CardDescription className="flex items-center text-muted-foreground text-base">
+            <CalendarIcon className="mr-2 h-5 w-5 text-primary" />
             {dateDisplay}
             {event.event_time && (
               <>
-                <Clock className="ml-4 mr-2 h-5 w-5 text-green-500" />
+                <Clock className="ml-4 mr-2 h-5 w-5 text-primary" />
                 {event.event_time}
               </>
             )}
           </CardDescription>
           {(event.place_name || event.full_address || event.state) && (
-            <CardDescription className="flex flex-col items-start text-gray-600 mt-2">
+            <CardDescription className="flex flex-col items-start text-muted-foreground mt-2">
               {event.place_name && (
                 <div className="flex items-center mb-1">
-                  <MapPin className="mr-2 h-5 w-5 text-red-500" />
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-base py-1 px-2 font-semibold">
+                  <MapPin className="mr-2 h-5 w-5 text-primary" />
+                  <Badge variant="secondary" className="bg-accent text-accent-foreground text-base py-1 px-2 font-semibold">
                     {event.place_name}
                   </Badge>
                 </div>
               )}
               {event.full_address && (
                 <div className="flex items-center">
-                  {!event.place_name && <MapPin className="mr-2 h-5 w-5 text-red-500" />}
+                  {!event.place_name && <MapPin className="mr-2 h-5 w-5 text-primary" />}
                   <a
                     href={googleMapsLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline text-base"
+                    className="text-primary hover:underline text-base"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {event.full_address}
@@ -167,22 +167,22 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         <CardContent className="p-4 pt-2 space-y-2">
           {event.description && (
             <div>
-              <p className="text-gray-700 leading-relaxed line-clamp-3">{event.description}</p>
+              <p className="text-foreground leading-relaxed line-clamp-3">{event.description}</p>
             </div>
           )}
           {event.price && (
-            <p className="flex items-center text-gray-700 text-base">
-              <DollarSign className="mr-2 h-5 w-5 text-green-600" />
+            <p className="flex items-center text-foreground text-base">
+              <DollarSign className="mr-2 h-5 w-5 text-primary" />
               <span className="font-medium">Price:</span> {event.price}
               {event.price.toLowerCase() === 'free' && (
-                <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">Free</Badge>
+                <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
               )}
             </p>
           )}
           {event.ticket_link && (
             <div className="flex items-center">
-              <LinkIcon className="mr-2 h-5 w-5 text-purple-600" />
-              <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-base transition-all duration-300 ease-in-out transform hover:scale-105">
+              <LinkIcon className="mr-2 h-5 w-5 text-primary" />
+              <Button asChild variant="link" className="p-0 h-auto text-primary text-base transition-all duration-300 ease-in-out transform hover:scale-105">
                 <a href={event.ticket_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                   Ticket/Booking Link
                 </a>
@@ -190,20 +190,20 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             </div>
           )}
           {event.special_notes && (
-            <p className="flex items-start text-gray-700 text-base">
-              <Info className="mr-2 h-5 w-5 text-orange-500 mt-1" />
+            <p className="flex items-start text-foreground text-base">
+              <Info className="mr-2 h-5 w-5 text-primary mt-1" />
               <span className="font-medium">Special Notes:</span> {event.special_notes}
             </p>
           )}
           {event.organizer_contact && (
-            <p className="flex items-center text-gray-700 text-base">
-              <User className="mr-2 h-5 w-5 text-indigo-500" />
+            <p className="flex items-center text-foreground text-base">
+              <User className="mr-2 h-5 w-5 text-primary" />
               <span className="font-medium">Organizer:</span> {event.organizer_contact}
             </p>
           )}
           {event.event_type && (
-            <p className="flex items-center text-gray-700 text-base">
-              <Tag className="mr-2 h-5 w-5 text-pink-500" />
+            <p className="flex items-center text-foreground text-base">
+              <Tag className="mr-2 h-5 w-5 text-primary" />
               <span className="font-medium">Type:</span> {event.event_type}
             </p>
           )}
@@ -226,7 +226,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           onSelect={onDateSelect}
           modifiers={modifiers}
           modifiersStyles={modifiersStyles}
-          className="rounded-xl border shadow-lg"
+          className="rounded-xl border shadow-lg dark:bg-card dark:border-border"
         />
       </div>
       <div className="lg:w-1/2">
@@ -234,13 +234,13 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           Events on {selectedDate ? format(selectedDate, 'PPP') : 'Selected Date'}
         </h3>
         {eventsOnSelectedDate.length === 0 ? (
-          <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
-            <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-lg font-semibold text-gray-700 mb-4">
+          <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+            <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-lg font-semibold text-foreground mb-4">
               No events found on this date.
             </p>
             <Link to="/submit-event">
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
               </Button>
             </Link>
@@ -252,7 +252,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
         )}
 
         {moreUpcomingEvents.length > 0 && (
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t border-border">
             <h4 className="text-xl font-bold text-foreground mb-4 text-center lg:text-left">
               More Upcoming Events
             </h4>

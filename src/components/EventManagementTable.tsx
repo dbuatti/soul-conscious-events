@@ -244,42 +244,42 @@ const EventManagementTable = () => {
     <div className="space-y-6">
       <div className="flex justify-end">
         <Link to="/submit-event">
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
           </Button>
         </Link>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[300px] bg-gray-50 rounded-lg border border-gray-200">
-          <Loader2 className="h-12 w-12 text-purple-600 animate-spin mb-4" />
-          <p className="text-xl font-semibold text-gray-700">Loading events...</p>
+        <div className="flex flex-col items-center justify-center min-h-[300px] bg-secondary rounded-lg border border-border">
+          <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+          <p className="text-xl font-semibold text-foreground">Loading events...</p>
         </div>
       ) : events.length === 0 ? (
-        <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
-          <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-lg font-semibold text-gray-700 mb-4">No events found.</p>
+        <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+          <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-lg font-semibold text-foreground mb-4">No events found.</p>
           <Link to="/submit-event">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
               <PlusCircle className="mr-2 h-4 w-4" /> Add the First Event!
             </Button>
           </Link>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <Table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+          <Table className="min-w-full bg-card border border-border rounded-lg shadow-lg">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px]">Event Name</TableHead>
-                <TableHead>Start Date</TableHead>
-                <TableHead>End Date</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Image</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Submitted By</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[200px] text-foreground">Event Name</TableHead>
+                <TableHead className="text-foreground">Start Date</TableHead>
+                <TableHead className="text-foreground">End Date</TableHead>
+                <TableHead className="text-foreground">Time</TableHead>
+                <TableHead className="text-foreground">Location</TableHead>
+                <TableHead className="text-foreground">Type</TableHead>
+                <TableHead className="text-foreground">Image</TableHead>
+                <TableHead className="text-foreground">Status</TableHead>
+                <TableHead className="text-foreground">Submitted By</TableHead>
+                <TableHead className="text-right text-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -295,7 +295,7 @@ const EventManagementTable = () => {
                     {event.image_url ? (
                       <img src={event.image_url} alt={`Image for ${event.event_name}`} className="w-12 h-12 object-cover rounded-md" loading="lazy" />
                     ) : (
-                      <ImageIcon className="h-8 w-8 text-gray-400" aria-label="No image available" />
+                      <ImageIcon className="h-8 w-8 text-muted-foreground" aria-label="No image available" />
                     )}
                   </TableCell>
                   <TableCell>
@@ -317,17 +317,17 @@ const EventManagementTable = () => {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="dark:bg-card dark:border-border">
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
+                          <AlertDialogTitle className="text-foreground">Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-muted-foreground">
                             This action cannot be undone. This will permanently delete the event
                             and remove its data from our servers.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(event.id)}>Continue</AlertDialogAction>
+                          <AlertDialogAction onClick={() => handleDelete(event.id)} className="bg-destructive hover:bg-destructive/80 text-destructive-foreground">Continue</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -341,7 +341,7 @@ const EventManagementTable = () => {
 
       {/* Edit Event Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
           <DialogHeader>
             <DialogTitle>Edit Event</DialogTitle>
             <DialogDescription>
@@ -357,7 +357,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Event Name</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-purple-500" />
+                      <Input {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -385,7 +385,7 @@ const EventManagementTable = () => {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
                           <Calendar
                             mode="single"
                             selected={field.value}
@@ -419,7 +419,7 @@ const EventManagementTable = () => {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
                           <Calendar
                             key={field.name}
                             mode="single"
@@ -441,7 +441,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Time (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-purple-500" />
+                      <Input {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -454,7 +454,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Place Name (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-purple-500" />
+                      <Input {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -467,7 +467,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Full Address (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-purple-500" />
+                      <Input {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -480,7 +480,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Description (Optional)</FormLabel>
                     <FormControl>
-                      <Textarea {...field} className="focus-visible:ring-purple-500" />
+                      <Textarea {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -493,7 +493,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Ticket/Booking Link (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-purple-500" />
+                      <Input {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -506,7 +506,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Price (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-purple-500" />
+                      <Input {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -519,7 +519,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Special Notes (Optional)</FormLabel>
                     <FormControl>
-                      <Textarea {...field} className="focus-visible:ring-purple-500" />
+                      <Textarea {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -532,7 +532,7 @@ const EventManagementTable = () => {
                   <FormItem>
                     <FormLabel>Organizer Name/Contact (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} className="focus-visible:ring-purple-500" />
+                      <Input {...field} className="focus-visible:ring-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -546,11 +546,11 @@ const EventManagementTable = () => {
                     <FormLabel>Event Type (Optional)</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-purple-500">
+                        <SelectTrigger className="focus-visible:ring-primary">
                           <SelectValue placeholder="Select an event type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-card dark:border-border">
                         {eventTypes.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
@@ -570,11 +570,11 @@ const EventManagementTable = () => {
                     <FormLabel>Status</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-purple-500">
+                        <SelectTrigger className="focus-visible:ring-primary">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-card dark:border-border">
                         {eventStates.map((state) => (
                           <SelectItem key={state} value={state}>
                             {state.charAt(0).toUpperCase() + state.slice(1)}
@@ -589,14 +589,14 @@ const EventManagementTable = () => {
               {currentEvent?.image_url && (
                 <FormItem>
                   <FormLabel>Current Image</FormLabel>
-                  <div className="w-full h-32 overflow-hidden rounded-md border border-gray-200 flex items-center justify-center bg-gray-50">
+                  <div className="w-full h-32 overflow-hidden rounded-md border border-border flex items-center justify-center bg-secondary">
                     <img src={currentEvent.image_url} alt={`Current image for ${currentEvent.event_name}`} className="max-h-full max-w-full object-contain" />
                   </div>
-                  <FormDescription>Image can only be updated by submitting a new event.</FormDescription>
+                  <FormDescription className="text-muted-foreground">Image can only be updated by submitting a new event.</FormDescription>
                 </FormItem>
               )}
               <DialogFooter>
-                <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
                   {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
                 </Button>
               </DialogFooter>

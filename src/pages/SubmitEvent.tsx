@@ -300,19 +300,19 @@ const SubmitEvent = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Submit an Event</h2>
 
       {/* AI Parsing Tool Section */}
-      <div className="mb-8 p-6 border border-purple-200 rounded-lg bg-purple-50 shadow-lg">
-        <h3 className="text-2xl font-semibold text-purple-800 mb-4 flex items-center">
-          <Sparkles className="mr-2 h-6 w-6 text-purple-600" />
-          AI Event Parser <Badge variant="secondary" className="ml-2 bg-purple-200 text-purple-800">Beta</Badge>
+      <div className="mb-8 p-6 border border-primary rounded-lg bg-secondary shadow-lg">
+        <h3 className="text-2xl font-semibold text-primary mb-4 flex items-center">
+          <Sparkles className="mr-2 h-6 w-6 text-primary" />
+          AI Event Parser <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Beta</Badge>
         </h3>
-        <p className="text-gray-700 mb-2">
+        <p className="text-foreground mb-2">
           Paste a large block of event text below, and our AI will try to automatically fill out the form fields for you.
         </p>
-        <p className="text-sm text-gray-600 mb-4 italic">
+        <p className="text-sm text-muted-foreground mb-4 italic">
           Note: This AI parses text content. It cannot extract information directly from external links (e.g., Humanitix URLs).
         </p>
         <div className="space-y-4">
@@ -322,12 +322,12 @@ const SubmitEvent = () => {
             rows={8}
             value={aiText}
             onChange={(e) => setAiText(e.target.value)}
-            className="min-h-[150px] focus-visible:ring-purple-500"
+            className="min-h-[150px] focus-visible:ring-primary"
           />
           <Button
             onClick={handleAiParse}
             disabled={isAiParsing || !aiText.trim()}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+            className="w-full bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
           >
             {isAiParsing ? (
               <>
@@ -349,7 +349,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel htmlFor="eventName">Event Name</FormLabel>
                 <FormControl>
-                  <Input id="eventName" placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="eventName" placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -379,7 +379,7 @@ const SubmitEvent = () => {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -421,7 +421,7 @@ const SubmitEvent = () => {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
                       <Calendar
                         key={field.name}
                         mode="single"
@@ -444,7 +444,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel htmlFor="eventTime">Time (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -458,7 +458,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel htmlFor="placeName">Place Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="placeName" placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-purple-500" />
+                  <Input id="placeName" placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -477,7 +477,7 @@ const SubmitEvent = () => {
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
-                    className="focus-visible:ring-purple-500"
+                    className="focus-visible:ring-primary"
                   />
                 </FormControl>
                 <FormMessage />
@@ -492,7 +492,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel htmlFor="description">Description (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -506,7 +506,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel htmlFor="ticketLink">Ticket/Booking Link (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -520,7 +520,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel htmlFor="price">Price (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="price" placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="price" placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -534,7 +534,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel htmlFor="specialNotes">Special Notes (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea id="specialNotes" {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -548,7 +548,7 @@ const SubmitEvent = () => {
               <FormItem>
                 <FormLabel htmlFor="organizerContact">Organizer Name/Contact (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -563,11 +563,11 @@ const SubmitEvent = () => {
                 <FormLabel htmlFor="eventType">Event Type (Optional)</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger id="eventType" className="focus-visible:ring-purple-500">
+                    <SelectTrigger id="eventType" className="focus-visible:ring-primary">
                       <SelectValue placeholder="Select an event type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-card dark:border-border">
                     {eventTypes.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
@@ -595,7 +595,7 @@ const SubmitEvent = () => {
                 setImagePreviewUrl(form.getValues('imageUrl') || null);
               }
             }} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
                 <TabsTrigger value="upload">Upload Image</TabsTrigger>
                 <TabsTrigger value="url">Image URL</TabsTrigger>
               </TabsList>
@@ -628,7 +628,7 @@ const SubmitEvent = () => {
                         placeholder="e.g., https://example.com/image.jpg"
                         {...field}
                         onChange={handleImageUrlInputChange}
-                        className="focus-visible:ring-purple-500"
+                        className="focus-visible:ring-primary"
                       />
                     </FormControl>
                   )}
@@ -637,13 +637,13 @@ const SubmitEvent = () => {
             </Tabs>
             {imagePreviewUrl && (
               <div className="mt-2 flex items-center space-x-2">
-                <img src={imagePreviewUrl} alt="Image Preview" className="h-20 w-20 object-cover rounded-md shadow-md border border-gray-200" />
+                <img src={imagePreviewUrl} alt="Image Preview" className="h-20 w-20 object-cover rounded-md shadow-md border border-border" />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleRemoveImage}
-                  className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
+                  className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105"
                 >
                   <XCircle className="mr-1 h-4 w-4" /> Remove
                 </Button>
@@ -662,7 +662,7 @@ const SubmitEvent = () => {
             <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Preview
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
               {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {form.formState.isSubmitting ? 'Submitting...' : 'Submit Event'}
             </Button>
@@ -671,7 +671,7 @@ const SubmitEvent = () => {
       </Form>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>
             <DialogDescription>
@@ -693,70 +693,70 @@ const SubmitEvent = () => {
                   </div>
                 )}
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-right font-medium">Event Name:</p>
-                  <p className="col-span-3">{previewData.eventName}</p>
+                  <p className="text-right font-medium text-foreground">Event Name:</p>
+                  <p className="col-span-3 text-foreground">{previewData.eventName}</p>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-right font-medium">Date:</p>
-                  <p className="col-span-3">
+                  <p className="text-right font-medium text-foreground">Date:</p>
+                  <p className="col-span-3 text-foreground">
                     {previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}
                     {previewData.endDate && ` - ${format(previewData.endDate, 'PPP')}`}
                   </p>
                 </div>
                 {previewData.eventTime && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Time:</p>
-                    <p className="col-span-3">{previewData.eventTime}</p>
+                    <p className="text-right font-medium text-foreground">Time:</p>
+                    <p className="col-span-3 text-foreground">{previewData.eventTime}</p>
                   </div>
                 )}
                 {previewData.placeName && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Place Name:</p>
-                    <p className="col-span-3">{previewData.placeName}</p>
+                    <p className="text-right font-medium text-foreground">Place Name:</p>
+                    <p className="col-span-3 text-foreground">{previewData.placeName}</p>
                   </div>
                 )}
                 {previewData.fullAddress && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Address:</p>
-                    <p className="col-span-3">{previewData.fullAddress}</p>
+                    <p className="text-right font-medium text-foreground">Address:</p>
+                    <p className="col-span-3 text-foreground">{previewData.fullAddress}</p>
                   </div>
                 )}
                 {previewData.description && (
                   <div className="grid grid-cols-4 items-start gap-4">
-                    <p className="text-right font-medium">Description:</p>
-                    <p className="col-span-3 break-words">{previewData.description}</p>
+                    <p className="text-right font-medium text-foreground">Description:</p>
+                    <p className="col-span-3 break-words text-foreground">{previewData.description}</p>
                   </div>
                 )}
                 {previewData.ticketLink && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Ticket Link:</p>
-                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-blue-600 hover:underline break-all">
+                    <p className="text-right font-medium text-foreground">Ticket Link:</p>
+                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
                       {previewData.ticketLink}
                     </a>
                   </div>
                 )}
                 {previewData.price && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Price:</p>
-                    <p className="col-span-3">{previewData.price}</p>
+                    <p className="text-right font-medium text-foreground">Price:</p>
+                    <p className="col-span-3 text-foreground">{previewData.price}</p>
                   </div>
                 )}
                 {previewData.specialNotes && (
                   <div className="grid grid-cols-4 items-start gap-4">
-                    <p className="text-right font-medium">Special Notes:</p>
-                    <p className="col-span-3 break-words">{previewData.specialNotes}</p>
+                    <p className="text-right font-medium text-foreground">Special Notes:</p>
+                    <p className="col-span-3 break-words text-foreground">{previewData.specialNotes}</p>
                   </div>
                 )}
                 {previewData.organizerContact && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Organizer:</p>
-                    <p className="col-span-3">{previewData.organizerContact}</p>
+                    <p className="text-right font-medium text-foreground">Organizer:</p>
+                    <p className="col-span-3 text-foreground">{previewData.organizerContact}</p>
                   </div>
                 )}
                 {previewData.eventType && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Event Type:</p>
-                    <p className="col-span-3">{previewData.eventType}</p>
+                    <p className="text-right font-medium text-foreground">Event Type:</p>
+                    <p className="col-span-3 text-foreground">{previewData.eventType}</p>
                   </div>
                 )}
               </>

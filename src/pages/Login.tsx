@@ -19,16 +19,16 @@ const Login = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
-        <p className="text-lg text-gray-700">Loading authentication...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-background dark:to-background">
+        <p className="text-lg text-foreground">Loading authentication...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8 bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Sign In to SoulFlow</h2>
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8 bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-background dark:to-background">
+      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+        <h2 className="text-3xl font-bold text-foreground text-center mb-6">Sign In to SoulFlow</h2>
         <Auth
           supabaseClient={supabase}
           providers={['google']}
@@ -37,13 +37,24 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: 'hsl(252 96% 50%)', // A purple shade
-                  brandAccent: 'hsl(252 96% 40%)', // A darker purple shade
+                  brand: 'hsl(var(--primary))', // A purple shade
+                  brandAccent: 'hsl(var(--primary-foreground))', // A darker purple shade
+                  inputBackground: 'hsl(var(--input))',
+                  inputBorder: 'hsl(var(--border))',
+                  inputPlaceholder: 'hsl(var(--muted-foreground))',
+                  messageText: 'hsl(var(--foreground))',
+                  messageBackground: 'hsl(var(--secondary))',
+                  anchor: 'hsl(var(--primary))',
+                  anchorHover: 'hsl(var(--primary)/80%)',
+                  buttonBackground: 'hsl(var(--primary))',
+                  buttonBorder: 'hsl(var(--primary))',
+                  buttonBackgroundHover: 'hsl(var(--primary)/80%)',
+                  buttonForeground: 'hsl(var(--primary-foreground))',
                 },
               },
             },
           }}
-          theme="light"
+          theme="dark" // Set default theme to dark for Auth UI
           redirectTo={window.location.origin} // Redirect to home after login
           localization={{
             variables: {

@@ -91,25 +91,25 @@ const MapPage = () => {
                 icon: {
                   path: window.google.maps.SymbolPath.CIRCLE,
                   scale: 8,
-                  fillColor: '#8B5CF6', // Purple color for the beacon
+                  fillColor: 'hsl(var(--primary))', // Purple color for the beacon
                   fillOpacity: 0.9,
                   strokeWeight: 0,
                 },
               });
 
               const contentString = `
-                <div class="p-2">
-                  <h3 class="text-lg font-semibold text-purple-700 mb-1">${event.event_name}</h3>
-                  <p class="text-sm text-gray-600 flex items-center mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar mr-1 text-blue-500" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+                <div class="p-2 dark:bg-card dark:text-foreground">
+                  <h3 class="text-lg font-semibold text-primary mb-1">${event.event_name}</h3>
+                  <p class="text-sm text-muted-foreground flex items-center mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar mr-1 text-primary" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
                     ${event.event_date ? format(new Date(event.event_date), 'PPP') : 'Date TBD'}
-                    ${event.event_time ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock ml-2 mr-1 text-green-500" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${event.event_time}` : ''}
+                    ${event.event_time ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock ml-2 mr-1 text-primary" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${event.event_time}` : ''}
                   </p>
-                  ${event.place_name ? `<p class="text-sm text-gray-600 flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-1 text-red-500" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${event.place_name}</p>` : ''}
-                  ${event.full_address ? `<p class="text-sm text-gray-600 flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-1 text-red-500" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${event.full_address}</p>` : ''}
-                  ${event.price ? `<p class="text-sm text-gray-600 flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign mr-1 text-green-600" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>${event.price}</p>` : ''}
-                  ${event.ticket_link ? `<p class="text-sm text-blue-600 hover:underline flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link mr-1 text-purple-600" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07L9.5 3.5"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07L14.5 20.5"/></svg><a href="${event.ticket_link}" target="_blank" rel="noopener noreferrer">Ticket Link</a></p>` : ''}
-                  <a href="/events/${event.id}" class="text-blue-600 hover:underline text-sm mt-2 block">View Details</a>
+                  ${event.place_name ? `<p class="text-sm text-muted-foreground flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-1 text-primary" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${event.place_name}</p>` : ''}
+                  ${event.full_address ? `<p class="text-sm text-muted-foreground flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-1 text-primary" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${event.full_address}</p>` : ''}
+                  ${event.price ? `<p class="text-sm text-muted-foreground flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign mr-1 text-primary" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>${event.price}</p>` : ''}
+                  ${event.ticket_link ? `<p class="text-sm text-primary hover:underline flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link mr-1 text-primary" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07L9.5 3.5"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07L14.5 20.5"/></svg><a href="${event.ticket_link}" target="_blank" rel="noopener noreferrer">Ticket Link</a></p>` : ''}
+                  <a href="/events/${event.id}" class="text-primary hover:underline text-sm mt-2 block">View Details</a>
                 </div>
               `;
 
@@ -129,34 +129,34 @@ const MapPage = () => {
   }, [events, mapLoaded]); // Re-run when events or mapLoaded state changes
 
   return (
-    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Map</h1>
-      <p className="text-xl text-gray-600 mb-6 text-center">
+      <p className="text-xl text-muted-foreground mb-6 text-center">
         Explore soulful events near you on the map.
       </p>
       {loading ? (
-        <div className="w-full h-[600px] rounded-lg shadow-md border border-gray-300 flex flex-col items-center justify-center bg-gray-50">
-          <Loader2 className="h-12 w-12 text-purple-600 animate-spin mb-4" />
-          <p className="text-xl font-semibold text-gray-700 mb-2">Loading map and events...</p>
-          <p className="text-gray-500 text-center">This might take a moment as we fetch event locations.</p>
+        <div className="w-full h-[600px] rounded-lg shadow-md border border-border flex flex-col items-center justify-center bg-secondary">
+          <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+          <p className="text-xl font-semibold text-foreground mb-2">Loading map and events...</p>
+          <p className="text-muted-foreground text-center">This might take a moment as we fetch event locations.</p>
           <Skeleton className="w-3/4 h-48 mt-8 rounded-lg" /> {/* Skeleton for map area */}
         </div>
       ) : (
-        <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-gray-300" aria-label="Google Map showing event locations" />
+        <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-border" aria-label="Google Map showing event locations" />
       )}
-      <p className="text-center text-sm text-gray-500 mt-4">
+      <p className="text-center text-sm text-muted-foreground mt-4">
         <span className="font-semibold">Note:</span> This map functionality, including address lookups, relies on the Google Maps API.
         It is currently operating on free Google API credits, which means its availability and performance may vary
         and could stop working unexpectedly if usage limits are exceeded. This is a new feature and an ongoing learning experience!
       </p>
       {!loading && events.length === 0 && (
-        <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center mt-6">
-          <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-lg font-semibold text-gray-700 mb-4">
+        <div className="p-8 bg-secondary rounded-lg border border-border text-center mt-6">
+          <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-lg font-semibold text-foreground mb-4">
             No events with addresses found to display on the map.
           </p>
           <Link to="/submit-event">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
               <PlusCircle className="mr-2 h-4 w-4" /> Add the First Event!
             </Button>
           </Link>
