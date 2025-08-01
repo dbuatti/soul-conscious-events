@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, PlusCircle, Filter as FilterIcon, ChevronDown, Frown, List, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, Clock, MapPin, PlusCircle, Filter as FilterIcon, ChevronDown, Frown, List, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -85,7 +85,7 @@ const Home = () => {
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const daysOfWeekShort = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const daysOfWeekShort = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su']; // Changed for unique keys
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -402,13 +402,26 @@ const Home = () => {
         : formattedStartDate;
 
     return (
-      <div key={event.id} className="py-3 cursor-pointer hover:bg-accent/50 rounded-md px-2 -mx-2 transition-colors" onClick={() => handleViewDetails(event)}>
-        <p className="text-sm text-muted-foreground mb-1">
-          {dateDisplay} {event.event_time && `@ ${event.event_time}`}
-        </p>
-        <p className="text-base font-semibold text-foreground">
+      <div key={event.id} className="py-3 px-4 cursor-pointer hover:bg-accent/50 rounded-lg transition-colors duration-200" onClick={() => handleViewDetails(event)}>
+        <div className="flex items-center text-muted-foreground text-sm mb-1">
+          <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
+          <span>{dateDisplay}</span>
+          {event.event_time && (
+            <>
+              <Clock className="ml-4 mr-2 h-4 w-4 text-primary" />
+              <span>{event.event_time}</span>
+            </>
+          )}
+        </div>
+        <p className="text-lg font-semibold text-foreground leading-tight">
           {event.event_name}
         </p>
+        {(event.place_name || event.full_address) && (
+          <p className="flex items-center text-muted-foreground text-sm mt-1">
+            <MapPin className="mr-2 h-4 w-4 text-primary" />
+            {event.place_name || event.full_address}
+          </p>
+        )}
       </div>
     );
   };
