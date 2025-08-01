@@ -1,11 +1,20 @@
 import React from 'react';
-import { DayPicker, DayPickerSingleProps } from 'react-day-picker';
+import { DayPicker, DayPickerProps } from 'react-day-picker'; // Import DayPickerProps
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface MonthPickerCalendarProps extends Omit<DayPickerSingleProps, 'mode'> { // Omit 'mode' here
-  defaultView?: "day" | "month" | "year"; // Explicitly added defaultView
+interface MonthPickerCalendarProps extends Omit<DayPickerProps, 'mode' | 'defaultView' | 'view'> {
+  // 'mode', 'defaultView', and 'view' are now controlled internally by this component.
+  // We can add specific props here if needed, e.g., to allow overriding the view.
+  classNames?: DayPickerProps['classNames'] & { // Extend existing classNames with DayPickerProps
+    months_grid?: string;
+    month_cell?: string;
+    month_selected?: string;
+    month_today?: string;
+    month_outside?: string;
+    month_disabled?: string;
+  };
 }
 
 const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
@@ -16,7 +25,8 @@ const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
 }) => {
   return (
     <DayPicker
-      mode="single" // Keep mode as single for selection
+      mode="single" // Keep mode as single for selecting a specific date
+      view="month" // <--- This forces the calendar to always show the month grid
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
@@ -48,7 +58,17 @@ const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
         day_disabled: "text-muted-foreground opacity-50",
         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
-        ...classNames,
+        // These are for when view="month" is active
+        months_grid: "grid w-full grid-cols-3 gap-1",
+        month_cell: cn(
+          buttonVariants({ variant: "ghost" }),
+          "h-16 w-full p-0 font-normal aria-selected:opacity-100 flex items-center justify-center text-sm rounded-md"
+        ),
+        month_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+        month_today: "bg-accent text-accent-foreground",
+        month_outside: "text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+        month_disabled: "text-muted-foreground opacity-50",
+        ...classNames, // Merge with any passed classNames
       }}
       components={{
         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
