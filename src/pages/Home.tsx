@@ -531,7 +531,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-48 w-full rounded-sm cursor-pointer transition-colors duration-200 border border-gray-200", // Increased height, less round, added border
+                          "relative flex flex-col h-56 w-full rounded-sm cursor-pointer transition-colors duration-200 border border-gray-200", // Increased height to h-56
                           isCurrentMonth ? "bg-white" : "bg-gray-50", // Different background for current month vs. other months
                           isPastDate && "opacity-70", // Faded for past dates, but not too much
                           isTodayDate && "bg-blue-600 text-white", // Stronger highlight for today
@@ -553,20 +553,12 @@ const Home = () => {
                               <div key={event.id} className={cn(
                                 "text-sm leading-tight font-medium text-left px-1 py-0.5 rounded-sm mb-0.5", // Event title styling
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"), // Event background/text color
-                                "line-clamp-none" // Allow full text
+                                "line-clamp-3" // Allow up to 3 lines for event title
                               )}>
                                 {event.event_name}
                               </div>
                             ))}
                           </div>
-                        )}
-                        {/* Event dot indicator - only if not showing titles */}
-                        {!showEventTitles && hasEvents && (
-                          <div className={cn(
-                            "absolute bottom-1 left-1 w-2 h-2 rounded-full", // Larger dot, bottom-left
-                            isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
-                            isPastDate && "bg-gray-400" // Grey dot for past dates
-                          )} />
                         )}
                       </div>
                     );
@@ -587,7 +579,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-48 w-full rounded-sm cursor-pointer transition-colors duration-200 border border-gray-200", // Increased height, less round, added border
+                          "relative flex flex-col h-56 w-full rounded-sm cursor-pointer transition-colors duration-200 border border-gray-200", // Increased height to h-56
                           isPastDate && "opacity-70", // Faded for past dates
                           isTodayDate && "bg-blue-600 text-white", // Highlight today
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2", // Selected but not today
@@ -608,20 +600,12 @@ const Home = () => {
                               <div key={event.id} className={cn(
                                 "text-sm leading-tight font-medium text-left px-1 py-0.5 rounded-sm mb-0.5", // Event title styling
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"), // Event background/text color
-                                "line-clamp-none" // Allow full text
+                                "line-clamp-3" // Allow up to 3 lines for event title
                               )}>
                                 {event.event_name}
                               </div>
                             ))}
                           </div>
-                        )}
-                        {/* Event dot indicator - only if not showing titles */}
-                        {!showEventTitles && hasEvents && (
-                          <div className={cn(
-                            "absolute bottom-1 left-1 w-2 h-2 rounded-full", // Larger dot, bottom-left
-                            isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
-                            isPastDate && "bg-gray-400" // Grey dot for past dates
-                          )} />
                         )}
                       </div>
                     );
