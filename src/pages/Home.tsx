@@ -144,6 +144,7 @@ const Home = () => {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events.');
     } else {
+      console.log('Fetched events:', data); // Debug log
       setEvents(data || []);
     }
     setLoading(false);
@@ -370,7 +371,7 @@ const Home = () => {
                 <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" className="text-lg font-bold focus-visible:ring-primary">
-                      {format(currentMonth, 'd/M/yyyy')} <ChevronDown className="ml-2 h-4 w-4 opacity-70" /> {/* Changed format here */}
+                      {format(currentMonth, 'd/M/yyyy')} <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
@@ -444,6 +445,11 @@ const Home = () => {
                     const isTodayDate = isToday(date);
                     const isSelected = isSameDay(date, selectedDayForDialog || new Date());
                     const hasEvents = modifiers?.events && modifiers.events.some(eventDate => isSameDay(eventDate, date));
+
+                    console.log(`Day: ${format(date, 'PPP')}, hasEvents: ${hasEvents}, modifiers.events count: ${modifiers?.events?.length || 0}`); // Debug log
+                    if (hasEvents) {
+                        console.log(`Event found for ${format(date, 'PPP')}!`); // Debug log
+                    }
 
                     return (
                       <div
