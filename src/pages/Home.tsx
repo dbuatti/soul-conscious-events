@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight, X, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight, X, ChevronsLeft, ChevronsRight, CircleDot } from 'lucide-react'; // Added CircleDot
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -390,31 +390,24 @@ const Home = () => {
               </div>
 
               <div className="flex items-center space-x-4">
-                <Select onValueChange={handleMonthChange} value={getMonth(currentMonth).toString()}>
-                  <SelectTrigger className="w-[140px] focus-visible:ring-purple-500">
-                    <SelectValue placeholder="Month" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 12 }, (_, i) => (
-                      <SelectItem key={i} value={i.toString()}>
-                        {format(setMonth(new Date(), i), 'MMMM')}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select onValueChange={handleYearChange} value={getYear(currentMonth).toString()}>
-                  <SelectTrigger className="w-[100px] focus-visible:ring-purple-500">
-                    <SelectValue placeholder="Year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Integrated MonthYearPicker for desktop */}
+                <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-[180px] justify-between focus-visible:ring-purple-500">
+                      {format(currentMonth, 'MMMM yyyy')}
+                      <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <MonthYearPicker
+                      date={currentMonth}
+                      onDateChange={(date) => {
+                        setCurrentMonth(date);
+                        setIsMonthPickerPopoverOpen(false);
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           )}
@@ -462,7 +455,7 @@ const Home = () => {
                 <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="h-48 border rounded-md p-2 flex flex-col items-center justify-center bg-gray-50">
+                <div key={i} className="h-56 border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
                   <Skeleton className="h-5 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-2/3 mt-1" />
@@ -483,8 +476,8 @@ const Home = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-[360px] p-0"> {/* Adjusted width for 4x3 grid */}
                       <MonthYearPicker
-                        defaultMonth={currentMonth}
-                        onSelect={(date) => { // Changed prop name to onSelect
+                        date={currentMonth} // Changed prop name
+                        onDateChange={(date) => { // Changed prop name
                           if (date) {
                             setCurrentMonth(date);
                             setIsMonthPickerPopoverOpen(false); // Close popover after selection
@@ -511,7 +504,7 @@ const Home = () => {
               )}
 
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-md shadow-inner">
+              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-lg shadow-inner"> {/* Changed rounded-md to rounded-lg */}
                 {daysOfWeekShort.map((day, index) => (
                   <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-1">{day}</div>
                 ))}
@@ -531,7 +524,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-md cursor-pointer transition-colors duration-200 border border-gray-200", // Changed to rounded-md
+                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm", // Changed to rounded-lg, added shadow-sm
                           isCurrentMonth ? "bg-white" : "bg-gray-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
@@ -541,20 +534,21 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-xl font-bold", // Changed to top-2 left-2 and text-xl
+                          "absolute top-2 left-2 text-xl font-bold", // Changed to text-xl
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-10 px-2 overflow-y-auto scrollbar-hide"> {/* Changed mt-8 to mt-10, px-1 to px-2 */}
+                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide"> {/* Changed px-2 to px-1.5 */}
                             {dayEvents.map((event) => (
                               <div key={event.id} className={cn(
-                                "text-xs leading-tight font-medium text-left px-1 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, mb-0.5 to mb-1
+                                "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, px-1 to px-1.5
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                "line-clamp-3"
+                                "line-clamp-2" // Changed to line-clamp-2
                               )}>
+                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0" /> {/* Small dot icon */}
                                 {event.event_name}
                               </div>
                             ))}
@@ -579,7 +573,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-md cursor-pointer transition-colors duration-200 border border-gray-200", // Changed to rounded-md
+                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm", // Changed to rounded-lg, added shadow-sm
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
@@ -588,20 +582,21 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-xl font-bold", // Changed to top-2 left-2 and text-xl
+                          "absolute top-2 left-2 text-xl font-bold", // Changed to text-xl
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-10 px-2 overflow-y-auto scrollbar-hide"> {/* Changed mt-8 to mt-10, px-1 to px-2 */}
+                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide"> {/* Changed px-2 to px-1.5 */}
                             {dayEvents.map((event, index) => (
                               <div key={event.id} className={cn(
-                                "text-xs leading-tight font-medium text-left px-1 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, mb-0.5 to mb-1
+                                "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, px-1 to px-1.5
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                "line-clamp-3"
+                                "line-clamp-2" // Changed to line-clamp-2
                               )}>
+                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0" /> {/* Small dot icon */}
                                 {event.event_name}
                               </div>
                             ))}
