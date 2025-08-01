@@ -129,7 +129,7 @@ const MapPage = () => {
   }, [events, mapLoaded]); // Re-run when events or mapLoaded state changes
 
   return (
-    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+    <div className="w-full max-w-screen-lg bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Map</h1>
       <p className="text-xl text-muted-foreground mb-6 text-center">
         Explore soulful events near you on the map.

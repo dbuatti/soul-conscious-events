@@ -168,9 +168,6 @@ const EventsList = () => {
       case 'state':
         setStateFilter('All');
         break;
-      case 'dateFilter':
-        setDateFilter('All Upcoming');
-        break;
       default:
         break;
     }
@@ -216,7 +213,7 @@ const EventsList = () => {
   };
 
   return (
-    <div className="w-full max-w-screen-lg bg-white p-4 sm:p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+    <div className="w-full max-w-screen-lg bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       {/* Hero Section */}
       <div className="text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 bg-gradient-to-br from-primary to-blue-800 rounded-xl shadow-xl text-white">
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">

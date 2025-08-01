@@ -439,7 +439,7 @@ const Home = () => {
 
 
   return (
-    <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+    <div className="w-full max-w-screen-lg bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <div className="flex flex-col gap-8">
         <div className="flex-grow">
           <div className="mb-6 text-center">
