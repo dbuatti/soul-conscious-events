@@ -37,7 +37,7 @@ import { DayContentProps } from 'react-day-picker'; // Import DayContentProps
 // Custom type for Day component props to include modifiers
 interface CustomDayContentProps extends DayContentProps {
   modifiers: {
-    events?: boolean;
+    events?: Date[]; // Corrected type: events is an array of Dates, not a boolean
     past?: boolean;
     today?: boolean;
     selected?: boolean;
@@ -417,10 +417,11 @@ const Home = () => {
                   Caption: () => null, // Hide default caption
                   // Removed Navigation component as it's not a valid override
                   Day: ({ date, modifiers, ...props }: CustomDayContentProps) => {
-                    const isPastDate = modifiers.past;
-                    const isTodayDate = modifiers.today;
+                    // Safely access modifiers properties
+                    const isPastDate = modifiers.past === true;
+                    const isTodayDate = modifiers.today === true;
                     const isSelected = isSameDay(date, selectedDayForDialog || new Date());
-                    const hasEvents = modifiers.events;
+                    const hasEvents = modifiers.events && modifiers.events.length > 0;
 
                     return (
                       <div
