@@ -74,7 +74,7 @@ const Header = () => {
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
       <div className="w-full max-w-screen-lg flex justify-between items-center"> {/* Changed max-w-4xl to max-w-screen-lg */}
-        <Link to="/" className="text-2xl font-bold text-purple-700 hover:text-purple-800 transition-colors dark:text-primary dark:hover:text-primary/80">
+        <Link to="/" className="text-2xl font-bold text-purple-700 hover:text-purple-800 transition-colors dark:text-primary dark:hover:text-primary/80 md:mr-6">
           SoulFlow
         </Link>
         {isMobile ? (
