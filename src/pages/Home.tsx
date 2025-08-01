@@ -412,8 +412,8 @@ const Home = () => {
 
                   {/* Mobile Calendar Grid */}
                   <div className="grid grid-cols-7 gap-1 text-center p-1 bg-gray-100 rounded-lg shadow-inner">
-                    {daysOfWeekShort.map(day => (
-                      <div key={day} className="font-semibold text-gray-700 text-xs py-2">{day}</div>
+                    {daysOfWeekShort.map((day, index) => (
+                      <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-2">{day}</div>
                     ))}
                     {daysInMonthView.map((day) => {
                       const dayEvents = getEventsForDay(day);
