@@ -271,9 +271,6 @@ const Home = () => {
       case 'state':
         setStateFilter('All');
         break;
-      case 'dateFilter':
-        setDateFilter('All Upcoming');
-        break;
       default:
         break;
     }
@@ -581,12 +578,12 @@ const Home = () => {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-secondary rounded-xl shadow-inner">
+            <div className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
               {daysOfWeekShort.map(day => (
-                <div key={day} className="font-semibold text-foreground py-2">{day}</div>
+                <div key={day} className="font-semibold text-foreground py-2 border-r border-b border-border bg-secondary">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="h-28 sm:h-40 md:h-48 lg:h-56 border rounded-lg p-2 flex flex-col items-center justify-center bg-muted">
+                <div key={i} className="h-28 sm:h-40 md:h-48 lg:h-56 border-r border-b border-border p-2 flex flex-col items-center justify-center bg-muted">
                   <Skeleton className="h-5 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-2/3 mt-1" />
@@ -596,16 +593,15 @@ const Home = () => {
           ) : (
             <>
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-secondary rounded-xl shadow-inner">
+              <div ref={calendarRef} className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
                 {daysOfWeekShort.map((day, index) => (
-                  <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2">{daysOfWeekShort[index]}</div>
+                  <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-r border-b border-border bg-secondary">{daysOfWeekShort[index]}</div>
                 ))}
                 {viewMode === 'month' ? (
                   daysInMonthView.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isCurrentMonth = isSameMonth(day, currentMonth);
                     const isTodayDate = isToday(day);
-                    const hasEvents = dayEvents.length > 0; // Defined here
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
@@ -613,39 +609,50 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-border shadow-sm p-2 overflow-hidden",
-                          isCurrentMonth ? "bg-card" : "bg-secondary",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full border-r border-b border-border p-2 overflow-hidden cursor-pointer transition-colors duration-200",
+                          isCurrentMonth ? "bg-card" : "bg-secondary opacity-50",
                           isPastDate && "opacity-70",
-                          isTodayDate && "bg-primary text-primary-foreground",
-                          isSelected && !isTodayDate && "bg-accent border-primary border-2",
+                          isTodayDate && "bg-primary/10 text-primary border-primary",
+                          isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
                           "hover:bg-muted hover:shadow-md hover:border-primary"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
                           "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
-                          isTodayDate ? "text-primary-foreground" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
+                          isTodayDate ? "text-primary" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
                           isPastDate && "text-muted-foreground"
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0.5 mt-8 flex-grow overflow-y-auto scrollbar-hide">
-                          {dayEvents.map(event => (
-                            <span
-                                key={event.id}
-                                className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate flex items-center"
-                            >
-                                <CircleDot className="h-2 w-2 mr-1 text-primary" />
-                                {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
-                                {event.event_name}
-                            </span>
-                          ))}
+                        <div className="flex flex-col gap-0.5 mt-10 flex-grow overflow-y-auto scrollbar-hide">
+                          {dayEvents.map(event => {
+                            const isMultiDay = event.end_date && event.event_date !== event.end_date;
+                            const isEventStartDay = isSameDay(day, parseISO(event.event_date));
+                            const isEventContinuation = isMultiDay && !isEventStartDay && day > parseISO(event.event_date) && day <= parseISO(event.end_date);
+
+                            return (
+                              <span
+                                key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
+                                className={cn(
+                                  "text-xs font-medium px-1 py-0.5 rounded-sm truncate flex items-center",
+                                  isMultiDay ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" : "bg-accent/20 text-foreground",
+                                  isEventContinuation && "justify-center" // Center text for continuation
+                                )}
+                              >
+                                {isMultiDay && <CircleDot className="h-2 w-2 mr-1 text-blue-600 dark:text-blue-400" />}
+                                {isEventStartDay || !isMultiDay ? (
+                                  <>
+                                    {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
+                                    {event.event_name}
+                                  </>
+                                ) : (
+                                  <span className="italic text-muted-foreground">...continued</span>
+                                )}
+                              </span>
+                            );
+                          })}
                         </div>
-                        {hasEvents && (
-                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary">
-                            {/* Small dot to indicate events */}
-                          </div>
-                        )}
                       </div>
                     );
                   })
@@ -654,7 +661,6 @@ const Home = () => {
                   currentWeek.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isTodayDate = isToday(day);
-                    const hasEvents = dayEvents.length > 0; // Defined here
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
@@ -678,23 +684,34 @@ const Home = () => {
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0.5 mt-8 flex-grow overflow-y-auto scrollbar-hide">
-                          {dayEvents.map(event => (
-                            <span
-                                key={event.id}
-                                className="text-xs font-medium text-foreground px-1 py-0.5 rounded-sm truncate flex items-center"
-                            >
-                                <CircleDot className="h-2 w-2 mr-1 text-primary" />
-                                {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
-                                {event.event_name}
-                            </span>
-                          ))}
+                        <div className="flex flex-col gap-0.5 mt-10 flex-grow overflow-y-auto scrollbar-hide">
+                          {dayEvents.map(event => {
+                            const isMultiDay = event.end_date && event.event_date !== event.end_date;
+                            const isEventStartDay = isSameDay(day, parseISO(event.event_date));
+                            const isEventContinuation = isMultiDay && !isEventStartDay && day > parseISO(event.event_date) && day <= parseISO(event.end_date);
+
+                            return (
+                              <span
+                                key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
+                                className={cn(
+                                  "text-xs font-medium px-1 py-0.5 rounded-sm truncate flex items-center",
+                                  isMultiDay ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" : "bg-accent/20 text-foreground",
+                                  isEventContinuation && "justify-center" // Center text for continuation
+                                )}
+                              >
+                                {isMultiDay && <CircleDot className="h-2 w-2 mr-1 text-blue-600 dark:text-blue-400" />}
+                                {isEventStartDay || !isMultiDay ? (
+                                  <>
+                                    {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
+                                    {event.event_name}
+                                  </>
+                                ) : (
+                                  <span className="italic text-muted-foreground">...continued</span>
+                                )}
+                              </span>
+                            );
+                          })}
                         </div>
-                        {hasEvents && (
-                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-primary">
-                            {/* Small dot to indicate events */}
-                          </div>
-                        )}
                       </div>
                     );
                   })
