@@ -467,27 +467,38 @@ const Home = () => {
               {/* Mobile Calendar Header and Month Picker Popover */}
               {isMobile && (
                 <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-                  <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
-                        {format(currentMonth, 'MMMM yyyy')}
-                        <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[360px] p-0"> {/* Adjusted width for 4x3 grid */}
-                      <MonthYearPicker
-                        date={currentMonth} // Corrected prop name
-                        onDateChange={(date) => { // Corrected prop name
-                          if (date) {
-                            setCurrentMonth(date);
-                            setIsMonthPickerPopoverOpen(false); // Close popover after selection
-                          }
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
+                          {format(currentMonth, 'MMMM yyyy')}
+                          <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[360px] p-0"> {/* Adjusted width for 4x3 grid */}
+                        <MonthYearPicker
+                          date={currentMonth}
+                          onDateChange={(date) => {
+                            if (date) {
+                              setCurrentMonth(date);
+                              setIsMonthPickerPopoverOpen(false); // Close popover after selection
+                            }
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
 
                   <div className="flex items-center space-x-2">
+                    <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      Today
+                    </Button>
                     <Sheet open={isMobileFilterSheetOpen} onOpenChange={setIsMobileFilterSheetOpen}>
                       <SheetTrigger asChild>
                         <Button variant="outline" size="icon" className="transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -504,7 +515,7 @@ const Home = () => {
               )}
 
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-xl shadow-inner"> {/* Changed rounded-md to rounded-xl */}
+              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-xl shadow-inner">
                 {daysOfWeekShort.map((day, index) => (
                   <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-1">{day}</div>
                 ))}
@@ -517,38 +528,35 @@ const Home = () => {
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
-                    // For desktop, show event titles when agenda is hidden
-                    const showEventTitles = !isMobile && !showAgenda && hasEvents;
-
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm", // Changed to rounded-lg, added shadow-sm
+                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isCurrentMonth ? "bg-white" : "bg-gray-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
-                          "hover:bg-gray-100 hover:shadow-md hover:border-purple-300" // Added hover effects
+                          "hover:bg-gray-100 hover:shadow-md hover:border-purple-300"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105", // Added group-hover:scale-105
+                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide"> {/* Changed px-2 to px-1.5 */}
+                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide">
                             {dayEvents.map((event) => (
                               <div key={event.id} className={cn(
-                                "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, px-1 to px-1.5
+                                "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                "line-clamp-3" // Changed to line-clamp-3
+                                "line-clamp-3"
                               )}>
-                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" /> {/* Small dot icon, added text-purple-600 */}
+                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" />
                                 {event.event_name}
                               </div>
                             ))}
@@ -566,37 +574,34 @@ const Home = () => {
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
-                    // For desktop, show event titles when agenda is hidden
-                    const showEventTitles = !isMobile && !showAgenda && hasEvents;
-
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm", // Changed to rounded-lg, added shadow-sm
+                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
-                          "hover:bg-gray-100 hover:shadow-md hover:border-purple-300" // Added hover effects
+                          "hover:bg-gray-100 hover:shadow-md hover:border-purple-300"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105", // Added group-hover:scale-105
+                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide"> {/* Changed px-2 to px-1.5 */}
+                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide">
                             {dayEvents.map((event, index) => (
                               <div key={event.id} className={cn(
-                                "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, px-1 to px-1.5
+                                "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                "line-clamp-3" // Changed to line-clamp-3
+                                "line-clamp-3"
                               )}>
-                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" /> {/* Small dot icon, added text-purple-600 */}
+                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" />
                                 {event.event_name}
                               </div>
                             ))}
@@ -654,7 +659,7 @@ const Home = () => {
                 <span className="sr-only">Hide Agenda</span>
               </Button>
             </div>
-            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-250px)]"> {/* Added overflow-y-auto and max-h */}
+            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-250px)]">
               {selectedDayEvents.map((event) => (
                 <Card key={event.id} className="shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200">
                   <CardHeader className="p-3 pb-0">
