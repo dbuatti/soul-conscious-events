@@ -554,11 +554,13 @@ const Home = () => {
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
+                    const maxEventsToShow = isMobile ? 1 : 2; // Show 1 event on mobile, 2 on desktop
+
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm p-2 overflow-hidden",
                           isCurrentMonth ? "bg-white" : "bg-gray-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
@@ -568,17 +570,28 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
-                        {hasEvents && (
-                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-purple-600 text-white text-xs font-bold">
-                            {dayEvents.length}
-                          </div>
-                        )}
+                        <div className="flex flex-col gap-1 mt-1 flex-grow overflow-hidden">
+                          {dayEvents.slice(0, maxEventsToShow).map(event => (
+                            <Badge
+                                key={event.id}
+                                variant="secondary"
+                                className="bg-purple-100 text-purple-800 text-xs font-medium px-1 py-0.5 rounded-sm truncate"
+                            >
+                                {event.event_name}
+                            </Badge>
+                          ))}
+                          {dayEvents.length > maxEventsToShow && (
+                            <span className="text-xs text-gray-500 mt-1">
+                                +{dayEvents.length - maxEventsToShow} more
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   })
@@ -591,11 +604,13 @@ const Home = () => {
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
+                    const maxEventsToShow = isMobile ? 1 : 2; // Show 1 event on mobile, 2 on desktop
+
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm p-2 overflow-hidden",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate ? "bg-blue-100 border-blue-500 border-2" : "bg-white",
@@ -604,18 +619,29 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        {hasEvents && (
-                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-purple-600 text-white text-xs font-bold">
-                            {dayEvents.length}
-                          </div>
-                        )}
+                        <div className="flex flex-col gap-1 mt-1 flex-grow overflow-hidden">
+                          {dayEvents.slice(0, maxEventsToShow).map(event => (
+                            <Badge
+                                key={event.id}
+                                variant="secondary"
+                                className="bg-purple-100 text-purple-800 text-xs font-medium px-1 py-0.5 rounded-sm truncate"
+                            >
+                                {event.event_name}
+                            </Badge>
+                          ))}
+                          {dayEvents.length > maxEventsToShow && (
+                            <span className="text-xs text-gray-500 mt-1">
+                                +{dayEvents.length - maxEventsToShow} more
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   })
