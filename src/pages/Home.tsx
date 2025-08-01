@@ -37,7 +37,6 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar'; // Keep this for the full calendar dialog
 import { MonthYearPicker } from '@/components/MonthYearPicker'; // New import for month picker
-import EventCalendar from '@/components/EventCalendar'; // <--- ADDED THIS IMPORT
 
 interface Event {
   id: string;
@@ -94,7 +93,6 @@ const Home = () => {
       toast.error('Failed to load events.');
     } else {
       setEvents(data || []);
-      console.log('Home.tsx: Fetched events:', data); // Added log
     }
     setLoading(false);
   };
@@ -185,7 +183,6 @@ const Home = () => {
   };
 
   const eventsForCurrentMonth = getEventsForMonth(currentMonth);
-  console.log('Home.tsx: eventsForCurrentMonth:', eventsForCurrentMonth); // Added log
 
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
@@ -352,7 +349,7 @@ const Home = () => {
                     <PopoverContent className="w-[360px] p-0"> {/* Adjusted width for 4x3 grid */}
                       <MonthYearPicker
                         defaultMonth={currentMonth}
-                        onMonthSelect={(date) => {
+                        onMonthSelect={(date) => { // Changed prop name to onMonthSelect
                           if (date) {
                             setCurrentMonth(date);
                             setIsMonthPickerPopoverOpen(false); // Close popover after selection
@@ -379,12 +376,72 @@ const Home = () => {
               )}
 
               {/* Calendar Grid (for both mobile and desktop) */}
-              <EventCalendar
-                events={eventsForCurrentMonth}
-                selectedDate={currentMonth}
-                onDateSelect={setCurrentMonth}
-                onEventSelect={handleViewDetails}
-              />
+              <div className="grid grid-cols-7 gap-1 text-center p-1 bg-gray-100 rounded-lg shadow-inner">
+                {daysOfWeekShort.map((day, index) => (
+                  <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-2">{day}</div>
+                ))}
+                {daysInMonthView.map((day) => {
+                  const dayEvents = getEventsForDay(day);
+                  const isCurrentMonth = isSameMonth(day, currentMonth);
+                  const isTodayDate = isToday(day);
+                  const hasEvents = dayEvents.length > 0;
+                  const isSelected = isSameDay(day, selectedDayForDialog || new Date());
+                  const isPastDate = isPast(day) && !isToday(day);
+
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        "relative flex flex-col items-center justify-center h-16 w-full rounded-md cursor-pointer transition-colors duration-200",
+                        isCurrentMonth ? "text-gray-800" : "text-gray-400 opacity-50",
+                        isPastDate && "text-gray-400 opacity-50", // Faded for past dates
+                        isTodayDate && "bg-blue-500 text-white font-bold", // Highlight today
+                        isSelected && !isTodayDate && "bg-blue-100 text-blue-800 font-semibold", // Selected but not today
+                        hasEvents && "relative", // For the dot
+                        "hover:bg-gray-200" // General hover effect
+                      )}
+                      onClick={() => handleDayClick(day)}
+                    >
+                      <span className={cn(
+                        "text-sm",
+                        isTodayDate && "text-white",
+                        isSelected && !isTodayDate && "text-blue-800"
+                      )}>
+                        {format(day, 'd')}
+                      </span>
+                      {hasEvents && (
+                        <div className={cn(
+                          "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                          isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
+                          isPastDate && "bg-gray-400" // Grey dot for past dates
+                        )} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Events for Selected Month (Mobile) */}
+              <div className="mt-6">
+                <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
+                  Events in {format(currentMonth, 'MMMM yyyy')}
+                </h3>
+                {eventsForCurrentMonth.length === 0 ? (
+                  <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                    <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-gray-700 mb-4">No events found for this month.</p>
+                    <Link to="/submit-event">
+                      <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {eventsForCurrentMonth.map((event) => renderEventCard(event))}
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>
