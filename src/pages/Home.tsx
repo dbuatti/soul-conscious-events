@@ -290,11 +290,11 @@ const Home = () => {
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
     const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
     const isEventStartDay = isSameDay(day, eventStartDate);
-    const isEventEndDay = isSameDay(day, eventEndDate);
-    const isContinuationDay = isMultiDay && !isEventStartDay && !isEventEndDay;
+    // const isEventEndDay = isSameDay(day, eventEndDate); // Not directly used in multi-day rendering logic for rounding
+    const isContinuationDay = isMultiDay && !isEventStartDay && !isSameDay(day, eventEndDate);
 
-    // Base classes for all pills
-    const basePillClasses = "py-1 px-2 text-xs font-medium whitespace-normal min-h-[1.5rem] mb-1"; // Added mb-1 here
+    // Base classes for all pills, including vertical margin
+    const basePillClasses = "py-1 px-2 text-xs font-medium whitespace-normal min-h-[1.5rem] mb-1";
 
     if (!isMultiDay) {
       // Single-day: transparent background, no border
@@ -304,7 +304,7 @@ const Home = () => {
           className={cn(
             "relative z-10 w-full",
             basePillClasses,
-            "bg-accent/20 text-foreground rounded-md" // No border
+            "bg-accent/20 text-foreground rounded-md"
           )}
         >
           <span className="flex flex-col text-left">
@@ -318,11 +318,11 @@ const Home = () => {
     // Multi-day: solid bar with seamless track
     const trackClasses = cn("relative z-30 -mx-[1px] w-[calc(100%+2px)]");
     let rounding = "rounded-md";
-    if (isEventStartDay && isEventEndDay) {
+    if (isEventStartDay && isSameDay(day, eventEndDate)) { // Event starts and ends on the same day (but is marked multi-day)
       rounding = "rounded-md";
     } else if (isEventStartDay) {
       rounding = "rounded-l-md rounded-r-none";
-    } else if (isEventEndDay) {
+    } else if (isSameDay(day, eventEndDate)) {
       rounding = "rounded-r-md rounded-l-none";
     } else if (isContinuationDay) {
       rounding = "rounded-none";
@@ -332,12 +332,12 @@ const Home = () => {
       <div key={event.id + format(day, 'yyyy-MM-dd')} className={trackClasses}>
         <div
           className={cn(
-            basePillClasses, // Apply base classes including mb-1
+            basePillClasses,
             "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100",
             rounding
           )}
         >
-          {(isEventStartDay) && (
+          {(isEventStartDay) && ( // Only show text on the start day of a multi-day event
             <span className="flex flex-col text-left pl-1">
               {event.event_time && <span className="font-bold">{event.event_time}</span>}
               <span>{event.event_name}</span>
