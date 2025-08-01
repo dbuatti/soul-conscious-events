@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight, X, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -69,6 +69,7 @@ const Home = () => {
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date()); // Default to today
   const [selectedEventType, setSelectedEventType] = useState('All');
+  const [showAgenda, setShowAgenda] = useState(true); // New state for agenda visibility
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -420,20 +421,37 @@ const Home = () => {
 
           {/* View Toggle Buttons (Desktop) */}
           {!isMobile && (
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={viewMode === 'month' ? 'default' : 'outline'}
+                  onClick={() => setViewMode('month')}
+                  className="transition-all duration-300 ease-in-out transform hover:scale-105"
+                >
+                  <List className="mr-2 h-4 w-4" /> Month View
+                </Button>
+                <Button
+                  variant={viewMode === 'week' ? 'default' : 'outline'}
+                  onClick={() => setViewMode('week')}
+                  className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105"
+                >
+                  <CalendarIcon2 className="mr-2 h-4 w-4" /> Week View
+                </Button>
+              </div>
               <Button
-                variant={viewMode === 'month' ? 'default' : 'outline'}
-                onClick={() => setViewMode('month')}
+                variant="outline"
+                onClick={() => setShowAgenda(!showAgenda)}
                 className="transition-all duration-300 ease-in-out transform hover:scale-105"
               >
-                <List className="mr-2 h-4 w-4" /> Month View
-              </Button>
-              <Button
-                variant={viewMode === 'week' ? 'default' : 'outline'}
-                onClick={() => setViewMode('week')}
-                className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105"
-              >
-                <CalendarIcon2 className="mr-2 h-4 w-4" /> Week View
+                {showAgenda ? (
+                  <>
+                    <ChevronsLeft className="mr-2 h-4 w-4" /> Hide Agenda
+                  </>
+                ) : (
+                  <>
+                    <ChevronsRight className="mr-2 h-4 w-4" /> Show Agenda
+                  </>
+                )}
               </Button>
             </div>
           )}
@@ -506,6 +524,9 @@ const Home = () => {
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
+                    // For desktop, show event titles when agenda is hidden
+                    const showEventTitles = !isMobile && !showAgenda && hasEvents;
+
                     return (
                       <div
                         key={day.toISOString()}
@@ -528,11 +549,27 @@ const Home = () => {
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className={cn(
-                            "absolute bottom-1 w-1.5 h-1.5 rounded-full",
-                            isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
-                            isPastDate && "bg-gray-400" // Grey dot for past dates
-                          )} />
+                          <>
+                            {!showEventTitles && (
+                              <div className={cn(
+                                "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                                isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
+                                isPastDate && "bg-gray-400" // Grey dot for past dates
+                              )} />
+                            )}
+                            {showEventTitles && (
+                              <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-full max-w-[calc(100%-8px)] bg-white border border-gray-200 rounded-md shadow-sm p-1 text-xs text-gray-700">
+                                {dayEvents.map((event, index) => (
+                                  <div key={event.id} className={cn(
+                                    "truncate",
+                                    index < dayEvents.length - 1 ? "mb-1" : ""
+                                  )}>
+                                    {event.event_name}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     );
@@ -545,6 +582,9 @@ const Home = () => {
                     const hasEvents = dayEvents.length > 0;
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
+
+                    // For desktop, show event titles when agenda is hidden
+                    const showEventTitles = !isMobile && !showAgenda && hasEvents;
 
                     return (
                       <div
@@ -567,11 +607,27 @@ const Home = () => {
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className={cn(
-                            "absolute bottom-1 w-1.5 h-1.5 rounded-full",
-                            isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
-                            isPastDate && "bg-gray-400" // Grey dot for past dates
-                          )} />
+                          <>
+                            {!showEventTitles && (
+                              <div className={cn(
+                                "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                                isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
+                                isPastDate && "bg-gray-400" // Grey dot for past dates
+                              )} />
+                            )}
+                            {showEventTitles && (
+                              <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-full max-w-[calc(100%-8px)] bg-white border border-gray-200 rounded-md shadow-sm p-1 text-xs text-gray-700">
+                                {dayEvents.map((event, index) => (
+                                  <div key={event.id} className={cn(
+                                    "truncate",
+                                    index < dayEvents.length - 1 ? "mb-1" : ""
+                                  )}>
+                                    {event.event_name}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     );
@@ -610,10 +666,21 @@ const Home = () => {
           )}
         </div>
 
-        {/* Agenda Sidebar (Desktop) */}
-        {!isMobile && (
+        {/* Agenda Sidebar (Desktop) - Toggleable */}
+        {!isMobile && showAgenda && (
           <div className="w-80 bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200 flex-shrink-0">
-            <h3 className="text-2xl font-bold text-foreground mb-4">Agenda</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold text-foreground">Agenda</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowAgenda(false)}
+                className="transition-all duration-300 ease-in-out transform hover:scale-105"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Hide Agenda</span>
+              </Button>
+            </div>
             <div className="space-y-4">
               {selectedDayEvents.map((event) => (
                 <Card key={event.id} className="shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200">
