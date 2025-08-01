@@ -89,7 +89,7 @@ const Home = () => {
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const daysOfWeekShort = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  const daysOfWeekShort = ['M', 'T', 'W', 'T', 'F', 'S', 'S']; // Changed to single letters
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -437,7 +437,10 @@ const Home = () => {
                       >
                         <span className="font-bold text-lg">{format(date, 'd')}</span>
                         {hasEvents && (
-                          <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-blue-500" />
+                          <span className={cn(
+                            "w-2 h-2 rounded-full mt-1", // Larger dot, with margin-top
+                            isPastDate ? "bg-gray-400" : "bg-blue-500" // Conditional color for dot
+                          )} />
                         )}
                       </div>
                     );
