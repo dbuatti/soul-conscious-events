@@ -356,14 +356,14 @@ const EventsList = () => {
           {/* Action Buttons and View Mode Controls */}
           <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-center">
             {/* Left side: Add New Event Button */}
-            <Link to="/submit-event">
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto text-sm sm:text-base">
-                Add New Event
+            <Link to="/submit-event" className="w-full sm:w-auto order-last sm:order-first">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full text-sm sm:text-base">
+                <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
               </Button>
             </Link>
 
             {/* Right side: Apply, Clear, View Mode */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center w-full sm:w-auto order-first sm:order-last">
               {(
                 draftEventType !== appliedEventType ||
                 draftState !== appliedState ||
