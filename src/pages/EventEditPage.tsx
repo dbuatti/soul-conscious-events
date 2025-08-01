@@ -616,14 +616,9 @@ const EventEditPage = () => {
                 <TabsTrigger value="url">Image URL</TabsTrigger>
               </TabsList>
               <TabsContent value="upload" className="mt-4">
-                <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
-                  <span className="flex items-center">
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    {selectedImage ? selectedImage.name : (currentEvent?.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images') ? currentEvent.image_url.split('/').pop() : 'No file chosen')}
-                  </span>
-                  <Button type="button" variant="outline" size="sm" className="ml-4">
-                    Choose File
-                  </Button>
+                <label htmlFor="image-upload" className="flex items-center justify-center px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200 w-full">
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  {selectedImage ? selectedImage.name : (currentEvent?.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images') ? currentEvent.image_url.split('/').pop() : 'Choose File')}
                   <Input
                     id="image-upload"
                     type="file"
@@ -684,7 +679,7 @@ const EventEditPage = () => {
       </Form>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>
             <DialogDescription>
@@ -705,73 +700,75 @@ const EventEditPage = () => {
                     </a>
                   </div>
                 )}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-right font-medium text-foreground">Event Name:</p>
-                  <p className="col-span-3 text-foreground">{previewData.eventName}</p>
+                <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                    <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Event Name:</p>
+                    <p className="text-foreground sm:w-3/4">{previewData.eventName}</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                    <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Date:</p>
+                    <p className="text-foreground sm:w-3/4">
+                      {previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}
+                      {previewData.endDate && ` - ${format(previewData.endDate, 'PPP')}`}
+                    </p>
+                  </div>
+                  {previewData.eventTime && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Time:</p>
+                      <p className="text-foreground sm:w-3/4">{previewData.eventTime}</p>
+                    </div>
+                  )}
+                  {previewData.placeName && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Place Name:</p>
+                      <p className="text-foreground sm:w-3/4">{previewData.placeName}</p>
+                    </div>
+                  )}
+                  {previewData.fullAddress && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Address:</p>
+                      <p className="text-foreground sm:w-3/4">{previewData.fullAddress}</p>
+                    </div>
+                  )}
+                  {previewData.description && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Description:</p>
+                      <p className="break-words text-foreground sm:w-3/4">{previewData.description}</p>
+                    </div>
+                  )}
+                  {previewData.ticketLink && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Ticket Link:</p>
+                      <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all sm:w-3/4">
+                        {previewData.ticketLink}
+                      </a>
+                    </div>
+                  )}
+                  {previewData.price && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Price:</p>
+                      <p className="text-foreground sm:w-3/4">{previewData.price}</p>
+                    </div>
+                  )}
+                  {previewData.specialNotes && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Special Notes:</p>
+                      <p className="break-words text-foreground sm:w-3/4">{previewData.specialNotes}</p>
+                    </div>
+                  )}
+                  {previewData.organizerContact && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Organizer:</p>
+                      <p className="text-foreground sm:w-3/4">{previewData.organizerContact}</p>
+                    </div>
+                  )}
+                  {previewData.eventType && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Event Type:</p>
+                      <p className="text-foreground sm:w-3/4">{previewData.eventType}</p>
+                    </div>
+                  )}
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-right font-medium text-foreground">Date:</p>
-                  <p className="col-span-3 text-foreground">
-                    {previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}
-                    {previewData.endDate && ` - ${format(previewData.endDate, 'PPP')}`}
-                  </p>
-                </div>
-                {previewData.eventTime && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Time:</p>
-                    <p className="col-span-3 text-foreground">{previewData.eventTime}</p>
-                  </div>
-                )}
-                {previewData.placeName && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Place Name:</p>
-                    <p className="col-span-3 text-foreground">{previewData.placeName}</p>
-                  </div>
-                )}
-                {previewData.fullAddress && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Address:</p>
-                    <p className="col-span-3 text-foreground">{previewData.fullAddress}</p>
-                  </div>
-                )}
-                {previewData.description && (
-                  <div className="grid grid-cols-4 items-start gap-4">
-                    <p className="text-right font-medium text-foreground">Description:</p>
-                    <p className="col-span-3 break-words text-foreground">{previewData.description}</p>
-                  </div>
-                )}
-                {previewData.ticketLink && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Ticket Link:</p>
-                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
-                      {previewData.ticketLink}
-                    </a>
-                  </div>
-                )}
-                {previewData.price && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Price:</p>
-                    <p className="col-span-3 text-foreground">{previewData.price}</p>
-                  </div>
-                )}
-                {previewData.specialNotes && (
-                  <div className="grid grid-cols-4 items-start gap-4">
-                    <p className="text-right font-medium text-foreground">Special Notes:</p>
-                    <p className="col-span-3 break-words text-foreground">{previewData.specialNotes}</p>
-                  </div>
-                )}
-                {previewData.organizerContact && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Organizer:</p>
-                    <p className="col-span-3 text-foreground">{previewData.organizerContact}</p>
-                  </div>
-                )}
-                {previewData.eventType && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Event Type:</p>
-                    <p className="col-span-3 text-foreground">{previewData.eventType}</p>
-                  </div>
-                )}
               </>
             )}
           </div>

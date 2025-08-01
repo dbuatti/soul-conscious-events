@@ -225,7 +225,7 @@ const EventsList = () => {
           Connect with events that nourish your mind, body, and spirit across Australia.
         </p>
         <Link to="/submit-event">
-          <Button className="bg-white text-primary hover:bg-gray-100 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
             Add Your Event
           </Button>
         </Link>
