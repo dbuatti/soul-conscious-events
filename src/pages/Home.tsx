@@ -284,7 +284,7 @@ const Home = () => {
   const eventsForCurrentMonth = getEventsForMonth(currentMonth);
   const eventsForCurrentWeek = getEventsForWeek(currentWeek);
 
-  // Helper to render pills with continuous track that spans borders
+  // Render a pill; multi-day uses a track spanning borders; single-day uses subtle outline
   const renderDayEventPill = (event: Event, day: Date) => {
     const eventStartDate = parseISO(event.event_date);
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -293,24 +293,42 @@ const Home = () => {
     const isEventEndDay = isSameDay(day, eventEndDate);
     const isContinuationDay = isMultiDay && !isEventStartDay && !isEventEndDay;
 
-    // Track spans beyond the cell to cover borders
-    const trackClasses = cn(
-      // create a track that extends 1px on both sides to cover column borders
-      "relative z-30 -mx-[1px] w-[calc(100%+2px)]"
-    );
+    if (!isMultiDay) {
+      // Single-day: transparent background with subtle border
+      return (
+        <div
+          key={event.id + format(day, 'yyyy-MM-dd')}
+          className={cn(
+            "relative z-10 w-full",
+          )}
+        >
+          <div
+            className={cn(
+              "py-1 px-2 text-xs font-medium whitespace-normal",
+              "min-h-[1.5rem]",
+              "bg-transparent border border-blue-600/40 text-foreground dark:border-blue-400/40 rounded-md"
+            )}
+          >
+            <span className="flex flex-col text-left">
+              {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
+              <span className="text-foreground">{event.event_name}</span>
+            </span>
+          </div>
+        </div>
+      );
+    }
 
-    // The visual pill
+    // Multi-day: solid bar with seamless track
+    const trackClasses = cn("relative z-30 -mx-[1px] w-[calc(100%+2px)]");
     let rounding = "rounded-md";
-    if (isMultiDay) {
-      if (isEventStartDay && isEventEndDay) {
-        rounding = "rounded-md";
-      } else if (isEventStartDay) {
-        rounding = "rounded-l-md rounded-r-none";
-      } else if (isEventEndDay) {
-        rounding = "rounded-r-md rounded-l-none";
-      } else if (isContinuationDay) {
-        rounding = "rounded-none";
-      }
+    if (isEventStartDay && isEventEndDay) {
+      rounding = "rounded-md";
+    } else if (isEventStartDay) {
+      rounding = "rounded-l-md rounded-r-none";
+    } else if (isEventEndDay) {
+      rounding = "rounded-r-md rounded-l-none";
+    } else if (isContinuationDay) {
+      rounding = "rounded-none";
     }
 
     return (
@@ -323,7 +341,7 @@ const Home = () => {
             rounding
           )}
         >
-          {(isEventStartDay || !isMultiDay) && (
+          {(isEventStartDay) && (
             <span className="flex flex-col text-left pl-1">
               {event.event_time && <span className="font-bold">{event.event_time}</span>}
               <span>{event.event_name}</span>
