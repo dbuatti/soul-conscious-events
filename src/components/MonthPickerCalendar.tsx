@@ -64,10 +64,10 @@ const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
 
   return (
     <DayPicker
-      // Removed mode="single" to allow 'view="month"' to be recognized
+      mode="default" // Changed from removed "single" to "default" to enable 'view' prop
       view="month" // This forces the calendar to always show the month grid
       selected={selected} // Pass selected prop
-      onSelect={onSelect} // Pass onSelect prop
+      onSelect={onSelect} // Pass onSelect prop directly
       defaultMonth={defaultMonth} // Pass defaultMonth prop
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
