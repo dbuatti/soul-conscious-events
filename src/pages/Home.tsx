@@ -414,12 +414,21 @@ const Home = () => {
   const multiDayEventsInView = events.filter(event => {
     const eventStartDate = parseISO(event.event_date);
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    return (
-      !isSameDay(eventStartDate, eventEndDate) &&
-      eventEndDate >= calendarStartDate &&
-      eventStartDate <= calendarEndDate &&
-      event.state === 'approved'
-    );
+    const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
+    const overlapsWithView = eventEndDate >= calendarStartDate && eventStartDate <= calendarEndDate;
+    const isApproved = event.state === 'approved';
+
+    // Debugging multi-day event filtering
+    if (isMultiDay && overlapsWithView && isApproved) {
+      console.log(`Multi-day event "${event.event_name}" (ID: ${event.id}) is in view.`);
+      console.log(`  Start: ${format(eventStartDate, 'yyyy-MM-dd')}, End: ${format(eventEndDate, 'yyyy-MM-dd')}`);
+      console.log(`  Calendar View: ${format(calendarStartDate, 'yyyy-MM-dd')} to ${format(calendarEndDate, 'yyyy-MM-dd')}`);
+    } else if (isMultiDay) {
+      console.log(`Multi-day event "${event.event_name}" (ID: ${event.id}) NOT in view or not approved.`);
+      console.log(`  Is Multi-day: ${isMultiDay}, Overlaps: ${overlapsWithView}, Approved: ${isApproved}`);
+    }
+
+    return isMultiDay && overlapsWithView && isApproved;
   });
 
   // Group overlapping multi-day events for row calculation
@@ -437,6 +446,7 @@ const Home = () => {
           ? parseISO(lastEventInRow.end_date) 
           : parseISO(lastEventInRow.event_date);
         
+        // Check if the current event starts after the last event in this row ends
         if (parseISO(event.event_date).getTime() > lastEventEnd.getTime()) {
           row.push(event);
           placed = true;
@@ -447,6 +457,7 @@ const Home = () => {
         rows.push([event]);
       }
     }
+    console.log('Multi-day event rows:', rows); // Debugging row assignment
     return rows;
   };
 
