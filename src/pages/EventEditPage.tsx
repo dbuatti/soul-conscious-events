@@ -3,43 +3,27 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon, XCircle } from 'lucide-react';
+import { CalendarIcon, Loader2, Image as ImageIcon, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useNavigate, useParams, useLocation } from 'react-router-dom'; // Import useLocation
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose,
 } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { eventTypes } from '@/lib/constants'; // Import from constants
-
-const australianStates = [
-  'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
-];
+import { eventTypes } from '@/lib/constants';
 
 interface Event {
   id: string;
@@ -61,12 +45,8 @@ interface Event {
 }
 
 const eventFormSchema = z.object({
-  eventName: z.string().min(2, {
-    message: 'Event name must be at least 2 characters.',
-  }),
-  eventDate: z.date({
-    required_error: 'A date is required.',
-  }),
+  eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
+  eventDate: z.date({ required_error: 'A date is required.' }),
   endDate: z.date().optional(),
   eventTime: z.string().optional().or(z.literal('')),
   placeName: z.string().optional().or(z.literal('')),
@@ -77,14 +57,14 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  imageFile: z.any().optional(), // For new image upload
-  imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // For image URL input
+  imageFile: z.any().optional(),
+  imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
 });
 
-const EventEditPage = () => {
+const EventEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation(); // Get location object to access state
+  const location = useLocation();
   const { user, isLoading: isSessionLoading } = useSession();
   const [loadingEvent, setLoadingEvent] = useState(true);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
@@ -93,8 +73,7 @@ const EventEditPage = () => {
   const placeNameInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload'); // New state for tabs
-
+  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload');
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -109,7 +88,7 @@ const EventEditPage = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      imageUrl: '', // Initialize new field
+      imageUrl: '',
     },
   });
 
@@ -147,20 +126,17 @@ const EventEditPage = () => {
           specialNotes: data.special_notes || '',
           organizerContact: data.organizer_contact || '',
           eventType: data.event_type || '',
-          imageUrl: data.image_url || '', // Set imageUrl from fetched data
+          imageUrl: data.image_url || '',
         });
-        setImagePreviewUrl(data.image_url || null); // Set initial preview URL
+        setImagePreviewUrl(data.image_url || null);
         if (data.image_url) {
-          // Determine if the existing image is a Supabase storage URL or an external URL
           if (data.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
-            setImageInputMode('upload'); // Treat as if it was uploaded (even if it's a URL, it's from our storage)
-            // We don't have the original file, so selectedImage remains null.
-            // The preview will show the URL.
+            setImageInputMode('upload');
           } else {
-            setImageInputMode('url'); // It's an external URL
+            setImageInputMode('url');
           }
         } else {
-          setImageInputMode('upload'); // Default to upload if no image
+          setImageInputMode('upload');
         }
       } else {
         navigate('/404');
@@ -198,10 +174,10 @@ const EventEditPage = () => {
       setSelectedImage(file);
       setImagePreviewUrl(URL.createObjectURL(file));
       form.setValue('imageFile', file);
-      form.setValue('imageUrl', ''); // Clear URL field if file is selected
+      form.setValue('imageUrl', '');
     } else {
       setSelectedImage(null);
-      setImagePreviewUrl(currentEvent?.image_url || null); // Revert to original if cleared
+      setImagePreviewUrl(currentEvent?.image_url || null);
       form.setValue('imageFile', undefined);
     }
   };
@@ -211,7 +187,7 @@ const EventEditPage = () => {
     form.setValue('imageUrl', url);
     if (url) {
       setImagePreviewUrl(url);
-      setSelectedImage(null); // Clear file if URL is entered
+      setSelectedImage(null);
       form.setValue('imageFile', undefined);
     } else {
       setImagePreviewUrl(null);
@@ -222,30 +198,25 @@ const EventEditPage = () => {
     setSelectedImage(null);
     setImagePreviewUrl(null);
     form.setValue('imageFile', undefined);
-    form.setValue('imageUrl', ''); // Clear the URL field
+    form.setValue('imageUrl', '');
   };
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
 
     let finalImageUrl: string | null = null;
-    
-    if (selectedImage) { // If a new file was selected, upload it
-      // Delete old image if it exists and is different
+
+    if (selectedImage) {
       if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
-          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
-          if (deleteError) {
-            console.error('Error deleting old image:', deleteError);
-            // Don't stop submission, just log the error
-          }
+          await supabase.storage.from('event-images').remove([oldFileName]);
         }
       }
 
       const fileExtension = selectedImage.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('event-images')
         .upload(fileName, selectedImage, {
           cacheControl: '3600',
@@ -263,34 +234,25 @@ const EventEditPage = () => {
         .getPublicUrl(fileName);
 
       finalImageUrl = publicUrlData.publicUrl;
-    } else if (values.imageUrl) { // If a URL was provided
-      // If the old image was a file and a new URL is provided, delete the old file
-      if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) { // Check if it's a Supabase storage URL
+    } else if (values.imageUrl) {
+      if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
-          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
-          if (deleteError) {
-            console.error('Error deleting old image:', deleteError);
-          }
+          await supabase.storage.from('event-images').remove([oldFileName]);
         }
       }
       finalImageUrl = values.imageUrl;
-    } else if (currentEvent.image_url && !selectedImage && !values.imageUrl) { // If no new image and no URL, but there was an old image
-      // This means the user explicitly removed the image or it was never set
+    } else if (currentEvent.image_url && !selectedImage && !values.imageUrl) {
       if (currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
-          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
-          if (deleteError) {
-            console.error('Error deleting old image:', deleteError);
-          }
+          await supabase.storage.from('event-images').remove([oldFileName]);
         }
       }
       finalImageUrl = null;
-    } else { // Keep existing image if no changes
+    } else {
       finalImageUrl = currentEvent.image_url;
     }
-
 
     let formattedTicketLink = values.ticketLink;
     if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
@@ -318,7 +280,6 @@ const EventEditPage = () => {
       toast.error('Failed to update event.');
     } else {
       toast.success('Event updated successfully!');
-      // Redirect back to the 'from' location, or default to '/'
       navigate(location.state?.from || '/');
     }
   };
@@ -343,7 +304,6 @@ const EventEditPage = () => {
     );
   }
 
-  // Check if the current user is the event creator or an admin
   const isCreatorOrAdmin = user?.id === currentEvent?.user_id || user?.email === 'daniele.buatti@gmail.com';
 
   if (!isCreatorOrAdmin) {
@@ -401,7 +361,6 @@ const EventEditPage = () => {
                         selected={field.value}
                         onSelect={(date) => {
                           field.onChange(date);
-                          // If endDate is not set, set it to the same as eventDate
                           if (date && !form.getValues('endDate')) {
                             form.setValue('endDate', date);
                           }
@@ -596,35 +555,42 @@ const EventEditPage = () => {
             )}
           />
 
-          {/* Image Upload/URL Field */}
           <FormItem>
             <FormLabel>Event Image (Optional)</FormLabel>
-            <Tabs value={imageInputMode} onValueChange={(value) => {
-              setImageInputMode(value as 'upload' | 'url');
-              // Clear the other input type when switching tabs
-              if (value === 'upload') {
-                form.setValue('imageUrl', '');
-                setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : null);
-              } else { // value === 'url'
-                setSelectedImage(null);
-                form.setValue('imageFile', undefined);
-                setImagePreviewUrl(form.getValues('imageUrl') || null);
-              }
-            }} className="w-full">
+            <Tabs
+              value={imageInputMode}
+              onValueChange={(value) => {
+                setImageInputMode(value as 'upload' | 'url');
+                if (value === 'upload') {
+                  form.setValue('imageUrl', '');
+                  setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : null);
+                } else {
+                  setSelectedImage(null);
+                  form.setValue('imageFile', undefined);
+                  setImagePreviewUrl(form.getValues('imageUrl') || null);
+                }
+              }}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
                 <TabsTrigger value="upload">Upload Image</TabsTrigger>
                 <TabsTrigger value="url">Image URL</TabsTrigger>
               </TabsList>
               <TabsContent value="upload" className="mt-4">
-                <label htmlFor="image-upload" className="flex items-center justify-center px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200 w-full">
-                  <ImageIcon className="mr-2 h-4 w-4" />
-                  {selectedImage ? selectedImage.name : (currentEvent?.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images') ? currentEvent.image_url.split('/').pop() : 'Choose File')}
+                <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
+                  <span className="flex items-center">
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    {selectedImage ? selectedImage.name : (currentEvent?.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images') ? currentEvent.image_url.split('/').pop() : 'No file chosen')}
+                  </span>
+                  <Button type="button" variant="outline" size="sm" className="ml-4">
+                    Choose File
+                  </Button>
                   <Input
                     id="image-upload"
                     type="file"
                     accept="image/*"
                     onChange={handleImageFileChange}
-                    className="sr-only" // Hide the default input
+                    className="sr-only"
                   />
                 </label>
               </TabsContent>
@@ -635,7 +601,7 @@ const EventEditPage = () => {
                   render={({ field }) => (
                     <FormControl>
                       <Input
-                        id="imageUrl" // Added ID
+                        id="imageUrl"
                         placeholder="e.g., https://example.com/image.jpg"
                         {...field}
                         onChange={handleImageUrlInputChange}
@@ -665,7 +631,7 @@ const EventEditPage = () => {
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => navigate(location.state?.from || '/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              Back to Events
+              Back
             </Button>
             <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Preview
@@ -679,7 +645,7 @@ const EventEditPage = () => {
       </Form>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
+        <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>
             <DialogDescription>
@@ -700,75 +666,73 @@ const EventEditPage = () => {
                     </a>
                   </div>
                 )}
-                <div className="space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                    <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Event Name:</p>
-                    <p className="text-foreground sm:w-3/4">{previewData.eventName}</p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                    <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Date:</p>
-                    <p className="text-foreground sm:w-3/4">
-                      {previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}
-                      {previewData.endDate && ` - ${format(previewData.endDate, 'PPP')}`}
-                    </p>
-                  </div>
-                  {previewData.eventTime && (
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Time:</p>
-                      <p className="text-foreground sm:w-3/4">{previewData.eventTime}</p>
-                    </div>
-                  )}
-                  {previewData.placeName && (
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Place Name:</p>
-                      <p className="text-foreground sm:w-3/4">{previewData.placeName}</p>
-                    </div>
-                  )}
-                  {previewData.fullAddress && (
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Address:</p>
-                      <p className="text-foreground sm:w-3/4">{previewData.fullAddress}</p>
-                    </div>
-                  )}
-                  {previewData.description && (
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Description:</p>
-                      <p className="break-words text-foreground sm:w-3/4">{previewData.description}</p>
-                    </div>
-                  )}
-                  {previewData.ticketLink && (
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Ticket Link:</p>
-                      <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all sm:w-3/4">
-                        {previewData.ticketLink}
-                      </a>
-                    </div>
-                  )}
-                  {previewData.price && (
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Price:</p>
-                      <p className="text-foreground sm:w-3/4">{previewData.price}</p>
-                    </div>
-                  )}
-                  {previewData.specialNotes && (
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Special Notes:</p>
-                      <p className="break-words text-foreground sm:w-3/4">{previewData.specialNotes}</p>
-                    </div>
-                  )}
-                  {previewData.organizerContact && (
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Organizer:</p>
-                      <p className="text-foreground sm:w-3/4">{previewData.organizerContact}</p>
-                    </div>
-                  )}
-                  {previewData.eventType && (
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Event Type:</p>
-                      <p className="text-foreground sm:w-3/4">{previewData.eventType}</p>
-                    </div>
-                  )}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <p className="text-right font-medium text-foreground">Event Name:</p>
+                  <p className="col-span-3 text-foreground">{previewData.eventName}</p>
                 </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <p className="text-right font-medium text-foreground">Date:</p>
+                  <p className="col-span-3 text-foreground">
+                    {previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}
+                    {previewData.endDate && ` - ${format(previewData.endDate, 'PPP')}`}
+                  </p>
+                </div>
+                {previewData.eventTime && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium text-foreground">Time:</p>
+                    <p className="col-span-3 text-foreground">{previewData.eventTime}</p>
+                  </div>
+                )}
+                {previewData.placeName && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium text-foreground">Place Name:</p>
+                    <p className="col-span-3 text-foreground">{previewData.placeName}</p>
+                  </div>
+                )}
+                {previewData.fullAddress && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium text-foreground">Address:</p>
+                    <p className="col-span-3 text-foreground">{previewData.fullAddress}</p>
+                  </div>
+                )}
+                {previewData.description && (
+                  <div className="grid grid-cols-4 items-start gap-4">
+                    <p className="text-right font-medium text-foreground">Description:</p>
+                    <p className="col-span-3 break-words text-foreground">{previewData.description}</p>
+                  </div>
+                )}
+                {previewData.ticketLink && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium text-foreground">Ticket Link:</p>
+                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
+                      {previewData.ticketLink}
+                    </a>
+                  </div>
+                )}
+                {previewData.price && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium text-foreground">Price:</p>
+                    <p className="col-span-3 text-foreground">{previewData.price}</p>
+                  </div>
+                )}
+                {previewData.specialNotes && (
+                  <div className="grid grid-cols-4 items-start gap-4">
+                    <p className="text-right font-medium text-foreground">Special Notes:</p>
+                    <p className="col-span-3 break-words text-foreground">{previewData.specialNotes}</p>
+                  </div>
+                )}
+                {previewData.organizerContact && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium text-foreground">Organizer:</p>
+                    <p className="col-span-3 text-foreground">{previewData.organizerContact}</p>
+                  </div>
+                )}
+                {previewData.eventType && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium text-foreground">Event Type:</p>
+                    <p className="col-span-3 text-foreground">{previewData.eventType}</p>
+                  </div>
+                )}
               </>
             )}
           </div>
