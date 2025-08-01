@@ -493,7 +493,7 @@ const Home = () => {
                 <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="h-56 border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
+                <div key={i} className="h-28 border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
                   <Skeleton className="h-5 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-2/3 mt-1" />
@@ -588,7 +588,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-28 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isCurrentMonth ? "bg-white" : "bg-gray-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
@@ -605,21 +605,11 @@ const Home = () => {
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide">
-                            {dayEvents.map((event) => (
-                              <div
-                                key={event.id}
-                                className={cn(
-                                  "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
-                                  isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                  "line-clamp-1" // Changed to line-clamp-1 for compactness
-                                )}
-                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation and open dialog
-                              >
-                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" />
-                                {!isMobile ? event.event_name : ''} {/* Show name on desktop, hide on mobile */}
-                              </div>
-                            ))}
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                            <CircleDot className={cn(
+                              "h-4 w-4",
+                              isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-purple-600")
+                            )} />
                           </div>
                         )}
                       </div>
@@ -638,7 +628,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-28 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
@@ -655,21 +645,11 @@ const Home = () => {
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide">
-                            {dayEvents.map((event, index) => (
-                              <div
-                                key={event.id}
-                                className={cn(
-                                  "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
-                                  isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                  "line-clamp-1" // Changed to line-clamp-1 for compactness
-                                )}
-                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation and open dialog
-                              >
-                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" />
-                                {!isMobile ? event.event_name : ''} {/* Show name on desktop, hide on mobile */}
-                              </div>
-                            ))}
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                            <CircleDot className={cn(
+                              "h-4 w-4",
+                              isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-purple-600")
+                            )} />
                           </div>
                         )}
                       </div>
