@@ -43,7 +43,6 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
-import DayEventsListDialog from '@/components/DayEventsListDialog'; // New import
 
 interface Event {
   id: string;
@@ -78,11 +77,6 @@ const Home = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isMobileFilterSheetOpen, setIsMobileFilterSheetOpen] = useState(false);
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
-
-  // New state for the DayEventsListDialog
-  const [isDayEventsListDialogOpen, setIsDayEventsListDialogOpen] = useState(false);
-  const [eventsForClickedDay, setEventsForClickedDay] = useState<Event[]>([]);
-
 
   const isMobile = useIsMobile();
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -308,13 +302,8 @@ const Home = () => {
 
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
-    const dayEvents = getEventsForDay(day);
-
-    if (isMobile && dayEvents.length > 0) {
-      setEventsForClickedDay(dayEvents);
-      setIsDayEventsListDialogOpen(true);
-    } else if (!isMobile) {
-      setSelectedDayEvents(dayEvents);
+    if (!isMobile) {
+      setSelectedDayEvents(getEventsForDay(day));
     }
   };
 
@@ -504,7 +493,7 @@ const Home = () => {
                 <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="h-24 aspect-square border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
+                <div key={i} className="h-28 border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
                   <Skeleton className="h-5 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-2/3 mt-1" />
@@ -599,7 +588,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-24 aspect-square rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-28 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isCurrentMonth ? "bg-white" : "bg-gray-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
@@ -609,7 +598,7 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-1/2 -translate-x-1/2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
@@ -639,7 +628,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-24 aspect-square rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-28 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
@@ -648,7 +637,7 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-1/2 -translate-x-1/2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
@@ -752,15 +741,6 @@ const Home = () => {
         isOpen={isEventDetailDialogOpen}
         onClose={() => setIsEventDetailDialogOpen(false)}
         cameFromCalendar={true}
-      />
-
-      {/* Day Events List Dialog (for mobile) */}
-      <DayEventsListDialog
-        events={eventsForClickedDay}
-        selectedDate={selectedDayForDialog}
-        isOpen={isDayEventsListDialogOpen}
-        onClose={() => setIsDayEventsListDialogOpen(false)}
-        onEventSelect={handleViewDetails}
       />
     </div>
   );
