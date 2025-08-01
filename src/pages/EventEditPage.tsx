@@ -81,7 +81,7 @@ const eventFormSchema = z.object({
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // For image URL input
 });
 
-const EditEvent = () => {
+const EventEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, isLoading: isSessionLoading } = useSession();
@@ -786,4 +786,4 @@ const EditEvent = () => {
   );
 };
 
-export default SubmitEvent;
+export default EventEditPage;

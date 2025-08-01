@@ -15,7 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
-import EditEvent from "./pages/EditEvent";
+import EventEditPage from "./pages/EventEditPage"; // Renamed import
 import About from "./pages/About";
 
 const queryClient = new QueryClient();
@@ -48,7 +48,7 @@ const App = () => (
                 path="/edit-event/:id"
                 element={
                   <ProtectedRoute>
-                    <EditEvent />
+                    <EventEditPage /> {/* Updated component name */}
                   </ProtectedRoute>
                 }
               />
