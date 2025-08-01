@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Filter as FilterIcon, ChevronDown, Frown, List, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Filter as FilterIcon, ChevronDown, Frown, List, Calendar as CalendarIcon2, X, CircleDot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,7 +32,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import FilterOverlay from '@/components/FilterOverlay';
 import AgendaOverlay from '@/components/AgendaOverlay';
-import MultiDayEventBar from '@/components/MultiDayEventBar';
 
 interface Event {
   id: string;
@@ -53,6 +52,7 @@ interface Event {
 }
 
 const Home = () => {
+  // State declarations
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
@@ -60,21 +60,28 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date());
+  
+  // Filter states for FilterOverlay
   const [searchTerm, setSearchTerm] = useState('');
   const [eventType, setEventType] = useState('All');
   const [stateFilter, setStateFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All Upcoming');
+
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
+
+  // Overlay states
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
   const [isAgendaOverlayOpen, setIsAgendaOverlayOpen] = useState(false);
 
   const isMobile = useIsMobile();
   const calendarRef = useRef<HTMLDivElement>(null);
 
+  const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const daysOfWeekShort = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
+  // Helper functions
   const fetchEvents = async () => {
     setLoading(true);
     let query = supabase
@@ -99,52 +106,70 @@ const Home = () => {
         query = query
           .gte('event_date', format(startOfMonth(now), 'yyyy-MM-dd'))
           .lte('event_date', format(endOfMonth(now), 'yyyy-MM-dd'));
-        break;
-      case 'Past Events':
-        query = query.lt('event_date', todayFormatted).order('event_date', { ascending: false });
-        break;
-      case 'All Events':
-        break;
-      case 'All Upcoming':
-      default:
-        query = query.gte('event_date', todayFormatted);
-        break;
-    }
+          break;
+        case 'Past Events':
+          query = query.lt('event_date', todayFormatted).order('event_date', { ascending: false });
+          break;
+        case 'All Events':
+          break;
+        case 'All Upcoming':
+        default:
+          query = query.gte('event_date', todayFormatted);
+          break;
+      }
 
-    if (eventType !== 'All') {
-      query = query.eq('event_type', eventType);
-    }
+      if (eventType !== 'All') {
+        query = query.eq('event_type', eventType);
+      }
 
-    if (stateFilter !== 'All') {
-      query = query.eq('state', stateFilter);
-    }
+      if (stateFilter !== 'All') {
+        query = query.eq('state', stateFilter);
+      }
 
-    if (searchTerm) {
-      query = query.or(
-        `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%,place_name.ilike.%${searchTerm}%`
-      );
-    }
+      if (searchTerm) {
+        query = query.or(
+          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%,place_name.ilike.%${searchTerm}%`
+        );
+      }
 
-    if (dateFilter !== 'Past Events') {
-      query = query.order('event_date', { ascending: true });
-    }
+      if (dateFilter !== 'Past Events') {
+        query = query.order('event_date', { ascending: true });
+      }
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (error) {
-      console.error('Error fetching events:', error);
-      toast.error('Failed to load events.');
-    } else {
-      setEvents(data || []);
-    }
-    setLoading(false);
+      if (error) {
+        console.error('Error fetching events:', error);
+        toast.error('Failed to load events.');
+      } else {
+        setEvents(data || []);
+      }
+      setLoading(false);
+    };
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(subMonths(currentMonth, 1));
   };
 
-  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const handleToday = () => setCurrentMonth(new Date());
-  const handlePrevWeek = () => setCurrentMonth(subWeeks(currentMonth, 1));
-  const handleNextWeek = () => setCurrentMonth(addWeeks(currentMonth, 1));
+  const handleNextMonth = () => {
+    setCurrentMonth(addMonths(currentMonth, 1));
+  };
+
+  const handleToday = () => {
+    setCurrentMonth(new Date());
+  };
+
+  const handlePrevWeek = () => {
+    setCurrentMonth(subWeeks(currentMonth, 1));
+  };
+
+  const handleNextWeek = () => {
+    setCurrentMonth(addWeeks(currentMonth, 1));
+  };
+
+  const handleMonthChange = (date: Date) => {
+    setCurrentMonth(date);
+  };
 
   const getEventsForDay = (day: Date) => {
     return events.filter(event => {
@@ -166,7 +191,10 @@ const Home = () => {
     return events.filter(event => {
       const eventStartDate = parseISO(event.event_date);
       const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-      return (eventStartDate <= monthEnd && eventEndDate >= monthStart);
+
+      return (
+        (eventStartDate <= monthEnd && eventEndDate >= monthStart)
+      );
     }).sort((a, b) => {
       const dateA = parseISO(a.event_date);
       const dateB = parseISO(b.event_date);
@@ -184,6 +212,7 @@ const Home = () => {
     return events.filter(event => {
       const eventStartDate = parseISO(event.event_date);
       const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+
       return weekDays.some(day => {
         return isSameDay(eventStartDate, day) || isSameDay(eventEndDate, day) ||
                (day >= eventStartDate && day <= eventEndDate);
@@ -233,11 +262,20 @@ const Home = () => {
 
   const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => {
     switch (filterType) {
-      case 'search': setSearchTerm(''); break;
-      case 'eventType': setEventType('All'); break;
-      case 'state': setStateFilter('All'); break;
-      case 'dateFilter': setDateFilter('All Upcoming'); break;
-      default: break;
+      case 'search':
+        setSearchTerm('');
+        break;
+      case 'eventType':
+        setEventType('All');
+        break;
+      case 'state':
+        setStateFilter('All');
+        break;
+      case 'dateFilter':
+        setDateFilter('All Upcoming');
+        break;
+      default:
+        break;
     }
   };
 
@@ -308,6 +346,7 @@ const Home = () => {
     );
   };
 
+  // Effects
   useEffect(() => {
     fetchEvents();
   }, [searchTerm, eventType, stateFilter, dateFilter]);
@@ -330,8 +369,9 @@ const Home = () => {
     }
   }, [currentMonth, viewMode]);
 
+  // Swipe gesture handlers for mobile
   const handleSwipe = (direction: 'left' | 'right') => {
-    if (!isMobile) return;
+    if (!isMobile) return; // Only enable swipe on mobile
     if (direction === 'left') {
       if (viewMode === 'month') {
         handleNextMonth();
@@ -358,15 +398,17 @@ const Home = () => {
       const deltaX = touch.clientX - startX;
       const deltaY = touch.clientY - startY;
 
+      // Prevent vertical scrolling from triggering horizontal swipe
       if (Math.abs(deltaY) > Math.abs(deltaX) * 2) return;
 
-      if (Math.abs(deltaX) > 50) {
-        e.preventDefault();
+      if (Math.abs(deltaX) > 50) { // Threshold for horizontal swipe
+        e.preventDefault(); // Prevent default scroll behavior
         if (deltaX > 0) {
           handleSwipe('right');
         } else {
           handleSwipe('left');
         }
+        // Remove listeners after a successful swipe to prevent multiple triggers
         window.removeEventListener('touchmove', onTouchMove);
         window.removeEventListener('touchend', onTouchEnd);
       }
@@ -390,90 +432,35 @@ const Home = () => {
         }
       };
     }
-  }, [isMobile, viewMode]);
+  }, [isMobile, viewMode]); // Re-attach listener if viewMode changes
 
   const startOfCurrentMonth = startOfMonth(currentMonth);
   const endOfCurrentMonth = endOfMonth(currentMonth);
+
   const startDay = startOfWeek(startOfCurrentMonth, { weekStartsOn: 1 });
   const endDay = endOfWeek(endOfCurrentMonth, { weekStartsOn: 1 });
+
   const daysInMonthView = eachDayOfInterval({ start: startDay, end: endDay });
 
   const eventsForCurrentMonth = getEventsForMonth(currentMonth);
   const eventsForCurrentWeek = getEventsForWeek(currentWeek);
 
-  const getVisibleDateRange = () => {
-    if (viewMode === 'month') {
-      return { start: startDay, end: endDay };
-    } else {
-      return { start: currentWeek[0], end: currentWeek[6] };
-    }
-  };
-
-  const { start: calendarStartDate, end: calendarEndDate } = getVisibleDateRange();
-
-  const multiDayEventsInView = events.filter(event => {
-    const eventStartDate = parseISO(event.event_date);
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
-    const overlapsWithView = eventEndDate >= calendarStartDate && eventStartDate <= calendarEndDate;
-    const isApproved = event.state === 'approved';
-
-    // Debugging multi-day event filtering
-    if (isMultiDay && overlapsWithView && isApproved) {
-      console.log(`Multi-day event "${event.event_name}" (ID: ${event.id}) is in view.`);
-      console.log(`  Start: ${format(eventStartDate, 'yyyy-MM-dd')}, End: ${format(eventEndDate, 'yyyy-MM-dd')}`);
-      console.log(`  Calendar View: ${format(calendarStartDate, 'yyyy-MM-dd')} to ${format(calendarEndDate, 'yyyy-MM-dd')}`);
-    } else if (isMultiDay) {
-      console.log(`Multi-day event "${event.event_name}" (ID: ${event.id}) NOT in view or not approved.`);
-      console.log(`  Is Multi-day: ${isMultiDay}, Overlaps: ${overlapsWithView}, Approved: ${isApproved}`);
-    }
-
-    return isMultiDay && overlapsWithView && isApproved;
-  });
-
-  // Group overlapping multi-day events for row calculation
-  const getEventRows = (events: Event[]) => {
-    const rows: Event[][] = [];
-    const sortedEvents = [...events].sort((a, b) => 
-      parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime()
-    );
-
-    for (const event of sortedEvents) {
-      let placed = false;
-      for (const row of rows) {
-        const lastEventInRow = row[row.length - 1];
-        const lastEventEnd = lastEventInRow.end_date 
-          ? parseISO(lastEventInRow.end_date) 
-          : parseISO(lastEventInRow.event_date);
-        
-        // Check if the current event starts after the last event in this row ends
-        if (parseISO(event.event_date).getTime() > lastEventEnd.getTime()) {
-          row.push(event);
-          placed = true;
-          break;
-        }
-      }
-      if (!placed) {
-        rows.push([event]);
-      }
-    }
-    console.log('Multi-day event rows:', rows); // Debugging row assignment
-    return rows;
-  };
-
-  const multiDayEventRows = getEventRows(multiDayEventsInView);
-
   return (
     <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <div className="flex flex-col gap-8">
+        {/* Main Calendar Content */}
         <div className="flex-grow">
+          {/* New Header Section */}
           <div className="mb-6 text-center">
             <h1 className="text-5xl font-extrabold text-foreground mb-2">Community Events</h1>
             <p className="text-lg text-muted-foreground">Discover and connect with soulful events in your community.</p>
           </div>
 
+          {/* Consolidated Controls Section */}
           <div className="mb-8 p-5 bg-secondary rounded-xl shadow-lg border border-border flex flex-col gap-4">
+            {/* Top row: Date Navigation & View Mode Toggle */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              {/* Date Navigation */}
               <div className="flex items-center space-x-2 mb-4 sm:mb-0">
                 <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handlePrevMonth : handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                   <ArrowLeft className="h-4 w-4" />
@@ -500,6 +487,7 @@ const Home = () => {
                 </Button>
               </div>
 
+              {/* View Mode Toggle */}
               <div className="flex items-center space-x-2">
                 <Button
                   variant={viewMode === 'month' ? 'default' : 'outline'}
@@ -523,11 +511,14 @@ const Home = () => {
               </div>
             </div>
 
+            {/* Bottom row: Quick Actions (Today, Filter, Agenda) */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-border">
+              {/* "Today" Button */}
               <Button variant="outline" onClick={handleToday} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105">
                 Today
               </Button>
 
+              {/* Filter and Agenda Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                 <Button
                   onClick={() => setIsFilterOverlayOpen(true)}
@@ -544,6 +535,7 @@ const Home = () => {
               </div>
             </div>
 
+            {/* Active Filters Display */}
             {hasActiveFilters && (
               <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-1 sm:gap-2 items-center">
                 <span className="text-xs sm:text-sm font-medium text-foreground">Active Filters:</span>
@@ -603,9 +595,10 @@ const Home = () => {
             </div>
           ) : (
             <>
-              <div ref={calendarRef} className="relative grid grid-cols-7 text-center border border-border rounded-lg overflow-hidden">
+              {/* Calendar Grid (for both mobile and desktop) */}
+              <div ref={calendarRef} className="grid grid-cols-7 text-center border border-border rounded-lg overflow-hidden">
                 {daysOfWeekShort.map((day, index) => (
-                  <div key={index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary z-20">{day}</div>
+                  <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>
                 ))}
                 {viewMode === 'month' ? (
                   daysInMonthView.map((day) => {
@@ -615,127 +608,166 @@ const Home = () => {
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
-                    const singleDayEvents = dayEvents.filter(event => {
-                      const start = parseISO(event.event_date);
-                      const end = event.end_date ? parseISO(event.end_date) : start;
-                      return isSameDay(start, end);
-                    });
-
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
                           "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full p-2 overflow-hidden cursor-pointer transition-colors duration-200",
+                          // Removed individual cell borders here to allow seamless bar
                           isCurrentMonth ? "bg-card" : "bg-secondary opacity-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
                           "hover:bg-muted hover:shadow-md hover:border-primary",
-                          (day.getDay() !== 0) && "border-r border-border",
-                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border"
+                          // Apply right and bottom borders to cells, except for the last column/row
+                          (day.getDay() !== 0) && "border-r border-border", // Sunday is 0, so apply to Mon-Sat
+                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border" // Apply bottom border unless it's the last row
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105 z-20",
+                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-primary" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
                           isPastDate && "text-muted-foreground"
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide z-20">
-                          {singleDayEvents.map(event => (
-                            <div
-                              key={event.id}
-                              className="w-full h-5 flex items-center py-0.5 text-xs font-medium truncate bg-accent/20 text-foreground rounded-md"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewDetails(event);
-                              }}
-                            >
-                              {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
-                              {event.event_name}
-                            </div>
-                          ))}
+                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide">
+                          {dayEvents.map(event => {
+                            const eventStartDate = parseISO(event.event_date);
+                            const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+                            const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
+                            const isEventStartDay = isSameDay(day, eventStartDate);
+                            const isEventEndDay = isSameDay(day, eventEndDate);
+                            const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
+
+                            // Determine rounding classes
+                            let roundingClasses = "";
+                            if (isMultiDay) {
+                              if (isEventStartDay) {
+                                roundingClasses = "rounded-l-md rounded-r-none";
+                              } else if (isEventEndDay) {
+                                roundingClasses = "rounded-r-md rounded-l-none";
+                              } else if (isEventContinuation) {
+                                roundingClasses = "rounded-none";
+                              }
+                            } else { // Single day event
+                              roundingClasses = "rounded-md";
+                            }
+
+                            return (
+                              <div
+                                key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
+                                className={cn(
+                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate",
+                                  isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
+                                  roundingClasses, // Apply calculated rounding
+                                  isEventContinuation && "justify-center" // Center text for continuation
+                                )}
+                              >
+                                {/* Only show CircleDot on the start day of a multi-day event or for single-day events */}
+                                {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
+                                {isEventStartDay || !isMultiDay ? (
+                                  <>
+                                    {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
+                                    {event.event_name}
+                                  </>
+                                ) : (
+                                  <span className="italic">...continued</span>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );
                   })
                 ) : (
+                  // Week View
                   currentWeek.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isTodayDate = isToday(day);
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                     const isPastDate = isPast(day) && !isToday(day);
 
-                    const singleDayEvents = dayEvents.filter(event => {
-                      const start = parseISO(event.event_date);
-                      const end = event.end_date ? parseISO(event.end_date) : start;
-                      return isSameDay(start, end);
-                    });
-
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
                           "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full p-2 overflow-hidden cursor-pointer transition-colors duration-200",
+                          // Removed individual cell borders here to allow seamless bar
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
                           "hover:bg-muted hover:shadow-md hover:border-primary",
-                          (day.getDay() !== 0) && "border-r border-border",
-                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border"
+                          // Apply right and bottom borders to cells, except for the last column/row
+                          (day.getDay() !== 0) && "border-r border-border", // Sunday is 0, so apply to Mon-Sat
+                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border" // Apply bottom border unless it's the last row
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105 z-20",
+                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-primary" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
                           isPastDate && "text-muted-foreground"
                         )}>
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide z-20">
-                          {singleDayEvents.map(event => (
-                            <div
-                              key={event.id}
-                              className="w-full h-5 flex items-center py-0.5 text-xs font-medium truncate bg-accent/20 text-foreground rounded-md"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewDetails(event);
-                              }}
-                            >
-                              {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
-                              {event.event_name}
-                            </div>
-                          ))}
+                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide">
+                          {dayEvents.map(event => {
+                            const eventStartDate = parseISO(event.event_date);
+                            const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+                            const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
+                            const isEventStartDay = isSameDay(day, eventStartDate);
+                            const isEventEndDay = isSameDay(day, eventEndDate);
+                            const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
+
+                            // Determine rounding classes
+                            let roundingClasses = "";
+                            if (isMultiDay) {
+                              if (isEventStartDay) {
+                                roundingClasses = "rounded-l-md rounded-r-none";
+                              } else if (isEventEndDay) {
+                                roundingClasses = "rounded-r-md rounded-l-none";
+                              } else if (isEventContinuation) {
+                                roundingClasses = "rounded-none";
+                              }
+                            } else { // Single day event
+                              roundingClasses = "rounded-md";
+                            }
+
+                            return (
+                              <div
+                                key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
+                                className={cn(
+                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate",
+                                  isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
+                                  roundingClasses, // Apply calculated rounding
+                                  isEventContinuation && "justify-center" // Center text for continuation
+                                )}
+                              >
+                                {/* Only show CircleDot on the start day of a multi-day event or for single-day events */}
+                                {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
+                                {isEventStartDay || !isMultiDay ? (
+                                  <>
+                                    {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
+                                    {event.event_name}
+                                  </>
+                                ) : (
+                                  <span className="italic">...continued</span>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );
                   })
                 )}
-                
-                {/* Render Multi-Day Event Bars */}
-                {multiDayEventRows.map((row, rowIndex) => 
-                  row.map(event => (
-                    <MultiDayEventBar
-                      key={`${event.id}-${rowIndex}`}
-                      eventId={event.id}
-                      eventName={event.event_name}
-                      eventTime={event.event_time}
-                      startDate={parseISO(event.event_date)}
-                      endDate={event.end_date ? parseISO(event.end_date) : parseISO(event.event_date)}
-                      calendarStartDate={calendarStartDate}
-                      calendarEndDate={calendarEndDate}
-                      rowIndex={rowIndex}
-                      totalRows={multiDayEventRows.length}
-                      onClick={() => handleViewDetails(event)}
-                    />
-                  ))
-                )}
               </div>
 
+              {/* Events for Selected Month/Week (Mobile/Desktop) */}
               <div className="mt-6">
                 <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
                   {viewMode === 'month'
@@ -767,6 +799,7 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Event Detail Dialog (for individual event details) */}
       <EventDetailDialog
         event={selectedEvent}
         isOpen={isEventDetailDialogOpen}
@@ -774,6 +807,7 @@ const Home = () => {
         cameFromCalendar={true}
       />
 
+      {/* Filter Overlay */}
       <FilterOverlay
         isOpen={isFilterOverlayOpen}
         onClose={() => setIsFilterOverlayOpen(false)}
@@ -782,6 +816,7 @@ const Home = () => {
         onClearAllFilters={handleClearAllFilters}
       />
 
+      {/* Agenda Overlay */}
       <AgendaOverlay
         isOpen={isAgendaOverlayOpen}
         onClose={() => setIsAgendaOverlayOpen(false)}
