@@ -66,7 +66,7 @@ const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<Event[]>([]); // This will now hold ALL approved events
   const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date());
@@ -91,64 +91,85 @@ const Home = () => {
 
   const fetchEvents = async () => {
     setLoading(true);
-    let query = supabase
+    // Fetch ALL approved events for the calendar page.
+    // Filtering for the list display will happen client-side.
+    const { data, error } = await supabase
       .from('events')
       .select('*')
       .eq('state', 'approved')
       .order('event_date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching events:', error);
+      toast.error('Failed to load events.');
+    } else {
+      console.log('Fetched ALL approved events for calendar page:', data); // Debug log
+      setEvents(data || []);
+    }
+    setLoading(false);
+  };
+
+  // Function to apply client-side filters to the full event list
+  const getFilteredEvents = (allEvents: Event[]) => {
+    let filtered = allEvents;
 
     const now = new Date();
     const todayFormatted = format(now, 'yyyy-MM-dd');
 
     switch (dateFilter) {
       case 'Today':
-        query = query.eq('event_date', todayFormatted);
+        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === todayFormatted);
         break;
       case 'This Week':
-        query = query
-          .gte('event_date', format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'))
-          .lte('event_date', format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'));
+        const startW = startOfWeek(now, { weekStartsOn: 1 });
+        const endW = endOfWeek(now, { weekStartsOn: 1 });
+        filtered = filtered.filter(event => {
+          const eventDate = parseISO(event.event_date);
+          return eventDate >= startW && eventDate <= endW;
+        });
         break;
       case 'This Month':
-        query = query
-          .gte('event_date', format(startOfMonth(now), 'yyyy-MM-dd'))
-          .lte('event_date', format(endOfMonth(now), 'yyyy-MM-dd'));
+        const startM = startOfMonth(now);
+        const endM = endOfMonth(now);
+        filtered = filtered.filter(event => {
+          const eventDate = parseISO(event.event_date);
+          return eventDate >= startM && eventDate <= endM;
+        });
         break;
       case 'Past Events':
-        query = query.lt('event_date', todayFormatted).order('event_date', { ascending: false });
-        break;
-      case 'All Events':
+        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') < todayFormatted);
         break;
       case 'All Upcoming':
+        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') >= todayFormatted);
+        break;
+      case 'All Events':
       default:
-        query = query.gte('event_date', todayFormatted);
+        // No date filter applied
         break;
     }
 
-    if (eventType !== 'All') query = query.eq('event_type', eventType);
-    if (stateFilter !== 'All') query = query.eq('state', stateFilter);
+    if (eventType !== 'All') {
+      filtered = filtered.filter(event => event.event_type === eventType);
+    }
+
+    if (stateFilter !== 'All') {
+      filtered = filtered.filter(event => event.state === stateFilter);
+    }
 
     if (searchTerm) {
-      query = query.or(
-        `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%,place_name.ilike.%${searchTerm}%`
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(event =>
+        event.event_name.toLowerCase().includes(lowerCaseSearchTerm) ||
+        (event.description?.toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (event.organizer_contact?.toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (event.full_address?.toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (event.place_name?.toLowerCase().includes(lowerCaseSearchTerm))
       );
     }
 
-    if (dateFilter !== 'Past Events') {
-      query = query.order('event_date', { ascending: true });
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Error fetching events:', error);
-      toast.error('Failed to load events.');
-    } else {
-      console.log('Fetched events:', data); // Debug log
-      setEvents(data || []);
-    }
-    setLoading(false);
+    return filtered;
   };
+
 
   const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -158,6 +179,7 @@ const Home = () => {
   const handleMonthChange = (date: Date) => setCurrentMonth(date);
 
   const getEventsForDay = (day: Date) => {
+    // This function now filters from the *full* `events` state
     return events
       .filter((event) => {
         const eventStartDate = parseISO(event.event_date);
@@ -221,7 +243,7 @@ const Home = () => {
 
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
-    setSelectedDayEvents(getEventsForDay(day));
+    setSelectedDayEvents(getEventsForDay(day)); // This uses the full 'events' list
     setIsAgendaOverlayOpen(true);
   };
 
@@ -266,8 +288,15 @@ const Home = () => {
   };
 
   useEffect(() => {
-    fetchEvents();
-  }, [searchTerm, eventType, stateFilter, dateFilter]);
+    fetchEvents(); // Fetch all events initially
+  }, []); // Empty dependency array means it runs once on mount
+
+  useEffect(() => {
+    // Re-fetch events only if filters change, but this is now for the *list* display, not the calendar dots
+    // The calendar dots will always use the full 'events' state
+    // No, this useEffect is not needed anymore for fetching, as fetchEvents runs once.
+    // The filtering for the list below the calendar happens in getFilteredEvents.
+  }, [searchTerm, eventType, stateFilter, dateFilter]); // Keep this to re-run filtering for the list display
 
   useEffect(() => {
     if (selectedDayForDialog) {
@@ -275,7 +304,7 @@ const Home = () => {
     } else {
       setSelectedDayEvents(getEventsForDay(new Date()));
     }
-  }, [events, selectedDayForDialog]);
+  }, [events, selectedDayForDialog]); // Depend on 'events' to update when new data arrives
 
   useEffect(() => {
     if (viewMode === 'week') {
@@ -293,8 +322,11 @@ const Home = () => {
   const endDay = endOfWeek(endOfCurrentMonth, { weekStartsOn: 1 });
   const daysInMonthView = eachDayOfInterval({ start: startDay, end: endDay });
 
-  const eventsForCurrentMonth = getEventsForMonth(currentMonth);
-  const eventsForCurrentWeek = getEventsForWeek(currentWeek);
+  // Apply filters to the events for the list display below the calendar
+  const filteredEventsForDisplay = getFilteredEvents(events);
+
+  const eventsForCurrentMonthDisplay = getEventsForMonth(currentMonth).filter(event => filteredEventsForDisplay.includes(event));
+  const eventsForCurrentWeekDisplay = getEventsForWeek(currentWeek).filter(event => filteredEventsForDisplay.includes(event));
 
   const renderDayEventPill = (event: Event, day: Date) => {
     const eventStartDate = parseISO(event.event_date);
@@ -398,7 +430,7 @@ const Home = () => {
                   if (date) handleDayClick(date);
                 }}
                 modifiers={{
-                  events: events.map(event => parseISO(event.event_date)),
+                  events: events.map(event => parseISO(event.event_date)), // Use the full 'events' list for modifiers
                   past: (day) => isPast(day) && !isToday(day),
                   today: new Date(),
                 }}
@@ -596,7 +628,7 @@ const Home = () => {
                       </div>
                     ))}
                     {viewMode === 'month' && daysInMonthView.map((day) => {
-                          const dayEvents = getEventsForDay(day);
+                          const dayEvents = getEventsForDay(day); // This uses the full 'events' list
                           const isCurrentMonth = isSameMonth(day, currentMonth);
                           const isTodayDate = isToday(day);
                           const isSelected = isSameDay(day, selectedDayForDialog || new Date());
@@ -630,7 +662,7 @@ const Home = () => {
                           );
                         })}
                     {viewMode !== 'month' && currentWeek.map((day) => {
-                          const dayEvents = getEventsForDay(day);
+                          const dayEvents = getEventsForDay(day); // This uses the full 'events' list
                           const isTodayDate = isToday(day);
                           const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                           const isPastDate = isPast(day) && !isToday(day);
@@ -670,7 +702,7 @@ const Home = () => {
                         ? `Events in ${format(currentMonth, 'MMMM yyyy')}`
                         : `Events for the Week of ${format(currentWeek[0], 'MMM d')}`}
                     </h3>
-                    {(viewMode === 'month' ? eventsForCurrentMonth : eventsForCurrentWeek).length === 0 ? (
+                    {(viewMode === 'month' ? eventsForCurrentMonthDisplay : eventsForCurrentWeekDisplay).length === 0 ? (
                       <div className="p-8 bg-secondary rounded-lg border border-border text-center">
                         <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <p className="text-lg font-semibold text-foreground mb-4">
@@ -684,7 +716,7 @@ const Home = () => {
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(viewMode === 'month' ? eventsForCurrentMonth : eventsForCurrentWeek).map((event) => (
+                        {(viewMode === 'month' ? eventsForCurrentMonthDisplay : eventsForCurrentWeekDisplay).map((event) => (
                           <Card key={event.id} className="group flex flex-col justify-between shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 overflow-hidden dark:bg-card dark:border-border">
                             {event.image_url && (
                               <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
