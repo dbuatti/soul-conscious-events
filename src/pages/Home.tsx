@@ -469,9 +469,9 @@ const Home = () => {
                         <span className="font-bold text-lg">{format(date, 'd')}</span>
                         {hasEvents && (
                           <span className={cn(
-                            "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                            "absolute bottom-2 w-2 h-2 rounded-full", // Increased size to w-2 h-2, moved up to bottom-2
                             "left-1/2 -translate-x-1/2",
-                            isPastDate ? "bg-gray-400" : "bg-blue-500"
+                            "bg-primary" // Changed color to bg-primary for better visibility
                           )} />
                         )}
                       </div>
