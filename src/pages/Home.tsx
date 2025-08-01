@@ -641,6 +641,7 @@ const Home = () => {
                             const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
+                            const isContinuationDay = isMultiDay && !isEventStartDay && !isEventEndDay;
 
                             // Determine rounding classes and width/margin for multi-day events
                             let roundingClasses = "";
@@ -652,7 +653,7 @@ const Home = () => {
                               } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
                                 widthAndMarginClasses = "w-[calc(100%+1px)] ml-[-1px]"; // Extend to cover the left gap
-                              } else { // If it's a continuation day (not start, not end)
+                              } else if (isContinuationDay) {
                                 roundingClasses = "rounded-none";
                                 widthAndMarginClasses = "w-[calc(100%+2px)] ml-[-1px] mr-[-1px]"; // Extend to cover both left and right gaps
                               }
@@ -665,7 +666,7 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "py-1 px-1 text-xs font-medium whitespace-normal mb-0.5",
+                                  "py-1 px-1 text-xs font-medium whitespace-normal mb-0.5 relative z-10", // Added z-10
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
@@ -723,6 +724,7 @@ const Home = () => {
                             const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
+                            const isContinuationDay = isMultiDay && !isEventStartDay && !isEventEndDay;
 
                             // Determine rounding classes and width/margin for multi-day events
                             let roundingClasses = "";
@@ -734,7 +736,7 @@ const Home = () => {
                               } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
                                 widthAndMarginClasses = "w-[calc(100%+1px)] ml-[-1px]"; // Extend to cover the left gap
-                              } else { // If it's a continuation day (not start, not end)
+                              } else if (isContinuationDay) {
                                 roundingClasses = "rounded-none";
                                 widthAndMarginClasses = "w-[calc(100%+2px)] ml-[-1px] mr-[-1px]"; // Extend to cover both left and right gaps
                               }
@@ -747,7 +749,7 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "py-1 px-1 text-xs font-medium whitespace-normal mb-0.5",
+                                  "py-1 px-1 text-xs font-medium whitespace-normal mb-0.5 relative z-10", // Added z-10
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
