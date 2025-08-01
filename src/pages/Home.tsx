@@ -30,9 +30,9 @@ import EventDetailDialog from '@/components/EventDetailDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import FilterOverlay from '@/components/FilterOverlay';
-import AgendaOverlay from '@/components/AgendaOverlay';
 import { Calendar } from '@/components/ui/calendar';
 import { DayContentProps } from 'react-day-picker';
+import { Separator } from '@/components/ui/separator'; // Import Separator
 
 // Corrected interface to use activeModifiers as provided by react-day-picker
 interface CustomDayContentProps extends DayContentProps {
@@ -67,7 +67,8 @@ const Home = () => {
   const [events, setEvents] = useState<Event[]>([]); // This will now hold ALL approved events
   const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
-  const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date());
+  const [selectedDayForAgendaList, setSelectedDayForAgendaList] = useState<Date | null>(null); // New state for agenda list
+  const [showAgendaList, setShowAgendaList] = useState(false); // New state to control agenda list visibility
 
   const [searchTerm, setSearchTerm] = useState('');
   const [eventType, setEventType] = useState('All');
@@ -79,7 +80,6 @@ const Home = () => {
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
 
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
-  const [isAgendaOverlayOpen, setIsAgendaOverlayOpen] = useState(false);
 
   const isMobile = useIsMobile();
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -239,9 +239,9 @@ const Home = () => {
   };
 
   const handleDayClick = (day: Date) => {
-    setSelectedDayForDialog(day);
-    setSelectedDayEvents(getEventsForDay(day)); // This uses the full 'events' list
-    setIsAgendaOverlayOpen(true);
+    setSelectedDayForAgendaList(day);
+    setSelectedDayEvents(getEventsForDay(day));
+    setShowAgendaList(true); // Show the agenda list
   };
 
   const handleViewDetails = (event: Event) => {
@@ -289,12 +289,14 @@ const Home = () => {
   }, []); // Empty dependency array means it runs once on mount
 
   useEffect(() => {
-    if (selectedDayForDialog) {
-      setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
+    if (selectedDayForAgendaList) {
+      setSelectedDayEvents(getEventsForDay(selectedDayForAgendaList));
     } else {
+      // If no day is explicitly selected, default to today's events
+      setSelectedDayForAgendaList(new Date());
       setSelectedDayEvents(getEventsForDay(new Date()));
     }
-  }, [events, selectedDayForDialog]); // Depend on 'events' to update when new data arrives
+  }, [events, selectedDayForAgendaList]); // Depend on 'events' to update when new data arrives
 
   useEffect(() => {
     if (viewMode === 'week') {
@@ -378,6 +380,31 @@ const Home = () => {
     );
   };
 
+  const renderAgendaEventItem = (event: Event) => {
+    const formattedStartDate = event.event_date
+      ? format(parseISO(event.event_date), 'PPP')
+      : 'Date TBD';
+    const formattedEndDate = event.end_date
+      ? format(parseISO(event.end_date), 'PPP')
+      : '';
+
+    const dateDisplay =
+      event.end_date && event.event_date !== event.end_date
+        ? `${formattedStartDate} - ${formattedEndDate}`
+        : formattedStartDate;
+
+    return (
+      <div key={event.id} className="py-3 cursor-pointer hover:bg-accent/50 rounded-md px-2 -mx-2 transition-colors" onClick={() => handleViewDetails(event)}>
+        <p className="text-sm text-muted-foreground mb-1">
+          {dateDisplay} {event.event_time && `@ ${event.event_time}`}
+        </p>
+        <p className="text-base font-semibold text-foreground">
+          {event.event_name}
+        </p>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <div className="flex flex-col gap-8">
@@ -415,7 +442,7 @@ const Home = () => {
                 mode="single"
                 month={currentMonth}
                 onMonthChange={setCurrentMonth}
-                selected={selectedDayForDialog}
+                selected={selectedDayForAgendaList || new Date()} // Ensure a date is always selected for display
                 onSelect={(date) => {
                   if (date) handleDayClick(date);
                 }}
@@ -465,7 +492,7 @@ const Home = () => {
                   Day: ({ date, activeModifiers, ...props }: DayContentProps) => {
                     const isPastDate = activeModifiers?.past === true;
                     const isTodayDate = isToday(date);
-                    const isSelected = isSameDay(date, selectedDayForDialog || new Date());
+                    const isSelected = isSameDay(date, selectedDayForAgendaList || new Date());
                     // Directly calculate hasEvents using the 'events' state from Home component
                     const hasEvents = events.some(event => {
                       const eventStartDate = parseISO(event.event_date);
@@ -582,12 +609,7 @@ const Home = () => {
                     >
                       <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
                     </Button>
-                    <Button
-                      onClick={() => setIsAgendaOverlayOpen(true)}
-                      className="w-full sm:w-auto bg-accent hover:bg-accent/80 text-accent-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
-                    >
-                      <List className="mr-2 h-4 w-4" /> View Agenda
-                    </Button>
+                    {/* Removed Agenda button as it's now integrated */}
                   </div>
                 </div>
               </div>
@@ -622,7 +644,7 @@ const Home = () => {
                           const dayEvents = getEventsForDay(day);
                           const isCurrentMonth = isSameMonth(day, currentMonth);
                           const isTodayDate = isToday(day);
-                          const isSelected = isSameDay(day, selectedDayForDialog || new Date());
+                          const isSelected = selectedDayForAgendaList && isSameDay(day, selectedDayForAgendaList);
                           const isPastDate = isPast(day) && !isToday(day);
 
                           return (
@@ -655,7 +677,7 @@ const Home = () => {
                     {viewMode !== 'month' && currentWeek.map((day) => {
                           const dayEvents = getEventsForDay(day);
                           const isTodayDate = isToday(day);
-                          const isSelected = isSameDay(day, selectedDayForDialog || new Date());
+                          const isSelected = selectedDayForAgendaList && isSameDay(day, selectedDayForAgendaList);
                           const isPastDate = isPast(day) && !isToday(day);
 
                           return (
@@ -686,6 +708,42 @@ const Home = () => {
                           );
                         })}
                   </div>
+
+                  {/* Agenda List Section - Renders directly below the calendar */}
+                  {showAgendaList && selectedDayForAgendaList && (
+                    <div className="mt-8 p-6 bg-secondary rounded-xl shadow-lg border border-border dark:bg-card dark:border-border">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-2xl font-bold text-foreground">
+                          Events on {format(selectedDayForAgendaList, 'EEEE, MMMM d')}
+                        </h3>
+                        <Button variant="ghost" size="icon" onClick={() => setShowAgendaList(false)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </div>
+                      {selectedDayEvents.length === 0 ? (
+                        <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+                          <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-lg font-semibold text-foreground mb-4">
+                            No events found for this date.
+                          </p>
+                          <Link to="/submit-event">
+                            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+                              Add a New Event
+                            </Button>
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {selectedDayEvents.map((event, index) => (
+                            <React.Fragment key={event.id}>
+                              {renderAgendaEventItem(event)}
+                              {index < selectedDayEvents.length - 1 && <Separator className="my-2 dark:bg-border" />}
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="mt-6">
                     <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
@@ -775,14 +833,6 @@ const Home = () => {
             currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }}
             onApplyFilters={handleApplyFilters}
             onClearAllFilters={handleClearAllFilters}
-          />
-
-          <AgendaOverlay
-            isOpen={isAgendaOverlayOpen}
-            onClose={() => setIsAgendaOverlayOpen(false)}
-            selectedDate={selectedDayForDialog}
-            events={selectedDayEvents}
-            onEventSelect={handleViewDetails}
           />
         </div>
       </div>
