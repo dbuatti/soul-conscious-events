@@ -79,7 +79,7 @@ const Home = () => {
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const daysOfWeekShort = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']; // Reverted to full abbreviations
+  const daysOfWeekShort = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   // Helper functions
   const fetchEvents = async () => {
@@ -155,7 +155,7 @@ const Home = () => {
     setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  const handleToday = () => { // Renamed from handleThisMonth
+  const handleToday = () => {
     setCurrentMonth(new Date());
   };
 
@@ -596,9 +596,9 @@ const Home = () => {
           ) : (
             <>
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
+              <div ref={calendarRef} className="grid grid-cols-7 text-center border border-border rounded-lg overflow-hidden">
                 {daysOfWeekShort.map((day, index) => (
-                  <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-r border-b border-border bg-secondary">{daysOfWeekShort[index]}</div>
+                  <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>
                 ))}
                 {viewMode === 'month' ? (
                   daysInMonthView.map((day) => {
@@ -612,12 +612,15 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full border-r border-b border-border p-2 overflow-hidden cursor-pointer transition-colors duration-200",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full p-2 overflow-hidden cursor-pointer transition-colors duration-200",
                           isCurrentMonth ? "bg-card" : "bg-secondary opacity-50",
                           isPastDate && "opacity-70",
-                          isTodayDate && "bg-primary/10 text-primary border-primary",
+                          isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
-                          "hover:bg-muted hover:shadow-md hover:border-primary"
+                          "hover:bg-muted hover:shadow-md hover:border-primary",
+                          // Apply right and bottom borders to cells, except for the last column/row
+                          (day.getDay() !== 0) && "border-r border-border", // Sunday is 0, so apply to Mon-Sat
+                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border" // Apply bottom border unless it's the last row
                         )}
                         onClick={() => handleDayClick(day)}
                       >
@@ -628,7 +631,7 @@ const Home = () => {
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0.5 mt-8 flex-grow overflow-y-auto scrollbar-hide">
+                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide">
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -678,23 +681,26 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-border shadow-sm p-2 overflow-hidden",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full p-2 overflow-hidden cursor-pointer transition-colors duration-200",
                           isPastDate && "opacity-70",
-                          isTodayDate && "bg-primary text-primary-foreground",
-                          isSelected && !isTodayDate ? "bg-accent border-primary border-2" : "bg-card",
-                          "hover:bg-muted hover:shadow-md hover:border-primary"
+                          isTodayDate && "bg-primary/10 text-primary",
+                          isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
+                          "hover:bg-muted hover:shadow-md hover:border-primary",
+                          // Apply right and bottom borders to cells, except for the last column/row
+                          (day.getDay() !== 0) && "border-r border-border", // Sunday is 0, so apply to Mon-Sat
+                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border" // Apply bottom border unless it's the last row
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
                           "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
-                          isTodayDate ? "text-primary-foreground" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
+                          isTodayDate ? "text-primary" : (isSelected && !isTodayDate ? "text-primary" : "text-foreground"),
                           isPastDate && "text-muted-foreground"
                         )}>
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0.5 mt-8 flex-grow overflow-y-auto scrollbar-hide">
+                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide">
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
