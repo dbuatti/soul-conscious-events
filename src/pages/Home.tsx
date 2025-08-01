@@ -417,14 +417,14 @@ const Home = () => {
                   Caption: () => null, // Hide default caption
                   Day: ({ date, modifiers, ...props }: CustomDayContentProps) => {
                     const isPastDate = modifiers?.past === true;
-                    const isTodayDate = isToday(date); // Use isToday(date) directly
+                    const isTodayDate = isToday(date);
                     const isSelected = isSameDay(date, selectedDayForDialog || new Date());
                     const hasEvents = modifiers?.events && modifiers.events.some(eventDate => isSameDay(eventDate, date));
 
                     return (
                       <div
                         className={cn(
-                          "relative flex flex-col items-center justify-center h-16 w-16 rounded-md text-foreground", // Adjusted size and centering
+                          "relative flex flex-col items-center justify-center h-14 w-14 rounded-md text-foreground", // Adjusted size to h-14 w-14, centered content
                           "hover:bg-accent hover:text-accent-foreground",
                           isPastDate && "text-muted-foreground opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
@@ -436,7 +436,8 @@ const Home = () => {
                         <span className="font-bold text-lg">{format(date, 'd')}</span>
                         {hasEvents && (
                           <span className={cn(
-                            "absolute bottom-2 w-1.5 h-1.5 rounded-full", // Positioned absolutely at bottom-2, smaller dot
+                            "absolute bottom-1 w-1.5 h-1.5 rounded-full", // Positioned absolutely at bottom-1, centered horizontally
+                            "left-1/2 -translate-x-1/2", // Centered horizontally
                             isPastDate ? "bg-gray-400" : "bg-blue-500" // Conditional color for dot
                           )} />
                         )}
@@ -445,12 +446,12 @@ const Home = () => {
                   },
                   Head: () => (
                     <thead>
-                      <tr className="flex"> {/* Use flex on the tr */}
+                      <tr className="flex">
                         {daysOfWeekShort.map((dayName, index) => (
                           <th
                             key={index}
                             scope="col"
-                            className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1 py-2 flex items-center justify-center" // flex-1 for even distribution
+                            className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1 py-2 flex items-center justify-center"
                             aria-label={daysOfWeekFull[index]}
                           >
                             {dayName}
