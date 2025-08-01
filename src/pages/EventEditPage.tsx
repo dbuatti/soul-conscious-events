@@ -329,7 +329,7 @@ const EventEditPage = () => {
 
   if (isSessionLoading || loadingEvent) {
     return (
-      <div className="w-full max-w-2xl bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+      <div className="w-full max-w-screen-lg bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
         <div className="space-y-4">
@@ -351,7 +351,7 @@ const EventEditPage = () => {
   }
 
   return (
-    <div className="w-full max-w-2xl bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+    <div className="w-full max-w-screen-lg bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Edit Event</h2>
 
       <Form {...form}>
@@ -363,7 +363,7 @@ const EventEditPage = () => {
               <FormItem>
                 <FormLabel htmlFor="eventName">Event Name</FormLabel>
                 <FormControl>
-                  <Input id="eventName" placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="eventName" placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -393,7 +393,7 @@ const EventEditPage = () => {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -435,7 +435,7 @@ const EventEditPage = () => {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
                       <Calendar
                         key={field.name}
                         mode="single"
@@ -458,7 +458,7 @@ const EventEditPage = () => {
               <FormItem>
                 <FormLabel htmlFor="eventTime">Time (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -472,7 +472,7 @@ const EventEditPage = () => {
               <FormItem>
                 <FormLabel htmlFor="placeName">Place Name (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="placeName" placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-purple-500" />
+                  <Input id="placeName" placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -491,7 +491,7 @@ const EventEditPage = () => {
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
-                    className="focus-visible:ring-purple-500"
+                    className="focus-visible:ring-primary"
                   />
                 </FormControl>
                 <FormMessage />
@@ -506,7 +506,7 @@ const EventEditPage = () => {
               <FormItem>
                 <FormLabel htmlFor="description">Description (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -520,7 +520,7 @@ const EventEditPage = () => {
               <FormItem>
                 <FormLabel htmlFor="ticketLink">Ticket/Booking Link (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -534,7 +534,7 @@ const EventEditPage = () => {
               <FormItem>
                 <FormLabel htmlFor="price">Price (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="price" placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="price" placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -548,7 +548,7 @@ const EventEditPage = () => {
               <FormItem>
                 <FormLabel htmlFor="specialNotes">Special Notes (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea id="specialNotes" {...field} className="focus-visible:ring-purple-500" />
+                  <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -562,7 +562,7 @@ const EventEditPage = () => {
               <FormItem>
                 <FormLabel htmlFor="organizerContact">Organizer Name/Contact (Optional)</FormLabel>
                 <FormControl>
-                  <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-purple-500" />
+                  <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-primary" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -577,11 +577,11 @@ const EventEditPage = () => {
                 <FormLabel htmlFor="eventType">Event Type (Optional)</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger id="eventType" className="focus-visible:ring-purple-500">
+                    <SelectTrigger id="eventType" className="focus-visible:ring-primary">
                       <SelectValue placeholder="Select an event type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-card dark:border-border">
                     {eventTypes.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
@@ -609,7 +609,7 @@ const EventEditPage = () => {
                 setImagePreviewUrl(form.getValues('imageUrl') || null);
               }
             }} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
                 <TabsTrigger value="upload">Upload Image</TabsTrigger>
                 <TabsTrigger value="url">Image URL</TabsTrigger>
               </TabsList>
@@ -642,7 +642,7 @@ const EventEditPage = () => {
                         placeholder="e.g., https://example.com/image.jpg"
                         {...field}
                         onChange={handleImageUrlInputChange}
-                        className="focus-visible:ring-purple-500"
+                        className="focus-visible:ring-primary"
                       />
                     </FormControl>
                   )}
@@ -651,13 +651,13 @@ const EventEditPage = () => {
             </Tabs>
             {imagePreviewUrl && (
               <div className="mt-2 flex items-center space-x-2">
-                <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-gray-200 shadow-md" />
+                <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-border shadow-md" />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleRemoveImage}
-                  className="text-red-500 hover:text-red-700 transition-all duration-300 ease-in-out transform hover:scale-105"
+                  className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105"
                 >
                   <XCircle className="mr-1 h-4 w-4" /> Remove
                 </Button>
@@ -673,7 +673,7 @@ const EventEditPage = () => {
             <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Preview
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
               {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
@@ -682,7 +682,7 @@ const EventEditPage = () => {
       </Form>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">
           <DialogHeader>
             <DialogTitle>Event Preview</DialogTitle>
             <DialogDescription>
@@ -704,70 +704,70 @@ const EventEditPage = () => {
                   </div>
                 )}
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-right font-medium">Event Name:</p>
-                  <p className="col-span-3">{previewData.eventName}</p>
+                  <p className="text-right font-medium text-foreground">Event Name:</p>
+                  <p className="col-span-3 text-foreground">{previewData.eventName}</p>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-right font-medium">Date:</p>
-                  <p className="col-span-3">
+                  <p className="text-right font-medium text-foreground">Date:</p>
+                  <p className="col-span-3 text-foreground">
                     {previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}
                     {previewData.endDate && ` - ${format(previewData.endDate, 'PPP')}`}
                   </p>
                 </div>
                 {previewData.eventTime && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Time:</p>
-                    <p className="col-span-3">{previewData.eventTime}</p>
+                    <p className="text-right font-medium text-foreground">Time:</p>
+                    <p className="col-span-3 text-foreground">{previewData.eventTime}</p>
                   </div>
                 )}
                 {previewData.placeName && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Place Name:</p>
-                    <p className="col-span-3">{previewData.placeName}</p>
+                    <p className="text-right font-medium text-foreground">Place Name:</p>
+                    <p className="col-span-3 text-foreground">{previewData.placeName}</p>
                   </div>
                 )}
                 {previewData.fullAddress && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Address:</p>
-                    <p className="col-span-3">{previewData.fullAddress}</p>
+                    <p className="text-right font-medium text-foreground">Address:</p>
+                    <p className="col-span-3 text-foreground">{previewData.fullAddress}</p>
                   </div>
                 )}
                 {previewData.description && (
                   <div className="grid grid-cols-4 items-start gap-4">
-                    <p className="text-right font-medium">Description:</p>
-                    <p className="col-span-3 break-words">{previewData.description}</p>
+                    <p className="text-right font-medium text-foreground">Description:</p>
+                    <p className="col-span-3 break-words text-foreground">{previewData.description}</p>
                   </div>
                 )}
                 {previewData.ticketLink && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Ticket Link:</p>
-                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-blue-600 hover:underline break-all">
+                    <p className="text-right font-medium text-foreground">Ticket Link:</p>
+                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
                       {previewData.ticketLink}
                     </a>
                   </div>
                 )}
                 {previewData.price && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Price:</p>
-                    <p className="col-span-3">{previewData.price}</p>
+                    <p className="text-right font-medium text-foreground">Price:</p>
+                    <p className="col-span-3 text-foreground">{previewData.price}</p>
                   </div>
                 )}
                 {previewData.specialNotes && (
                   <div className="grid grid-cols-4 items-start gap-4">
-                    <p className="text-right font-medium">Special Notes:</p>
-                    <p className="col-span-3 break-words">{previewData.specialNotes}</p>
+                    <p className="text-right font-medium text-foreground">Special Notes:</p>
+                    <p className="col-span-3 break-words text-foreground">{previewData.specialNotes}</p>
                   </div>
                 )}
                 {previewData.organizerContact && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Organizer:</p>
-                    <p className="col-span-3">{previewData.organizerContact}</p>
+                    <p className="text-right font-medium text-foreground">Organizer:</p>
+                    <p className="col-span-3 text-foreground">{previewData.organizerContact}</p>
                   </div>
                 )}
                 {previewData.eventType && (
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium">Event Type:</p>
-                    <p className="col-span-3">{previewData.eventType}</p>
+                    <p className="text-right font-medium text-foreground">Event Type:</p>
+                    <p className="col-span-3 text-foreground">{previewData.eventType}</p>
                   </div>
                 )}
               </>

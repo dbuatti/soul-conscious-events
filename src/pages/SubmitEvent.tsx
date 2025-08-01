@@ -300,7 +300,7 @@ const SubmitEvent = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+    <div className="w-full max-w-screen-lg bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Submit an Event</h2>
 
       {/* AI Parsing Tool Section */}
