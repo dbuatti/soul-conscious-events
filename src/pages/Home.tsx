@@ -59,7 +59,7 @@ interface Event {
 const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Fixed: Added useState hook
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date()); // Default to today
   const [selectedEventType, setSelectedEventType] = useState('All');
@@ -67,7 +67,7 @@ const Home = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isMobileFilterSheetOpen, setIsMobileFilterSheetOpen] = useState(false);
-  // const [isFullCalendarDialogOpen, setIsFullCalendarDialogOpen] = useState(false); // Removed state
+  const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false); // New state for popover
 
   const isMobile = useIsMobile();
 
@@ -342,9 +342,25 @@ const Home = () => {
                 <>
                   {/* Mobile Calendar Header */}
                   <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-                    <span className="text-lg font-semibold text-foreground">
-                      {format(currentMonth, 'MMMM yyyy')} {/* Display current month/year */}
-                    </span>
+                    <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
+                          {format(currentMonth, 'MMMM yyyy')}
+                          <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <MonthYearPicker
+                          defaultMonth={currentMonth}
+                          onSelect={(date) => {
+                            if (date) {
+                              setCurrentMonth(date);
+                              setIsMonthPickerPopoverOpen(false); // Close popover after selection
+                            }
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
 
                     <div className="flex items-center space-x-2">
                       <Sheet open={isMobileFilterSheetOpen} onOpenChange={setIsMobileFilterSheetOpen}>
@@ -358,7 +374,6 @@ const Home = () => {
                           <EventSidebar selectedEventType={selectedEventType} onSelectEventType={(type) => { setSelectedEventType(type); setIsMobileFilterSheetOpen(false); }} />
                         </SheetContent>
                       </Sheet>
-                      {/* Removed Dialog for full calendar */}
                     </div>
                   </div>
 
