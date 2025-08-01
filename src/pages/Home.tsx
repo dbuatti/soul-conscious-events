@@ -35,7 +35,8 @@ import { eventTypes } from '@/lib/constants';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar'; // Use the shadcn/ui Calendar component
+import { Calendar } from '@/components/ui/calendar'; // Keep this for the full calendar dialog
+import { MonthYearPicker } from '@/components/MonthYearPicker'; // New import for month picker
 
 interface Event {
   id: string;
@@ -347,8 +348,7 @@ const Home = () => {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
-                        <Calendar // Using shadcn/ui Calendar here
-                          mode="single"
+                        <MonthYearPicker // Use the new component here
                           selected={currentMonth}
                           onSelect={(date: Date | undefined) => {
                             if (date) {
@@ -356,8 +356,6 @@ const Home = () => {
                             }
                           }}
                           defaultMonth={currentMonth}
-                          captionLayout="dropdown" // This should enable month/year dropdowns
-                          initialFocus
                         />
                       </PopoverContent>
                     </Popover>
