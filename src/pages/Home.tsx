@@ -662,18 +662,16 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full flex items-start py-1 px-1 text-xs font-medium whitespace-normal mb-0.5", // Removed h-6, truncate, added whitespace-normal, mb-0.5
+                                  "w-full flex items-start py-1 px-1 text-xs font-medium mb-0.5",
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
-                                  <span className="flex items-start pl-1">
+                                  <span className="flex flex-col text-left pl-1"> {/* Added text-left and flex-col */}
                                     {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 mt-1 text-blue-200 dark:text-blue-400 flex-shrink-0" />}
-                                    <span className="flex flex-col">
-                                      {event.event_time && <span className="font-bold">{event.event_time}</span>}
-                                      <span>{event.event_name}</span>
-                                    </span>
+                                    {event.event_time && <span className="font-bold">{event.event_time}</span>}
+                                    <span>{event.event_name}</span>
                                   </span>
                                 ) : (
                                   // For continuation days, render an empty span to just show the colored bar
@@ -743,13 +741,13 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full flex items-start py-1 px-1 text-xs font-medium whitespace-normal mb-0.5", // Removed h-6, truncate, added whitespace-normal, mb-0.5
+                                  "w-full flex items-start py-1 px-1 text-xs font-medium whitespace-normal mb-0.5",
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
-                                  <span className="flex items-start pl-1">
+                                  <span className="flex flex-col text-left pl-1"> {/* Added text-left and flex-col */}
                                     {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 mt-1 text-blue-200 dark:text-blue-400 flex-shrink-0" />}
                                     <span className="flex flex-col">
                                       {event.event_time && <span className="font-bold">{event.event_time}</span>}
