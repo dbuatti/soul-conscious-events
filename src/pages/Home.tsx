@@ -59,7 +59,7 @@ interface Event {
 const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true); // Fixed: Added useState hook
+  const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date()); // Default to today
   const [selectedEventType, setSelectedEventType] = useState('All');
@@ -67,7 +67,6 @@ const Home = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isMobileFilterSheetOpen, setIsMobileFilterSheetOpen] = useState(false);
-  const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false); // New state for popover
 
   const isMobile = useIsMobile();
 
@@ -257,8 +256,6 @@ const Home = () => {
     );
   };
 
-  console.log('Home.tsx: Rendering MonthYearPicker. isMobile:', isMobile, 'currentMonth:', currentMonth);
-
   return (
     <div className="w-full max-w-7xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -340,87 +337,35 @@ const Home = () => {
             <>
               {isMobile ? (
                 <>
-                  {/* Mobile Calendar Header */}
+                  {/* Mobile Calendar Header - Simplified */}
                   <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-                    <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
-                          {format(currentMonth, 'MMMM yyyy')}
-                          <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                    <span className="text-lg font-semibold text-foreground">
+                      {format(currentMonth, 'MMMM yyyy')}
+                    </span>
+                    <Sheet open={isMobileFilterSheetOpen} onOpenChange={setIsMobileFilterSheetOpen}>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" size="icon" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                          <Filter className="h-4 w-4" />
+                          <span className="sr-only">Filter Events</span>
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <MonthYearPicker
-                          defaultMonth={currentMonth}
-                          onSelect={(date) => {
-                            if (date) {
-                              setCurrentMonth(date);
-                              setIsMonthPickerPopoverOpen(false); // Close popover after selection
-                            }
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-
-                    <div className="flex items-center space-x-2">
-                      <Sheet open={isMobileFilterSheetOpen} onOpenChange={setIsMobileFilterSheetOpen}>
-                        <SheetTrigger asChild>
-                          <Button variant="outline" size="icon" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                            <Filter className="h-4 w-4" />
-                            <span className="sr-only">Filter Events</span>
-                          </Button>
-                        </SheetTrigger>
-                        <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6">
-                          <EventSidebar selectedEventType={selectedEventType} onSelectEventType={(type) => { setSelectedEventType(type); setIsMobileFilterSheetOpen(false); }} />
-                        </SheetContent>
-                      </Sheet>
-                    </div>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6">
+                        <EventSidebar selectedEventType={selectedEventType} onSelectEventType={(type) => { setSelectedEventType(type); setIsMobileFilterSheetOpen(false); }} />
+                      </SheetContent>
+                    </Sheet>
                   </div>
 
-                  {/* Mobile Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-1 text-center p-1 bg-gray-100 rounded-lg shadow-inner">
-                    {daysOfWeekShort.map((day, index) => (
-                      <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-2">{day}</div>
-                    ))}
-                    {daysInMonthView.map((day) => {
-                      const dayEvents = getEventsForDay(day);
-                      const isCurrentMonth = isSameMonth(day, currentMonth);
-                      const isTodayDate = isToday(day);
-                      const hasEvents = dayEvents.length > 0;
-                      const isSelected = isSameDay(day, selectedDayForDialog || new Date());
-                      const isPastDate = isPast(day) && !isToday(day);
-
-                      return (
-                        <div
-                          key={day.toISOString()}
-                          className={cn(
-                            "relative flex flex-col items-center justify-center h-16 w-full rounded-md cursor-pointer transition-colors duration-200",
-                            isCurrentMonth ? "text-gray-800" : "text-gray-400 opacity-50",
-                            isPastDate && "text-gray-400 opacity-50", // Faded for past dates
-                            isTodayDate && "bg-blue-500 text-white font-bold", // Highlight today
-                            isSelected && !isTodayDate && "bg-blue-100 text-blue-800 font-semibold", // Selected but not today
-                            hasEvents && "relative", // For the dot
-                            "hover:bg-gray-200" // General hover effect
-                          )}
-                          onClick={() => handleDayClick(day)}
-                        >
-                          <span className={cn(
-                            "text-sm",
-                            isTodayDate && "text-white",
-                            isSelected && !isTodayDate && "text-blue-800"
-                          )}>
-                            {format(day, 'd')}
-                          </span>
-                          {hasEvents && (
-                            <div className={cn(
-                              "absolute bottom-1 w-1.5 h-1.5 rounded-full",
-                              isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
-                              isPastDate && "bg-gray-400" // Grey dot for past dates
-                            )} />
-                          )}
-                        </div>
-                      );
-                    })}
+                  {/* Mobile Month Picker as main calendar view */}
+                  <div className="flex justify-center mb-6">
+                    <MonthYearPicker
+                      defaultMonth={currentMonth}
+                      onSelect={(date) => {
+                        if (date) {
+                          setCurrentMonth(date);
+                        }
+                      }}
+                      className="w-full max-w-md" // Adjust width for mobile
+                    />
                   </div>
 
                   {/* Events for Selected Month (Mobile) */}
@@ -447,7 +392,7 @@ const Home = () => {
                 </>
               ) : (
                 <>
-                  {/* Desktop Calendar Grid */}
+                  {/* Desktop Calendar Grid (remains the same) */}
                   <div className="grid grid-cols-7 gap-2 text-center p-2">
                     {daysOfWeekFull.map(day => (
                       <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
