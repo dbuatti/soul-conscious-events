@@ -612,7 +612,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full overflow-hidden cursor-pointer transition-colors duration-200", // Removed p-2
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full overflow-hidden cursor-pointer transition-colors duration-200",
                           isCurrentMonth ? "bg-card" : "bg-secondary opacity-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
@@ -631,7 +631,7 @@ const Home = () => {
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide"> {/* Adjusted mt-6 to mt-8 */}
+                        <div className="flex flex-col gap-0 mt-10 flex-grow overflow-y-auto scrollbar-hide"> {/* Changed mt-6 to mt-10 */}
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -658,14 +658,14 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate", // Removed px-1
+                                  "w-full h-5 flex items-center py-0.5 px-1 text-xs font-medium truncate",
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                   isEventContinuation && "justify-center" // Center text for continuation
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
-                                  <span className="flex items-center pl-1"> {/* Added pl-1 here */}
+                                  <span className="flex items-center pl-1">
                                     {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                     {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
                                     {event.event_name}
@@ -692,7 +692,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full overflow-hidden cursor-pointer transition-colors duration-200", // Removed p-2
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full overflow-hidden cursor-pointer transition-colors duration-200",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
@@ -711,7 +711,7 @@ const Home = () => {
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide"> {/* Adjusted mt-6 to mt-8 */}
+                        <div className="flex flex-col gap-0 mt-10 flex-grow overflow-y-auto scrollbar-hide"> {/* Changed mt-6 to mt-10 */}
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -738,14 +738,14 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate", // Removed px-1
+                                  "w-full h-5 flex items-center py-0.5 px-1 text-xs font-medium truncate",
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                   isEventContinuation && "justify-center" // Center text for continuation
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
-                                  <span className="flex items-center pl-1"> {/* Added pl-1 here */}
+                                  <span className="flex items-center pl-1">
                                     {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                     {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
                                     {event.event_name}
