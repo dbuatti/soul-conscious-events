@@ -370,7 +370,7 @@ const Home = () => {
                 <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" className="text-lg font-bold focus-visible:ring-primary">
-                      {format(currentMonth, 'M/d/yyyy')} <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                      {format(currentMonth, 'd/M/yyyy')} <ChevronDown className="ml-2 h-4 w-4 opacity-70" /> {/* Changed format here */}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
@@ -431,7 +431,7 @@ const Home = () => {
                     "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                   day_today: "bg-accent text-accent-foreground",
                   day_outside:
-                    "day-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+                    "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
                   day_disabled: "text-muted-foreground opacity-50",
                   day_range_middle:
                     "aria-selected:bg-accent aria-selected:text-accent-foreground",
