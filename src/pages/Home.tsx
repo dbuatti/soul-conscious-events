@@ -350,7 +350,7 @@ const Home = () => {
                       <PopoverContent className="w-auto p-0">
                         <MonthPickerCalendar // Use the new component here
                           selected={currentMonth}
-                          onSelect={(date) => {
+                          onSelect={(date: Date | undefined) => { // Explicitly typed 'date' here
                             if (date) {
                               setCurrentMonth(date); // Update current month
                             }
