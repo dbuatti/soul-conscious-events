@@ -658,19 +658,18 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center py-0.5 px-1 text-xs font-medium truncate", // Added px-1
+                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate", // Removed px-1
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                   isEventContinuation && "justify-center" // Center text for continuation
                                 )}
                               >
-                                {/* Only show CircleDot on the start day of a multi-day event or for single-day events */}
-                                {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                 {isEventStartDay || !isMultiDay ? (
-                                  <>
+                                  <span className="flex items-center pl-1"> {/* Added pl-1 here */}
+                                    {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                     {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
                                     {event.event_name}
-                                  </>
+                                  </span>
                                 ) : (
                                   <span className="italic">...continued</span>
                                 )}
@@ -739,19 +738,18 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center py-0.5 px-1 text-xs font-medium truncate", // Added px-1
+                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate", // Removed px-1
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                   isEventContinuation && "justify-center" // Center text for continuation
                                 )}
                               >
-                                {/* Only show CircleDot on the start day of a multi-day event or for single-day events */}
-                                {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                 {isEventStartDay || !isMultiDay ? (
-                                  <>
+                                  <span className="flex items-center pl-1"> {/* Added pl-1 here */}
+                                    {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                     {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
                                     {event.event_name}
-                                  </>
+                                  </span>
                                 ) : (
                                   <span className="italic">...continued</span>
                                 )}
