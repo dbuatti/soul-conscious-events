@@ -1,34 +1,35 @@
 import React from 'react';
-import { DayPicker, DayPickerProps } from 'react-day-picker'; // Import DayPickerProps
+import { DayPicker, ClassNames } from 'react-day-picker'; // Import ClassNames
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface MonthPickerCalendarProps extends Omit<DayPickerProps, 'mode' | 'defaultView' | 'view'> {
-  // 'mode', 'defaultView', and 'view' are now controlled internally by this component.
-  // We can add specific props here if needed, e.g., to allow overriding the view.
-  classNames?: DayPickerProps['classNames'] & { // Extend existing classNames with DayPickerProps
-    months_grid?: string;
-    month_cell?: string;
-    month_selected?: string;
-    month_today?: string;
-    month_outside?: string;
-    month_disabled?: string;
-  };
+interface MonthPickerCalendarProps {
+  selected?: Date;
+  onSelect?: (date: Date | undefined) => void;
+  defaultMonth?: Date;
+  className?: string;
+  classNames?: ClassNames; // Use the comprehensive ClassNames type
+  showOutsideDays?: boolean;
 }
 
 const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
+  selected,
+  onSelect,
+  defaultMonth,
   className,
   classNames,
   showOutsideDays = true,
-  ...props
 }) => {
   return (
     <DayPicker
-      mode="single" // Keep mode as single for selecting a specific date
-      view="month" // <--- This forces the calendar to always show the month grid
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      mode="single" // Always single selection
+      defaultView="month" // Always show month grid
+      selected={selected} // Pass selected prop
+      onSelect={onSelect} // Pass onSelect prop
+      defaultMonth={defaultMonth} // Pass defaultMonth prop
+      showOutsideDays={showOutsideDays} // Hardcode for simplicity, can be made configurable if needed
+      className={cn("p-3", className)} // Apply base styling
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
@@ -54,11 +55,11 @@ const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
         day_range_end: "day-range-end",
         day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         day_today: "bg-accent text-accent-foreground",
-        day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+        day_outside: "text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
         day_disabled: "text-muted-foreground opacity-50",
         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
-        // These are for when view="month" is active
+        // These are for when defaultView="month" is active
         months_grid: "grid w-full grid-cols-3 gap-1",
         month_cell: cn(
           buttonVariants({ variant: "ghost" }),
@@ -74,7 +75,6 @@ const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
       }}
-      {...props}
     />
   );
 };

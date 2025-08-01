@@ -356,7 +356,6 @@ const Home = () => {
                             }
                           }}
                           defaultMonth={currentMonth} // Set default month to currentMonth
-                          // Removed defaultView="month" as it's now hardcoded inside MonthPickerCalendar
                         />
                       </PopoverContent>
                     </Popover>
