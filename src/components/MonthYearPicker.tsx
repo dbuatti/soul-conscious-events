@@ -43,7 +43,7 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
     view: "months",
     onSelect: onSelect, // Corrected: Use onSelect for month selection in 'months' view
     defaultMonth: defaultMonth,
-    numberOfMonths: 12, // Added: Ensure all 12 months are displayed in the grid
+    numberOfMonths: 1, // Crucial: Set to 1 to display only one year's months (4x3 grid)
     className: cn("p-3", className),
     classNames: classNames,
     components: {
