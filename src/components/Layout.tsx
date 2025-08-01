@@ -8,13 +8,12 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
+    <div className="min-h-screen flex flex-col items-center bg-background"> {/* Changed background to a solid color */}
       <Header />
       <main className="flex-grow w-full max-w-screen-xl px-4 flex flex-col items-center py-8">
         {children}
       </main>
-      {/* Removed the old MadeWithDyad and Buy Me a Coffee divs */}
-      <Footer /> {/* Add the new Footer component here */}
+      <Footer />
     </div>
   );
 };

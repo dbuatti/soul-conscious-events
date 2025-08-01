@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Filter as FilterIcon, ChevronDown, Frown, List, Calendar as CalendarIcon2, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Filter as FilterIcon, ChevronDown, Frown, List, Calendar as CalendarIcon2, X, CircleDot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -284,7 +284,7 @@ const Home = () => {
     return (
       <Card key={event.id} className="group flex flex-col justify-between shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200 overflow-hidden">
         {event.image_url && (
-          <div className="relative w-full h-32 overflow-hidden">
+          <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
             <img
               src={event.image_url}
               alt={`Image for ${event.event_name}`}
@@ -436,14 +436,14 @@ const Home = () => {
           </div>
 
           {/* Calendar Navigation and Controls */}
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-lg border border-purple-200">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gray-50 rounded-xl shadow-lg border border-gray-200">
             <div className="flex items-center space-x-2 mb-4 sm:mb-0">
               {viewMode === 'month' ? (
                 <>
-                  <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="ghost" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -452,10 +452,10 @@ const Home = () => {
                 </>
               ) : (
                 <>
-                  <Button variant="outline" size="icon" onClick={handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="ghost" size="icon" onClick={handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" onClick={handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="ghost" size="icon" onClick={handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" onClick={handleThisWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -570,7 +570,7 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
@@ -580,7 +580,7 @@ const Home = () => {
                           {dayEvents.slice(0, maxEventsToShow).map(event => (
                             <span
                                 key={event.id}
-                                className="text-xs font-medium text-purple-800 bg-purple-100 px-1 py-0.5 rounded-sm truncate"
+                                className="text-xs font-medium text-gray-700 px-1 py-0.5 rounded-sm truncate"
                             >
                                 {event.event_name}
                             </span>
@@ -591,6 +591,11 @@ const Home = () => {
                             </span>
                           )}
                         </div>
+                        {hasEvents && (
+                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-purple-600">
+                            {/* Small dot to indicate events */}
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -618,7 +623,7 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
@@ -629,7 +634,7 @@ const Home = () => {
                           {dayEvents.slice(0, maxEventsToShow).map(event => (
                             <span
                                 key={event.id}
-                                className="text-xs font-medium text-purple-800 bg-purple-100 px-1 py-0.5 rounded-sm truncate"
+                                className="text-xs font-medium text-gray-700 px-1 py-0.5 rounded-sm truncate"
                             >
                                 {event.event_name}
                             </span>
@@ -640,6 +645,11 @@ const Home = () => {
                             </span>
                           )}
                         </div>
+                        {hasEvents && (
+                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-purple-600">
+                            {/* Small dot to indicate events */}
+                          </div>
+                        )}
                       </div>
                     );
                   })
