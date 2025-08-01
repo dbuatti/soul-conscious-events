@@ -372,9 +372,9 @@ const Home = () => {
 
           {isMobile ? (
             // MOBILE CALENDAR VIEW
-            <div className="flex flex-col items-center w-full">
+            <div className="flex flex-col items-center w-full px-0"> {/* Removed padding for full width */}
               {/* Custom Header for Mobile Calendar */}
-              <div className="w-full flex justify-between items-center px-4 py-2 mb-4">
+              <div className="w-full flex justify-between items-center px-2 py-2 mb-2"> {/* Reduced padding */}
                 <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" className="text-lg font-bold focus-visible:ring-primary">
@@ -446,12 +446,12 @@ const Home = () => {
                   },
                   Head: () => (
                     <thead>
-                      <tr className="flex">
+                      <tr className="flex"> {/* Use flex on the tr */}
                         {daysOfWeekShort.map((dayName, index) => (
                           <th
                             key={index}
                             scope="col"
-                            className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1 py-2 flex items-center justify-center"
+                            className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1 py-2 flex items-center justify-center" // flex-1 for even distribution
                             aria-label={daysOfWeekFull[index]}
                           >
                             {dayName}
@@ -461,7 +461,7 @@ const Home = () => {
                     </thead>
                   ),
                 }}
-                className="w-full border-none shadow-none"
+                className="w-full border-none shadow-none" // Full width, no border or shadow
               />
             </div>
           ) : (
