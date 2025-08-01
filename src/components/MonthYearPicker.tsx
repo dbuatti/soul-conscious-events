@@ -5,23 +5,22 @@ import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MonthYearPickerProps {
-  selected?: Date;
+  // Removed 'selected' prop as it's for day selection and can conflict with view="months"
   onSelect?: (date: Date | undefined) => void;
   defaultMonth?: Date;
   className?: string;
 }
 
 const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
-  selected,
   onSelect,
   defaultMonth,
   className,
 }) => {
   console.log('MonthYearPicker: Component rendering.');
-  console.log('MonthYearPicker: Props received - selected:', selected, 'defaultMonth:', defaultMonth);
+  console.log('MonthYearPicker: Props received - defaultMonth:', defaultMonth);
   console.log('MonthYearPicker: DayPicker props - view: "months"');
 
-  const classNames = { // Removed explicit type annotation here
+  const classNames: any = { // Assert to 'any' to resolve TypeScript error for months_grid/month_cell
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
@@ -43,11 +42,10 @@ const MonthYearPicker: React.FC<MonthYearPickerProps> = ({
     month_today: "bg-accent text-accent-foreground",
     month_outside: "text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
     month_disabled: "text-muted-foreground opacity-50",
-  } as DayPickerProps['classNames']; // Assert to the correct type here
+  };
 
   const dayPickerProps = {
     view: "months",
-    selected: selected,
     onMonthSelect: onSelect,
     defaultMonth: defaultMonth,
     className: cn("p-3", className),

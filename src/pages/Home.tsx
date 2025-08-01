@@ -351,7 +351,6 @@ const Home = () => {
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
                         <MonthYearPicker // Use the new component here
-                          selected={currentMonth}
                           onSelect={(date: Date | undefined) => {
                             if (date) {
                               setCurrentMonth(date);
