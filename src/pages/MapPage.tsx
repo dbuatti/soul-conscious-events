@@ -128,29 +128,28 @@ const MapPage = () => {
     }
   }, [events, mapLoaded]); // Re-run when events or mapLoaded state changes
 
-  if (loading) {
-    return (
-      <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col items-center justify-center min-h-[500px]">
-        <Loader2 className="h-12 w-12 text-purple-600 animate-spin mb-4" />
-        <p className="text-xl font-semibold text-gray-700 mb-2">Loading map and events...</p>
-        <p className="text-gray-500 text-center">This might take a moment as we fetch event locations.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Map</h1>
       <p className="text-xl text-gray-600 mb-6 text-center">
         Explore soulful events near you on the map.
       </p>
-      <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-gray-300" aria-label="Google Map showing event locations" />
+      {loading ? (
+        <div className="w-full h-[600px] rounded-lg shadow-md border border-gray-300 flex flex-col items-center justify-center bg-gray-50">
+          <Loader2 className="h-12 w-12 text-purple-600 animate-spin mb-4" />
+          <p className="text-xl font-semibold text-gray-700 mb-2">Loading map and events...</p>
+          <p className="text-gray-500 text-center">This might take a moment as we fetch event locations.</p>
+          <Skeleton className="w-3/4 h-48 mt-8 rounded-lg" /> {/* Skeleton for map area */}
+        </div>
+      ) : (
+        <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-gray-300" aria-label="Google Map showing event locations" />
+      )}
       <p className="text-center text-sm text-gray-500 mt-4">
         <span className="font-semibold">Note:</span> This map functionality, including address lookups, relies on the Google Maps API.
         It is currently operating on free Google API credits, which means its availability and performance may vary
         and could stop working unexpectedly if usage limits are exceeded. This is a new feature and an ongoing learning experience!
       </p>
-      {events.length === 0 && (
+      {!loading && events.length === 0 && (
         <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center mt-6">
           <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-lg font-semibold text-gray-700 mb-4">

@@ -568,12 +568,10 @@ const EventsList = () => {
                       <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
                         {event.description && (
                           <div>
-                            <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                              {expandedDescriptions[event.id] || event.description.length < 150
-                                ? event.description
-                                : `${event.description.substring(0, 150)}...`}
+                            <p className="text-gray-700 leading-relaxed text-sm sm:text-base line-clamp-3">
+                              {event.description}
                             </p>
-                            {event.description.length >= 150 && (
+                            {event.description.length > 150 && ( // Only show if description is long
                               <Button variant="link" onClick={(e) => { e.stopPropagation(); toggleDescription(event.id); }} className="p-0 h-auto text-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105 text-xs sm:text-sm">
                                 {expandedDescriptions[event.id] ? 'Read Less' : 'Read More'}
                               </Button>
