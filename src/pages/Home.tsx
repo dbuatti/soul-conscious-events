@@ -442,18 +442,21 @@ const Home = () => {
                       </div>
                     );
                   },
-                  Head: () => ( // Removed props as it's not expected here
-                    <div className="flex">
-                      {daysOfWeekShort.map((dayName, index) => (
-                        <div
-                          key={index}
-                          className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1"
-                          aria-label={daysOfWeekFull[index]}
-                        >
-                          {dayName}
-                        </div>
-                      ))}
-                    </div>
+                  Head: () => (
+                    <thead>
+                      <tr className="flex">
+                        {daysOfWeekShort.map((dayName, index) => (
+                          <th
+                            key={index}
+                            scope="col"
+                            className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1"
+                            aria-label={daysOfWeekFull[index]}
+                          >
+                            {dayName}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
                   ),
                 }}
                 className="w-full border-none shadow-none"
