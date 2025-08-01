@@ -45,12 +45,6 @@ interface CustomDayContentProps extends DayContentProps {
   };
 }
 
-// Custom type for Head component props
-interface CustomHeadProps extends React.HTMLAttributes<HTMLDivElement> {
-  day: Date;
-  // Add other props if needed, e.g., month, year, format, etc.
-}
-
 interface Event {
   id: string;
   event_name: string;
@@ -421,7 +415,7 @@ const Home = () => {
                 }}
                 components={{
                   Caption: () => null, // Hide default caption
-                  Navigation: () => null, // Hide navigation buttons
+                  // Removed Navigation component as it's not a valid override
                   Day: ({ date, modifiers, ...props }: CustomDayContentProps) => {
                     const isPastDate = modifiers.past;
                     const isTodayDate = modifiers.today;
@@ -447,13 +441,17 @@ const Home = () => {
                       </div>
                     );
                   },
-                  Head: ({ day, ...props }: CustomHeadProps) => (
-                    <div
-                      className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]"
-                      aria-label={format(day, 'EEEE')}
-                      {...props}
-                    >
-                      {format(day, 'EE')}
+                  Head: () => ( // Removed props as it's not expected here
+                    <div className="flex">
+                      {daysOfWeekShort.map((dayName, index) => (
+                        <div
+                          key={index}
+                          className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1"
+                          aria-label={daysOfWeekFull[index]}
+                        >
+                          {dayName}
+                        </div>
+                      ))}
                     </div>
                   ),
                 }}
