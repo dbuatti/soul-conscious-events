@@ -612,8 +612,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full p-2 overflow-hidden cursor-pointer transition-colors duration-200",
-                          // Removed individual cell borders here to allow seamless bar
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full overflow-hidden cursor-pointer transition-colors duration-200", // Removed p-2
                           isCurrentMonth ? "bg-card" : "bg-secondary opacity-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
@@ -632,7 +631,7 @@ const Home = () => {
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide">
+                        <div className="flex flex-col gap-0 mt-6 flex-grow overflow-y-auto scrollbar-hide"> {/* Adjusted mt-8 to mt-6 */}
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -659,7 +658,7 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate",
+                                  "w-full h-5 flex items-center py-0.5 px-1 text-xs font-medium truncate", // Added px-1
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                   isEventContinuation && "justify-center" // Center text for continuation
@@ -694,8 +693,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full p-2 overflow-hidden cursor-pointer transition-colors duration-200",
-                          // Removed individual cell borders here to allow seamless bar
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full overflow-hidden cursor-pointer transition-colors duration-200", // Removed p-2
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
@@ -714,7 +712,7 @@ const Home = () => {
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-8 flex-grow overflow-y-auto scrollbar-hide">
+                        <div className="flex flex-col gap-0 mt-6 flex-grow overflow-y-auto scrollbar-hide"> {/* Adjusted mt-8 to mt-6 */}
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -741,7 +739,7 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center py-0.5 text-xs font-medium truncate",
+                                  "w-full h-5 flex items-center py-0.5 px-1 text-xs font-medium truncate", // Added px-1
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                   isEventContinuation && "justify-center" // Center text for continuation
