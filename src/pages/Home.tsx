@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -19,13 +19,17 @@ import {
   endOfWeek,
   parseISO,
   isPast,
+  addDays,
+  startOfDay,
+  endOfDay,
+  isWithinInterval,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,6 +62,8 @@ interface Event {
 
 const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
+  const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
@@ -70,6 +76,7 @@ const Home = () => {
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false); // New state for popover
 
   const isMobile = useIsMobile();
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const daysOfWeekShort = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -113,6 +120,74 @@ const Home = () => {
     // For mobile, the list will use eventsForCurrentMonth directly
   }, [events, selectedDayForDialog, isMobile]);
 
+  useEffect(() => {
+    // Update current week when currentMonth or viewMode changes
+    if (viewMode === 'week') {
+      const today = new Date();
+      const start = startOfWeek(today, { weekStartsOn: 1 });
+      const weekDays = eachDayOfInterval({ start, end: endOfWeek(today, { weekStartsOn: 1 }) });
+      setCurrentWeek(weekDays);
+    }
+  }, [currentMonth, viewMode]);
+
+  // Swipe gesture handlers for mobile
+  const handleSwipe = (direction: 'left' | 'right') => {
+    if (direction === 'left') {
+      handleNextMonth();
+    } else if (direction === 'right') {
+      handlePrevMonth();
+    }
+  };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (!isMobile) return;
+    const touch = e.touches[0];
+    const startX = touch.clientX;
+    const startY = touch.clientY;
+
+    const onTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - startX;
+      const deltaY = touch.clientY - startY;
+
+      // Only handle horizontal swipes (limit vertical movement)
+      if (Math.abs(deltaY) > Math.abs(deltaX) * 2) return;
+
+      if (Math.abs(deltaX) > 50) {
+        e.preventDefault();
+        if (deltaX > 0) {
+          handleSwipe('right');
+        } else {
+          handleSwipe('left');
+        }
+        window.removeEventListener('touchmove', onTouchMove);
+        window.removeEventListener('touchend', onTouchEnd);
+      }
+    };
+
+    const onTouchEnd = () => {
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+
+    window.addEventListener('touchmove', onTouchMove);
+    window.addEventListener('touchend', onTouchEnd);
+  };
+
+  useEffect(() => {
+    if (isMobile && calendarRef.current) {
+      const wrappedOnTouchStart = (e: Event) => {
+        const nativeEvent = e as unknown as TouchEvent;
+        onTouchStart(nativeEvent as React.TouchEvent);
+      };
+      calendarRef.current.addEventListener('touchstart', wrappedOnTouchStart);
+      return () => {
+        if (calendarRef.current) {
+          calendarRef.current.removeEventListener('touchstart', wrappedOnTouchStart);
+        }
+      };
+    }
+  }, [isMobile]);
 
   const startOfCurrentMonth = startOfMonth(currentMonth);
   const endOfCurrentMonth = endOfMonth(currentMonth);
@@ -182,7 +257,31 @@ const Home = () => {
     });
   };
 
+  const getEventsForWeek = (week: Date[]) => {
+    return events.filter(event => {
+      const eventStartDate = parseISO(event.event_date);
+      const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+
+      // Check if the event's date range overlaps with any day in the week
+      return week.some(day => {
+        return isSameDay(eventStartDate, day) || isSameDay(eventEndDate, day) ||
+               (day >= eventStartDate && day <= eventEndDate);
+      });
+    }).sort((a, b) => {
+      const dateA = parseISO(a.event_date);
+      const dateB = parseISO(b.event_date);
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateA.getTime() - dateB.getTime();
+      }
+      const timeA = a.event_time || '';
+      const timeB = b.event_time || '';
+      if (timeA && timeB) return timeA.localeCompare(timeB);
+      return a.event_name.localeCompare(b.event_name);
+    });
+  };
+
   const eventsForCurrentMonth = getEventsForMonth(currentMonth);
+  const eventsForCurrentWeek = getEventsForWeek(currentWeek);
 
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
@@ -321,6 +420,26 @@ const Home = () => {
             </div>
           )}
 
+          {/* View Toggle Buttons (Desktop) */}
+          {!isMobile && (
+            <div className="flex justify-end mb-4">
+              <Button
+                variant={viewMode === 'month' ? 'default' : 'outline'}
+                onClick={() => setViewMode('month')}
+                className="transition-all duration-300 ease-in-out transform hover:scale-105"
+              >
+                <List className="mr-2 h-4 w-4" /> Month View
+              </Button>
+              <Button
+                variant={viewMode === 'week' ? 'default' : 'outline'}
+                onClick={() => setViewMode('week')}
+                className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105"
+              >
+                <CalendarIcon2 className="mr-2 h-4 w-4" /> Week View
+              </Button>
+            </div>
+          )}
+
           {loading ? (
             <div className="grid grid-cols-7 gap-2 text-center p-2">
               {daysOfWeekFull.map(day => (
@@ -376,60 +495,107 @@ const Home = () => {
               )}
 
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div className="grid grid-cols-7 gap-1 text-center p-1 bg-gray-100 rounded-lg shadow-inner">
+              <div ref={calendarRef} className="grid grid-cols-7 gap-1 text-center p-1 bg-gray-100 rounded-lg shadow-inner">
                 {daysOfWeekShort.map((day, index) => (
                   <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-2">{day}</div>
                 ))}
-                {daysInMonthView.map((day) => {
-                  const dayEvents = getEventsForDay(day);
-                  const isCurrentMonth = isSameMonth(day, currentMonth);
-                  const isTodayDate = isToday(day);
-                  const hasEvents = dayEvents.length > 0;
-                  const isSelected = isSameDay(day, selectedDayForDialog || new Date());
-                  const isPastDate = isPast(day) && !isToday(day);
+                {viewMode === 'month' ? (
+                  daysInMonthView.map((day) => {
+                    const dayEvents = getEventsForDay(day);
+                    const isCurrentMonth = isSameMonth(day, currentMonth);
+                    const isTodayDate = isToday(day);
+                    const hasEvents = dayEvents.length > 0;
+                    const isSelected = isSameDay(day, selectedDayForDialog || new Date());
+                    const isPastDate = isPast(day) && !isToday(day);
 
-                  return (
-                    <div
-                      key={day.toISOString()}
-                      className={cn(
-                        "relative flex flex-col items-center justify-center h-16 w-full rounded-md cursor-pointer transition-colors duration-200",
-                        isCurrentMonth ? "text-gray-800" : "text-gray-400 opacity-50",
-                        isPastDate && "text-gray-400 opacity-50", // Faded for past dates
-                        isTodayDate && "bg-blue-500 text-white font-bold", // Highlight today
-                        isSelected && !isTodayDate && "bg-blue-100 text-blue-800 font-semibold", // Selected but not today
-                        hasEvents && "relative", // For the dot
-                        "hover:bg-gray-200" // General hover effect
-                      )}
-                      onClick={() => handleDayClick(day)}
-                    >
-                      <span className={cn(
-                        "text-sm",
-                        isTodayDate && "text-white",
-                        isSelected && !isTodayDate && "text-blue-800"
-                      )}>
-                        {format(day, 'd')}
-                      </span>
-                      {hasEvents && (
-                        <div className={cn(
-                          "absolute bottom-1 w-1.5 h-1.5 rounded-full",
-                          isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
-                          isPastDate && "bg-gray-400" // Grey dot for past dates
-                        )} />
-                      )}
-                    </div>
-                  );
-                })}
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        className={cn(
+                          "relative flex flex-col items-center justify-center h-16 w-full rounded-md cursor-pointer transition-colors duration-200",
+                          isCurrentMonth ? "text-gray-800" : "text-gray-400 opacity-50",
+                          isPastDate && "text-gray-400 opacity-50", // Faded for past dates
+                          isTodayDate && "bg-blue-500 text-white font-bold", // Highlight today
+                          isSelected && !isTodayDate && "bg-blue-100 text-blue-800 font-semibold", // Selected but not today
+                          hasEvents && "relative", // For the dot
+                          "hover:bg-gray-200" // General hover effect
+                        )}
+                        onClick={() => handleDayClick(day)}
+                      >
+                        <span className={cn(
+                          "text-sm",
+                          isTodayDate && "text-white",
+                          isSelected && !isTodayDate && "text-blue-800"
+                        )}>
+                          {format(day, 'd')}
+                        </span>
+                        {hasEvents && (
+                          <div className={cn(
+                            "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                            isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
+                            isPastDate && "bg-gray-400" // Grey dot for past dates
+                          )} />
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  // Week View (Desktop)
+                  currentWeek.map((day) => {
+                    const dayEvents = getEventsForDay(day);
+                    const isTodayDate = isToday(day);
+                    const hasEvents = dayEvents.length > 0;
+                    const isSelected = isSameDay(day, selectedDayForDialog || new Date());
+                    const isPastDate = isPast(day) && !isToday(day);
+
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        className={cn(
+                          "relative flex flex-col items-center justify-center h-16 w-full rounded-md cursor-pointer transition-colors duration-200",
+                          isPastDate && "text-gray-400 opacity-50", // Faded for past dates
+                          isTodayDate && "bg-blue-500 text-white font-bold", // Highlight today
+                          isSelected && !isTodayDate && "bg-blue-100 text-blue-800 font-semibold", // Selected but not today
+                          hasEvents && "relative", // For the dot
+                          "hover:bg-gray-200" // General hover effect
+                        )}
+                        onClick={() => handleDayClick(day)}
+                      >
+                        <span className={cn(
+                          "text-sm",
+                          isTodayDate && "text-white",
+                          isSelected && !isTodayDate && "text-blue-800"
+                        )}>
+                          {format(day, 'd')}
+                        </span>
+                        {hasEvents && (
+                          <div className={cn(
+                            "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                            isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
+                            isPastDate && "bg-gray-400" // Grey dot for past dates
+                          )} />
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
-              {/* Events for Selected Month (Mobile) */}
+              {/* Events for Selected Month/Week (Mobile/Desktop) */}
               <div className="mt-6">
                 <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
-                  Events in {format(currentMonth, 'MMMM yyyy')}
+                  {viewMode === 'month'
+                    ? `Events in ${format(currentMonth, 'MMMM yyyy')}`
+                    : `Events for the Week of ${format(currentWeek[0], 'MMM d')}`}
                 </h3>
-                {eventsForCurrentMonth.length === 0 ? (
+                {(viewMode === 'month' ? eventsForCurrentMonth : eventsForCurrentWeek).length === 0 ? (
                   <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
                     <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-lg font-semibold text-gray-700 mb-4">No events found for this month.</p>
+                    <p className="text-lg font-semibold text-gray-700 mb-4">
+                      {viewMode === 'month'
+                        ? 'No events found for this month.'
+                        : 'No events found for this week.'}
+                    </p>
                     <Link to="/submit-event">
                       <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
                         <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
@@ -438,13 +604,47 @@ const Home = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {eventsForCurrentMonth.map((event) => renderEventCard(event))}
+                    {(viewMode === 'month' ? eventsForCurrentMonth : eventsForCurrentWeek).map((event) => renderEventCard(event))}
                   </div>
                 )}
               </div>
             </>
           )}
         </div>
+
+        {/* Agenda Sidebar (Desktop) */}
+        {!isMobile && (
+          <div className="w-80 bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200 flex-shrink-0">
+            <h3 className="text-2xl font-bold text-foreground mb-4">Agenda</h3>
+            <div className="space-y-4">
+              {selectedDayEvents.map((event) => (
+                <Card key={event.id} className="shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200">
+                  <CardHeader className="p-3 pb-0">
+                    <CardTitle className="text-base font-semibold text-purple-700 line-clamp-1">{event.event_name}</CardTitle>
+                    <CardDescription className="flex items-center text-gray-600 text-xs mt-1">
+                      <CalendarIcon className="mr-1 h-3 w-3 text-blue-500" />
+                      {format(new Date(event.event_date), 'PPP')}
+                      {event.event_time && (
+                        <>
+                          <Clock className="ml-2 mr-1 h-3 w-3 text-green-500" />
+                          {event.event_time}
+                        </>
+                      )}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-2">
+                    {event.description && (
+                      <p className="text-foreground text-sm line-clamp-2 mb-2">{event.description}</p>
+                    )}
+                    <div className="flex justify-end">
+                      <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 text-xs" onClick={() => handleViewDetails(event)}>View Details</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Event Detail Dialog (for individual event details) */}
