@@ -177,6 +177,14 @@ const Home = () => {
       const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
       return (isSameDay(eventStartDate, day) || (day >= eventStartDate && day <= eventEndDate));
     }).sort((a, b) => {
+      const aIsMultiDay = a.end_date && !isSameDay(parseISO(a.event_date), parseISO(a.end_date));
+      const bIsMultiDay = b.end_date && !isSameDay(parseISO(b.event_date), parseISO(b.end_date));
+
+      // Prioritize multi-day events (true comes before false)
+      if (aIsMultiDay && !bIsMultiDay) return -1;
+      if (!aIsMultiDay && bIsMultiDay) return 1;
+
+      // If both are multi-day or both are single-day, sort by time then name
       const timeA = a.event_time || '';
       const timeB = b.event_time || '';
       if (timeA && timeB) return timeA.localeCompare(timeB);
@@ -270,9 +278,6 @@ const Home = () => {
         break;
       case 'state':
         setStateFilter('All');
-        break;
-      case 'dateFilter':
-        setDateFilter('All Upcoming');
         break;
       default:
         break;
@@ -631,7 +636,7 @@ const Home = () => {
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-10 flex-grow overflow-y-auto scrollbar-hide"> {/* Changed mt-6 to mt-10 */}
+                        <div className="flex flex-col gap-0 mt-10 flex-grow overflow-y-auto scrollbar-hide">
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -658,7 +663,7 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center py-0.5 px-1 text-xs font-medium truncate",
+                                  "w-full h-6 flex items-center py-1 px-1 text-xs font-medium truncate", // Changed h-5 to h-6, py-0.5 to py-1
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                   isEventContinuation && "justify-center" // Center text for continuation
@@ -711,7 +716,7 @@ const Home = () => {
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0 mt-10 flex-grow overflow-y-auto scrollbar-hide"> {/* Changed mt-6 to mt-10 */}
+                        <div className="flex flex-col gap-0 mt-10 flex-grow overflow-y-auto scrollbar-hide">
                           {dayEvents.map(event => {
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -738,7 +743,7 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-5 flex items-center py-0.5 px-1 text-xs font-medium truncate",
+                                  "w-full h-6 flex items-center py-1 px-1 text-xs font-medium truncate", // Changed h-5 to h-6, py-0.5 to py-1
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
                                   isEventContinuation && "justify-center" // Center text for continuation
