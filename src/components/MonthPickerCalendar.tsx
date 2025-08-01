@@ -4,10 +4,8 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface MonthPickerCalendarProps extends DayPickerSingleProps {
-  // No need to omit defaultView here, as we want to pass it.
-  // If we wanted to restrict it to *only* 'month', we could do:
-  // defaultView?: "month";
+interface MonthPickerCalendarProps extends Omit<DayPickerSingleProps, 'mode'> { // Omit 'mode' here
+  defaultView?: "day" | "month" | "year"; // Explicitly added defaultView
 }
 
 const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
@@ -16,9 +14,6 @@ const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
   showOutsideDays = true,
   ...props
 }) => {
-  // Removed useRef and useLayoutEffect as they were causing issues with internal API access.
-  // The defaultView prop is the intended way to set the initial view.
-
   return (
     <DayPicker
       mode="single" // Keep mode as single for selection
