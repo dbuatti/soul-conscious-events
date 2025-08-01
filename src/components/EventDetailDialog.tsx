@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns'; // Import parseISO
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
@@ -74,8 +74,33 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     }
   };
 
+  if (!isOpen) {
+    return null;
+  }
+
   if (!event) {
-    return null; // Or a loading skeleton if preferred, but event should be passed when opening
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <Skeleton className="h-8 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2" />
+          </DialogHeader>
+          <Skeleton className="w-full h-64 rounded-lg mb-4" />
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+          </div>
+          <DialogFooter className="flex justify-end gap-2 mt-4">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-24" />
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   const googleMapsLink = event.full_address
@@ -85,10 +110,10 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
   const formattedStartDate = event.event_date
-    ? format(new Date(event.event_date), 'PPP')
+    ? format(parseISO(event.event_date), 'PPP') // Use parseISO
     : 'Date TBD';
   const formattedEndDate = event.end_date
-    ? format(new Date(event.end_date), 'PPP')
+    ? format(parseISO(event.end_date), 'PPP') // Use parseISO
     : '';
 
   const dateDisplay =
@@ -113,6 +138,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 src={event.image_url}
                 alt={`Image for ${event.event_name}`}
                 className="w-full h-64 object-cover rounded-lg shadow-lg"
+                loading="lazy" // Lazy load image
               />
             </a>
           </div>

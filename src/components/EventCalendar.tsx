@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { format, isSameDay, isAfter, parseISO } from 'date-fns';
+import { format, isSameDay, isAfter, parseISO } from 'date-fns'; // Import parseISO
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -39,7 +39,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
   console.log('EventCalendar Debug: Selected date:', selectedDate);
 
   const eventsByDate = events.reduce((acc, event) => {
-    const dateKey = format(new Date(event.event_date), 'yyyy-MM-dd');
+    const dateKey = format(parseISO(event.event_date), 'yyyy-MM-dd'); // Use parseISO
     if (!acc[dateKey]) {
       acc[dateKey] = [];
     }
@@ -60,15 +60,15 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
   };
 
   const eventsOnSelectedDate = selectedDate
-    ? events.filter(event => isSameDay(parseISO(event.event_date), selectedDate))
+    ? events.filter(event => isSameDay(parseISO(event.event_date), selectedDate)) // Use parseISO
     : [];
 
   const moreUpcomingEvents = selectedDate
     ? events
-        .filter(event => isAfter(parseISO(event.event_date), selectedDate))
+        .filter(event => isAfter(parseISO(event.event_date), selectedDate)) // Use parseISO
         .sort((a, b) => {
-          const dateA = parseISO(a.event_date);
-          const dateB = parseISO(b.event_date);
+          const dateA = parseISO(a.event_date); // Use parseISO
+          const dateB = parseISO(b.event_date); // Use parseISO
           if (dateA.getTime() !== dateB.getTime()) {
             return dateA.getTime() - dateB.getTime();
           }
@@ -96,10 +96,10 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
       : '#';
 
     const formattedStartDate = event.event_date
-      ? format(new Date(event.event_date), 'PPP')
+      ? format(parseISO(event.event_date), 'PPP') // Use parseISO
       : 'Date TBD';
     const formattedEndDate = event.end_date
-      ? format(new Date(event.end_date), 'PPP')
+      ? format(parseISO(event.end_date), 'PPP') // Use parseISO
       : '';
 
     const dateDisplay =
@@ -119,6 +119,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
               src={event.image_url}
               alt={`Image for ${event.event_name}`}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy" // Lazy load image
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           </div>
