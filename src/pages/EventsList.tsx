@@ -364,7 +364,7 @@ const EventsList = () => {
         <>
           {viewMode === 'list' ? (
             events.length === 0 ? null : ( // This null will be replaced by the improved message above
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6"> {/* Changed md:grid-cols-2 to grid-cols-1 */}
                 {events.map((event) => {
                   const googleMapsLink = event.full_address
                     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
