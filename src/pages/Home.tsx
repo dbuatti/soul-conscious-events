@@ -11,39 +11,27 @@ import {
   isSameDay,
   addMonths,
   subMonths,
-  getYear,
-  getMonth,
-  setMonth,
-  setYear,
   startOfWeek,
   endOfWeek,
   parseISO,
   isPast,
-  addDays,
-  startOfDay,
-  endOfDay,
-  isWithinInterval,
-  addWeeks, // Added for week navigation
-  subWeeks, // Added for week navigation
+  addWeeks,
+  subWeeks,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter as FilterIcon, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight, X, ChevronsLeft, ChevronsRight, CircleDot } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Filter as FilterIcon, ChevronDown, Frown, List, Calendar as CalendarIcon2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { eventTypes, australianStates } from '@/lib/constants';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
-import FilterOverlay from '@/components/FilterOverlay'; // Import FilterOverlay
-import AgendaOverlay from '@/components/AgendaOverlay'; // Import AgendaOverlay
+import FilterOverlay from '@/components/FilterOverlay';
+import AgendaOverlay from '@/components/AgendaOverlay';
 
 interface Event {
   id: string;
@@ -64,6 +52,7 @@ interface Event {
 }
 
 const Home = () => {
+  // State declarations
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
@@ -92,6 +81,7 @@ const Home = () => {
   const daysOfWeekFull = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const daysOfWeekShort = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
+  // Helper functions
   const fetchEvents = async () => {
     setLoading(true);
     let query = supabase
@@ -100,7 +90,6 @@ const Home = () => {
       .eq('state', 'approved')
       .order('event_date', { ascending: true });
 
-    // Apply filters from state
     const now = new Date();
     const todayFormatted = format(now, 'yyyy-MM-dd');
 
@@ -117,141 +106,46 @@ const Home = () => {
         query = query
           .gte('event_date', format(startOfMonth(now), 'yyyy-MM-dd'))
           .lte('event_date', format(endOfMonth(now), 'yyyy-MM-dd'));
-        break;
-      case 'Past Events':
-        query = query.lt('event_date', todayFormatted).order('event_date', { ascending: false });
-        break;
-      case 'All Events':
-        break;
-      case 'All Upcoming':
-      default:
-        query = query.gte('event_date', todayFormatted);
-        break;
-    }
-
-    if (eventType !== 'All') {
-      query = query.eq('event_type', eventType);
-    }
-
-    if (stateFilter !== 'All') {
-      query = query.eq('state', stateFilter);
-    }
-
-    if (searchTerm) {
-      query = query.or(
-        `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%,place_name.ilike.%${searchTerm}%`
-      );
-    }
-
-    if (dateFilter !== 'Past Events') {
-      query = query.order('event_date', { ascending: true });
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Error fetching events:', error);
-      toast.error('Failed to load events.');
-    } else {
-      setEvents(data || []);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchEvents();
-  }, [searchTerm, eventType, stateFilter, dateFilter]); // Re-fetch when filters change
-
-  useEffect(() => {
-    if (selectedDayForDialog) {
-      setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
-    } else {
-      setSelectedDayEvents(getEventsForDay(new Date()));
-    }
-  }, [events, selectedDayForDialog]); // Update selectedDayEvents when events or selectedDayForDialog changes
-
-  // Initialize currentWeek based on currentMonth or today
-  useEffect(() => {
-    if (viewMode === 'week') {
-      const start = startOfWeek(currentMonth, { weekStartsOn: 1 });
-      const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
-      setCurrentWeek(weekDays);
-    } else {
-      // When switching to month view, ensure currentWeek is reset or not used
-      setCurrentWeek([]);
-    }
-  }, [currentMonth, viewMode]);
-
-
-  // Swipe gesture handlers for mobile
-  const handleSwipe = (direction: 'left' | 'right') => {
-    if (direction === 'left') { // Swiping left on screen, go to next period
-      if (viewMode === 'month') {
-        handleNextMonth();
-      } else { // week view
-        handleNextWeek();
+          break;
+        case 'Past Events':
+          query = query.lt('event_date', todayFormatted).order('event_date', { ascending: false });
+          break;
+        case 'All Events':
+          break;
+        case 'All Upcoming':
+        default:
+          query = query.gte('event_date', todayFormatted);
+          break;
       }
-    } else if (direction === 'right') { // Swiping right on screen, go to previous period
-      if (viewMode === 'month') {
-        handlePrevMonth();
-      } else { // week view
-        handlePrevWeek();
+
+      if (eventType !== 'All') {
+        query = query.eq('event_type', eventType);
       }
-    }
-  };
 
-  const onTouchStart = (e: TouchEvent) => {
-    if (!isMobile) return;
-    const touch = e.touches[0];
-    const startX = touch.clientX;
-    const startY = touch.clientY;
-
-    const onTouchMove = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - startX;
-      const deltaY = touch.clientY - startY;
-
-      if (Math.abs(deltaY) > Math.abs(deltaX) * 2) return;
-
-      if (Math.abs(deltaX) > 50) {
-        e.preventDefault();
-        if (deltaX > 0) {
-          handleSwipe('right');
-        } else {
-          handleSwipe('left');
-        }
-        window.removeEventListener('touchmove', onTouchMove);
-        window.removeEventListener('touchend', onTouchEnd);
+      if (stateFilter !== 'All') {
+        query = query.eq('state', stateFilter);
       }
+
+      if (searchTerm) {
+        query = query.or(
+          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%,place_name.ilike.%${searchTerm}%`
+        );
+      }
+
+      if (dateFilter !== 'Past Events') {
+        query = query.order('event_date', { ascending: true });
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching events:', error);
+        toast.error('Failed to load events.');
+      } else {
+        setEvents(data || []);
+      }
+      setLoading(false);
     };
-
-    const onTouchEnd = () => {
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
-    };
-
-    window.addEventListener('touchmove', onTouchMove);
-    window.addEventListener('touchend', onTouchEnd);
-  };
-
-  useEffect(() => {
-    if (isMobile && calendarRef.current) {
-      calendarRef.current.addEventListener('touchstart', onTouchStart);
-      return () => {
-        if (calendarRef.current) {
-          calendarRef.current.removeEventListener('touchstart', onTouchStart);
-        }
-      };
-    }
-  }, [isMobile, viewMode]);
-
-  const startOfCurrentMonth = startOfMonth(currentMonth);
-  const endOfCurrentMonth = endOfMonth(currentMonth);
-
-  const startDay = startOfWeek(startOfCurrentMonth, { weekStartsOn: 1 });
-  const endDay = endOfWeek(endOfCurrentMonth, { weekStartsOn: 1 });
-
-  const daysInMonthView = eachDayOfInterval({ start: startDay, end: endDay });
 
   const handlePrevMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1));
@@ -266,18 +160,18 @@ const Home = () => {
   };
 
   const handlePrevWeek = () => {
-    setCurrentMonth(subWeeks(currentMonth, 1)); // Adjust currentMonth to reflect the new week
+    setCurrentMonth(subWeeks(currentMonth, 1));
   };
 
   const handleNextWeek = () => {
-    setCurrentMonth(addWeeks(currentMonth, 1)); // Adjust currentMonth to reflect the new week
+    setCurrentMonth(addWeeks(currentMonth, 1));
   };
 
   const handleThisWeek = () => {
-    setCurrentMonth(new Date()); // Set currentMonth to today, which will re-calculate currentWeek
+    setCurrentMonth(new Date());
   };
 
-  const handleMonthChange = (date: Date) => { // Changed to accept Date directly
+  const handleMonthChange = (date: Date) => {
     setCurrentMonth(date);
   };
 
@@ -340,13 +234,10 @@ const Home = () => {
     });
   };
 
-  const eventsForCurrentMonth = getEventsForMonth(currentMonth);
-  const eventsForCurrentWeek = getEventsForWeek(currentWeek);
-
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
-    setSelectedDayEvents(getEventsForDay(day)); // Always update events for the agenda
-    setIsAgendaOverlayOpen(true); // Open agenda overlay on day click
+    setSelectedDayEvents(getEventsForDay(day));
+    setIsAgendaOverlayOpen(true);
   };
 
   const handleViewDetails = (event: Event) => {
@@ -398,12 +289,13 @@ const Home = () => {
               src={event.image_url}
               alt={`Image for ${event.event_name}`}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           </div>
         )}
         <CardHeader className="p-3 pb-0">
-          <CardTitle className="text-base font-semibold text-purple-700 line-clamp-1">{event.event_name}</CardTitle>
+          <CardTitle className="text-base font-semibold text-purple-700 line-clamp-1 overflow-hidden text-ellipsis">{event.event_name}</CardTitle>
           <CardDescription className="flex items-center text-gray-600 text-xs mt-1">
             <CalendarIcon className="mr-1 h-3 w-3 text-blue-500" />
             {dateDisplay}
@@ -432,6 +324,102 @@ const Home = () => {
       </Card>
     );
   };
+
+  // Effects
+  useEffect(() => {
+    fetchEvents();
+  }, [searchTerm, eventType, stateFilter, dateFilter]);
+
+  useEffect(() => {
+    if (selectedDayForDialog) {
+      setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
+    } else {
+      setSelectedDayEvents(getEventsForDay(new Date()));
+    }
+  }, [events, selectedDayForDialog]);
+
+  useEffect(() => {
+    if (viewMode === 'week') {
+      const start = startOfWeek(currentMonth, { weekStartsOn: 1 });
+      const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
+      setCurrentWeek(weekDays);
+    } else {
+      setCurrentWeek([]);
+    }
+  }, [currentMonth, viewMode]);
+
+  // Swipe gesture handlers for mobile
+  const handleSwipe = (direction: 'left' | 'right') => {
+    if (direction === 'left') {
+      if (viewMode === 'month') {
+        handleNextMonth();
+      } else {
+        handleNextWeek();
+      }
+    } else if (direction === 'right') {
+      if (viewMode === 'month') {
+        handlePrevMonth();
+      } else {
+        handlePrevWeek();
+      }
+    }
+  };
+
+  const onTouchStart = (e: TouchEvent) => {
+    if (!isMobile) return;
+    const touch = e.touches[0];
+    const startX = touch.clientX;
+    const startY = touch.clientY;
+
+    const onTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - startX;
+      const deltaY = touch.clientY - startY;
+
+      if (Math.abs(deltaY) > Math.abs(deltaX) * 2) return;
+
+      if (Math.abs(deltaX) > 50) {
+        e.preventDefault();
+        if (deltaX > 0) {
+          handleSwipe('right');
+        } else {
+          handleSwipe('left');
+        }
+        window.removeEventListener('touchmove', onTouchMove);
+        window.removeEventListener('touchend', onTouchEnd);
+      }
+    };
+
+    const onTouchEnd = () => {
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+
+    window.addEventListener('touchmove', onTouchMove);
+    window.addEventListener('touchend', onTouchEnd);
+  };
+
+  useEffect(() => {
+    if (isMobile && calendarRef.current) {
+      calendarRef.current.addEventListener('touchstart', onTouchStart as EventListener);
+      return () => {
+        if (calendarRef.current) {
+          calendarRef.current.removeEventListener('touchstart', onTouchStart as EventListener);
+        }
+      };
+    }
+  }, [isMobile, viewMode]);
+
+  const startOfCurrentMonth = startOfMonth(currentMonth);
+  const endOfCurrentMonth = endOfMonth(currentMonth);
+
+  const startDay = startOfWeek(startOfCurrentMonth, { weekStartsOn: 1 });
+  const endDay = endOfWeek(endOfCurrentMonth, { weekStartsOn: 1 });
+
+  const daysInMonthView = eachDayOfInterval({ start: startDay, end: endDay });
+
+  const eventsForCurrentMonth = getEventsForMonth(currentMonth);
+  const eventsForCurrentWeek = getEventsForWeek(currentWeek);
 
   return (
     <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200">
@@ -543,7 +531,7 @@ const Home = () => {
                 <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="h-56 border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
+                <div key={i} className="h-28 sm:h-40 md:h-48 lg:h-56 border rounded-lg p-2 flex flex-col items-center justify-center bg-gray-50">
                   <Skeleton className="h-5 w-1/2 mb-2" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-2/3 mt-1" />
@@ -555,7 +543,7 @@ const Home = () => {
               {/* Calendar Grid (for both mobile and desktop) */}
               <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-xl shadow-inner">
                 {daysOfWeekShort.map((day, index) => (
-                  <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-1">{day}</div>
+                  <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-1 sm:text-base sm:py-2">{daysOfWeekFull[index]}</div>
                 ))}
                 {viewMode === 'month' ? (
                   daysInMonthView.map((day) => {
@@ -570,7 +558,7 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isCurrentMonth ? "bg-white" : "bg-gray-50",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
@@ -580,27 +568,15 @@ const Home = () => {
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide">
-                            {dayEvents.map((event) => (
-                              <div
-                                key={event.id}
-                                className={cn(
-                                  "flex items-center text-[11px] leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
-                                  isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                  "line-clamp-2"
-                                )}
-                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }}
-                              >
-                                {event.event_name}
-                              </div>
-                            ))}
+                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-purple-600 text-white text-xs font-bold">
+                            {dayEvents.length}
                           </div>
                         )}
                       </div>
@@ -619,37 +595,25 @@ const Home = () => {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
+                          "relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
-                          isSelected && !isTodayDate ? "bg-blue-100 border-blue-500 border-2" : "bg-white", // Ensure background is white if not today/selected
+                          isSelected && !isTodayDate ? "bg-blue-100 border-blue-500 border-2" : "bg-white",
                           "hover:bg-gray-100 hover:shadow-md hover:border-purple-300"
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105",
+                          "absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200 group-hover:scale-105",
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
-                          <span className="block text-sm font-semibold">{format(day, 'EEE')}</span>
+                          <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
-                          <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide">
-                            {dayEvents.map((event, index) => (
-                              <div
-                                key={event.id}
-                                className={cn(
-                                  "flex items-center text-[11px] leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
-                                  isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                  "line-clamp-2"
-                                )}
-                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }}
-                              >
-                                {event.event_name}
-                              </div>
-                            ))}
+                          <div className="absolute bottom-2 right-2 flex items-center justify-center h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-purple-600 text-white text-xs font-bold">
+                            {dayEvents.length}
                           </div>
                         )}
                       </div>

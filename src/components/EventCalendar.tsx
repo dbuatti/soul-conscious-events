@@ -125,7 +125,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
           </div>
         )}
         <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-2xl font-bold text-purple-700 mb-2">{event.event_name}</CardTitle>
+          <CardTitle className="text-2xl font-bold text-purple-700 mb-2 line-clamp-1 overflow-hidden text-ellipsis">{event.event_name}</CardTitle>
           <CardDescription className="flex items-center text-gray-600 text-base">
             <CalendarIcon className="mr-2 h-5 w-5 text-blue-500" />
             {dateDisplay}
