@@ -642,18 +642,18 @@ const Home = () => {
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
                             const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
                             const isEventStartDay = isSameDay(day, eventStartDate);
-                            const isEventEndDay = isSameDay(day, eventEndDate);
-                            const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
+                            // const isEventEndDay = isSameDay(day, eventEndDate); // Not used in new logic
+                            // const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate; // Not used in new logic
 
                             // Determine rounding classes
                             let roundingClasses = "";
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
-                              } else if (isEventEndDay) {
-                                roundingClasses = "rounded-r-md rounded-l-none";
-                              } else if (isEventContinuation) {
+                              } else if (day > eventStartDate && day <= eventEndDate) { // If it's a continuation day
                                 roundingClasses = "rounded-none";
+                              } else { // If it's the end day
+                                roundingClasses = "rounded-r-md rounded-l-none";
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
@@ -663,21 +663,16 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-6 flex items-center py-1 px-1 text-xs font-medium truncate", // Changed h-5 to h-6, py-0.5 to py-1
+                                  "w-full h-6 flex items-center py-1 px-1 text-xs font-medium truncate",
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
-                                  isEventContinuation && "justify-center" // Center text for continuation
                                 )}
                               >
-                                {isEventStartDay || !isMultiDay ? (
-                                  <span className="flex items-center pl-1">
-                                    {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
-                                    {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
-                                    {event.event_name}
-                                  </span>
-                                ) : (
-                                  <span className="italic">...continued</span>
-                                )}
+                                <span className="flex items-center pl-1">
+                                  {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
+                                  {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
+                                  {event.event_name}
+                                </span>
                               </div>
                             );
                           })}
@@ -722,18 +717,18 @@ const Home = () => {
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
                             const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
                             const isEventStartDay = isSameDay(day, eventStartDate);
-                            const isEventEndDay = isSameDay(day, eventEndDate);
-                            const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
+                            // const isEventEndDay = isSameDay(day, eventEndDate); // Not used in new logic
+                            // const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate; // Not used in new logic
 
                             // Determine rounding classes
                             let roundingClasses = "";
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
-                              } else if (isEventEndDay) {
-                                roundingClasses = "rounded-r-md rounded-l-none";
-                              } else if (isEventContinuation) {
+                              } else if (day > eventStartDate && day <= eventEndDate) { // If it's a continuation day
                                 roundingClasses = "rounded-none";
+                              } else { // If it's the end day
+                                roundingClasses = "rounded-r-md rounded-l-none";
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
@@ -743,21 +738,16 @@ const Home = () => {
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "w-full h-6 flex items-center py-1 px-1 text-xs font-medium truncate", // Changed h-5 to h-6, py-0.5 to py-1
+                                  "w-full h-6 flex items-center py-1 px-1 text-xs font-medium truncate",
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
-                                  isEventContinuation && "justify-center" // Center text for continuation
                                 )}
                               >
-                                {isEventStartDay || !isMultiDay ? (
-                                  <span className="flex items-center pl-1">
-                                    {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
-                                    {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
-                                    {event.event_name}
-                                  </span>
-                                ) : (
-                                  <span className="italic">...continued</span>
-                                )}
+                                <span className="flex items-center pl-1">
+                                  {(isEventStartDay || !isMultiDay) && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
+                                  {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
+                                  {event.event_name}
+                                </span>
                               </div>
                             );
                           })}
