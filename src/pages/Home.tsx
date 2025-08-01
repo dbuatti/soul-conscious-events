@@ -271,6 +271,9 @@ const Home = () => {
       case 'state':
         setStateFilter('All');
         break;
+      case 'dateFilter':
+        setDateFilter('All Upcoming');
+        break;
       default:
         break;
     }
@@ -625,31 +628,38 @@ const Home = () => {
                         )}>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0.5 mt-10 flex-grow overflow-y-auto scrollbar-hide">
+                        <div className="flex flex-col gap-0.5 mt-8 flex-grow overflow-y-auto scrollbar-hide">
                           {dayEvents.map(event => {
-                            const isMultiDay = event.end_date && event.event_date !== event.end_date;
-                            const isEventStartDay = isSameDay(day, parseISO(event.event_date));
-                            const isEventContinuation = isMultiDay && !isEventStartDay && day > parseISO(event.event_date) && day <= parseISO(event.end_date);
+                            const eventStartDate = parseISO(event.event_date);
+                            const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+                            const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
+                            const isEventStartDay = isSameDay(day, eventStartDate);
+                            const isEventEndDay = isSameDay(day, eventEndDate);
+                            const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
 
                             return (
-                              <span
+                              <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "text-xs font-medium px-1 py-0.5 rounded-sm truncate flex items-center",
-                                  isMultiDay ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" : "bg-accent/20 text-foreground",
+                                  "w-full h-5 flex items-center px-1 py-0.5 text-xs font-medium truncate",
+                                  isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
+                                  isEventStartDay && "rounded-l-md",
+                                  isEventEndDay && "rounded-r-md",
+                                  !isEventStartDay && !isEventEndDay && isMultiDay && "rounded-none", // Middle segments
+                                  !isMultiDay && "rounded-md", // Single day events
                                   isEventContinuation && "justify-center" // Center text for continuation
                                 )}
                               >
-                                {isMultiDay && <CircleDot className="h-2 w-2 mr-1 text-blue-600 dark:text-blue-400" />}
+                                {isMultiDay && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                 {isEventStartDay || !isMultiDay ? (
                                   <>
                                     {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
                                     {event.event_name}
                                   </>
                                 ) : (
-                                  <span className="italic text-muted-foreground">...continued</span>
+                                  <span className="italic">...continued</span>
                                 )}
-                              </span>
+                              </div>
                             );
                           })}
                         </div>
@@ -684,31 +694,38 @@ const Home = () => {
                           <span className="block text-xs sm:text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
-                        <div className="flex flex-col gap-0.5 mt-10 flex-grow overflow-y-auto scrollbar-hide">
+                        <div className="flex flex-col gap-0.5 mt-8 flex-grow overflow-y-auto scrollbar-hide">
                           {dayEvents.map(event => {
-                            const isMultiDay = event.end_date && event.event_date !== event.end_date;
-                            const isEventStartDay = isSameDay(day, parseISO(event.event_date));
-                            const isEventContinuation = isMultiDay && !isEventStartDay && day > parseISO(event.event_date) && day <= parseISO(event.end_date);
+                            const eventStartDate = parseISO(event.event_date);
+                            const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+                            const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
+                            const isEventStartDay = isSameDay(day, eventStartDate);
+                            const isEventEndDay = isSameDay(day, eventEndDate);
+                            const isEventContinuation = isMultiDay && !isEventStartDay && !isEventEndDay && day > eventStartDate && day < eventEndDate;
 
                             return (
-                              <span
+                              <div
                                 key={event.id + format(day, 'yyyy-MM-dd')} // Unique key for event on specific day
                                 className={cn(
-                                  "text-xs font-medium px-1 py-0.5 rounded-sm truncate flex items-center",
-                                  isMultiDay ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" : "bg-accent/20 text-foreground",
+                                  "w-full h-5 flex items-center px-1 py-0.5 text-xs font-medium truncate",
+                                  isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
+                                  isEventStartDay && "rounded-l-md",
+                                  isEventEndDay && "rounded-r-md",
+                                  !isEventStartDay && !isEventEndDay && isMultiDay && "rounded-none", // Middle segments
+                                  !isMultiDay && "rounded-md", // Single day events
                                   isEventContinuation && "justify-center" // Center text for continuation
                                 )}
                               >
-                                {isMultiDay && <CircleDot className="h-2 w-2 mr-1 text-blue-600 dark:text-blue-400" />}
+                                {isMultiDay && <CircleDot className="h-2 w-2 mr-1 text-blue-200 dark:text-blue-400" />}
                                 {isEventStartDay || !isMultiDay ? (
                                   <>
                                     {event.event_time && <span className="font-bold mr-1">{event.event_time}</span>}
                                     {event.event_name}
                                   </>
                                 ) : (
-                                  <span className="italic text-muted-foreground">...continued</span>
+                                  <span className="italic">...continued</span>
                                 )}
-                              </span>
+                              </div>
                             );
                           })}
                         </div>
