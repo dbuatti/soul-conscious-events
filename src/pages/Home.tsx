@@ -180,10 +180,10 @@ const Home = () => {
         const nativeEvent = e as unknown as TouchEvent;
         onTouchStart(nativeEvent as React.TouchEvent);
       };
-      calendarRef.current.addEventListener('touchstart', wrappedOnTouchStart);
+      calendarRef.current.addEventListener('touchstart', wrappedOnTouchStart as EventListener);
       return () => {
         if (calendarRef.current) {
-          calendarRef.current.removeEventListener('touchstart', wrappedOnTouchStart);
+          calendarRef.current.removeEventListener('touchstart', wrappedOnTouchStart as EventListener);
         }
       };
     }
