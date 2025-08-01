@@ -601,7 +601,7 @@ const Home = () => {
           ) : (
             <>
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 text-center border border-border rounded-lg overflow-hidden">
+              <div ref={calendarRef} className="grid grid-cols-7 gap-px text-center border border-border rounded-lg overflow-hidden">
                 {daysOfWeekShort.map((day, index) => (
                   <div key={daysOfWeekFull[index]} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>
                 ))}
@@ -623,9 +623,7 @@ const Home = () => {
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
                           "hover:bg-muted hover:shadow-md hover:border-primary",
-                          // Apply right and bottom borders to cells, except for the last column/row
-                          (day.getDay() !== 0) && "border-r border-border", // Sunday is 0, so apply to Mon-Sat
-                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border" // Apply bottom border unless it's the last row
+                          // Removed individual cell borders here, relying on grid gap-px
                         )}
                         onClick={() => handleDayClick(day)}
                       >
@@ -644,18 +642,23 @@ const Home = () => {
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
 
-                            // Determine rounding classes
+                            // Determine rounding classes and width/margin for multi-day events
                             let roundingClasses = "";
+                            let widthAndMarginClasses = "w-full"; // Default for single-day or end of multi-day
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
+                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover the right gap
                               } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
-                              } else { // If it's a continuation day
+                                widthAndMarginClasses = "w-[calc(100%+1px)] ml-[-1px]"; // Extend to cover the left gap
+                              } else { // If it's a continuation day (not start, not end)
                                 roundingClasses = "rounded-none";
+                                widthAndMarginClasses = "w-[calc(100%+2px)] ml-[-1px] mr-[-1px]"; // Extend to cover both left and right gaps
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
+                              widthAndMarginClasses = "w-full"; // Single day event fits within its cell
                             }
 
                             return (
@@ -666,7 +669,7 @@ const Home = () => {
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
-                                  isMultiDay && "w-[calc(100%+1px)] ml-[-1px]" // Apply width and negative margin for multi-day events
+                                  widthAndMarginClasses // Apply calculated width and margin
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
@@ -701,9 +704,7 @@ const Home = () => {
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate ? "bg-accent/20 border-primary border-2" : "bg-card",
                           "hover:bg-muted hover:shadow-md hover:border-primary",
-                          // Apply right and bottom borders to cells, except for the last column/row
-                          (day.getDay() !== 0) && "border-r border-border", // Sunday is 0, so apply to Mon-Sat
-                          (day.getMonth() === endOfCurrentMonth.getMonth() && day.getDate() > (endOfCurrentMonth.getDate() - 7)) ? "" : "border-b border-border" // Apply bottom border unless it's the last row
+                          // Removed individual cell borders here, relying on grid gap-px
                         )}
                         onClick={() => handleDayClick(day)}
                       >
@@ -723,18 +724,23 @@ const Home = () => {
                             const isEventStartDay = isSameDay(day, eventStartDate);
                             const isEventEndDay = isSameDay(day, eventEndDate);
 
-                            // Determine rounding classes
+                            // Determine rounding classes and width/margin for multi-day events
                             let roundingClasses = "";
+                            let widthAndMarginClasses = "w-full"; // Default for single-day or end of multi-day
                             if (isMultiDay) {
                               if (isEventStartDay) {
                                 roundingClasses = "rounded-l-md rounded-r-none";
+                                widthAndMarginClasses = "w-[calc(100%+1px)] mr-[-1px]"; // Extend to cover the right gap
                               } else if (isEventEndDay) {
                                 roundingClasses = "rounded-r-md rounded-l-none";
-                              } else { // If it's a continuation day
+                                widthAndMarginClasses = "w-[calc(100%+1px)] ml-[-1px]"; // Extend to cover the left gap
+                              } else { // If it's a continuation day (not start, not end)
                                 roundingClasses = "rounded-none";
+                                widthAndMarginClasses = "w-[calc(100%+2px)] ml-[-1px] mr-[-1px]"; // Extend to cover both left and right gaps
                               }
                             } else { // Single day event
                               roundingClasses = "rounded-md";
+                              widthAndMarginClasses = "w-full"; // Single day event fits within its cell
                             }
 
                             return (
@@ -745,7 +751,7 @@ const Home = () => {
                                   "min-h-[1.5rem]", // Ensure a minimum height for all pills
                                   isMultiDay ? "bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100" : "bg-accent/20 text-foreground",
                                   roundingClasses, // Apply calculated rounding
-                                  isMultiDay && "w-[calc(100%+1px)] ml-[-1px]" // Apply width and negative margin for multi-day events
+                                  widthAndMarginClasses // Apply calculated width and margin
                                 )}
                               >
                                 {isEventStartDay || !isMultiDay ? (
