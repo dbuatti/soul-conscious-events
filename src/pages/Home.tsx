@@ -402,25 +402,32 @@ const Home = () => {
         : formattedStartDate;
 
     return (
-      <div key={event.id} className="py-3 px-4 cursor-pointer hover:bg-accent/50 rounded-lg transition-colors duration-200" onClick={() => handleViewDetails(event)}>
-        <div className="flex items-center text-muted-foreground text-sm mb-1">
-          <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
-          <span>{dateDisplay}</span>
-          {event.event_time && (
-            <>
-              <Clock className="ml-4 mr-2 h-4 w-4 text-primary" />
-              <span>{event.event_time}</span>
-            </>
-          )}
-        </div>
-        <p className="text-lg font-semibold text-foreground leading-tight">
+      <div key={event.id} className="py-3 px-3 cursor-pointer hover:bg-accent/50 rounded-lg transition-colors duration-200" onClick={() => handleViewDetails(event)}>
+        {/* Event Name - Make it more prominent */}
+        <p className="text-xl font-bold text-foreground leading-tight mb-1">
           {event.event_name}
         </p>
+
+        {/* Date */}
+        <div className="flex items-center text-muted-foreground text-sm mb-1">
+          <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+          <span>{dateDisplay}</span>
+        </div>
+
+        {/* Time (Optional) */}
+        {event.event_time && (
+          <div className="flex items-center text-muted-foreground text-sm mb-1">
+            <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+            <span>{event.event_time}</span>
+          </div>
+        )}
+
+        {/* Location (Optional) */}
         {(event.place_name || event.full_address) && (
-          <p className="flex items-center text-muted-foreground text-sm mt-1">
-            <MapPin className="mr-2 h-4 w-4 text-primary" />
-            {event.place_name || event.full_address}
-          </p>
+          <div className="flex items-center text-muted-foreground text-sm"> {/* No mb-1 here if it's the last item */}
+            <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+            <span>{event.place_name || event.full_address}</span>
+          </div>
         )}
       </div>
     );
