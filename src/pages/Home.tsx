@@ -38,6 +38,7 @@ import { DayContentProps } from 'react-day-picker';
 interface CustomDayContentProps extends DayContentProps {
   // activeModifiers is already part of DayContentProps, but we can refine its type here if needed
   // For now, we'll just ensure we access it correctly.
+  events: Event[]; // Add events prop to DayContentProps
 }
 
 interface Event {
@@ -78,7 +79,7 @@ const Home = () => {
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
 
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
-  const [isAgendaOverlayOpen, setIsAgendaOverlayOpen] = useState(false); // Corrected typo here
+  const [isAgendaOverlayOpen, setIsAgendaOverlayOpen] = useState(false);
 
   const isMobile = useIsMobile();
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -419,13 +420,13 @@ const Home = () => {
                   if (date) handleDayClick(date);
                 }}
                 modifiers={{
-                  events: events.map(event => parseISO(event.event_date)), // Use the full 'events' list for modifiers
+                  // Removed events modifier here, will calculate directly in Day component
                   past: (day) => isPast(day) && !isToday(day),
                   today: new Date(),
                 }}
                 modifiersClassNames={{
                   today: "rdp-day_today",
-                  events: "rdp-day_has_events",
+                  events: "rdp-day_has_events", // This class will still be used for styling if applied manually
                 }}
                 classNames={{
                   months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
@@ -465,8 +466,8 @@ const Home = () => {
                     const isPastDate = activeModifiers?.past === true;
                     const isTodayDate = isToday(date);
                     const isSelected = isSameDay(date, selectedDayForDialog || new Date());
-                    // Corrected access to activeModifiers.events
-                    const hasEvents = activeModifiers?.events === true;
+                    // Directly calculate hasEvents using the 'events' state from Home component
+                    const hasEvents = events.some(event => isSameDay(parseISO(event.event_date), date));
 
                     return (
                       <div
@@ -476,6 +477,7 @@ const Home = () => {
                           isPastDate && "text-muted-foreground opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
                           isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
+                          hasEvents && "rdp-day_has_events", // Manually apply the class
                           "cursor-pointer"
                         )}
                         onClick={() => handleDayClick(date)}
