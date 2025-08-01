@@ -136,7 +136,8 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
             )}
           </CardDescription>
           {(event.place_name || event.full_address || event.state) && (
-            <CardDescription className="flex flex-col items-start text-gray-600 mt-2">
+            // Changed CardDescription to div to avoid DOM nesting warning
+            <div className="flex flex-col items-start text-gray-600 mt-2 text-base">
               {event.place_name && (
                 <div className="flex items-center mb-1">
                   <MapPin className="mr-2 h-5 w-5 text-red-500" />
@@ -160,7 +161,7 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, selectedDate, onD
                 </div>
               )}
               {/* Removed event.state display */}
-            </CardDescription>
+            </div>
           )}
         </CardHeader>
         <CardContent className="p-4 pt-2 space-y-2">
