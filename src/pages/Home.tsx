@@ -403,14 +403,19 @@ const Home = () => {
 
     return (
       <div key={event.id} className="py-1.5 px-2 cursor-pointer hover:bg-accent/50 rounded-lg transition-colors duration-200" onClick={() => handleViewDetails(event)}>
-        <p className="text-sm text-muted-foreground mb-0.5">
-          {dateDisplay} {event.event_time && `@ ${event.event_time}`}
-        </p>
+        {/* Event Name - Make it more prominent */}
         <p className="text-base font-bold text-foreground leading-tight">
           {event.event_name}
         </p>
+
+        {/* Date & Time */}
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {dateDisplay} {event.event_time && `@ ${event.event_time}`}
+        </p>
+
+        {/* Location (Optional) */}
         {(event.place_name || event.full_address) && (
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground">
             {event.place_name || event.full_address}
           </p>
         )}
@@ -438,7 +443,7 @@ const Home = () => {
                 <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" className="text-lg font-bold focus-visible:ring-primary">
-                      {format(currentMonth, 'd/M/yyyy')} <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                      {format(currentMonth, 'MMMM yyyy')} <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
@@ -733,7 +738,7 @@ const Home = () => {
             <div className="mt-8 p-4 bg-secondary rounded-xl shadow-lg border border-border dark:bg-card dark:border-border">
               <div className="flex justify-between items-center mb-2">
                 <p className="text-xl font-bold text-foreground">
-                  {format(selectedDayForAgendaList, 'EEEE, MMMM d')}
+                  Events on {format(selectedDayForAgendaList, 'EEEE, MMMM d')}
                 </p>
                 <Button variant="ghost" size="icon" onClick={() => setShowAgendaList(false)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                   <X className="h-5 w-5" />
