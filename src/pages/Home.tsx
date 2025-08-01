@@ -467,7 +467,11 @@ const Home = () => {
                     const isTodayDate = isToday(date);
                     const isSelected = isSameDay(date, selectedDayForDialog || new Date());
                     // Directly calculate hasEvents using the 'events' state from Home component
-                    const hasEvents = events.some(event => isSameDay(parseISO(event.event_date), date));
+                    const hasEvents = events.some(event => {
+                      const eventStartDate = parseISO(event.event_date);
+                      const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+                      return date >= eventStartDate && date <= eventEndDate;
+                    });
 
                     return (
                       <div
