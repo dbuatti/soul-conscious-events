@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, ChevronDown, Lightbulb, Loader2, PlusCircle, Frown } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Search, Globe, Share2, List, CalendarDays, X, Image as ImageIcon, Edit, Trash2, ChevronDown, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ import { useSession } from '@/components/SessionContextProvider'; // Import useS
 import EventDetailDialog from '@/components/EventDetailDialog'; // Import the new dialog component
 import { eventTypes, australianStates } from '@/lib/constants'; // Import from constants
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
+import FilterOverlay from '@/components/FilterOverlay'; // Import FilterOverlay
 
 interface Event {
   id: string;
@@ -45,19 +45,13 @@ const EventsList = () => {
   const [loading, setLoading] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
-  const [draftSearchTerm, setDraftSearchTerm] = useState('');
-  const [draftEventType, setDraftEventType] = useState('All');
-  const [draftState, setDraftState] = useState('All');
-  const [draftDateFilter, setDraftDateFilter] = useState('All Upcoming');
-
-  const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
-  const [appliedEventType, setAppliedEventType] = useState('All');
-  const [appliedState, setAppliedState] = useState('All');
-  const [appliedDateFilter, setAppliedDateFilter] = useState('All Upcoming');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [eventType, setEventType] = useState('All');
+  const [stateFilter, setStateFilter] = useState('All');
+  const [dateFilter, setDateFilter] = useState('All Upcoming');
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list'); // Default to list view
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
-  const [isFiltersOpen, setIsFiltersOpen] = useState(true); // State for collapsible filters
 
   const { user, isLoading: isSessionLoading } = useSession(); // Get user from context
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
@@ -66,15 +60,8 @@ const EventsList = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setAppliedSearchTerm(draftSearchTerm);
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [draftSearchTerm]);
+  // State for FilterOverlay
+  const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -84,7 +71,7 @@ const EventsList = () => {
       const now = new Date();
       const todayFormatted = format(now, 'yyyy-MM-dd');
 
-      switch (appliedDateFilter) {
+      switch (dateFilter) {
         case 'Today':
           query = query.eq('event_date', todayFormatted);
           break;
@@ -109,24 +96,24 @@ const EventsList = () => {
           break;
       }
 
-      if (appliedEventType !== 'All') {
-        query = query.eq('event_type', appliedEventType);
+      if (eventType !== 'All') {
+        query = query.eq('event_type', eventType);
       }
 
-      if (appliedState !== 'All') {
-        query = query.eq('state', appliedState);
+      if (stateFilter !== 'All') {
+        query = query.eq('state', stateFilter);
       }
 
       // Always filter for 'approved' events for public view
       query = query.eq('state', 'approved');
 
-      if (appliedSearchTerm) {
+      if (searchTerm) {
         query = query.or(
-          `event_name.ilike.%${appliedSearchTerm}%,description.ilike.%${appliedSearchTerm}%,organizer_contact.ilike.%${appliedSearchTerm}%,full_address.ilike.%${appliedSearchTerm}%,place_name.ilike.%${appliedSearchTerm}%`
+          `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%,place_name.ilike.%${searchTerm}%`
         );
       }
 
-      if (appliedDateFilter !== 'Past Events') {
+      if (dateFilter !== 'Past Events') {
         query = query.order('event_date', { ascending: true });
       }
 
@@ -142,7 +129,7 @@ const EventsList = () => {
     };
 
     fetchEvents();
-  }, [appliedEventType, appliedState, appliedSearchTerm, appliedDateFilter]);
+  }, [searchTerm, eventType, stateFilter, dateFilter]);
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions(prev => ({
@@ -151,40 +138,38 @@ const EventsList = () => {
     }));
   };
 
-  const handleApplyFilters = () => {
-    setAppliedEventType(draftEventType);
-    setAppliedState(draftState);
-    setAppliedDateFilter(draftDateFilter);
+  const handleApplyFilters = (filters: {
+    searchTerm: string;
+    eventType: string;
+    state: string;
+    dateFilter: string;
+  }) => {
+    setSearchTerm(filters.searchTerm);
+    setEventType(filters.eventType);
+    setStateFilter(filters.state);
+    setDateFilter(filters.dateFilter);
   };
 
-  const handleClearFilters = () => {
-    setDraftSearchTerm('');
-    setAppliedSearchTerm('');
-    setDraftEventType('All');
-    setAppliedEventType('All');
-    setDraftState('All');
-    setAppliedState('All');
-    setDraftDateFilter('All Upcoming');
-    setAppliedDateFilter('All Upcoming');
+  const handleClearAllFilters = () => {
+    setSearchTerm('');
+    setEventType('All');
+    setStateFilter('All');
+    setDateFilter('All Upcoming');
   };
 
   const removeFilter = (filterType: 'search' | 'eventType' | 'state' | 'dateFilter') => {
     switch (filterType) {
       case 'search':
-        setDraftSearchTerm('');
-        setAppliedSearchTerm('');
+        setSearchTerm('');
         break;
       case 'eventType':
-        setDraftEventType('All');
-        setAppliedEventType('All');
+        setEventType('All');
         break;
       case 'state':
-        setDraftState('All');
-        setAppliedState('All');
+        setStateFilter('All');
         break;
       case 'dateFilter':
-        setDraftDateFilter('All Upcoming');
-        setAppliedDateFilter('All Upcoming');
+        setDateFilter('All Upcoming');
         break;
       default:
         break;
@@ -192,10 +177,10 @@ const EventsList = () => {
   };
 
   const hasActiveFilters =
-    appliedSearchTerm !== '' ||
-    appliedEventType !== 'All' ||
-    appliedState !== 'All' ||
-    appliedDateFilter !== 'All Upcoming';
+    searchTerm !== '' ||
+    eventType !== 'All' ||
+    stateFilter !== 'All' ||
+    dateFilter !== 'All Upcoming';
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click from triggering
@@ -258,182 +243,74 @@ const EventsList = () => {
       </div>
 
       {/* Filter and View Options Section */}
-      <Collapsible
-        open={isFiltersOpen}
-        onOpenChange={setIsFiltersOpen}
-        className="mb-8 rounded-xl shadow-lg border border-gray-200 bg-gray-50"
-      >
-        <div className="flex items-center justify-between p-4 sm:p-6 bg-purple-50 rounded-t-xl">
-          <h2 className="text-xl sm:text-2xl font-bold text-purple-800">Filter Events</h2>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-9 p-0 text-purple-700 hover:bg-purple-100">
-              <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isFiltersOpen ? 'rotate-180' : ''}`} />
-              <span className="sr-only">Toggle filters</span>
-            </Button>
-          </CollapsibleTrigger>
+      <div className="mb-8 rounded-xl shadow-lg border border-gray-200 bg-gray-50 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          {/* Filter Button */}
+          <Button
+            onClick={() => setIsFilterOverlayOpen(true)}
+            className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base"
+          >
+            <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
+          </Button>
+
+          {/* View Mode Toggle */}
+          <div className="flex flex-col gap-1 w-full sm:w-auto">
+            <label htmlFor="view-mode" className="text-xs sm:text-sm font-medium text-gray-700 text-center sm:text-right">View Mode</label>
+            <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-center sm:justify-end">
+              <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9">
+                <CalendarDays className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </div>
 
-        <CollapsibleContent className="CollapsibleContent p-4 sm:p-6 border-t border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-4 items-start">
-            {/* Search Input */}
-            <div className="relative col-span-full">
-              <label htmlFor="search-events" className="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
-              <Input
-                id="search-events"
-                placeholder="Search events..."
-                className="w-full focus-visible:ring-purple-500 text-sm sm:text-base"
-                value={draftSearchTerm}
-                onChange={(e) => setDraftSearchTerm(e.target.value)}
-              />
-              {draftSearchTerm && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-500 hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105"
-                  onClick={() => {
-                    setDraftSearchTerm('');
-                    setAppliedSearchTerm('');
-                  }}
-                >
-                  <X className="h-3 w-3" />
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
+          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-wrap gap-1 sm:gap-2 items-center">
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Active Filters:</span>
+            {searchTerm !== '' && (
+              <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+                Search: "{searchTerm}"
+                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
+                  <X className="h-2.5 w-2.5" />
                 </Button>
-              )}
-            </div>
-
-            {/* Event Type Select */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="event-type" className="text-xs sm:text-sm font-medium text-gray-700">Event Type</label>
-              <Select onValueChange={setDraftEventType} value={draftEventType}>
-                <SelectTrigger id="event-type" className="w-full focus-visible:ring-purple-500 text-sm sm:text-base">
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  {eventTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* State Select */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="event-state" className="text-xs sm:text-sm font-medium text-gray-700">State</label>
-              <Select onValueChange={setDraftState} value={draftState}>
-                <SelectTrigger id="event-state" className="w-full focus-visible:ring-purple-500 text-sm sm:text-base">
-                  <SelectValue placeholder="All States" />
-                </SelectTrigger>
-                <SelectContent>
-                  {australianStates.map((state) => (
-                    <SelectItem key={state} value={state}>
-                      {state}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Date Range Select */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="date-range" className="text-xs sm:text-sm font-medium text-gray-700">Date Range</label>
-              <Select onValueChange={setDraftDateFilter} value={draftDateFilter}>
-                <SelectTrigger id="date-range" className="w-full focus-visible:ring-purple-500 text-sm sm:text-base">
-                  <SelectValue placeholder="All Upcoming" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All Upcoming">All Upcoming</SelectItem>
-                  <SelectItem value="Today">Today</SelectItem>
-                  <SelectItem value="This Week">This Week</SelectItem>
-                  <SelectItem value="This Month">This Month</SelectItem>
-                  <SelectItem value="Past Events">Past Events</SelectItem>
-                  <SelectItem value="All Events">All Events</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Action Buttons and View Mode Controls */}
-          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-center">
-            {/* Left side: Add New Event Button */}
-            <Link to="/submit-event" className="w-full sm:w-auto order-last sm:order-first">
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 w-full text-sm sm:text-base">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
+              </Badge>
+            )}
+            {eventType !== 'All' && (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+                Type: {eventType}
+                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
+                  <X className="h-2.5 w-2.5" />
+                </Button>
+              </Badge>
+            )}
+            {stateFilter !== 'All' && (
+              <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+                State: {stateFilter}
+                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
+                  <X className="h-2.5 w-2.5" />
+                </Button>
+              </Badge>
+            )}
+            {dateFilter !== 'All Upcoming' && (
+              <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
+                Date: {dateFilter}
+                <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
+                  <X className="h-2.5 w-2.5" />
+                </Button>
+              </Badge>
+            )}
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={handleClearAllFilters} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base mt-2 sm:mt-0">
+                Clear All Filters
               </Button>
-            </Link>
-
-            {/* Right side: Apply, Clear, View Mode */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center w-full sm:w-auto order-first sm:order-last">
-              {(
-                draftEventType !== appliedEventType ||
-                draftState !== appliedState ||
-                draftDateFilter !== appliedDateFilter
-              ) && (
-                  <Button onClick={handleApplyFilters} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base">
-                    Apply Filters
-                  </Button>
-                )}
-              {(appliedSearchTerm !== '' || appliedEventType !== 'All' || appliedState !== 'All' || appliedDateFilter !== 'All Upcoming') && (
-                <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base">
-                  Clear All Filters
-                </Button>
-              )}
-
-              {/* View Mode Toggle */}
-              <div className="flex flex-col gap-1 w-full sm:w-auto">
-                <label htmlFor="view-mode" className="text-xs sm:text-sm font-medium text-gray-700">View Mode</label>
-                <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-end">
-                  <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9">
-                    <List className="h-4 w-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9">
-                    <CalendarDays className="h-4 w-4" />
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            </div>
+            )}
           </div>
-
-          {/* Active Filters Display */}
-          {hasActiveFilters && (
-            <div className="mt-6 flex flex-wrap gap-1 sm:gap-2 items-center">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">Active Filters:</span>
-              {appliedSearchTerm && (
-                <Badge variant="secondary" className="bg-purple-100 text-purple-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
-                  Search: "{appliedSearchTerm}"
-                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-purple-600 hover:bg-purple-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('search')}>
-                    <X className="h-2.5 w-2.5" />
-                  </Button>
-                </Badge>
-              )}
-              {appliedEventType !== 'All' && (
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
-                  Type: {appliedEventType}
-                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-blue-600 hover:bg-blue-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('eventType')}>
-                    <X className="h-2.5 w-2.5" />
-                  </Button>
-                </Badge>
-              )}
-              {appliedState !== 'All' && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
-                  State: {appliedState}
-                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-green-600 hover:bg-green-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('state')}>
-                    <X className="h-2.5 w-2.5" />
-                  </Button>
-                </Badge>
-              )}
-              {appliedDateFilter !== 'All Upcoming' && (
-                <Badge variant="secondary" className="bg-orange-100 text-orange-800 flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">
-                  Date: {appliedDateFilter}
-                  <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-orange-600 hover:bg-orange-200 transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => removeFilter('dateFilter')}>
-                    <X className="h-2.5 w-2.5" />
-                  </Button>
-                </Badge>
-              )}
-            </div>
-          )}
-        </CollapsibleContent>
-      </Collapsible>
+        )}
+      </div>
 
       {/* Event Count Display */}
       <div className="text-center text-gray-700 mb-4 text-sm sm:text-base">
@@ -448,7 +325,7 @@ const EventsList = () => {
               No events found matching your criteria.
             </p>
             {hasActiveFilters ? (
-              <Button onClick={handleClearFilters} className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button onClick={handleClearAllFilters} className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
                 Clear Filters to See More Events
               </Button>
             ) : (
@@ -656,6 +533,15 @@ const EventsList = () => {
         event={selectedEvent}
         isOpen={isEventDetailDialogOpen}
         onClose={() => setIsEventDetailDialogOpen(false)}
+      />
+
+      {/* Filter Overlay */}
+      <FilterOverlay
+        isOpen={isFilterOverlayOpen}
+        onClose={() => setIsFilterOverlayOpen(false)}
+        currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }}
+        onApplyFilters={handleApplyFilters}
+        onClearAllFilters={handleClearAllFilters}
       />
     </div>
   );

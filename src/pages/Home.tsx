@@ -31,18 +31,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight, X, ChevronsLeft, ChevronsRight, CircleDot } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, DollarSign, LinkIcon, Info, User, Tag, PlusCircle, Lightbulb, Menu, Filter as FilterIcon, ChevronDown, Frown, List, Calendar as CalendarIcon2, ChevronLeft, ChevronRight, X, ChevronsLeft, ChevronsRight, CircleDot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import EventSidebar from '@/components/EventSidebar';
-import { eventTypes } from '@/lib/constants';
+import { eventTypes, australianStates } from '@/lib/constants';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
+import FilterOverlay from '@/components/FilterOverlay'; // Import FilterOverlay
+import AgendaOverlay from '@/components/AgendaOverlay'; // Import AgendaOverlay
 
 interface Event {
   id: string;
@@ -70,13 +71,20 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [selectedDayForDialog, setSelectedDayForDialog] = useState<Date | null>(new Date());
-  const [selectedEventType, setSelectedEventType] = useState('All');
-  const [showAgenda, setShowAgenda] = useState(false);
+  
+  // Filter states for FilterOverlay
+  const [searchTerm, setSearchTerm] = useState('');
+  const [eventType, setEventType] = useState('All');
+  const [stateFilter, setStateFilter] = useState('All');
+  const [dateFilter, setDateFilter] = useState('All Upcoming');
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isMobileFilterSheetOpen, setIsMobileFilterSheetOpen] = useState(false);
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
+
+  // Overlay states
+  const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
+  const [isAgendaOverlayOpen, setIsAgendaOverlayOpen] = useState(false);
 
   const isMobile = useIsMobile();
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -92,8 +100,51 @@ const Home = () => {
       .eq('state', 'approved')
       .order('event_date', { ascending: true });
 
-    if (selectedEventType !== 'All') {
-      query = query.eq('event_type', selectedEventType);
+    // Apply filters from state
+    const now = new Date();
+    const todayFormatted = format(now, 'yyyy-MM-dd');
+
+    switch (dateFilter) {
+      case 'Today':
+        query = query.eq('event_date', todayFormatted);
+        break;
+      case 'This Week':
+        query = query
+          .gte('event_date', format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'))
+          .lte('event_date', format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'));
+        break;
+      case 'This Month':
+        query = query
+          .gte('event_date', format(startOfMonth(now), 'yyyy-MM-dd'))
+          .lte('event_date', format(endOfMonth(now), 'yyyy-MM-dd'));
+        break;
+      case 'Past Events':
+        query = query.lt('event_date', todayFormatted).order('event_date', { ascending: false });
+        break;
+      case 'All Events':
+        break;
+      case 'All Upcoming':
+      default:
+        query = query.gte('event_date', todayFormatted);
+        break;
+    }
+
+    if (eventType !== 'All') {
+      query = query.eq('event_type', eventType);
+    }
+
+    if (stateFilter !== 'All') {
+      query = query.eq('state', stateFilter);
+    }
+
+    if (searchTerm) {
+      query = query.or(
+        `event_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,organizer_contact.ilike.%${searchTerm}%,full_address.ilike.%${searchTerm}%,place_name.ilike.%${searchTerm}%`
+      );
+    }
+
+    if (dateFilter !== 'Past Events') {
+      query = query.order('event_date', { ascending: true });
     }
 
     const { data, error } = await query;
@@ -109,17 +160,15 @@ const Home = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, [selectedEventType]);
+  }, [searchTerm, eventType, stateFilter, dateFilter]); // Re-fetch when filters change
 
   useEffect(() => {
-    if (!isMobile) {
-      if (selectedDayForDialog) {
-        setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
-      } else {
-        setSelectedDayEvents(getEventsForDay(new Date()));
-      }
+    if (selectedDayForDialog) {
+      setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
+    } else {
+      setSelectedDayEvents(getEventsForDay(new Date()));
     }
-  }, [events, selectedDayForDialog, isMobile]);
+  }, [events, selectedDayForDialog]); // Update selectedDayEvents when events or selectedDayForDialog changes
 
   // Initialize currentWeek based on currentMonth or today
   useEffect(() => {
@@ -228,15 +277,9 @@ const Home = () => {
     setCurrentMonth(new Date()); // Set currentMonth to today, which will re-calculate currentWeek
   };
 
-  const handleMonthChange = (value: string) => {
-    setCurrentMonth(setMonth(currentMonth, parseInt(value)));
+  const handleMonthChange = (date: Date) => { // Changed to accept Date directly
+    setCurrentMonth(date);
   };
-
-  const handleYearChange = (value: string) => {
-    setCurrentMonth(setYear(currentMonth, parseInt(value)));
-  };
-
-  const years = Array.from({ length: 10 }, (_, i) => getYear(new Date()) - 5 + i);
 
   const getEventsForDay = (day: Date) => {
     return events.filter(event => {
@@ -302,14 +345,32 @@ const Home = () => {
 
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
-    if (!isMobile) {
-      setSelectedDayEvents(getEventsForDay(day));
-    }
+    setSelectedDayEvents(getEventsForDay(day)); // Always update events for the agenda
+    setIsAgendaOverlayOpen(true); // Open agenda overlay on day click
   };
 
   const handleViewDetails = (event: Event) => {
     setSelectedEvent(event);
     setIsEventDetailDialogOpen(true);
+  };
+
+  const handleApplyFilters = (filters: {
+    searchTerm: string;
+    eventType: string;
+    state: string;
+    dateFilter: string;
+  }) => {
+    setSearchTerm(filters.searchTerm);
+    setEventType(filters.eventType);
+    setStateFilter(filters.state);
+    setDateFilter(filters.dateFilter);
+  };
+
+  const handleClearAllFilters = () => {
+    setSearchTerm('');
+    setEventType('All');
+    setStateFilter('All');
+    setDateFilter('All Upcoming');
   };
 
   const renderEventCard = (event: Event) => {
@@ -374,12 +435,7 @@ const Home = () => {
 
   return (
     <div className="w-full max-w-screen-lg bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar for Desktop */}
-        {!isMobile && (
-          <EventSidebar selectedEventType={selectedEventType} onSelectEventType={setSelectedEventType} />
-        )}
-
+      <div className="flex flex-col gap-8">
         {/* Main Calendar Content */}
         <div className="flex-grow">
           <div className="flex justify-between items-center mb-6">
@@ -391,101 +447,95 @@ const Home = () => {
             </Link>
           </div>
 
-          {/* Calendar Navigation (Desktop) */}
-          {!isMobile && (
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-lg border border-purple-200">
-              <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-                {viewMode === 'month' ? (
-                  <>
-                    <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      This Month
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="outline" size="icon" onClick={handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" onClick={handleThisWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      This Week
-                    </Button>
-                  </>
-                )}
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-[180px] justify-between focus-visible:ring-purple-500">
-                      {format(currentMonth, 'MMMM yyyy')}
-                      <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <MonthYearPicker
-                      date={currentMonth}
-                      onDateChange={(date) => {
-                        setCurrentMonth(date);
-                        setIsMonthPickerPopoverOpen(false);
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+          {/* Calendar Navigation and Controls */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-lg border border-purple-200">
+            <div className="flex items-center space-x-2 mb-4 sm:mb-0">
+              {viewMode === 'month' ? (
+                <>
+                  <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    This Month
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" size="icon" onClick={handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" onClick={handleThisWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    This Week
+                  </Button>
+                </>
+              )}
             </div>
-          )}
 
-          {/* View Toggle Buttons (Desktop) */}
-          {!isMobile && (
-            <div className="flex justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[180px] justify-between focus-visible:ring-purple-500">
+                    {viewMode === 'month' ? format(currentMonth, 'MMMM yyyy') : `${format(currentWeek[0], 'MMM d')} - ${format(currentWeek[6], 'MMM d, yyyy')}`}
+                    <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <MonthYearPicker
+                    date={currentMonth}
+                    onDateChange={(date) => {
+                      setCurrentMonth(date);
+                      setIsMonthPickerPopoverOpen(false);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* View Toggle Buttons */}
               <div className="flex items-center space-x-2">
                 <Button
                   variant={viewMode === 'month' ? 'default' : 'outline'}
                   onClick={() => setViewMode('month')}
                   className="transition-all duration-300 ease-in-out transform hover:scale-105"
                 >
-                  <List className="mr-2 h-4 w-4" /> Month View
+                  <List className="mr-2 h-4 w-4" /> Month
                 </Button>
                 <Button
                   variant={viewMode === 'week' ? 'default' : 'outline'}
                   onClick={() => {
                     setViewMode('week');
-                    // Explicitly set currentWeek when switching to week view
                     const start = startOfWeek(currentMonth, { weekStartsOn: 1 });
                     const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
                     setCurrentWeek(weekDays);
                   }}
                   className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105"
                 >
-                  <CalendarIcon2 className="mr-2 h-4 w-4" /> Week View
+                  <CalendarIcon2 className="mr-2 h-4 w-4" /> Week
                 </Button>
               </div>
-              <Button
-                variant="outline"
-                onClick={() => setShowAgenda(!showAgenda)}
-                className="transition-all duration-300 ease-in-out transform hover:scale-105"
-              >
-                {showAgenda ? (
-                  <>
-                    <ChevronsLeft className="mr-2 h-4 w-4" /> Hide Agenda
-                  </>
-                ) : (
-                  <>
-                    <ChevronsRight className="mr-2 h-4 w-4" /> Show Agenda
-                  </>
-                )}
-              </Button>
             </div>
-          )}
+          </div>
+
+          {/* Filter and Agenda Buttons */}
+          <div className="flex justify-center gap-4 mb-6">
+            <Button
+              onClick={() => setIsFilterOverlayOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+            >
+              <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
+            </Button>
+            <Button
+              onClick={() => setIsAgendaOverlayOpen(true)}
+              className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+            >
+              <List className="mr-2 h-4 w-4" /> View Agenda
+            </Button>
+          </div>
 
           {loading ? (
             <div className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-xl shadow-inner">
@@ -502,74 +552,6 @@ const Home = () => {
             </div>
           ) : (
             <>
-              {/* Mobile Calendar Header and Month Picker Popover */}
-              {isMobile && (
-                <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-                  <div className="flex items-center space-x-2">
-                    {viewMode === 'month' ? (
-                      <Button variant="outline" size="icon" onClick={handlePrevMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                        <ArrowLeft className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button variant="outline" size="icon" onClick={handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                        <ArrowLeft className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
-                          {viewMode === 'month' ? format(currentMonth, 'MMMM yyyy') : `${format(currentWeek[0], 'MMM d')} - ${format(currentWeek[6], 'MMM d, yyyy')}`}
-                          <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[360px] p-0">
-                        <MonthYearPicker
-                          date={currentMonth}
-                          onDateChange={(date) => {
-                            if (date) {
-                              setCurrentMonth(date);
-                              setIsMonthPickerPopoverOpen(false);
-                            }
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {viewMode === 'month' ? (
-                      <Button variant="outline" size="icon" onClick={handleNextMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button variant="outline" size="icon" onClick={handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    {viewMode === 'month' ? (
-                      <Button variant="outline" onClick={handleThisMonth} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                        Today
-                      </Button>
-                    ) : (
-                      <Button variant="outline" onClick={handleThisWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                        This Week
-                      </Button>
-                    )}
-                    <Sheet open={isMobileFilterSheetOpen} onOpenChange={setIsMobileFilterSheetOpen}>
-                      <SheetTrigger asChild>
-                        <Button variant="outline" size="icon" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                          <Filter className="h-4 w-4" />
-                          <span className="sr-only">Filter Events</span>
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6">
-                        <EventSidebar selectedEventType={selectedEventType} onSelectEventType={(type) => { setSelectedEventType(type); setIsMobileFilterSheetOpen(false); }} />
-                      </SheetContent>
-                    </Sheet>
-                  </div>
-                </div>
-              )}
-
               {/* Calendar Grid (for both mobile and desktop) */}
               <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-xl shadow-inner">
                 {daysOfWeekShort.map((day, index) => (
@@ -610,13 +592,13 @@ const Home = () => {
                               <div
                                 key={event.id}
                                 className={cn(
-                                  "flex items-center text-[11px] leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1", // Changed text-xs to text-[11px]
+                                  "flex items-center text-[11px] leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
                                   isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                  "line-clamp-2" // Changed to line-clamp-2 for better fit
+                                  "line-clamp-2"
                                 )}
-                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation and open dialog
+                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }}
                               >
-                                {event.event_name} {/* Always show event name */}
+                                {event.event_name}
                               </div>
                             ))}
                           </div>
@@ -640,7 +622,7 @@ const Home = () => {
                           "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
-                          isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
+                          isSelected && !isTodayDate ? "bg-blue-100 border-blue-500 border-2" : "bg-white", // Ensure background is white if not today/selected
                           "hover:bg-gray-100 hover:shadow-md hover:border-purple-300"
                         )}
                         onClick={() => handleDayClick(day)}
@@ -659,13 +641,13 @@ const Home = () => {
                               <div
                                 key={event.id}
                                 className={cn(
-                                  "flex items-center text-[11px] leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1", // Changed text-xs to text-[11px]
+                                  "flex items-center text-[11px] leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
                                   isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                  "line-clamp-2" // Changed to line-clamp-2 for better fit
+                                  "line-clamp-2"
                                 )}
-                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation and open dialog
+                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }}
                               >
-                                {event.event_name} {/* Always show event name */}
+                                {event.event_name}
                               </div>
                             ))}
                           </div>
@@ -706,51 +688,6 @@ const Home = () => {
             </>
           )}
         </div>
-
-        {/* Agenda Sidebar (Desktop) - Toggleable */}
-        {!isMobile && showAgenda && (
-          <div className="w-80 bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200 flex-shrink-0">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-bold text-foreground">Agenda</h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowAgenda(false)}
-                className="transition-all duration-300 ease-in-out transform hover:scale-105"
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Hide Agenda</span>
-              </Button>
-            </div>
-            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-250px)]">
-              {selectedDayEvents.map((event) => (
-                <Card key={event.id} className="shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200">
-                  <CardHeader className="p-3 pb-0">
-                    <CardTitle className="text-base font-semibold text-purple-700 line-clamp-1">{event.event_name}</CardTitle>
-                    <CardDescription className="flex items-center text-gray-600 text-xs mt-1">
-                      <CalendarIcon className="mr-1 h-3 w-3 text-blue-500" />
-                      {format(new Date(event.event_date), 'PPP')}
-                      {event.event_time && (
-                        <>
-                          <Clock className="ml-2 mr-1 h-3 w-3 text-green-500" />
-                          {event.event_time}
-                        </>
-                      )}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-2">
-                    {event.description && (
-                      <p className="text-foreground text-sm line-clamp-2 mb-2">{event.description}</p>
-                    )}
-                    <div className="flex justify-end">
-                      <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 text-xs" onClick={() => handleViewDetails(event)}>View Details</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Event Detail Dialog (for individual event details) */}
@@ -759,6 +696,24 @@ const Home = () => {
         isOpen={isEventDetailDialogOpen}
         onClose={() => setIsEventDetailDialogOpen(false)}
         cameFromCalendar={true}
+      />
+
+      {/* Filter Overlay */}
+      <FilterOverlay
+        isOpen={isFilterOverlayOpen}
+        onClose={() => setIsFilterOverlayOpen(false)}
+        currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }}
+        onApplyFilters={handleApplyFilters}
+        onClearAllFilters={handleClearAllFilters}
+      />
+
+      {/* Agenda Overlay */}
+      <AgendaOverlay
+        isOpen={isAgendaOverlayOpen}
+        onClose={() => setIsAgendaOverlayOpen(false)}
+        selectedDate={selectedDayForDialog}
+        events={selectedDayEvents}
+        onEventSelect={handleViewDetails}
       />
     </div>
   );
