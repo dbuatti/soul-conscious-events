@@ -261,20 +261,20 @@ const EventsList = () => {
       <Collapsible
         open={isFiltersOpen}
         onOpenChange={setIsFiltersOpen}
-        className="mb-8 p-4 sm:p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-lg"
+        className="mb-8 rounded-xl shadow-lg border border-gray-200 bg-gray-50"
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Filter Events</h2>
+        <div className="flex items-center justify-between p-4 sm:p-6 bg-purple-50 rounded-t-xl">
+          <h2 className="text-xl sm:text-2xl font-bold text-purple-800">Filter Events</h2>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-9 p-0">
-              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFiltersOpen ? 'rotate-180' : ''}`} />
+            <Button variant="ghost" size="sm" className="w-9 p-0 text-purple-700 hover:bg-purple-100">
+              <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isFiltersOpen ? 'rotate-180' : ''}`} />
               <span className="sr-only">Toggle filters</span>
             </Button>
           </CollapsibleTrigger>
         </div>
 
-        <CollapsibleContent className="CollapsibleContent">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-4 items-start mt-6">
+        <CollapsibleContent className="CollapsibleContent p-4 sm:p-6 border-t border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-4 items-start">
             {/* Search Input */}
             <div className="relative col-span-full">
               <label htmlFor="search-events" className="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Search Events</label>
@@ -528,11 +528,11 @@ const EventsList = () => {
                       <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2">
                         <CardTitle className="text-xl sm:text-2xl font-bold text-purple-700 mb-1 sm:mb-2">{event.event_name}</CardTitle>
                         <CardDescription className="flex items-center text-gray-600 text-sm sm:text-base">
-                          <Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+                          <Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-blue-500" />
                           {dateDisplay}
                           {event.event_time && (
                             <>
-                              <Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+                              <Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-green-500" />
                               {event.event_time}
                             </>
                           )}
@@ -541,7 +541,7 @@ const EventsList = () => {
                           <div className="flex flex-col items-start text-gray-600 mt-1 sm:mt-2">
                             {event.place_name && (
                               <div className="flex items-center mb-0.5 sm:mb-1">
-                                <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+                                <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-red-500" />
                                 <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-sm sm:text-base py-0.5 px-1 sm:py-1 sm:px-2 font-semibold">
                                   {event.place_name}
                                 </Badge>
@@ -549,7 +549,7 @@ const EventsList = () => {
                             )}
                             {event.full_address && (
                               <div className="flex items-center">
-                                {!event.place_name && <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-red-500" />}
+                                {!event.place_name && <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-red-500" />}
                                 <a
                                   href={googleMapsLink}
                                   target="_blank"
@@ -581,7 +581,7 @@ const EventsList = () => {
                         )}
                         {event.price && (
                           <p className="flex items-center text-gray-700 text-sm sm:text-base">
-                            <DollarSign className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                            <DollarSign className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-green-600" />
                             <span className="font-medium">Price:</span> {event.price}
                             {event.price.toLowerCase() === 'free' && (
                               <Badge variant="secondary" className="ml-1 sm:ml-2 bg-green-100 text-green-800 text-xs sm:text-sm">Free</Badge>
@@ -590,7 +590,7 @@ const EventsList = () => {
                         )}
                         {event.ticket_link && (
                           <div className="flex items-center">
-                            <LinkIcon className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                            <LinkIcon className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-purple-600" />
                             <Button asChild variant="link" className="p-0 h-auto text-blue-600 text-sm sm:text-base transition-all duration-300 ease-in-out transform hover:scale-105">
                               <a href={event.ticket_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                 Ticket/Booking Link
@@ -600,19 +600,19 @@ const EventsList = () => {
                         )}
                         {event.special_notes && (
                           <p className="flex items-start text-gray-700 text-sm sm:text-base">
-                            <Info className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 mt-0.5 sm:mt-1" />
+                            <Info className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 mt-0.5 sm:mt-1 flex-shrink-0" />
                             <span className="font-medium">Special Notes:</span> {event.special_notes}
                           </p>
                         )}
                         {event.organizer_contact && (
                           <p className="flex items-center text-gray-700 text-sm sm:text-base">
-                            <User className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
+                            <User className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-indigo-500" />
                             <span className="font-medium">Organizer:</span> {event.organizer_contact}
                           </p>
                         )}
                         {event.event_type && (
                           <p className="flex items-center text-gray-700 text-sm sm:text-base">
-                            <Tag className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 text-pink-500" />
+                            <Tag className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-pink-500" />
                             <span className="font-medium">Type:</span> {event.event_type}
                           </p>
                         )}
