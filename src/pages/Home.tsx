@@ -94,6 +94,7 @@ const Home = () => {
       toast.error('Failed to load events.');
     } else {
       setEvents(data || []);
+      console.log('Home.tsx: Fetched events:', data); // Added log
     }
     setLoading(false);
   };
@@ -184,6 +185,7 @@ const Home = () => {
   };
 
   const eventsForCurrentMonth = getEventsForMonth(currentMonth);
+  console.log('Home.tsx: eventsForCurrentMonth:', eventsForCurrentMonth); // Added log
 
   const handleDayClick = (day: Date) => {
     setSelectedDayForDialog(day);
