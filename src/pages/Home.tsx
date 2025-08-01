@@ -349,7 +349,7 @@ const Home = () => {
                     <PopoverContent className="w-[360px] p-0"> {/* Adjusted width for 4x3 grid */}
                       <MonthYearPicker
                         defaultMonth={currentMonth}
-                        onSelect={(date) => {
+                        onMonthSelect={(date) => { // Changed prop name to onMonthSelect
                           if (date) {
                             setCurrentMonth(date);
                             setIsMonthPickerPopoverOpen(false); // Close popover after selection
