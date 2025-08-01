@@ -418,10 +418,10 @@ const Home = () => {
                   // Removed Navigation component as it's not a valid override
                   Day: ({ date, modifiers, ...props }: CustomDayContentProps) => {
                     // Safely access modifiers properties
-                    const isPastDate = modifiers.past === true;
-                    const isTodayDate = modifiers.today === true;
+                    const isPastDate = modifiers?.past === true;
+                    const isTodayDate = modifiers?.today === true;
                     const isSelected = isSameDay(date, selectedDayForDialog || new Date());
-                    const hasEvents = modifiers.events && modifiers.events.length > 0;
+                    const hasEvents = modifiers?.events && modifiers.events.length > 0;
 
                     return (
                       <div
