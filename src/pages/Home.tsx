@@ -476,8 +476,8 @@ const Home = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-[360px] p-0"> {/* Adjusted width for 4x3 grid */}
                       <MonthYearPicker
-                        date={currentMonth} // Changed prop name
-                        onDateChange={(date) => { // Changed prop name
+                        date={currentMonth} // Corrected prop name
+                        onDateChange={(date) => { // Corrected prop name
                           if (date) {
                             setCurrentMonth(date);
                             setIsMonthPickerPopoverOpen(false); // Close popover after selection
@@ -504,7 +504,7 @@ const Home = () => {
               )}
 
               {/* Calendar Grid (for both mobile and desktop) */}
-              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-lg shadow-inner"> {/* Changed rounded-md to rounded-lg */}
+              <div ref={calendarRef} className="grid grid-cols-7 gap-0.5 text-center p-0.5 bg-gray-100 rounded-xl shadow-inner"> {/* Changed rounded-md to rounded-xl */}
                 {daysOfWeekShort.map((day, index) => (
                   <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-1">{day}</div>
                 ))}
@@ -529,12 +529,12 @@ const Home = () => {
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
-                          "hover:bg-gray-100"
+                          "hover:bg-gray-100 hover:shadow-md hover:border-purple-300" // Added hover effects
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-xl font-bold", // Changed to text-xl
+                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105", // Added group-hover:scale-105
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
@@ -548,7 +548,7 @@ const Home = () => {
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
                                 "line-clamp-3" // Changed to line-clamp-3
                               )}>
-                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0" /> {/* Small dot icon */}
+                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" /> {/* Small dot icon, added text-purple-600 */}
                                 {event.event_name}
                               </div>
                             ))}
@@ -577,12 +577,12 @@ const Home = () => {
                           isPastDate && "opacity-70",
                           isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
-                          "hover:bg-gray-100"
+                          "hover:bg-gray-100 hover:shadow-md hover:border-purple-300" // Added hover effects
                         )}
                         onClick={() => handleDayClick(day)}
                       >
                         <span className={cn(
-                          "absolute top-2 left-2 text-xl font-bold", // Changed to text-xl
+                          "absolute top-2 left-2 text-xl font-bold transition-all duration-200 group-hover:scale-105", // Added group-hover:scale-105
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
@@ -596,7 +596,7 @@ const Home = () => {
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
                                 "line-clamp-3" // Changed to line-clamp-3
                               )}>
-                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0" /> {/* Small dot icon */}
+                                <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" /> {/* Small dot icon, added text-purple-600 */}
                                 {event.event_name}
                               </div>
                             ))}
@@ -654,7 +654,7 @@ const Home = () => {
                 <span className="sr-only">Hide Agenda</span>
               </Button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-250px)]"> {/* Added overflow-y-auto and max-h */}
               {selectedDayEvents.map((event) => (
                 <Card key={event.id} className="shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200">
                   <CardHeader className="p-3 pb-0">
