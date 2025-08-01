@@ -546,7 +546,7 @@ const Home = () => {
                               <div key={event.id} className={cn(
                                 "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, px-1 to px-1.5
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                "line-clamp-2" // Changed to line-clamp-2
+                                "line-clamp-3" // Changed to line-clamp-3
                               )}>
                                 <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0" /> {/* Small dot icon */}
                                 {event.event_name}
@@ -594,7 +594,7 @@ const Home = () => {
                               <div key={event.id} className={cn(
                                 "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1", // Changed text-sm to text-xs, px-1 to px-1.5
                                 isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                "line-clamp-2" // Changed to line-clamp-2
+                                "line-clamp-3" // Changed to line-clamp-3
                               )}>
                                 <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0" /> {/* Small dot icon */}
                                 {event.event_name}
