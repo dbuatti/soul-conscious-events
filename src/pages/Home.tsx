@@ -67,6 +67,7 @@ const Home = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isMobileFilterSheetOpen, setIsMobileFilterSheetOpen] = useState(false);
+  const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false); // New state for popover
 
   const isMobile = useIsMobile();
 
@@ -335,13 +336,30 @@ const Home = () => {
             </div>
           ) : (
             <>
-              {isMobile ? (
-                <>
-                  {/* Mobile Calendar Header - Simplified */}
-                  <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-                    <span className="text-lg font-semibold text-foreground">
-                      {format(currentMonth, 'MMMM yyyy')}
-                    </span>
+              {/* Mobile Calendar Header and Month Picker Popover */}
+              {isMobile && (
+                <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+                  <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" className="text-lg font-semibold text-foreground flex items-center">
+                        {format(currentMonth, 'MMMM yyyy')}
+                        <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <MonthYearPicker
+                        defaultMonth={currentMonth}
+                        onSelect={(date) => {
+                          if (date) {
+                            setCurrentMonth(date);
+                            setIsMonthPickerPopoverOpen(false); // Close popover after selection
+                          }
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <div className="flex items-center space-x-2">
                     <Sheet open={isMobileFilterSheetOpen} onOpenChange={setIsMobileFilterSheetOpen}>
                       <SheetTrigger asChild>
                         <Button variant="outline" size="icon" className="transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -354,99 +372,76 @@ const Home = () => {
                       </SheetContent>
                     </Sheet>
                   </div>
-
-                  {/* Mobile Month Picker as main calendar view */}
-                  <div className="flex justify-center mb-6">
-                    <MonthYearPicker
-                      defaultMonth={currentMonth}
-                      onSelect={(date) => {
-                        if (date) {
-                          setCurrentMonth(date);
-                        }
-                      }}
-                      className="w-full max-w-md" // Adjust width for mobile
-                    />
-                  </div>
-
-                  {/* Events for Selected Month (Mobile) */}
-                  <div className="mt-6">
-                    <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
-                      Events in {format(currentMonth, 'MMMM yyyy')}
-                    </h3>
-                    {eventsForCurrentMonth.length === 0 ? (
-                      <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
-                        <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-lg font-semibold text-gray-700 mb-4">No events found for this month.</p>
-                        <Link to="/submit-event">
-                          <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
-                            <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
-                          </Button>
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {eventsForCurrentMonth.map((event) => renderEventCard(event))}
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Desktop Calendar Grid (remains the same) */}
-                  <div className="grid grid-cols-7 gap-2 text-center p-2">
-                    {daysOfWeekFull.map(day => (
-                      <div key={day} className="font-semibold text-gray-700 py-2">{day}</div>
-                    ))}
-                    {daysInMonthView.map((day) => {
-                      const dayEvents = getEventsForDay(day);
-                      const isCurrentMonth = isSameMonth(day, currentMonth);
-                      const isTodayDate = isToday(day);
-                      const displayEvents = dayEvents.slice(0, 2);
-
-                      return (
-                        <div
-                          key={day.toISOString()}
-                          className={cn(
-                            "group h-48 border rounded-md p-1 flex flex-col relative cursor-pointer transition-all duration-300 ease-in-out",
-                            isCurrentMonth ? "bg-white shadow-sm hover:bg-gray-50 hover:shadow-md" : "bg-gray-100 text-gray-400",
-                            isTodayDate && "border-2 border-purple-600 bg-purple-100 shadow-lg",
-                            dayEvents.length > 0 && isCurrentMonth && "border-blue-400 bg-blue-100 hover:bg-blue-200 shadow-md"
-                          )}
-                          onClick={() => handleDayClick(day)}
-                        >
-                          <span className={cn(
-                            "font-bold text-base mb-1",
-                            isTodayDate && "text-purple-700",
-                            dayEvents.length > 0 && isCurrentMonth && "text-blue-700"
-                          )}>
-                            {format(day, 'd')}
-                          </span>
-                          <div className="flex-grow overflow-hidden space-y-1">
-                            {displayEvents.map(event => (
-                              <Badge
-                                key={event.id}
-                                className={cn(
-                                  "w-full text-left px-2 py-1 rounded-md font-medium cursor-pointer h-auto flex flex-col items-start whitespace-normal shadow-xs",
-                                  isTodayDate ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-blue-600 text-white hover:bg-blue-700"
-                                )}
-                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }}
-                              >
-                                {event.event_time && <span className="text-xs text-gray-200">{event.event_time}</span>}
-                                <span className="text-xs font-semibold leading-snug">{event.event_name}</span>
-                              </Badge>
-                            ))}
-                            {dayEvents.length > 2 && (
-                              <span className="text-xs text-gray-500 mt-1 block font-semibold">
-                                +{dayEvents.length - 2} More
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
+                </div>
               )}
+
+              {/* Calendar Grid (for both mobile and desktop) */}
+              <div className="grid grid-cols-7 gap-1 text-center p-1 bg-gray-100 rounded-lg shadow-inner">
+                {daysOfWeekShort.map((day, index) => (
+                  <div key={daysOfWeekFull[index]} className="font-semibold text-gray-700 text-xs py-2">{day}</div>
+                ))}
+                {daysInMonthView.map((day) => {
+                  const dayEvents = getEventsForDay(day);
+                  const isCurrentMonth = isSameMonth(day, currentMonth);
+                  const isTodayDate = isToday(day);
+                  const hasEvents = dayEvents.length > 0;
+                  const isSelected = isSameDay(day, selectedDayForDialog || new Date());
+                  const isPastDate = isPast(day) && !isToday(day);
+
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        "relative flex flex-col items-center justify-center h-16 w-full rounded-md cursor-pointer transition-colors duration-200",
+                        isCurrentMonth ? "text-gray-800" : "text-gray-400 opacity-50",
+                        isPastDate && "text-gray-400 opacity-50", // Faded for past dates
+                        isTodayDate && "bg-blue-500 text-white font-bold", // Highlight today
+                        isSelected && !isTodayDate && "bg-blue-100 text-blue-800 font-semibold", // Selected but not today
+                        hasEvents && "relative", // For the dot
+                        "hover:bg-gray-200" // General hover effect
+                      )}
+                      onClick={() => handleDayClick(day)}
+                    >
+                      <span className={cn(
+                        "text-sm",
+                        isTodayDate && "text-white",
+                        isSelected && !isTodayDate && "text-blue-800"
+                      )}>
+                        {format(day, 'd')}
+                      </span>
+                      {hasEvents && (
+                        <div className={cn(
+                          "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                          isTodayDate ? "bg-white" : "bg-blue-500", // White dot for today, blue for others
+                          isPastDate && "bg-gray-400" // Grey dot for past dates
+                        )} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Events for Selected Month (Mobile) */}
+              <div className="mt-6">
+                <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
+                  Events in {format(currentMonth, 'MMMM yyyy')}
+                </h3>
+                {eventsForCurrentMonth.length === 0 ? (
+                  <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                    <Frown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-gray-700 mb-4">No events found for this month.</p>
+                    <Link to="/submit-event">
+                      <Button className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add a New Event
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {eventsForCurrentMonth.map((event) => renderEventCard(event))}
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>
