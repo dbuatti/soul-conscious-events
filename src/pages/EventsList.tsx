@@ -19,6 +19,7 @@ import EventDetailDialog from '@/components/EventDetailDialog'; // Import the ne
 import { eventTypes, australianStates } from '@/lib/constants'; // Import from constants
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import FilterOverlay from '@/components/FilterOverlay'; // Import FilterOverlay
+import { useLocation } from 'react-router-dom'; // Import useLocation
 
 interface Event {
   id: string;
@@ -55,6 +56,7 @@ const EventsList = () => {
 
   const { user, isLoading: isSessionLoading } = useSession(); // Get user from context
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
+  const location = useLocation(); // Get current location
 
   // State for EventDetailDialog
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -497,7 +499,7 @@ const EventsList = () => {
                           </Button>
                           {isCreatorOrAdmin && (
                             <>
-                              <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
+                              <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }} onClick={(e) => e.stopPropagation()}>
                                 <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                                   <Edit className="h-3.5 w-3.5 sm:h-4 w-4" />
                                 </Button>

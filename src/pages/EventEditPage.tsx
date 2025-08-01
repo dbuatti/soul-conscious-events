@@ -21,7 +21,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom'; // Import useLocation
 import {
   Dialog,
   DialogContent,
@@ -84,6 +84,7 @@ const eventFormSchema = z.object({
 const EventEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation(); // Get location object to access state
   const { user, isLoading: isSessionLoading } = useSession();
   const [loadingEvent, setLoadingEvent] = useState(true);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
@@ -317,7 +318,8 @@ const EventEditPage = () => {
       toast.error('Failed to update event.');
     } else {
       toast.success('Event updated successfully!');
-      navigate(`/`); // Redirect to the home page
+      // Redirect back to the 'from' location, or default to '/'
+      navigate(location.state?.from || '/');
     }
   };
 
@@ -667,7 +669,7 @@ const EventEditPage = () => {
           </FormItem>
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => navigate('/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button type="button" variant="outline" onClick={() => navigate(location.state?.from || '/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Back to Events
             </Button>
             <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">

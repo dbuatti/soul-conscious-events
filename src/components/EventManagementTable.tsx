@@ -51,7 +51,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // Import useLocation
 import { Badge } from '@/components/ui/badge';
 import EventDetailDialog from './EventDetailDialog'; // Import EventDetailDialog
 
@@ -110,6 +110,7 @@ const EventManagementTable = () => {
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const location = useLocation(); // Get current location
 
   // State for EventDetailDialog
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -308,9 +309,11 @@ const EventManagementTable = () => {
                     <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
                       <ExternalLink className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(event)} title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }}>
+                      <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </Link>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="sm" title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
