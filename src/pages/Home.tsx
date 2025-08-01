@@ -616,21 +616,21 @@ const Home = () => {
                     );
                   })
                 ) : (
-                  // Week View (Desktop)
+                  // Week View
                   currentWeek.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isTodayDate = isToday(day);
                     const hasEvents = dayEvents.length > 0;
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
-                    const isPastDate = isPast(day) && !isToday(day);
+                    const isPastDate = isPast(day) && !isToday(day); // Added isPastDate for week view
 
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
                           "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
-                          isPastDate && "opacity-70",
-                          isTodayDate && "bg-blue-600 text-white",
+                          isPastDate && "opacity-70", // Apply opacity for past dates
+                          isTodayDate && "bg-blue-600 text-white", // Highlight today
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
                           "hover:bg-gray-100 hover:shadow-md hover:border-purple-300"
                         )}
@@ -641,7 +641,7 @@ const Home = () => {
                           isTodayDate ? "text-white" : (isSelected && !isTodayDate ? "text-blue-800" : "text-gray-800"),
                           isPastDate && "text-gray-500"
                         )}>
-                          <span className="block text-sm font-semibold">{format(day, 'EEE')}</span> {/* Day of week */}
+                          <span className="block text-sm font-semibold">{format(day, 'EEE')}</span>
                           {format(day, 'd')}
                         </span>
                         {hasEvents && (
