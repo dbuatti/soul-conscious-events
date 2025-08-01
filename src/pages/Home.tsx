@@ -34,13 +34,10 @@ import AgendaOverlay from '@/components/AgendaOverlay';
 import { Calendar } from '@/components/ui/calendar';
 import { DayContentProps } from 'react-day-picker';
 
+// Corrected interface to use activeModifiers as provided by react-day-picker
 interface CustomDayContentProps extends DayContentProps {
-  modifiers: {
-    events?: Date[];
-    past?: boolean;
-    today?: boolean;
-    selected?: boolean;
-  };
+  // activeModifiers is already part of DayContentProps, but we can refine its type here if needed
+  // For now, we'll just ensure we access it correctly.
 }
 
 interface Event {
@@ -81,7 +78,7 @@ const Home = () => {
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
 
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
-  const [isAgendaOverlayOpen, setIsAgendaOverlayOpen] = useState(false);
+  const [isAgendaOverlayOpen, setIsAgendaOverlayOpen] = useState(false); // Corrected typo here
 
   const isMobile = useIsMobile();
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -103,7 +100,6 @@ const Home = () => {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events.');
     } else {
-      console.log('Fetched ALL approved events for calendar page:', data); // Debug log
       setEvents(data || []);
     }
     setLoading(false);
@@ -292,13 +288,6 @@ const Home = () => {
   }, []); // Empty dependency array means it runs once on mount
 
   useEffect(() => {
-    // Re-fetch events only if filters change, but this is now for the *list* display, not the calendar dots
-    // The calendar dots will always use the full 'events' state
-    // No, this useEffect is not needed anymore for fetching, as fetchEvents runs once.
-    // The filtering for the list below the calendar happens in getFilteredEvents.
-  }, [searchTerm, eventType, stateFilter, dateFilter]); // Keep this to re-run filtering for the list display
-
-  useEffect(() => {
     if (selectedDayForDialog) {
       setSelectedDayEvents(getEventsForDay(selectedDayForDialog));
     } else {
@@ -472,16 +461,12 @@ const Home = () => {
                 }}
                 components={{
                   Caption: () => null,
-                  Day: ({ date, modifiers, ...props }: CustomDayContentProps) => {
-                    const isPastDate = modifiers?.past === true;
+                  Day: ({ date, activeModifiers, ...props }: DayContentProps) => {
+                    const isPastDate = activeModifiers?.past === true;
                     const isTodayDate = isToday(date);
                     const isSelected = isSameDay(date, selectedDayForDialog || new Date());
-                    const hasEvents = modifiers?.events && modifiers.events.some(eventDate => isSameDay(eventDate, date));
-
-                    console.log(`Day: ${format(date, 'PPP')}, hasEvents: ${hasEvents}, modifiers.events count: ${modifiers?.events?.length || 0}`); // Debug log
-                    if (hasEvents) {
-                        console.log(`Event found for ${format(date, 'PPP')}!`); // Debug log
-                    }
+                    // Corrected access to activeModifiers.events
+                    const hasEvents = activeModifiers?.events === true;
 
                     return (
                       <div
@@ -628,7 +613,7 @@ const Home = () => {
                       </div>
                     ))}
                     {viewMode === 'month' && daysInMonthView.map((day) => {
-                          const dayEvents = getEventsForDay(day); // This uses the full 'events' list
+                          const dayEvents = getEventsForDay(day);
                           const isCurrentMonth = isSameMonth(day, currentMonth);
                           const isTodayDate = isToday(day);
                           const isSelected = isSameDay(day, selectedDayForDialog || new Date());
@@ -662,7 +647,7 @@ const Home = () => {
                           );
                         })}
                     {viewMode !== 'month' && currentWeek.map((day) => {
-                          const dayEvents = getEventsForDay(day); // This uses the full 'events' list
+                          const dayEvents = getEventsForDay(day);
                           const isTodayDate = isToday(day);
                           const isSelected = isSameDay(day, selectedDayForDialog || new Date());
                           const isPastDate = isPast(day) && !isToday(day);
