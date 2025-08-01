@@ -349,7 +349,6 @@ const Home = () => {
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
                         <MonthPickerCalendar // Use the new component here
-                          mode="single"
                           selected={currentMonth}
                           onSelect={(date) => {
                             if (date) {
@@ -357,7 +356,7 @@ const Home = () => {
                             }
                           }}
                           defaultMonth={currentMonth} // Set default month to currentMonth
-                          defaultView="month" // Set default view to month
+                          defaultView="month" // Explicitly set default view to month
                         />
                       </PopoverContent>
                     </Popover>
