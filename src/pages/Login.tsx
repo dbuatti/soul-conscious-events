@@ -44,10 +44,10 @@ const Login = () => {
                   inputPlaceholder: 'hsl(var(--muted-foreground))',
                   messageText: 'hsl(var(--foreground))',
                   messageBackground: 'hsl(var(--secondary))',
-                  buttonBackground: 'hsl(var(--primary))',
-                  buttonBorder: 'hsl(var(--primary))',
-                  buttonBackgroundHover: 'hsl(var(--primary)/80%)',
-                  buttonForeground: 'hsl(var(--primary-foreground))',
+                  defaultButtonBackground: 'hsl(var(--primary))', // Fixed property name
+                  defaultButtonBorder: 'hsl(var(--primary))', // Fixed property name
+                  defaultButtonBackgroundHover: 'hsl(var(--primary)/80%)',
+                  defaultButtonText: 'hsl(var(--primary-foreground))', // Fixed property name
                 },
               },
             },
