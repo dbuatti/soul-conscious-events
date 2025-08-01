@@ -356,6 +356,7 @@ const Home = () => {
                               setCurrentMonth(date); // Update current month
                             }
                           }}
+                          defaultMonth={currentMonth} // Set default month to currentMonth
                           defaultView="month" // Set default view to month
                         />
                       </PopoverContent>
