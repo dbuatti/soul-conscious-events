@@ -64,7 +64,7 @@ interface Event {
 
 const Home = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [currentWeek, setCurrentWeek] = useState<Date[]>([]); // This will now represent the start of the week
+  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -136,16 +136,16 @@ const Home = () => {
 
   // Swipe gesture handlers for mobile
   const handleSwipe = (direction: 'left' | 'right') => {
-    if (viewMode === 'month') {
-      if (direction === 'left') {
+    if (direction === 'left') { // Swiping left on screen, go to next period
+      if (viewMode === 'month') {
         handleNextMonth();
-      } else if (direction === 'right') {
-        handlePrevMonth();
-      }
-    } else { // week view
-      if (direction === 'left') {
+      } else { // week view
         handleNextWeek();
-      } else if (direction === 'right') {
+      }
+    } else if (direction === 'right') { // Swiping right on screen, go to previous period
+      if (viewMode === 'month') {
+        handlePrevMonth();
+      } else { // week view
         handlePrevWeek();
       }
     }
@@ -194,7 +194,7 @@ const Home = () => {
         }
       };
     }
-  }, [isMobile, viewMode]); // Added viewMode to dependencies
+  }, [isMobile, viewMode]);
 
   const startOfCurrentMonth = startOfMonth(currentMonth);
   const endOfCurrentMonth = endOfMonth(currentMonth);
@@ -275,7 +275,7 @@ const Home = () => {
     });
   };
 
-  const getEventsForWeek = (weekDays: Date[]) => { // Changed parameter name to weekDays for clarity
+  const getEventsForWeek = (weekDays: Date[]) => {
     return events.filter(event => {
       const eventStartDate = parseISO(event.event_date);
       const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
@@ -457,7 +457,13 @@ const Home = () => {
                 </Button>
                 <Button
                   variant={viewMode === 'week' ? 'default' : 'outline'}
-                  onClick={() => setViewMode('week')}
+                  onClick={() => {
+                    setViewMode('week');
+                    // Explicitly set currentWeek when switching to week view
+                    const start = startOfWeek(currentMonth, { weekStartsOn: 1 });
+                    const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
+                    setCurrentWeek(weekDays);
+                  }}
                   className="ml-2 transition-all duration-300 ease-in-out transform hover:scale-105"
                 >
                   <CalendarIcon2 className="mr-2 h-4 w-4" /> Week View
@@ -601,11 +607,15 @@ const Home = () => {
                         {hasEvents && (
                           <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide">
                             {dayEvents.map((event) => (
-                              <div key={event.id} className={cn(
-                                "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
-                                isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                "line-clamp-3"
-                              )}>
+                              <div
+                                key={event.id}
+                                className={cn(
+                                  "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
+                                  isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
+                                  "line-clamp-3"
+                                )}
+                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation and open dialog
+                              >
                                 <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" />
                                 {event.event_name}
                               </div>
@@ -622,15 +632,15 @@ const Home = () => {
                     const isTodayDate = isToday(day);
                     const hasEvents = dayEvents.length > 0;
                     const isSelected = isSameDay(day, selectedDayForDialog || new Date());
-                    const isPastDate = isPast(day) && !isToday(day); // Added isPastDate for week view
+                    const isPastDate = isPast(day) && !isToday(day);
 
                     return (
                       <div
                         key={day.toISOString()}
                         className={cn(
                           "relative flex flex-col h-56 w-full rounded-lg cursor-pointer transition-colors duration-200 border border-gray-200 shadow-sm",
-                          isPastDate && "opacity-70", // Apply opacity for past dates
-                          isTodayDate && "bg-blue-600 text-white", // Highlight today
+                          isPastDate && "opacity-70",
+                          isTodayDate && "bg-blue-600 text-white",
                           isSelected && !isTodayDate && "bg-blue-100 border-blue-500 border-2",
                           "hover:bg-gray-100 hover:shadow-md hover:border-purple-300"
                         )}
@@ -647,11 +657,15 @@ const Home = () => {
                         {hasEvents && (
                           <div className="flex flex-col w-full mt-10 px-1.5 overflow-y-auto scrollbar-hide">
                             {dayEvents.map((event, index) => (
-                              <div key={event.id} className={cn(
-                                "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
-                                isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
-                                "line-clamp-3"
-                              )}>
+                              <div
+                                key={event.id}
+                                className={cn(
+                                  "flex items-center text-xs leading-tight font-medium text-left px-1.5 py-0.5 rounded-sm mb-1",
+                                  isTodayDate ? "bg-white/20 text-white" : (isSelected && !isTodayDate ? "bg-blue-200 text-blue-900" : "bg-purple-100 text-purple-800"),
+                                  "line-clamp-3"
+                                )}
+                                onClick={(e) => { e.stopPropagation(); handleViewDetails(event); }} // Stop propagation and open dialog
+                              >
                                 <CircleDot className="h-2.5 w-2.5 mr-1 flex-shrink-0 text-purple-600" />
                                 {event.event_name}
                               </div>
