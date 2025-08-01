@@ -19,7 +19,7 @@ import {
   subWeeks,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button'; // Import buttonVariants
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ArrowLeft, ArrowRight, CalendarIcon, MapPin, Clock, PlusCircle, Filter as FilterIcon, ChevronDown, Frown, List, X } from 'lucide-react';
@@ -372,9 +372,9 @@ const Home = () => {
 
           {isMobile ? (
             // MOBILE CALENDAR VIEW
-            <div className="flex flex-col items-center w-full px-0"> {/* Removed padding for full width */}
+            <div className="flex flex-col items-center w-full px-0">
               {/* Custom Header for Mobile Calendar */}
-              <div className="w-full flex justify-between items-center px-2 py-2 mb-2"> {/* Reduced padding */}
+              <div className="w-full flex justify-between items-center px-2 py-2 mb-2">
                 <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" className="text-lg font-bold focus-visible:ring-primary">
@@ -412,6 +412,39 @@ const Home = () => {
                 }}
                 modifiersClassNames={{
                   today: "rdp-day_today",
+                  events: "rdp-day_has_events", // Corrected: moved from classNames
+                }}
+                classNames={{
+                  months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                  month: "space-y-4",
+                  caption: "flex justify-center pt-1 relative items-center",
+                  caption_label: "text-sm font-medium",
+                  nav: "space-x-1 flex items-center",
+                  nav_button: cn(
+                    buttonVariants({ variant: "outline" }), // Fixed: buttonVariants is now imported
+                    "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+                  ),
+                  nav_button_previous: "absolute left-1",
+                  nav_button_next: "absolute right-1",
+                  table: "w-full border-collapse", // Ensure table takes full width
+                  head_row: "flex w-full", // Ensure header row is a flex container and takes full width
+                  head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-2", // Make head cells take equal width
+                  row: "flex w-full mt-0", // Ensure row is a flex container and takes full width
+                  cell: "h-14 flex-1 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-range-start)]:rounded-l-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                  day: cn(
+                    buttonVariants({ variant: "ghost" }), // Fixed: buttonVariants is now imported
+                    "h-full w-full p-0 font-normal aria-selected:opacity-100 flex flex-col items-center justify-center" // Ensure day button takes full height/width of cell and centers content
+                  ),
+                  day_range_end: "day-range-end",
+                  day_selected:
+                    "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                  day_today: "bg-accent text-accent-foreground",
+                  day_outside:
+                    "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+                  day_disabled: "text-muted-foreground opacity-50",
+                  day_range_middle:
+                    "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                  day_hidden: "invisible",
                 }}
                 components={{
                   Caption: () => null, // Hide default caption
@@ -424,7 +457,7 @@ const Home = () => {
                     return (
                       <div
                         className={cn(
-                          "relative flex flex-col items-center justify-center h-14 w-14 rounded-md text-foreground", // Adjusted size to h-14 w-14, centered content
+                          "relative flex flex-col items-center justify-center h-full w-full rounded-md text-foreground", // Changed w-14 to w-full, h-14 to h-full
                           "hover:bg-accent hover:text-accent-foreground",
                           isPastDate && "text-muted-foreground opacity-70",
                           isTodayDate && "bg-primary/10 text-primary",
@@ -436,9 +469,9 @@ const Home = () => {
                         <span className="font-bold text-lg">{format(date, 'd')}</span>
                         {hasEvents && (
                           <span className={cn(
-                            "absolute bottom-1 w-1.5 h-1.5 rounded-full", // Positioned absolutely at bottom-1, centered horizontally
-                            "left-1/2 -translate-x-1/2", // Centered horizontally
-                            isPastDate ? "bg-gray-400" : "bg-blue-500" // Conditional color for dot
+                            "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                            "left-1/2 -translate-x-1/2",
+                            isPastDate ? "bg-gray-400" : "bg-blue-500"
                           )} />
                         )}
                       </div>
@@ -446,12 +479,12 @@ const Home = () => {
                   },
                   Head: () => (
                     <thead>
-                      <tr className="flex"> {/* Use flex on the tr */}
+                      <tr className="flex w-full">
                         {daysOfWeekShort.map((dayName, index) => (
                           <th
                             key={index}
                             scope="col"
-                            className="text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1 py-2 flex items-center justify-center" // flex-1 for even distribution
+                            className="text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] flex items-center justify-center py-2"
                             aria-label={daysOfWeekFull[index]}
                           >
                             {dayName}
@@ -461,7 +494,7 @@ const Home = () => {
                     </thead>
                   ),
                 }}
-                className="w-full border-none shadow-none" // Full width, no border or shadow
+                className="w-full border-none shadow-none"
               />
             </div>
           ) : (
