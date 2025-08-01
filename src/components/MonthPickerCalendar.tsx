@@ -1,5 +1,5 @@
 import React from 'react';
-import { DayPicker, ClassNames, SelectEventHandler } from 'react-day-picker'; // Import SelectEventHandler
+import { DayPicker, ClassNames } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -62,19 +62,12 @@ const MonthPickerCalendar: React.FC<MonthPickerCalendarProps> = ({
     month_disabled: "text-muted-foreground opacity-50",
   };
 
-  // Adapter function to match DayPicker's expected onSelect signature when mode is "default"
-  const handleDayPickerSelect: SelectEventHandler = (day, selectedDay, activeModifiers, e) => {
-    if (onSelect) {
-      onSelect(day); // Pass only the clicked day to the parent's onSelect
-    }
-  };
-
   return (
     <DayPicker
-      mode="default" // Changed to "default" to enable 'view' prop
-      view="month" // This forces the calendar to always show the month grid
+      mode="single" // Set to "single" mode
+      view="month" // Use 'view' to force month grid display
       selected={selected} // Pass selected prop
-      onSelect={handleDayPickerSelect} // Use the adapter function
+      onSelect={onSelect} // Pass onSelect prop directly
       defaultMonth={defaultMonth} // Pass defaultMonth prop
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
