@@ -45,8 +45,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [loading, setLoading] = useState(true);
-  const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
-  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
 
   const daysOfWeekShort = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
@@ -60,9 +58,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
   const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const handleToday = () => {
-    const today = new Date();
-    setCurrentMonth(today);
-    handleDayClick(today);
+    setCurrentMonth(new Date());
   };
   const handlePrevWeek = () => setCurrentMonth(subWeeks(currentMonth, 1));
   const handleNextWeek = () => setCurrentMonth(addWeeks(currentMonth, 1));
@@ -85,22 +81,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
         return a.event_name.localeCompare(b.event_name);
       });
   };
-
-  const handleDayClick = (day: Date) => {
-    setSelectedDay(day);
-    const eventsForClickedDay = getEventsForDay(day);
-    setSelectedDayEvents(eventsForClickedDay);
-  };
-
-  useEffect(() => {
-    if (selectedDay) {
-      setSelectedDayEvents(getEventsForDay(selectedDay));
-    } else {
-      const today = new Date();
-      setSelectedDay(today);
-      setSelectedDayEvents(getEventsForDay(today));
-    }
-  }, [events, selectedDay]);
 
   useEffect(() => {
     if (viewMode === 'week') {
@@ -224,53 +204,24 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isTodayDate = isToday(day);
-                const isSelected = selectedDay && isSameDay(day, selectedDay);
                 const isPastDate = isPast(day) && !isToday(day);
 
                 return (
                   <div
                     key={day.toISOString()}
-                    className={cn("relative flex flex-col h-28 sm:h-40 md:h-48 lg:h-56 w-full cursor-pointer transition-colors duration-200 overflow-visible", isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50", isPastDate && "opacity-70", isTodayDate && "bg-primary/10 text-primary", isSelected && !isTodayDate && "bg-accent/20 border-primary border-2")}
-                    onClick={() => handleDayClick(day)}
+                    className={cn("relative flex flex-col h-32 sm:h-40 md:h-48 lg:h-56 w-full transition-colors duration-200 p-1", isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50", isPastDate && "opacity-70", isTodayDate && "bg-primary/10 text-primary")}
                   >
-                    <span className={cn("absolute top-2 left-2 text-lg sm:text-xl font-bold transition-all duration-200", isTodayDate ? "text-primary" : isSelected && !isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
+                    <span className={cn("font-bold text-left", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
                     </span>
-                    <div className="hidden sm:flex flex-col gap-0 mt-10 flex-grow overflow-visible">
-                      {dayEvents.slice(0, 2).map((event) => renderDayEventPill(event, day))}
-                      {dayEvents.length > 2 && (<div className="text-xs text-primary font-bold mt-1">+ {dayEvents.length - 2} more</div>)}
+                    <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 pr-1">
+                      {dayEvents.map((event) => renderDayEventPill(event, day))}
                     </div>
-                    {dayEvents.length > 0 && (<div className="sm:hidden absolute bottom-2 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-primary" />)}
                   </div>
                 );
               })}
             </div>
           </div>
-
-          {selectedDay && (
-            <div className="mt-8">
-              <h3 className="text-2xl font-bold text-foreground mb-4">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
-              <div className="space-y-4">
-                {selectedDayEvents.length > 0 ? (
-                  selectedDayEvents.map((event) => (
-                    <Card key={event.id} onClick={() => onEventSelect(event)} className="cursor-pointer hover:bg-accent/50 transition-colors duration-200 dark:bg-secondary">
-                      <CardHeader>
-                        <CardTitle className="text-primary">{event.event_name}</CardTitle>
-                        <CardDescription className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
-                          {event.event_time && (<span className="flex items-center"><Clock className="mr-2 h-4 w-4" />{event.event_time}</span>)}
-                          {event.place_name && (<span className="flex items-center"><MapPin className="mr-2 h-4 w-4" />{event.place_name}</span>)}
-                        </CardDescription>
-                      </CardHeader>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="text-center py-8 px-4 bg-secondary rounded-lg">
-                    <p className="text-muted-foreground">No events scheduled for this day.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
