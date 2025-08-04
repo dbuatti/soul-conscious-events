@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -48,6 +48,8 @@ const EventsList = () => {
   const [dateFilter, setDateFilter] = useState('All Upcoming');
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(new Date());
 
   const { user, isLoading: isSessionLoading } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
@@ -62,19 +64,8 @@ const EventsList = () => {
     const fetchEvents = async () => {
       setLoading(true);
       let query = supabase.from('events').select('*');
-
-      const now = new Date();
-      const todayFormatted = format(now, 'yyyy-MM-dd');
-
-      // This logic is now client-side for the list view, but we fetch all for the calendar
-      // Let's fetch all approved events and filter client-side for consistency
       query = query.eq('state', 'approved');
-
-      if (dateFilter !== 'Past Events') {
-        query = query.order('event_date', { ascending: true });
-      } else {
-        query = query.order('event_date', { ascending: false });
-      }
+      query = query.order('event_date', { ascending: true });
 
       const { data, error } = await query;
 
@@ -88,9 +79,9 @@ const EventsList = () => {
     };
 
     fetchEvents();
-  }, []); // Fetch all events once on mount
+  }, []);
 
-  const getFilteredEvents = () => {
+  const getFilteredEventsForList = () => {
     let filtered = events;
 
     const now = new Date();
@@ -148,11 +139,10 @@ const EventsList = () => {
     return filtered;
   };
 
-  const filteredEvents = getFilteredEvents();
+  const filteredEventsForList = getFilteredEventsForList();
 
-  const toggleDescription = (id: string) => {
-    setExpandedDescriptions(prev => ({ ...prev, [id]: !prev[id] }));
-  };
+  const selectedDayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
+  const currentMonthEvents = events.filter(event => isSameMonth(parseISO(event.event_date), currentMonth));
 
   const handleApplyFilters = (filters: { searchTerm: string; eventType: string; state: string; dateFilter: string; }) => {
     setSearchTerm(filters.searchTerm);
@@ -205,6 +195,32 @@ const EventsList = () => {
     setIsEventDetailDialogOpen(true);
   };
 
+  const renderEventCard = (event: Event) => {
+    const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
+    const dateDisplay = event.end_date && event.event_date !== event.end_date ? `${format(parseISO(event.event_date), 'PPP')} - ${format(parseISO(event.end_date), 'PPP')}` : format(parseISO(event.event_date), 'PPP');
+
+    return (
+      <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden" onClick={() => handleViewDetails(event)}>
+        {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div></div>}
+        <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2"><CardTitle className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">{event.event_name}</CardTitle><CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base"><Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{dateDisplay}{event.event_time && <><Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{event.event_time}</>}</CardDescription></CardHeader>
+        <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
+          {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
+        </CardContent>
+        <CardFooter className="flex flex-col items-start pt-2 sm:pt-4">
+          <div className="flex justify-end w-full space-x-1 sm:space-x-2">
+            <Button variant="outline" size="icon" onClick={(e) => handleShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9"><Share2 className="h-3.5 w-3.5 sm:h-4 w-4" /></Button>
+            {isCreatorOrAdmin && (
+              <>
+                <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }} onClick={(e) => e.stopPropagation()}><Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9"><Edit className="h-3.5 w-3.5 sm:h-4 w-4" /></Button></Link>
+                <Button variant="destructive" size="icon" onClick={(e) => handleDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9"><Trash2 className="h-3.5 w-3.5 sm:h-4 w-4" /></Button>
+              </>
+            )}
+          </div>
+        </CardFooter>
+      </Card>
+    );
+  };
+
   return (
     <div className="w-full max-w-screen-lg">
       <div className="text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 bg-gradient-to-br from-primary to-blue-800 rounded-xl shadow-xl text-white">
@@ -237,7 +253,7 @@ const EventsList = () => {
             </ToggleGroup>
           </div>
         </div>
-        {hasActiveFilters && (
+        {hasActiveFilters && viewMode === 'list' && (
           <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-1 sm:gap-2 items-center">
             <span className="text-xs sm:text-sm font-medium text-foreground">Active Filters:</span>
             {searchTerm && <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">Search: "{searchTerm}"<Button variant="ghost" size="sm" className="h-3 w-3 p-0" onClick={() => removeFilter('search')}><X className="h-2.5 w-2.5" /></Button></Badge>}
@@ -249,18 +265,6 @@ const EventsList = () => {
         )}
       </div>
 
-      <div className="text-center text-foreground mb-4 text-sm sm:text-base">
-        {(loading || isSessionLoading) ? <p className="text-lg font-semibold text-primary flex items-center justify-center"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading events...</p> :
-          (viewMode === 'list' && filteredEvents.length === 0) ? (
-            <div className="p-8 bg-secondary rounded-lg border border-border text-center">
-              <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg font-semibold text-foreground mb-4">No events found matching your criteria.</p>
-              {hasActiveFilters ? <Button onClick={handleClearAllFilters} className="bg-primary hover:bg-primary/80 text-primary-foreground">Clear Filters</Button> :
-                <Link to="/submit-event"><Button className="bg-primary hover:bg-primary/80 text-primary-foreground"><PlusCircle className="mr-2 h-4 w-4" /> Add an Event</Button></Link>}
-            </div>
-          ) : (viewMode === 'list' && `Showing ${filteredEvents.length} event${filteredEvents.length === 1 ? '' : 's'}.`)}
-      </div>
-
       {(loading || isSessionLoading) ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
@@ -270,38 +274,53 @@ const EventsList = () => {
       ) : (
         <>
           {viewMode === 'list' ? (
-            filteredEvents.length > 0 && (
+            filteredEventsForList.length > 0 ? (
               <div className="grid grid-cols-1 gap-6">
-                {filteredEvents.map((event) => {
-                  const googleMapsLink = event.full_address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}` : '#';
-                  const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
-                  const dateDisplay = event.end_date && event.event_date !== event.end_date ? `${format(parseISO(event.event_date), 'PPP')} - ${format(parseISO(event.end_date), 'PPP')}` : format(parseISO(event.event_date), 'PPP');
-
-                  return (
-                    <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden" onClick={() => handleViewDetails(event)}>
-                      {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div></div>}
-                      <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2"><CardTitle className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">{event.event_name}</CardTitle><CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base"><Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{dateDisplay}{event.event_time && <><Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{event.event_time}</>}</CardDescription></CardHeader>
-                      <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
-                        {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
-                      </CardContent>
-                      <CardFooter className="flex flex-col items-start pt-2 sm:pt-4">
-                        <div className="flex justify-end w-full space-x-1 sm:space-x-2">
-                          <Button variant="outline" size="icon" onClick={(e) => handleShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9"><Share2 className="h-3.5 w-3.5 sm:h-4 w-4" /></Button>
-                          {isCreatorOrAdmin && (
-                            <>
-                              <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }} onClick={(e) => e.stopPropagation()}><Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9"><Edit className="h-3.5 w-3.5 sm:h-4 w-4" /></Button></Link>
-                              <Button variant="destructive" size="icon" onClick={(e) => handleDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9"><Trash2 className="h-3.5 w-3.5 sm:h-4 w-4" /></Button>
-                            </>
-                          )}
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  );
-                })}
+                {filteredEventsForList.map(renderEventCard)}
+              </div>
+            ) : (
+              <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+                <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-lg font-semibold text-foreground mb-4">No events found matching your criteria.</p>
+                {hasActiveFilters ? <Button onClick={handleClearAllFilters} className="bg-primary hover:bg-primary/80 text-primary-foreground">Clear Filters</Button> :
+                  <Link to="/submit-event"><Button className="bg-primary hover:bg-primary/80 text-primary-foreground"><PlusCircle className="mr-2 h-4 w-4" /> Add an Event</Button></Link>}
               </div>
             )
           ) : (
-            <AdvancedEventCalendar events={filteredEvents} onEventSelect={handleViewDetails} />
+            <div>
+              <AdvancedEventCalendar
+                events={events}
+                onEventSelect={handleViewDetails}
+                selectedDay={selectedDay}
+                onDayClick={setSelectedDay}
+                currentMonth={currentMonth}
+                onMonthChange={setCurrentMonth}
+              />
+              <div className="mt-8">
+                <h3 className="text-2xl font-bold text-foreground mb-4">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
+                {selectedDayEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {selectedDayEvents.map(renderEventCard)}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 px-4 bg-secondary rounded-lg">
+                    <p className="text-muted-foreground">No events scheduled for this day.</p>
+                  </div>
+                )}
+              </div>
+              <div className="mt-12">
+                <h3 className="text-2xl font-bold text-foreground mb-4">More events in {format(currentMonth, 'MMMM')}</h3>
+                {currentMonthEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {currentMonthEvents.map(renderEventCard)}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 px-4 bg-secondary rounded-lg">
+                    <p className="text-muted-foreground">No events scheduled for this month.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </>
       )}

@@ -19,11 +19,9 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, ChevronDown, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 interface Event {
   id: string;
@@ -31,18 +29,26 @@ interface Event {
   event_date: string;
   end_date?: string;
   event_time?: string;
-  place_name?: string;
   user_id?: string;
 }
 
 interface AdvancedEventCalendarProps {
   events: Event[];
   onEventSelect: (event: Event) => void;
+  selectedDay: Date;
+  onDayClick: (day: Date) => void;
+  currentMonth: Date;
+  onMonthChange: (date: Date) => void;
 }
 
-const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, onEventSelect }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
+const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
+  events,
+  onEventSelect,
+  selectedDay,
+  onDayClick,
+  currentMonth,
+  onMonthChange,
+}) => {
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [loading, setLoading] = useState(true);
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
@@ -55,13 +61,15 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
     }
   }, [events]);
 
-  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const handlePrevMonth = () => onMonthChange(subMonths(currentMonth, 1));
+  const handleNextMonth = () => onMonthChange(addMonths(currentMonth, 1));
   const handleToday = () => {
-    setCurrentMonth(new Date());
+    const today = new Date();
+    onMonthChange(today);
+    onDayClick(today);
   };
-  const handlePrevWeek = () => setCurrentMonth(subWeeks(currentMonth, 1));
-  const handleNextWeek = () => setCurrentMonth(addWeeks(currentMonth, 1));
+  const handlePrevWeek = () => onMonthChange(subWeeks(currentMonth, 1));
+  const handleNextWeek = () => onMonthChange(addWeeks(currentMonth, 1));
 
   const getEventsForDay = (day: Date) => {
     return events
@@ -82,21 +90,12 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
       });
   };
 
-  useEffect(() => {
-    if (viewMode === 'week') {
-      const start = startOfWeek(currentMonth, { weekStartsOn: 1 });
-      const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) });
-      setCurrentWeek(weekDays);
-    } else {
-      setCurrentWeek([]);
-    }
-  }, [currentMonth, viewMode]);
-
   const startOfCurrentMonth = startOfMonth(currentMonth);
   const endOfCurrentMonth = endOfMonth(currentMonth);
   const startDay = startOfWeek(startOfCurrentMonth, { weekStartsOn: 1 });
   const endDay = endOfWeek(endOfCurrentMonth, { weekStartsOn: 1 });
   const daysInMonthView = eachDayOfInterval({ start: startDay, end: endDay });
+  const currentWeek = eachDayOfInterval({ start: startOfWeek(currentMonth, { weekStartsOn: 1 }), end: endOfWeek(currentMonth, { weekStartsOn: 1 }) });
 
   const renderDayEventPill = (event: Event, day: Date) => {
     const eventStartDate = parseISO(event.event_date);
@@ -166,7 +165,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
                 <MonthYearPicker
                   date={currentMonth}
                   onDateChange={(date) => {
-                    setCurrentMonth(date);
+                    onMonthChange(date);
                     setIsMonthPickerPopoverOpen(false);
                   }}
                 />
@@ -183,7 +182,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
             <Button variant={viewMode === 'month' ? 'default' : 'outline'} onClick={() => setViewMode('month')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Month
             </Button>
-            <Button variant={viewMode === 'week' ? 'default' : 'outline'} onClick={() => { setViewMode('week'); const start = startOfWeek(currentMonth, { weekStartsOn: 1 }); const weekDays = eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) }); setCurrentWeek(weekDays); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button variant={viewMode === 'week' ? 'default' : 'outline'} onClick={() => setViewMode('week')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               Week
             </Button>
           </div>
@@ -204,12 +203,14 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({ events, o
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isTodayDate = isToday(day);
+                const isSelected = selectedDay && isSameDay(day, selectedDay);
                 const isPastDate = isPast(day) && !isToday(day);
 
                 return (
                   <div
                     key={day.toISOString()}
-                    className={cn("relative flex flex-col h-32 sm:h-40 md:h-48 lg:h-56 w-full transition-colors duration-200 p-1", isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50", isPastDate && "opacity-70", isTodayDate && "bg-primary/10 text-primary")}
+                    className={cn("relative flex flex-col h-32 sm:h-40 md:h-48 lg:h-56 w-full transition-colors duration-200 p-1 cursor-pointer", isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50", isPastDate && "opacity-70", isTodayDate && "bg-primary/10 text-primary", isSelected && !isTodayDate && "bg-accent/20 border-primary border-2")}
+                    onClick={() => onDayClick(day)}
                   >
                     <span className={cn("font-bold text-left", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
