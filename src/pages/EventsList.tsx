@@ -47,7 +47,7 @@ const EventsList = () => {
   const [stateFilter, setStateFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All Upcoming');
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
 
@@ -248,8 +248,8 @@ const EventsList = () => {
           <div className="flex flex-col gap-1 w-full sm:w-auto">
             <label htmlFor="view-mode" className="text-xs sm:text-sm font-medium text-foreground text-center sm:text-right">View Mode</label>
             <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-center sm:justify-end">
-              <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><List className="h-4 w-4" /></ToggleGroupItem>
               <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><CalendarDays className="h-4 w-4" /></ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><List className="h-4 w-4" /></ToggleGroupItem>
             </ToggleGroup>
           </div>
         </div>
