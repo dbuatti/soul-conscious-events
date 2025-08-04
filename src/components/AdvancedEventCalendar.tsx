@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Event {
   id: string;
@@ -52,6 +53,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [loading, setLoading] = useState(true);
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const daysOfWeekShort = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
 
@@ -215,9 +217,22 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     <span className={cn("font-bold text-left", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
                     </span>
-                    <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 pr-1">
-                      {dayEvents.map((event) => renderDayEventPill(event, day))}
-                    </div>
+                    {isMobile ? (
+                      dayEvents.length > 0 && (
+                        <div className="flex justify-center items-center mt-1 space-x-1">
+                          {dayEvents.slice(0, 3).map((event, index) => (
+                            <div key={event.id + index} className="h-2 w-2 rounded-full bg-primary" />
+                          ))}
+                          {dayEvents.length > 3 && (
+                            <span className="text-xs font-bold text-primary">+{dayEvents.length - 3}</span>
+                          )}
+                        </div>
+                      )
+                    ) : (
+                      <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 pr-1">
+                        {dayEvents.map((event) => renderDayEventPill(event, day))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
