@@ -43,8 +43,8 @@ const Header = () => {
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
-      <div className="w-full max-w-screen-lg flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80 md:mr-6">
+      <div className="w-full max-w-screen-lg flex justify-between items-center relative">
+        <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
           SoulFlow
         </Link>
         {isMobile ? (
@@ -100,8 +100,8 @@ const Header = () => {
             </SheetContent>
           </Sheet>
         ) : (
-          <nav className="hidden md:flex items-center w-full">
-            <div className="flex items-center space-x-4">
+          <>
+            <nav className="hidden md:flex items-center space-x-2 absolute left-1/2 -translate-x-1/2">
               {navItems.map((item) => (
                 <Link to={item.to} key={item.to}>
                   <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")}>
@@ -114,8 +114,8 @@ const Header = () => {
                   </Button>
                 </Link>
               ))}
-            </div>
-            <div className="flex items-center space-x-4 ml-auto">
+            </nav>
+            <div className="hidden md:flex items-center space-x-4">
               {user?.email === 'daniele.buatti@gmail.com' && (
                 <Link to="/admin/panel">
                   <Button variant="ghost" className={getButtonClass("/admin/panel")}>
@@ -136,7 +136,7 @@ const Header = () => {
               )}
               <ThemeToggle />
             </div>
-          </nav>
+          </>
         )}
       </div>
     </header>
