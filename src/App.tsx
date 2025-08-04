@@ -16,6 +16,7 @@ import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import EventEditPage from "./pages/EventEditPage";
 import About from "./pages/About";
+import DevSpace from "./pages/DevSpace";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,14 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
                     <AdminPanel />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dev-space"
+                element={
+                  <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                    <DevSpace />
                   </ProtectedRoute>
                 }
               />

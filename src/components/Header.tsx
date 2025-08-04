@@ -41,6 +41,11 @@ const Header = () => {
     { to: "/about", label: "About" },
   ];
 
+  const adminNavItems = [
+    { to: "/admin/panel", label: "Admin Panel" },
+    { to: "/dev-space", label: "Dev Space" },
+  ];
+
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
       <div className="w-full max-w-screen-lg flex justify-between items-center relative">
@@ -59,7 +64,7 @@ const Header = () => {
               <nav className="flex flex-col space-y-4 mt-8">
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.to}>
-                    <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")} asChild>
+                    <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
                       <Link to={item.to}>
                         {item.label}
                         {item.badge && (
@@ -72,30 +77,36 @@ const Header = () => {
                   </SheetClose>
                 ))}
                 {user?.email === 'daniele.buatti@gmail.com' && (
-                  <SheetClose asChild>
-                    <Button variant="ghost" className={getButtonClass("/admin/panel")} asChild>
-                      <Link to="/admin/panel">
-                        Admin
-                      </Link>
-                    </Button>
-                  </SheetClose>
+                  <>
+                    <div className="border-t border-border my-2"></div>
+                    {adminNavItems.map((item) => (
+                      <SheetClose asChild key={item.to}>
+                        <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
+                          <Link to={item.to}>{item.label}</Link>
+                        </Button>
+                      </SheetClose>
+                    ))}
+                  </>
                 )}
+                <div className="border-t border-border my-2"></div>
                 {user ? (
                   <SheetClose asChild>
-                    <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
+                    <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 justify-start">
                       <LogOut className="mr-2 h-4 w-4" /> Logout
                     </Button>
                   </SheetClose>
                 ) : (
                   <SheetClose asChild>
-                    <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80" asChild>
+                    <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground" asChild>
                       <Link to="/login">
                         Login
                       </Link>
                     </Button>
                   </SheetClose>
                 )}
-                <ThemeToggle />
+                <div className="pt-4">
+                  <ThemeToggle />
+                </div>
               </nav>
             </SheetContent>
           </Sheet>
@@ -117,19 +128,23 @@ const Header = () => {
             </nav>
             <div className="hidden md:flex items-center space-x-4">
               {user?.email === 'daniele.buatti@gmail.com' && (
-                <Link to="/admin/panel">
-                  <Button variant="ghost" className={getButtonClass("/admin/panel")}>
-                    Admin
-                  </Button>
-                </Link>
+                <>
+                  {adminNavItems.map((item) => (
+                    <Link to={item.to} key={item.to}>
+                      <Button variant="ghost" className={getButtonClass(item.to)}>
+                        {item.label}
+                      </Button>
+                    </Link>
+                  ))}
+                </>
               )}
               {user ? (
-                <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
+                <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80">
                   <LogOut className="mr-2 h-4 w-4" /> Logout
                 </Button>
               ) : (
                 <Link to="/login">
-                  <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105 dark:bg-primary dark:hover:bg-primary/80">
+                  <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
                     Login
                   </Button>
                 </Link>
