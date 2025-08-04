@@ -112,12 +112,15 @@ const EventEditPage: React.FC = () => {
         toast.error('Failed to load event details.');
         navigate('/404');
       } else if (data) {
+        console.log(`[DEBUG] 1. Fetched raw event_date from Supabase: '${data.event_date}'`);
         setCurrentEvent(data);
         
-        // FIX: Parse date strings as local time by adding a time component.
-        // This prevents the date from shifting by a day due to timezone differences.
         const eventDate = new Date(`${data.event_date}T00:00:00`);
+        console.log(`[DEBUG] 2. Parsed event_date into Date object:`, eventDate.toString());
         const endDate = data.end_date ? new Date(`${data.end_date}T00:00:00`) : undefined;
+        if (endDate) {
+          console.log(`[DEBUG] 2a. Parsed end_date into Date object:`, endDate.toString());
+        }
 
         form.reset({
           eventName: data.event_name,
@@ -210,6 +213,9 @@ const EventEditPage: React.FC = () => {
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
 
+    console.log('[DEBUG] 3. Form values on submit:', values);
+    console.log('[DEBUG] 3a. Date object from form:', values.eventDate.toString());
+
     let finalImageUrl: string | null = null;
 
     if (selectedImage) {
@@ -265,9 +271,12 @@ const EventEditPage: React.FC = () => {
       formattedTicketLink = `https://${formattedTicketLink}`;
     }
 
+    const dateToSave = values.eventDate.toISOString().split('T')[0];
+    console.log(`[DEBUG] 4. Final date string being sent to Supabase: '${dateToSave}'`);
+
     const { error } = await supabase.from('events').update({
       event_name: values.eventName,
-      event_date: values.eventDate.toISOString().split('T')[0],
+      event_date: dateToSave,
       end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null,
       event_time: values.eventTime || null,
       place_name: values.placeName || null,
