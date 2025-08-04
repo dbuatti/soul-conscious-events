@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { Edit, Trash2, PlusCircle, ExternalLink, Image as ImageIcon, Loader2, Frown } from 'lucide-react';
+import { Edit, Trash2, PlusCircle, ExternalLink, Image as ImageIcon, Loader2, Frown, RefreshCw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -51,15 +51,15 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Link, useLocation } from 'react-router-dom'; // Import useLocation
+import { Link, useLocation } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import EventDetailDialog from './EventDetailDialog'; // Import EventDetailDialog
+import EventDetailDialog from './EventDetailDialog';
 
 interface Event {
   id: string;
   event_name: string;
   event_date: string;
-  end_date?: string; // Added end_date
+  end_date?: string;
   event_time?: string;
   place_name?: string;
   full_address?: string;
@@ -71,7 +71,8 @@ interface Event {
   event_type?: string;
   state?: string;
   image_url?: string;
-  user_id?: string; // Added user_id
+  user_id?: string;
+  is_deleted: boolean;
 }
 
 const eventFormSchema = z.object({
@@ -82,7 +83,7 @@ const eventFormSchema = z.object({
   eventDate: z.date({
     required_error: 'A date is required.',
   }),
-  endDate: z.date().optional(), // Added endDate to schema
+  endDate: z.date().optional(),
   eventTime: z.string().optional().or(z.literal('')),
   placeName: z.string().optional().or(z.literal('')),
   fullAddress: z.string().optional().or(z.literal('')),
@@ -92,7 +93,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  state: z.string().optional().or(z.literal('')), // Added state to schema
+  state: z.string().optional().or(z.literal('')),
   image_url: z.string().optional().or(z.literal('')),
 });
 
@@ -110,9 +111,8 @@ const EventManagementTable = () => {
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
-  // State for EventDetailDialog
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
@@ -129,7 +129,7 @@ const EventManagementTable = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      state: '', // Added state to defaultValues
+      state: '',
       image_url: '',
     },
   });
@@ -154,15 +154,33 @@ const EventManagementTable = () => {
     fetchEvents();
   }, []);
 
+  const handleRestore = async (id: string) => {
+    const { error } = await supabase
+      .from('events')
+      .update({ is_deleted: false })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error restoring event:', error);
+      toast.error('Failed to restore event.');
+    } else {
+      toast.success('Event restored successfully!');
+      fetchEvents();
+    }
+  };
+
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('events').delete().eq('id', id);
+    const { error } = await supabase
+      .from('events')
+      .update({ is_deleted: true })
+      .eq('id', id);
 
     if (error) {
       console.error('Error deleting event:', error);
-      toast.error('Failed to delete event.');
+      toast.error('Failed to move event to trash.');
     } else {
-      toast.success('Event deleted successfully!');
-      fetchEvents(); // Re-fetch events to update the list
+      toast.success('Event moved to trash successfully!');
+      fetchEvents();
     }
   };
 
@@ -172,7 +190,7 @@ const EventManagementTable = () => {
       id: event.id,
       eventName: event.event_name,
       eventDate: new Date(event.event_date),
-      endDate: event.end_date ? new Date(event.end_date) : undefined, // Set endDate
+      endDate: event.end_date ? new Date(event.end_date) : undefined,
       eventTime: event.event_time || '',
       placeName: event.place_name || '',
       fullAddress: event.full_address || '',
@@ -182,7 +200,7 @@ const EventManagementTable = () => {
       specialNotes: event.special_notes || '',
       organizerContact: event.organizer_contact || '',
       eventType: event.event_type || '',
-      state: event.state || '', // Set state
+      state: event.state || '',
       image_url: event.image_url || '',
     });
     setIsEditDialogOpen(true);
@@ -199,17 +217,17 @@ const EventManagementTable = () => {
       .update({
         event_name: values.eventName,
         event_date: values.eventDate.toISOString().split('T')[0],
-        end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null, // Save end_date
+        end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null,
         event_time: values.eventTime || null,
-        place_name: values.placeName || null, // Fixed: changed to values.placeName
-        full_address: values.fullAddress || null, // Fixed: changed to values.fullAddress
+        place_name: values.placeName || null,
+        full_address: values.fullAddress || null,
         description: values.description || null,
         ticket_link: formattedTicketLink || null,
         price: values.price || null,
-        special_notes: values.specialNotes || null, // Fixed: changed to values.specialNotes
+        special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
         event_type: values.eventType || null,
-        state: values.state || null, // Save state
+        state: values.state || null,
       })
       .eq('id', values.id);
 
@@ -226,11 +244,11 @@ const EventManagementTable = () => {
   const getStatusBadgeVariant = (status?: string) => {
     switch (status) {
       case 'approved':
-        return 'default'; // Greenish
+        return 'default';
       case 'pending':
-        return 'secondary'; // Grayish
+        return 'secondary';
       case 'rejected':
-        return 'destructive'; // Reddish
+        return 'destructive';
       default:
         return 'outline';
     }
@@ -285,7 +303,7 @@ const EventManagementTable = () => {
             </TableHeader>
             <TableBody>
               {events.map((event) => (
-                <TableRow key={event.id}>
+                <TableRow key={event.id} className={cn(event.is_deleted && "bg-muted/50 text-muted-foreground opacity-70")}>
                   <TableCell className="font-medium text-foreground">{event.event_name}</TableCell>
                   <TableCell className="text-foreground">{event.event_date ? format(new Date(event.event_date), 'PPP') : 'N/A'}</TableCell>
                   <TableCell className="text-foreground">{event.end_date ? format(new Date(event.end_date), 'PPP') : 'N/A'}</TableCell>
@@ -303,37 +321,49 @@ const EventManagementTable = () => {
                     <Badge variant={getStatusBadgeVariant(event.state)}>
                       {event.state || 'N/A'}
                     </Badge>
+                    {event.is_deleted && (
+                      <Badge variant="destructive" className="ml-2">
+                        Deleted
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell className="text-foreground text-sm">{event.user_id || 'N/A'}</TableCell>
                   <TableCell className="text-right flex justify-end space-x-2">
-                    <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                    <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }}>
-                      <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                        <Edit className="h-4 w-4" />
+                    {event.is_deleted ? (
+                      <Button variant="outline" size="sm" title="Restore Event" onClick={() => handleRestore(event.id)}>
+                        <RefreshCw className="h-4 w-4" />
                       </Button>
-                    </Link>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                          <Trash2 className="h-4 w-4" />
+                    ) : (
+                      <>
+                        <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
+                          <ExternalLink className="h-4 w-4" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="dark:bg-card dark:border-border">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="text-foreground">Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription className="text-muted-foreground">
-                            This action cannot be undone. This will permanently delete the event
-                            and remove its data from our servers.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(event.id)} className="bg-destructive hover:bg-destructive/80 text-destructive-foreground">Continue</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }}>
+                          <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="dark:bg-card dark:border-border">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-foreground">Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription className="text-muted-foreground">
+                                This will move the event to the trash. It will be hidden from public view but can be restored from this panel.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(event.id)} className="bg-destructive hover:bg-destructive/80 text-destructive-foreground">Move to Trash</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -342,7 +372,6 @@ const EventManagementTable = () => {
         </div>
       )}
 
-      {/* Edit Event Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
           <DialogHeader>
@@ -608,7 +637,6 @@ const EventManagementTable = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Event Detail Dialog */}
       <EventDetailDialog
         event={selectedEvent}
         isOpen={isEventDetailDialogOpen}

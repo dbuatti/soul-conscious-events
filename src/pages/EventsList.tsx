@@ -14,18 +14,18 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import EventCalendar from '@/components/EventCalendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useSession } from '@/components/SessionContextProvider'; // Import useSession
-import EventDetailDialog from '@/components/EventDetailDialog'; // Import the new dialog component
-import { eventTypes, australianStates } from '@/lib/constants'; // Import from constants
+import { useSession } from '@/components/SessionContextProvider';
+import EventDetailDialog from '@/components/EventDetailDialog';
+import { eventTypes, australianStates } from '@/lib/constants';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import FilterOverlay from '@/components/FilterOverlay'; // Import FilterOverlay
-import { useLocation } from 'react-router-dom'; // Import useLocation
+import FilterOverlay from '@/components/FilterOverlay';
+import { useLocation } from 'react-router-dom';
 
 interface Event {
   id: string;
   event_name: string;
   event_date: string;
-  end_date?: string; // Added end_date
+  end_date?: string;
   event_time?: string;
   location?: string;
   place_name?: string;
@@ -38,7 +38,8 @@ interface Event {
   event_type?: string;
   state?: string;
   image_url?: string;
-  user_id?: string; // Added user_id to interface
+  user_id?: string;
+  is_deleted?: boolean;
 }
 
 const EventsList = () => {
@@ -51,18 +52,16 @@ const EventsList = () => {
   const [stateFilter, setStateFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All Upcoming');
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list'); // Default to list view
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
-  const { user, isLoading: isSessionLoading } = useSession(); // Get user from context
+  const { user, isLoading: isSessionLoading } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
-  // State for EventDetailDialog
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  // State for FilterOverlay
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
 
   useEffect(() => {
@@ -106,7 +105,6 @@ const EventsList = () => {
         query = query.eq('state', stateFilter);
       }
 
-      // Always filter for 'approved' events for public view
       query = query.eq('state', 'approved');
 
       if (searchTerm) {
@@ -182,7 +180,7 @@ const EventsList = () => {
     dateFilter !== 'All Upcoming';
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click from triggering
+    e.stopPropagation();
     const eventUrl = `${window.location.origin}/events/${event.id}`;
     navigator.clipboard.writeText(eventUrl)
       .then(() => toast.success('Event link copied to clipboard!'))
@@ -190,23 +188,25 @@ const EventsList = () => {
   };
 
   const handleDelete = async (eventId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click from triggering
-    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-      const { error } = await supabase.from('events').delete().eq('id', eventId);
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this event? It will be hidden from public view but can be restored from the Admin Panel.')) {
+      const { error } = await supabase
+        .from('events')
+        .update({ is_deleted: true })
+        .eq('id', eventId);
 
       if (error) {
         console.error('Error deleting event:', error);
         toast.error('Failed to delete event.');
       } else {
-        toast.success('Event deleted successfully!');
-        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId)); // Optimistically update UI
+        toast.success('Event moved to trash.');
+        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
       }
     }
   };
 
   const handleEdit = (eventId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click from triggering
-    // Navigate to edit page
+    e.stopPropagation();
   };
 
   const handleViewDetails = (event: Event) => {
@@ -216,7 +216,6 @@ const EventsList = () => {
 
   return (
     <div className="w-full max-w-screen-lg">
-      {/* Hero Section */}
       <div className="text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 bg-gradient-to-br from-primary to-blue-800 rounded-xl shadow-xl text-white">
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">
           Discover Your Next Soulful Experience
@@ -231,7 +230,6 @@ const EventsList = () => {
         </Link>
       </div>
 
-      {/* App Description Clause */}
       <div className="mb-8 p-4 sm:p-6 bg-secondary border border-border rounded-lg shadow-lg text-center flex items-center justify-center">
         <Lightbulb className="mr-3 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-primary" />
         <p className="text-sm sm:text-base leading-relaxed text-foreground">
@@ -241,10 +239,8 @@ const EventsList = () => {
         </p>
       </div>
 
-      {/* Filter and View Options Section */}
       <div className="mb-8 rounded-xl shadow-lg border border-border bg-card p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          {/* Filter Button */}
           <Button
             onClick={() => setIsFilterOverlayOpen(true)}
             className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base"
@@ -252,7 +248,6 @@ const EventsList = () => {
             <FilterIcon className="mr-2 h-4 w-4" /> Filter Events
           </Button>
 
-          {/* View Mode Toggle */}
           <div className="flex flex-col gap-1 w-full sm:w-auto">
             <label htmlFor="view-mode" className="text-xs sm:text-sm font-medium text-foreground text-center sm:text-right">View Mode</label>
             <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-center sm:justify-end">
@@ -266,7 +261,6 @@ const EventsList = () => {
           </div>
         </div>
 
-        {/* Active Filters Display */}
         {hasActiveFilters && (
           <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-1 sm:gap-2 items-center">
             <span className="text-xs sm:text-sm font-medium text-foreground">Active Filters:</span>
@@ -311,7 +305,6 @@ const EventsList = () => {
         )}
       </div>
 
-      {/* Event Count Display */}
       <div className="text-center text-foreground mb-4 text-sm sm:text-base">
         {loading || isSessionLoading ? (
           <p className="text-lg font-semibold text-primary flex items-center justify-center">
@@ -365,8 +358,8 @@ const EventsList = () => {
       ) : (
         <>
           {viewMode === 'list' ? (
-            events.length === 0 ? null : ( // This null will be replaced by the improved message above
-              <div className="grid grid-cols-1 gap-6"> {/* Changed md:grid-cols-2 to grid-cols-1 */}
+            events.length === 0 ? null : (
+              <div className="grid grid-cols-1 gap-6">
                 {events.map((event) => {
                   const googleMapsLink = event.full_address
                     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
@@ -397,7 +390,7 @@ const EventsList = () => {
                             src={event.image_url}
                             alt={`Image for ${event.event_name}`}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            loading="lazy" // Lazy load image
+                            loading="lazy"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         </div>
@@ -447,7 +440,7 @@ const EventsList = () => {
                             <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">
                               {event.description}
                             </p>
-                            {event.description.length > 150 && ( // Only show if description is long
+                            {event.description.length > 150 && (
                               <Button variant="link" onClick={(e) => { e.stopPropagation(); toggleDescription(event.id); }} className="p-0 h-auto text-primary transition-all duration-300 ease-in-out transform hover:scale-105 text-xs sm:text-sm">
                                 {expandedDescriptions[event.id] ? 'Read Less' : 'Read More'}
                               </Button>
@@ -527,7 +520,6 @@ const EventsList = () => {
         </>
       )}
 
-      {/* Event Detail Dialog */}
       <EventDetailDialog
         event={selectedEvent}
         isOpen={isEventDetailDialogOpen}
@@ -535,7 +527,6 @@ const EventsList = () => {
         cameFromCalendar={true}
       />
 
-      {/* Filter Overlay */}
       <FilterOverlay
         isOpen={isFilterOverlayOpen}
         onClose={() => setIsFilterOverlayOpen(false)}
