@@ -73,6 +73,10 @@ interface Event {
   image_url?: string;
   user_id?: string;
   is_deleted: boolean;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+  } | null;
 }
 
 const eventFormSchema = z.object({
@@ -138,14 +142,14 @@ const EventManagementTable = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('*, profiles(first_name, last_name)')
       .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events.');
     } else {
-      setEvents(data || []);
+      setEvents(data as Event[] || []);
     }
     setLoading(false);
   };
@@ -189,8 +193,8 @@ const EventManagementTable = () => {
     form.reset({
       id: event.id,
       eventName: event.event_name,
-      eventDate: new Date(event.event_date),
-      endDate: event.end_date ? new Date(event.end_date) : undefined,
+      eventDate: new Date(`${event.event_date}T00:00:00`),
+      endDate: event.end_date ? new Date(`${event.end_date}T00:00:00`) : undefined,
       eventTime: event.event_time || '',
       placeName: event.place_name || '',
       fullAddress: event.full_address || '',
@@ -291,10 +295,7 @@ const EventManagementTable = () => {
               <TableRow>
                 <TableHead className="w-[200px] text-foreground">Event Name</TableHead>
                 <TableHead className="text-foreground">Start Date</TableHead>
-                <TableHead className="text-foreground">End Date</TableHead>
-                <TableHead className="text-foreground">Time</TableHead>
                 <TableHead className="text-foreground">Location</TableHead>
-                <TableHead className="text-foreground">Type</TableHead>
                 <TableHead className="text-foreground">Image</TableHead>
                 <TableHead className="text-foreground">Status</TableHead>
                 <TableHead className="text-foreground">Submitted By</TableHead>
@@ -306,10 +307,7 @@ const EventManagementTable = () => {
                 <TableRow key={event.id} className={cn(event.is_deleted && "bg-muted/50 text-muted-foreground opacity-70")}>
                   <TableCell className="font-medium text-foreground">{event.event_name}</TableCell>
                   <TableCell className="text-foreground">{event.event_date ? format(new Date(event.event_date), 'PPP') : 'N/A'}</TableCell>
-                  <TableCell className="text-foreground">{event.end_date ? format(new Date(event.end_date), 'PPP') : 'N/A'}</TableCell>
-                  <TableCell className="text-foreground">{event.event_time || 'N/A'}</TableCell>
                   <TableCell className="text-foreground">{event.place_name || event.full_address || 'N/A'}</TableCell>
-                  <TableCell className="text-foreground">{event.event_type || 'N/A'}</TableCell>
                   <TableCell>
                     {event.image_url ? (
                       <img src={event.image_url} alt={`Image for ${event.event_name}`} className="w-12 h-12 object-cover rounded-md" loading="lazy" />
@@ -327,7 +325,9 @@ const EventManagementTable = () => {
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-foreground text-sm">{event.user_id || 'N/A'}</TableCell>
+                  <TableCell className="text-foreground text-sm">
+                    {event.profiles ? `${event.profiles.first_name || ''} ${event.profiles.last_name || ''}`.trim() : 'N/A'}
+                  </TableCell>
                   <TableCell className="text-right flex justify-end space-x-2">
                     {event.is_deleted ? (
                       <Button variant="outline" size="sm" title="Restore Event" onClick={() => handleRestore(event.id)}>
@@ -338,11 +338,9 @@ const EventManagementTable = () => {
                         <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
                           <ExternalLink className="h-4 w-4" />
                         </Button>
-                        <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }}>
-                          <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </Link>
+                        <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleEdit(event)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" size="sm" title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
