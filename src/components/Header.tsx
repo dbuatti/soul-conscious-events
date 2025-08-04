@@ -9,7 +9,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ThemeToggle } from './ThemeToggle'; // Import ThemeToggle
+import { ThemeToggle } from './ThemeToggle';
 
 const Header = () => {
   const location = useLocation();
@@ -35,7 +35,6 @@ const Header = () => {
 
   const navItems = [
     { to: "/", label: "Events" },
-    { to: "/calendar", label: "Calendar" },
     { to: "/submit-event", label: "Add Event" },
     { to: "/map", label: "Map", badge: "Beta" },
     { to: "/contact", label: "Contact" },
@@ -81,7 +80,6 @@ const Header = () => {
                     </Button>
                   </SheetClose>
                 )}
-                {/* Mobile Auth Button */}
                 {user ? (
                   <SheetClose asChild>
                     <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105 dark:text-destructive dark:hover:text-destructive/80">
@@ -103,7 +101,7 @@ const Header = () => {
           </Sheet>
         ) : (
           <nav className="hidden md:flex items-center w-full">
-            <div className="flex items-center space-x-4"> {/* Group main nav links */}
+            <div className="flex items-center space-x-4">
               {navItems.map((item) => (
                 <Link to={item.to} key={item.to}>
                   <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")}>
@@ -117,7 +115,7 @@ const Header = () => {
                 </Link>
               ))}
             </div>
-            <div className="flex items-center space-x-4 ml-auto"> {/* Group auth/theme, pushed right */}
+            <div className="flex items-center space-x-4 ml-auto">
               {user?.email === 'daniele.buatti@gmail.com' && (
                 <Link to="/admin/panel">
                   <Button variant="ghost" className={getButtonClass("/admin/panel")}>

@@ -3,8 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import CalendarView from "./pages/Home"; // Renamed for clarity, this is the old Home.tsx
-import Home from "./pages/EventsList"; // Renamed for clarity, this is the old Index.tsx
+import EventsList from "./pages/EventsList";
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
 import Contact from "./pages/Contact";
@@ -15,7 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
-import EventEditPage from "./pages/EventEditPage"; // Renamed import
+import EventEditPage from "./pages/EventEditPage";
 import About from "./pages/About";
 
 const queryClient = new QueryClient();
@@ -30,8 +29,7 @@ const App = () => (
         <SessionContextProvider>
           <Layout>
             <Routes>
-              <Route path="/" element={<Home />} /> {/* New Home is EventsList */}
-              <Route path="/calendar" element={<CalendarView />} /> {/* Calendar is now at /calendar */}
+              <Route path="/" element={<EventsList />} />
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
@@ -48,7 +46,7 @@ const App = () => (
                 path="/edit-event/:id"
                 element={
                   <ProtectedRoute>
-                    <EventEditPage /> {/* Updated component name */}
+                    <EventEditPage />
                   </ProtectedRoute>
                 }
               />

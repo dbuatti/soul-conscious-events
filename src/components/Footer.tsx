@@ -8,7 +8,6 @@ const Footer = () => {
   return (
     <footer className="w-full bg-gray-800 text-gray-300 py-8 px-6 md:px-8 shadow-inner dark:bg-background dark:text-muted-foreground">
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-gray-700 pb-8 mb-8 dark:border-border">
-        {/* Section 1: About */}
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-white dark:text-foreground">SoulFlow</h3>
           <p className="text-sm leading-relaxed">
@@ -17,12 +16,10 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Section 2: Quick Links */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white dark:text-foreground">Quick Links</h3>
           <nav className="flex flex-col space-y-2">
-            <Link to="/" className="hover:text-primary transition-colors text-sm">Events</Link> {/* Now points to the Events List */}
-            <Link to="/calendar" className="hover:text-primary transition-colors text-sm">Calendar</Link> {/* Calendar is now at /calendar */}
+            <Link to="/" className="hover:text-primary transition-colors text-sm">Events</Link>
             <Link to="/submit-event" className="hover:text-primary transition-colors text-sm">Add Event</Link>
             <Link to="/map" className="hover:text-primary transition-colors text-sm">Map</Link>
             <Link to="/contact" className="hover:text-primary transition-colors text-sm">Contact</Link>
@@ -31,7 +28,6 @@ const Footer = () => {
           </nav>
         </div>
 
-        {/* Section 3: Connect & Support */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white dark:text-foreground">Support Us</h3>
           <a
@@ -45,7 +41,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Bottom Bar */}
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 dark:text-muted-foreground">
         <p>&copy; {currentYear} SoulFlow. All rights reserved.</p>
         <a
