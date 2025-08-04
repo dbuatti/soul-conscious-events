@@ -4,12 +4,18 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, UserCog } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ThemeToggle } from './ThemeToggle';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const location = useLocation();
@@ -17,9 +23,10 @@ const Header = () => {
   const { user } = useSession();
 
   const getButtonClass = (path: string) => {
+    const isActive = location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
     return cn(
       "text-foreground hover:text-primary transition-all duration-300 ease-in-out transform hover:scale-105",
-      location.pathname === path && "font-bold text-primary"
+      isActive && "font-bold text-primary"
     );
   };
 
@@ -45,6 +52,8 @@ const Header = () => {
     { to: "/admin/panel", label: "Admin Panel" },
     { to: "/dev-space", label: "Dev Space" },
   ];
+
+  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dev-space');
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
@@ -128,15 +137,22 @@ const Header = () => {
             </nav>
             <div className="hidden md:flex items-center space-x-4">
               {user?.email === 'daniele.buatti@gmail.com' && (
-                <>
-                  {adminNavItems.map((item) => (
-                    <Link to={item.to} key={item.to}>
-                      <Button variant="ghost" className={getButtonClass(item.to)}>
-                        {item.label}
-                      </Button>
-                    </Link>
-                  ))}
-                </>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className={cn("text-foreground hover:text-primary transition-all", isAdminPage && "font-bold text-primary")}>
+                      Admin <UserCog className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="dark:bg-card dark:border-border">
+                    {adminNavItems.map((item) => (
+                      <DropdownMenuItem key={item.to} asChild>
+                        <Link to={item.to} className={cn("w-full", getButtonClass(item.to))}>
+                          {item.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
               {user ? (
                 <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80">

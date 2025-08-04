@@ -73,10 +73,6 @@ interface Event {
   image_url?: string;
   user_id?: string;
   is_deleted: boolean;
-  profiles: {
-    first_name: string | null;
-    last_name: string | null;
-  } | null;
 }
 
 const eventFormSchema = z.object({
@@ -142,7 +138,7 @@ const EventManagementTable = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('events')
-      .select('*, profiles(first_name, last_name)')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -298,7 +294,6 @@ const EventManagementTable = () => {
                 <TableHead className="text-foreground">Location</TableHead>
                 <TableHead className="text-foreground">Image</TableHead>
                 <TableHead className="text-foreground">Status</TableHead>
-                <TableHead className="text-foreground">Submitted By</TableHead>
                 <TableHead className="text-right text-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -324,9 +319,6 @@ const EventManagementTable = () => {
                         Deleted
                       </Badge>
                     )}
-                  </TableCell>
-                  <TableCell className="text-foreground text-sm">
-                    {event.profiles ? `${event.profiles.first_name || ''} ${event.profiles.last_name || ''}`.trim() : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right flex justify-end space-x-2">
                     {event.is_deleted ? (
