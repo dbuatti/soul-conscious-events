@@ -113,10 +113,16 @@ const EventEditPage: React.FC = () => {
         navigate('/404');
       } else if (data) {
         setCurrentEvent(data);
+        
+        // FIX: Parse date strings as local time by adding a time component.
+        // This prevents the date from shifting by a day due to timezone differences.
+        const eventDate = new Date(`${data.event_date}T00:00:00`);
+        const endDate = data.end_date ? new Date(`${data.end_date}T00:00:00`) : undefined;
+
         form.reset({
           eventName: data.event_name,
-          eventDate: new Date(data.event_date),
-          endDate: data.end_date ? new Date(data.end_date) : undefined,
+          eventDate: eventDate,
+          endDate: endDate,
           eventTime: data.event_time || '',
           placeName: data.place_name || '',
           fullAddress: data.full_address || '',
