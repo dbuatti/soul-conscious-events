@@ -1,15 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["deno.ns", "esnext"],
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "target": "esnext",
+    "module": "esnext",
+    "lib": [
+      "esnext",
+      "deno.ns"
+    ],
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["deno"]
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "https://esm.sh/react@18.2.0"
   },
-  "include": ["**/*.ts"]
+  "include": [
+    "./**/*.ts"
+  ]
 }

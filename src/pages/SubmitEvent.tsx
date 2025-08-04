@@ -622,7 +622,7 @@ const SubmitEvent = () => {
                   {previewData.description && (
                     <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
                       <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Description:</p>
-                      <p className="break-words text-foreground sm:w-3/4">{previewData.description}</p>
+                      <p className="whitespace-pre-wrap text-foreground sm:w-3/4">{previewData.description}</p>
                     </div>
                   )}
                   {previewData.ticketLink && (
@@ -642,7 +642,7 @@ const SubmitEvent = () => {
                   {previewData.specialNotes && (
                     <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
                       <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Special Notes:</p>
-                      <p className="break-words text-foreground sm:w-3/4">{previewData.specialNotes}</p>
+                      <p className="whitespace-pre-wrap text-foreground sm:w-3/4">{previewData.specialNotes}</p>
                     </div>
                   )}
                   {previewData.organizerContact && (

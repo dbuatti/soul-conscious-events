@@ -713,7 +713,7 @@ const EventEditPage: React.FC = () => {
                 {previewData.description && (
                   <div className="grid grid-cols-4 items-start gap-4">
                     <p className="text-right font-medium text-foreground">Description:</p>
-                    <p className="col-span-3 break-words text-foreground">{previewData.description}</p>
+                    <p className="col-span-3 whitespace-pre-wrap text-foreground">{previewData.description}</p>
                   </div>
                 )}
                 {previewData.ticketLink && (
@@ -733,7 +733,7 @@ const EventEditPage: React.FC = () => {
                 {previewData.specialNotes && (
                   <div className="grid grid-cols-4 items-start gap-4">
                     <p className="text-right font-medium text-foreground">Special Notes:</p>
-                    <p className="col-span-3 break-words text-foreground">{previewData.specialNotes}</p>
+                    <p className="col-span-3 whitespace-pre-wrap text-foreground">{previewData.specialNotes}</p>
                   </div>
                 )}
                 {previewData.organizerContact && (

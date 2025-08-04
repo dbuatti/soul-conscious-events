@@ -192,7 +192,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.price && (
               <p className="flex items-center text-foreground">
                 <DollarSign className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Price:</span> {event.price}
+                <span className="font-medium">Price: </span> {event.price}
                 {event.price.toLowerCase() === 'free' && (
                   <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
                 )}
@@ -209,21 +209,24 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </div>
             )}
             {event.special_notes && (
-              <p className="flex items-start text-foreground">
-                <Info className="mr-2 h-5 w-5 text-primary mt-1" />
-                <span className="font-medium">Special Notes:</span> {event.special_notes}
-              </p>
+              <div>
+                <h3 className="font-semibold text-foreground mb-2 flex items-center">
+                  <Info className="mr-2 h-5 w-5 text-primary" />
+                  Special Notes:
+                </h3>
+                <p className="text-foreground whitespace-pre-wrap pl-7">{event.special_notes}</p>
+              </div>
             )}
             {event.organizer_contact && (
               <p className="flex items-center text-foreground">
                 <User className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Organizer:</span> {event.organizer_contact}
+                <span className="font-medium">Organizer: </span> {event.organizer_contact}
               </p>
             )}
             {event.event_type && (
               <p className="flex items-center text-foreground">
                 <Tag className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Event Type:</span> {event.event_type}
+                <span className="font-medium">Event Type: </span> {event.event_type}
               </p>
             )}
           </CardContent>

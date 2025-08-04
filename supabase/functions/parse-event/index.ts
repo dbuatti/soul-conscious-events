@@ -1,5 +1,3 @@
-/// <reference lib="deno.ns" />
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
@@ -47,9 +45,12 @@ serve(async (req) => {
       You are an AI assistant specialized in extracting event details from unstructured text.
       Your task is to parse the provided event text and return a JSON object containing the extracted information.
       Crucially, your response MUST contain ONLY the JSON object, with no additional text, markdown formatting (like \`\`\`json), or conversational elements.
-      If a field is not found, omit it from the JSON.
-      Ensure dates are in 'YYYY-MM-DD' format. If a year is not explicitly mentioned for a date, assume the current year, which is ${currentYear}.
-      Ensure the 'ticketLink' includes 'https://' if present.
+
+      **Formatting Rules:**
+      - For the 'description' and 'specialNotes' fields, preserve the original paragraph structure and line breaks from the input text. Use '\\n' for newlines within the JSON string.
+      - If a field is not found, omit it from the JSON.
+      - Ensure dates are in 'YYYY-MM-DD' format. If a year is not explicitly mentioned for a date, assume the current year, which is ${currentYear}.
+      - Ensure the 'ticketLink' includes 'https://' if present.
 
       Here is the event text:
       "${text}"
@@ -61,10 +62,10 @@ serve(async (req) => {
         "eventTime": "7:00 PM",
         "placeName": "The Venue",
         "fullAddress": "123 Main St, City, State, Postcode",
-        "description": "A detailed description of the event.",
+        "description": "A detailed description of the event.\\n\\nThis is a new paragraph.",
         "ticketLink": "https://example.com/tickets",
         "price": "$50",
-        "specialNotes": "Bring your own mat.",
+        "specialNotes": "Bring your own mat.\\n- Another point.",
         "organizerContact": "John Doe",
         "eventType": "Music",
         "state": "VIC"
