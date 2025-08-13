@@ -141,8 +141,19 @@ const EventsList = () => {
 
   const filteredEventsForList = getFilteredEventsForList();
 
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
+
   const selectedDayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
-  const currentMonthEvents = events.filter(event => isSameMonth(parseISO(event.event_date), currentMonth));
+
+  const currentMonthEvents = events.filter(event => {
+    const eventStartDate = parseISO(event.event_date);
+    // Use end_date for multi-day events, otherwise use event_date
+    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+    
+    // Show event if it's in the current month AND it hasn't ended yet
+    return isSameMonth(eventStartDate, currentMonth) && eventEndDate >= now;
+  });
 
   const handleApplyFilters = (filters: { searchTerm: string; eventType: string; state: string; dateFilter: string; }) => {
     setSearchTerm(filters.searchTerm);
@@ -316,7 +327,7 @@ const EventsList = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8 px-4 bg-secondary rounded-lg">
-                    <p className="text-muted-foreground">No events scheduled for this month.</p>
+                    <p className="text-muted-foreground">No upcoming events found for this month.</p>
                   </div>
                 )}
               </div>
