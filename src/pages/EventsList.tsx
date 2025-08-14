@@ -15,7 +15,7 @@ import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import heroBackground from '@/assets/phil-hero-background.png'; // Updated import to .png
+import heroBackground from '@/assets/phil-hero-background.jpeg'; // Corrected import to .jpeg
 
 interface Event {
   id: string;
@@ -175,7 +175,6 @@ const EventsList = () => {
       case 'search': setSearchTerm(''); break;
       case 'eventType': setEventType('All'); break;
       case 'state': setStateFilter('All'); break;
-      case 'dateFilter': setDateFilter('All Upcoming'); break;
     }
   };
 
@@ -213,7 +212,7 @@ const EventsList = () => {
 
     return (
       <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden" onClick={() => handleViewDetails(event)}>
-        {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div></div>}
+        {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-black/30"></div></div>}
         <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2"><CardTitle className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">{event.event_name}</CardTitle><CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base"><Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{dateDisplay}{event.event_time && <><Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{event.event_time}</>}</CardDescription></CardHeader>
         <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
           {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
@@ -300,7 +299,7 @@ const EventsList = () => {
         <>
           {viewMode === 'list' ? (
             filteredEventsForList.length > 0 ? (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredEventsForList.map(renderEventCard)}
               </div>
             ) : (
