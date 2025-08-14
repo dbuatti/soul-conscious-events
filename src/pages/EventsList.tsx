@@ -15,7 +15,7 @@ import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import heroBackground from '@/assets/phil-hero-background.jpeg'; // Corrected import to .jpeg
+// Removed: import heroBackground from '@/assets/phil-hero-background.jpeg';
 
 interface Event {
   id: string;
@@ -239,7 +239,7 @@ const EventsList = () => {
       >
         {/* Image element for background */}
         <img 
-          src={heroBackground} 
+          src="/phil-hero-background.jpeg" // Updated src to direct public path
           alt="Hero Background" 
           className="absolute inset-0 w-full h-full object-cover" 
         />
