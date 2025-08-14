@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { useSession } from '@/components/SessionContextProvider';
+import { useSession } from '@/components/SessionContextProvider'; // Fixed: changed '=>' to 'from'
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
@@ -237,12 +237,16 @@ const EventsList = () => {
     <div className="w-full max-w-screen-lg">
       <div 
         className="relative text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 rounded-xl shadow-xl text-white overflow-hidden"
-        style={{
-          backgroundImage: `url('${heroBackground}')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
       >
+        {/* Image element for background */}
+        <img 
+          src={heroBackground} 
+          alt="Hero Background" 
+          className="absolute inset-0 w-full h-full object-cover" 
+        />
+        {/* Overlay for text readability */}
+        <div className="absolute inset-0 bg-black/30"></div>
+
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">Discover Your Next Soulful Experience</h1>
           <p className="text-lg sm:text-xl font-light mb-8 opacity-90">Connect with events that nourish your mind, body, and spirit across Australia.</p>
