@@ -234,14 +234,24 @@ const EventsList = () => {
 
   return (
     <div className="w-full max-w-screen-lg">
-      <div className="text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 bg-gradient-to-br from-primary to-blue-800 rounded-xl shadow-xl text-white">
-        <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">Discover Your Next Soulful Experience</h1>
-        <p className="text-lg sm:text-xl font-light mb-8 opacity-90">Connect with events that nourish your mind, body, and spirit across Australia.</p>
-        <Link to="/submit-event">
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-            Add Your Event
-          </Button>
-        </Link>
+      <div 
+        className="relative text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 rounded-xl shadow-xl text-white overflow-hidden"
+        style={{
+          backgroundImage: `url('/hero-background.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/70 to-blue-800/70 z-0"></div>
+        <div className="relative z-10">
+          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">Discover Your Next Soulful Experience</h1>
+          <p className="text-lg sm:text-xl font-light mb-8 opacity-90">Connect with events that nourish your mind, body, and spirit across Australia.</p>
+          <Link to="/submit-event">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              Add Your Event
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="mb-8 p-4 sm:p-6 bg-secondary border border-border rounded-lg shadow-lg text-center flex items-center justify-center">
