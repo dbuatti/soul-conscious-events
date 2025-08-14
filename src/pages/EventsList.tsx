@@ -15,7 +15,7 @@ import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import heroBackground from '@/assets/phil-hero-background.jpeg'; // Updated import to the new image
+import heroBackground from '@/assets/phil-hero-background.png'; // Updated import to .png
 
 interface Event {
   id: string;
