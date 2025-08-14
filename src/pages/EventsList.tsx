@@ -9,13 +9,13 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { useSession } from '@/components/SessionContextProvider'; // Fixed: changed '=>' to 'from'
+import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import heroBackground from '@/assets/hero-background.jpg'; // Import the image
+import heroBackground from '@/assets/phil-hero-background.jpeg'; // Updated import to the new image
 
 interface Event {
   id: string;
