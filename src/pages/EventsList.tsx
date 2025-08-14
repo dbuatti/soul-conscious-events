@@ -237,12 +237,11 @@ const EventsList = () => {
       <div 
         className="relative text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 rounded-xl shadow-xl text-white overflow-hidden"
         style={{
-          backgroundImage: `url('/hero-background.jpg')`,
+          backgroundImage: `linear-gradient(to bottom right, hsl(var(--primary)/0.7), hsl(220 80% 40%/0.7)), url('/hero-background.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/70 to-blue-800/70 z-0"></div>
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">Discover Your Next Soulful Experience</h1>
           <p className="text-lg sm:text-xl font-light mb-8 opacity-90">Connect with events that nourish your mind, body, and spirit across Australia.</p>
