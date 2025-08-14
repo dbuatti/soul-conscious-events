@@ -237,7 +237,7 @@ const EventsList = () => {
       <div 
         className="relative text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 rounded-xl shadow-xl text-white overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(to bottom right, hsl(var(--primary)/0.7), hsl(220 80% 40%/0.7)), url('/hero-background.jpg')`,
+          backgroundImage: `url('/hero-background.jpg')`, // Removed gradient for testing
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
