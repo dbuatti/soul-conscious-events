@@ -15,6 +15,7 @@ import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
+import heroBackground from '@/assets/hero-background.jpg'; // Import the image
 
 interface Event {
   id: string;
@@ -237,7 +238,7 @@ const EventsList = () => {
       <div 
         className="relative text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 rounded-xl shadow-xl text-white overflow-hidden"
         style={{
-          backgroundImage: `url('/hero-background.jpg')`, // Removed gradient for testing
+          backgroundImage: `linear-gradient(to bottom right, hsl(var(--primary)/0.7), hsl(220 80% 40%/0.7)), url('${heroBackground}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
