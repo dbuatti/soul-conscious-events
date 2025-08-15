@@ -4,77 +4,86 @@
 
 @layer base {
   :root {
-    --background: 30 100% 99%; /* Very light, almost white, slightly warm */
-    --foreground: 18 10% 15%; /* Deep brown for text */
+    --background: 270 10% 99%; /* Very light, almost white, with a hint of purple */
+    --foreground: 270 15% 15%; /* Deep dark purple for text */
 
     --card: 0 0% 100%; /* Pure white for cards */
-    --card-foreground: 18 10% 15%;
+    --card-foreground: 270 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 18 10% 15%;
+    --popover-foreground: 270 15% 15%;
 
-    --primary: 10 60% 45%; /* More vibrant B15846 */
+    --primary: 270 70% 50%; /* Vibrant Purple */
     --primary-foreground: 0 0% 98%; /* Light text on primary */
 
-    --secondary: 7 48% 72%; /* D7A097 directly for secondary */
-    --secondary-foreground: 18 10% 15%;
+    --secondary: 270 20% 95%; /* Very light, desaturated purple for secondary */
+    --secondary-foreground: 270 15% 15%;
 
-    --muted: 7 48% 95%; /* Even lighter secondary for muted elements */
-    --muted-foreground: 10 15% 40%; /* Medium gray-brown for muted text */
+    --muted: 270 15% 97%; /* Even lighter secondary for muted elements */
+    --muted-foreground: 270 10% 40%; /* Medium gray-purple for muted text */
 
-    --accent: 7 48% 65%; /* Slightly darker D7A097 for accent */
-    --accent-foreground: 18 10% 15%;
+    --accent: 270 20% 90%; /* Slightly darker secondary for accent */
+    --accent-foreground: 270 15% 15%;
 
-    --destructive: 2 50% 38%; /* 93322F - Dark Red */
+    --destructive: 2 50% 38%; /* 93322F - Dark Red (kept for destructive actions) */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 7 20% 85%; /* Light desaturated brown for borders */
-    --input: 7 20% 85%;
-    --ring: 10 60% 45%; /* Same as primary */
+    --border: 270 10% 85%; /* Light desaturated purple for borders */
+    --input: 270 10% 85%;
+    --ring: 270 70% 50%; /* Same as primary */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 7 48% 95%; /* Lighter gray-brown for sidebar */
-    --sidebar-foreground: 18 10% 15%;
+    --sidebar-background: 270 15% 95%; /* Lighter purple-grey for sidebar */
+    --sidebar-foreground: 270 15% 15%;
 
-    --sidebar-primary: 10 60% 45%;
+    --sidebar-primary: 270 70% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
 
-    --sidebar-accent: 7 48% 65%;
-    --sidebar-accent-foreground: 18 10% 15%;
+    --sidebar-accent: 270 20% 90%;
+    --sidebar-accent-foreground: 270 15% 15%;
 
-    --sidebar-border: 7 20% 85%;
-    --sidebar-ring: 10 60% 45%;
+    --sidebar-border: 270 10% 85%;
+    --sidebar-ring: 270 70% 50%;
   }
 
   .dark {
-    --background: 20 18% 5%; /* 0F0B07 - Extremely Dark Brown */
-    --foreground: 7 48% 85%; /* Slightly desaturated D7A097 for readability */
+    --background: 270 15% 5%; /* Very dark purple-black */
+    --foreground: 270 20% 90%; /* Light, desaturated purple for readability */
 
-    --card: 18 10% 6%; /* 130D0B - Very Dark Brown */
-    --card-foreground: 7 48% 85%;
+    --card: 270 15% 8%; /* Darker purple-black for cards */
+    --card-foreground: 270 20% 90%;
 
-    --popover: 18 10% 6%;
-    --popover-foreground: 7 48% 85%;
+    --popover: 270 15% 8%;
+    --popover-foreground: 270 20% 90%;
 
-    --primary: 10 60% 55%; /* Slightly lighter and more saturated primary for dark mode */
-    --primary-foreground: 20 18% 98%; /* Very light text on primary */
+    --primary: 270 70% 60%; /* Slightly lighter and more saturated purple for dark mode */
+    --primary-foreground: 0 0% 98%; /* Very light text on primary */
 
-    --secondary: 7 48% 20%; /* Darker, desaturated D7A097 for secondary in dark mode */
-    --secondary-foreground: 7 48% 85%;
+    --secondary: 270 15% 15%; /* Darker, desaturated purple for secondary in dark mode */
+    --secondary-foreground: 270 20% 90%;
 
-    --muted: 20 18% 15%;
-    --muted-foreground: 7 15% 60%;
+    --muted: 270 15% 20%;
+    --muted-foreground: 270 10% 60%;
 
-    --accent: 20 18% 25%;
-    --accent-foreground: 7 48% 85%;
+    --accent: 270 15% 25%;
+    --accent-foreground: 270 20% 90%;
 
     --destructive: 2 50% 38%; /* 93322F - Dark Red (consistent) */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 20 18% 30%;
-    --input: 20 18% 25%;
-    --ring: 10 60% 55%;
+    --border: 270 15% 30%;
+    --input: 270 15% 25%;
+    --ring: 270 70% 60%;
+
+    --sidebar-background: 270 15% 10%; /* Even darker for sidebar */
+    --sidebar-foreground: 270 20% 90%;
+    --sidebar-primary: 270 70% 60%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 270 15% 25%;
+    --sidebar-accent-foreground: 270 20% 90%;
+    --sidebar-border: 270 15% 30%;
+    --sidebar-ring: 270 70% 60%;
   }
 }
 
