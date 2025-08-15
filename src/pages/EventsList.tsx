@@ -13,7 +13,7 @@ import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
-import { useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useLocation, useNavigate } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 // Removed: import heroBackground from '@/assets/phil-hero-background.jpeg';
 
@@ -55,7 +55,7 @@ const EventsList = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
   const location = useLocation();
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const navigate = useNavigate();
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -205,6 +205,19 @@ const EventsList = () => {
     navigate(`/events/${event.id}`);
   };
 
+  const handleAddEventClick = async () => {
+    const { error } = await supabase.from('page_visit_logs').insert([
+      {
+        user_id: user?.id || null,
+        page_path: '/submit-event',
+        action_type: 'click_add_event_button',
+      },
+    ]);
+    if (error) {
+      console.error('Error logging add event button click:', error);
+    }
+  };
+
   const renderEventCard = (event: Event) => {
     const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
     const dateDisplay = event.end_date && event.event_date !== event.end_date ? `${format(parseISO(event.event_date), 'PPP')} - ${format(parseISO(event.end_date), 'PPP')}` : format(parseISO(event.event_date), 'PPP');
@@ -248,7 +261,7 @@ const EventsList = () => {
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">Discover Your Next Soulful Experience</h1>
           <p className="text-lg sm:text-xl font-light mb-8 opacity-90">Connect with events that nourish your mind, body, and spirit across Australia.</p>
-          <Link to="/submit-event">
+          <Link to="/submit-event" onClick={handleAddEventClick}>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
               Add Your Event
             </Button>
@@ -306,7 +319,7 @@ const EventsList = () => {
                 <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-lg font-semibold text-foreground mb-4">No events found matching your criteria.</p>
                 {hasActiveFilters ? <Button onClick={handleClearAllFilters} className="bg-primary hover:bg-primary/80 text-primary-foreground">Clear Filters</Button> :
-                  <Link to="/submit-event"><Button className="bg-primary hover:bg-primary/80 text-primary-foreground"><PlusCircle className="mr-2 h-4 w-4" /> Add an Event</Button></Link>}
+                  <Link to="/submit-event" onClick={handleAddEventClick}><Button className="bg-primary hover:bg-primary/80 text-primary-foreground"><PlusCircle className="mr-2 h-4 w-4" /> Add an Event</Button></Link>}
               </div>
             )
           ) : (

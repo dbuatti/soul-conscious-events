@@ -40,9 +40,22 @@ const Header = () => {
     }
   };
 
+  const handleAddEventClick = async () => {
+    const { error } = await supabase.from('page_visit_logs').insert([
+      {
+        user_id: user?.id || null,
+        page_path: '/submit-event',
+        action_type: 'click_add_event_button',
+      },
+    ]);
+    if (error) {
+      console.error('Error logging add event button click:', error);
+    }
+  };
+
   const navItems = [
     { to: "/", label: "Events" },
-    { to: "/submit-event", label: "Add Event" },
+    { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick }, // Add onClick handler
     { to: "/map", label: "Map", badge: "Beta" },
     { to: "/contact", label: "Contact" },
     { to: "/about", label: "About" },
@@ -74,7 +87,7 @@ const Header = () => {
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.to}>
                     <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
-                      <Link to={item.to}>
+                      <Link to={item.to} onClick={item.onClick}> {/* Apply onClick here */}
                         {item.label}
                         {item.badge && (
                           <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
@@ -124,7 +137,7 @@ const Header = () => {
             <nav className="hidden md:flex items-center space-x-2 absolute left-1/2 -translate-x-1/2">
               {navItems.map((item) => (
                 <Link to={item.to} key={item.to}>
-                  <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")}>
+                  <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")} onClick={item.onClick}> {/* Apply onClick here */}
                     {item.label}
                     {item.badge && (
                       <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
