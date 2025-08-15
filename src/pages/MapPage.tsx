@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -7,6 +7,7 @@ import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import MapContainer from '@/components/MapContainer'; // Import the new component
 
 interface Event {
   id: string;
@@ -26,17 +27,18 @@ interface Event {
 }
 
 const MapPage = () => {
-  const mapRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<Event[]>([]);
-  const [mapApiLoaded, setMapApiLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
-  const mapInitialized = useRef(false); // New ref to track if map has been initialized
 
-  // Effect to fetch events and handle Google Maps API readiness
+  // Callback to receive the map instance from MapContainer
+  const handleMapLoad = useCallback((map: google.maps.Map) => {
+    setMapInstance(map);
+  }, []);
+
+  // Effect to fetch events
   useEffect(() => {
-    console.log('MapPage: Component mounted. Starting event fetch.');
     const fetchEvents = async () => {
       setLoading(true);
       const now = new Date();
@@ -54,60 +56,17 @@ const MapPage = () => {
         console.error('MapPage: Error fetching events for map:', error);
         toast.error('Failed to load events.');
       } else {
-        console.log('MapPage: Events fetched successfully:', data);
         setEvents(data || []);
       }
       setLoading(false);
     };
 
     fetchEvents();
-
-    const handleGoogleMapsApiReady = () => {
-      console.log('MapPage: Received google-maps-api-ready event.');
-      setMapApiLoaded(true);
-    };
-
-    if (window.google && window.google.maps) {
-      console.log('MapPage: Google Maps API already available on mount.');
-      setMapApiLoaded(true);
-    } else {
-      console.log('MapPage: Google Maps API not yet available, adding event listener.');
-      window.addEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
-    }
-
-    return () => {
-      window.removeEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
-    };
   }, []);
-
-  // Effect to initialize the map once
-  useEffect(() => {
-    console.log('MapPage: useEffect for map initialization triggered.');
-    console.log('MapPage: mapApiLoaded:', mapApiLoaded);
-    console.log('MapPage: mapRef.current:', !!mapRef.current);
-    console.log('MapPage: window.google available?', !!(window.google && window.google.maps));
-    console.log('MapPage: mapInitialized.current:', mapInitialized.current);
-
-
-    if (mapRef.current && mapApiLoaded && window.google && window.google.maps && !mapInitialized.current) {
-      console.log('MapPage: Google Maps API is available. Initializing map.');
-      const map = new window.google.maps.Map(mapRef.current, {
-        center: { lat: -37.8136, lng: 144.9631 }, // Centered around Melbourne, Australia
-        zoom: 10,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-      });
-      setMapInstance(map);
-      mapInitialized.current = true; // Mark map as initialized
-    }
-  }, [mapApiLoaded, mapRef]); // Removed mapInstance from dependencies
 
   // Effect to add/update markers when events or mapInstance change
   useEffect(() => {
     if (mapInstance && events.length > 0) {
-      console.log('MapPage: Adding markers to map.');
-
       // Clear existing markers
       markers.forEach(marker => marker.setMap(null));
       setMarkers([]); // Reset markers array
@@ -118,9 +77,7 @@ const MapPage = () => {
 
       events.forEach((event) => {
         if (event.full_address) {
-          console.log(`MapPage: Attempting to geocode address: "${event.full_address}" for event "${event.event_name}"`);
           geocoder.geocode({ address: event.full_address }, (results, status) => {
-            console.log(`MapPage: Geocoding result for "${event.full_address}" - Status: ${status}, Results:`, results);
             if (status === 'OK' && results && results[0]) {
               const marker = new window.google.maps.Marker({
                 map: mapInstance,
@@ -177,8 +134,15 @@ const MapPage = () => {
       <p className="text-xl text-muted-foreground mb-6 text-center">
         Explore soulful events near you on the map.
       </p>
-      <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-border relative">
-        {(loading || !mapApiLoaded || !mapInstance) && ( // Added !mapInstance to loading condition
+      <div className="w-full h-[600px] rounded-lg shadow-md border border-border relative">
+        {/* Render MapContainer only if mapApiLoaded is true, otherwise show skeleton */}
+        {mapInstance ? (
+          <MapContainer
+            onMapLoad={handleMapLoad}
+            center={{ lat: -37.8136, lng: 144.9631 }}
+            zoom={10}
+          />
+        ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary z-10 rounded-lg">
             <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
             <p className="text-xl font-semibold text-foreground mb-2">Loading map and events...</p>
@@ -186,7 +150,6 @@ const MapPage = () => {
             <Skeleton className="w-3/4 h-48 mt-8 rounded-lg" />
           </div>
         )}
-        {/* The map will be initialized here by Google Maps API */}
       </div>
       <p className="text-center text-sm text-muted-foreground mt-4">
         <span className="font-semibold">Note:</span> This map functionality, including address lookups, relies on the Google Maps API.
