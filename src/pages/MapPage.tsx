@@ -103,7 +103,7 @@ const MapPage = () => {
         setMapInstance(null);
       };
     }
-  }, [mapApiLoaded, mapRef, mapInstance]); // Only run when API loads or mapRef changes, and only once for mapInstance
+  }, [mapApiLoaded, mapRef]); // Removed mapInstance from dependencies
 
   // Effect to add/update markers when events or mapInstance change
   useEffect(() => {
@@ -171,7 +171,7 @@ const MapPage = () => {
         newMarkers.forEach(marker => marker.setMap(null));
       };
     }
-  }, [events, mapInstance]); // Re-run when events or mapInstance change
+  }, [events, mapInstance]);
 
   return (
     <div className="w-full max-w-screen-lg">
