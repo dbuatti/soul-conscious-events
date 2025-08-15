@@ -24,6 +24,7 @@ const Footer = () => {
             <Link to="/map" className="hover:text-primary transition-colors text-sm">Map</Link>
             <Link to="/contact" className="hover:text-primary transition-colors text-sm">Contact</Link>
             <Link to="/about" className="hover:text-primary transition-colors text-sm">About</Link>
+            <Link to="/community-guidelines" className="hover:text-primary transition-colors text-sm">Community Guidelines</Link> {/* New link */}
             <Link to="/admin/panel" className="hover:text-primary transition-colors text-sm">Admin Panel</Link>
           </nav>
         </div>

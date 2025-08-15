@@ -96,6 +96,13 @@ const About = () => {
               page to share your thoughts.
             </p>
             <p className="mt-4 text-center font-medium">
+              Learn more about how we keep SoulFlow a safe and uplifting space in our{' '}
+              <Link to="/community-guidelines" className="text-primary hover:underline font-medium">
+                Community Guidelines
+              </Link>
+              .
+            </p>
+            <p className="mt-4 text-center font-medium">
               Thank you for being a part of the SoulFlow journey!
             </p>
           </CardContent>

@@ -15,9 +15,10 @@ import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import EventEditPage from "./pages/EventEditPage";
-import EventDetailPage from "./pages/EventDetailPage"; // Import the new EventDetailPage
+import EventDetailPage from "./pages/EventDetailPage";
 import About from "./pages/About";
 import DevSpace from "./pages/DevSpace";
+import CommunityGuidelines from "./pages/CommunityGuidelines"; // Import the new CommunityGuidelines page
 
 const queryClient = new QueryClient();
 
@@ -32,10 +33,11 @@ const App = () => (
           <Layout>
             <Routes>
               <Route path="/" element={<EventsList />} />
-              <Route path="/events/:id" element={<EventDetailPage />} /> {/* New route for event details */}
+              <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
+              <Route path="/community-guidelines" element={<CommunityGuidelines />} /> {/* New route */}
               <Route path="/login" element={<Login />} />
               <Route
                 path="/admin/panel"

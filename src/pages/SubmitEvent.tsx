@@ -15,13 +15,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription, // Import FormDescription
 } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import {
   Dialog,
   DialogContent,
@@ -54,7 +55,7 @@ interface Event {
   event_type?: string;
   state?: string;
   image_url?: string;
-  discount_code?: string; // Added discount_code
+  discount_code?: string;
 }
 
 const eventFormSchema = z.object({
@@ -72,7 +73,7 @@ const eventFormSchema = z.object({
   eventType: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  discountCode: z.string().optional().or(z.literal('')), // Added discountCode
+  discountCode: z.string().optional().or(z.literal('')),
 });
 
 const SubmitEvent = () => {
@@ -101,7 +102,7 @@ const SubmitEvent = () => {
       organizerContact: '',
       eventType: '',
       imageUrl: '',
-      discountCode: '', // Initialize new field
+      discountCode: '',
     },
   });
 
@@ -156,7 +157,7 @@ const SubmitEvent = () => {
             setSelectedImage(null);
             form.setValue('imageFile', undefined);
           }
-          if (parsed_data.discountCode) form.setValue('discountCode', parsed_data.discountCode); // Set discountCode
+          if (parsed_data.discountCode) form.setValue('discountCode', parsed_data.discountCode);
           toast.success('Event details parsed successfully!');
         } else {
           toast.info('No event details could be extracted from the text.');
@@ -246,7 +247,7 @@ const SubmitEvent = () => {
       state: 'approved',
       user_id: user?.id || null,
       image_url: finalImageUrl,
-      discount_code: values.discountCode || null, // Include discount_code
+      discount_code: values.discountCode || null,
     }]);
 
     if (error) {
@@ -567,6 +568,14 @@ const SubmitEvent = () => {
             )}
             <FormMessage />
           </FormItem>
+
+          <FormDescription className="text-center text-muted-foreground text-sm">
+            By submitting an event, you agree to our{' '}
+            <Link to="/community-guidelines" className="text-primary hover:underline font-medium">
+              Community Guidelines
+            </Link>
+            .
+          </FormDescription>
 
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="outline" onClick={handleClearForm} className="transition-all">
