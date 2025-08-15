@@ -76,8 +76,7 @@ const MapPage = () => {
     console.log('MapPage: useEffect for map initialization triggered.');
     console.log('MapPage: mapApiLoaded:', mapApiLoaded);
     console.log('MapPage: mapRef.current:', !!mapRef.current);
-    console.log('MapPage: window.google available?', !!window.google);
-    console.log('MapPage: window.google.maps available?', !!(window.google && window.google.maps));
+    console.log('MapPage: window.google available?', !!(window.google && window.google.maps));
 
     if (mapRef.current && mapApiLoaded && window.google && window.google.maps) {
       console.log('MapPage: Google Maps API is available. Initializing map.');
@@ -148,16 +147,17 @@ const MapPage = () => {
       <p className="text-xl text-muted-foreground mb-6 text-center">
         Explore soulful events near you on the map.
       </p>
-      {loading || !mapApiLoaded ? (
-        <div className="w-full h-[600px] rounded-lg shadow-md border border-border flex flex-col items-center justify-center bg-secondary">
-          <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-          <p className="text-xl font-semibold text-foreground mb-2">Loading map and events...</p>
-          <p className="text-muted-foreground text-center">This might take a moment as we fetch event locations.</p>
-          <Skeleton className="w-3/4 h-48 mt-8 rounded-lg" /> {/* Skeleton for map area */}
-        </div>
-      ) : (
-        <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-border" aria-label="Google Map showing event locations" />
-      )}
+      <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-border relative">
+        {(loading || !mapApiLoaded) && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary z-10 rounded-lg">
+            <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+            <p className="text-xl font-semibold text-foreground mb-2">Loading map and events...</p>
+            <p className="text-muted-foreground text-center">This might take a moment as we fetch event locations.</p>
+            <Skeleton className="w-3/4 h-48 mt-8 rounded-lg" />
+          </div>
+        )}
+        {/* The map will be initialized here by Google Maps API */}
+      </div>
       <p className="text-center text-sm text-muted-foreground mt-4">
         <span className="font-semibold">Note:</span> This map functionality, including address lookups, relies on the Google Maps API.
         It is currently operating on free Google API credits, which means its availability and performance may vary
