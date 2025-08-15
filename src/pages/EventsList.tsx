@@ -13,8 +13,8 @@ import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
-import { useLocation } from 'react-router-dom';
-import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
+import { useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
+
 // Removed: import heroBackground from '@/assets/phil-hero-background.jpeg';
 
 interface Event {
@@ -55,6 +55,7 @@ const EventsList = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
   const location = useLocation();
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -82,11 +83,11 @@ const EventsList = () => {
     fetchEvents();
   }, []);
 
+  const now = new Date(); // Define 'now' at a higher scope
+  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
+
   const getFilteredEventsForList = () => {
     let filtered = events;
-
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
 
     switch (dateFilter) {
       case 'Today':
