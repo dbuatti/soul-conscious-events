@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, CalendarDays, MapPin, PlusCircle, Edit, MessageSquare } from 'lucide-react';
+import { Sparkles, CalendarDays, MapPin, PlusCircle, Edit, MessageSquare, Heart } from 'lucide-react'; // Added Heart icon
+import { Button } from '@/components/ui/button'; // Import Button
 
 const About = () => {
   return (
@@ -50,6 +51,29 @@ const About = () => {
             <p className="flex items-start">
               <span className="font-medium mr-2 min-w-[100px]">Manage Events:</span> Create an account to gain the ability to edit or delete the events you've submitted, giving you full control over your listings.
             </p>
+          </CardContent>
+        </Card>
+
+        {/* New subtle cross-collaboration section */}
+        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+              <Heart className="mr-3 h-6 w-6 text-primary" /> SoulFlow x HeartBeats
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-foreground leading-relaxed flex flex-col items-center text-center">
+            {/* Placeholder for logo - if you provide a logo, we can replace this div with an <img> tag */}
+            <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4 text-muted-foreground text-sm border border-border">
+              HeartBeats Logo
+            </div>
+            <p className="mb-4">
+              We're thrilled to collaborate with HeartBeats, bringing you heartfelt open mic events that foster music, expression, and community connection.
+            </p>
+            <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+              <a href="https://www.instagram.com/heartbeatslive" target="_blank" rel="noopener noreferrer">
+                Learn More about HeartBeats
+              </a>
+            </Button>
           </CardContent>
         </Card>
 
