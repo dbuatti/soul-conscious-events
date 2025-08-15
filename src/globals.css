@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    --background: 7 48% 98%; /* Very light, almost white with a hint of the primary hue */
-    --foreground: 18 10% 15%; /* Dark brown for text */
+    --background: 30 100% 99%; /* Very light, almost white, slightly warm */
+    --foreground: 18 10% 15%; /* Deep brown for text */
 
     --card: 0 0% 100%; /* Pure white for cards */
     --card-foreground: 18 10% 15%;
@@ -13,16 +13,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 18 10% 15%;
 
-    --primary: 10 45% 48%; /* B15846 - Medium Reddish Brown */
+    --primary: 10 60% 45%; /* More vibrant B15846 */
     --primary-foreground: 0 0% 98%; /* Light text on primary */
 
-    --secondary: 7 48% 90%; /* Lighter, desaturated version of D7A097 */
+    --secondary: 7 48% 72%; /* D7A097 directly for secondary */
     --secondary-foreground: 18 10% 15%;
 
     --muted: 7 48% 95%; /* Even lighter secondary for muted elements */
     --muted-foreground: 10 15% 40%; /* Medium gray-brown for muted text */
 
-    --accent: 7 48% 85%; /* Slightly darker secondary for hover */
+    --accent: 7 48% 65%; /* Slightly darker D7A097 for accent */
     --accent-foreground: 18 10% 15%;
 
     --destructive: 2 50% 38%; /* 93322F - Dark Red */
@@ -30,60 +30,51 @@
 
     --border: 7 20% 85%; /* Light desaturated brown for borders */
     --input: 7 20% 85%;
-    --ring: 10 45% 48%; /* Same as primary */
+    --ring: 10 60% 45%; /* Same as primary */
 
     --radius: 0.5rem;
 
     --sidebar-background: 7 48% 95%; /* Lighter gray-brown for sidebar */
     --sidebar-foreground: 18 10% 15%;
 
-    --sidebar-primary: 10 45% 48%;
+    --sidebar-primary: 10 60% 45%;
     --sidebar-primary-foreground: 0 0% 98%;
 
-    --sidebar-accent: 7 48% 85%;
+    --sidebar-accent: 7 48% 65%;
     --sidebar-accent-foreground: 18 10% 15%;
 
     --sidebar-border: 7 20% 85%;
-    --sidebar-ring: 10 45% 48%;
+    --sidebar-ring: 10 60% 45%;
   }
 
   .dark {
     --background: 20 18% 5%; /* 0F0B07 - Extremely Dark Brown */
-    --foreground: 7 48% 90%; /* Light pinkish-brown for text */
+    --foreground: 7 48% 85%; /* Slightly desaturated D7A097 for readability */
 
     --card: 18 10% 6%; /* 130D0B - Very Dark Brown */
-    --card-foreground: 7 48% 90%;
+    --card-foreground: 7 48% 85%;
 
     --popover: 18 10% 6%;
-    --popover-foreground: 7 48% 90%;
+    --popover-foreground: 7 48% 85%;
 
-    --primary: 10 45% 55%; /* Slightly lighter B15846 for dark mode primary */
+    --primary: 10 60% 55%; /* Slightly lighter and more saturated primary for dark mode */
     --primary-foreground: 20 18% 98%; /* Very light text on primary */
 
-    --secondary: 20 18% 10%; /* Slightly lighter dark background */
-    --secondary-foreground: 7 48% 90%;
+    --secondary: 7 48% 20%; /* Darker, desaturated D7A097 for secondary in dark mode */
+    --secondary-foreground: 7 48% 85%;
 
     --muted: 20 18% 15%;
     --muted-foreground: 7 15% 60%;
 
-    --accent: 20 18% 20%;
-    --accent-foreground: 7 48% 90%;
+    --accent: 20 18% 25%;
+    --accent-foreground: 7 48% 85%;
 
     --destructive: 2 50% 38%; /* 93322F - Dark Red (consistent) */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 20 18% 25%;
-    --input: 20 18% 20%;
-    --ring: 10 45% 55%;
-
-    --sidebar-background: 20 18% 8%; /* Even darker for sidebar */
-    --sidebar-foreground: 7 48% 90%;
-    --sidebar-primary: 10 45% 55%;
-    --sidebar-primary-foreground: 20 18% 98%;
-    --sidebar-accent: 20 18% 20%;
-    --sidebar-accent-foreground: 7 48% 90%;
-    --sidebar-border: 20 18% 25%;
-    --sidebar-ring: 10 45% 55%;
+    --border: 20 18% 30%;
+    --input: 20 18% 25%;
+    --ring: 10 60% 55%;
   }
 }
 
