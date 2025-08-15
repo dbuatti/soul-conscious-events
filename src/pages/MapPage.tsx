@@ -32,6 +32,7 @@ const MapPage = () => {
   const [mapApiLoaded, setMapApiLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const mapInitialized = useRef(false); // New ref to track if map has been initialized
 
   // Effect to fetch events and handle Google Maps API readiness
   useEffect(() => {
@@ -85,8 +86,10 @@ const MapPage = () => {
     console.log('MapPage: mapApiLoaded:', mapApiLoaded);
     console.log('MapPage: mapRef.current:', !!mapRef.current);
     console.log('MapPage: window.google available?', !!(window.google && window.google.maps));
+    console.log('MapPage: mapInitialized.current:', mapInitialized.current);
 
-    if (mapRef.current && mapApiLoaded && window.google && window.google.maps && !mapInstance) {
+
+    if (mapRef.current && mapApiLoaded && window.google && window.google.maps && !mapInitialized.current) {
       console.log('MapPage: Google Maps API is available. Initializing map.');
       const map = new window.google.maps.Map(mapRef.current, {
         center: { lat: -37.8136, lng: 144.9631 }, // Centered around Melbourne, Australia
@@ -96,12 +99,9 @@ const MapPage = () => {
         fullscreenControl: false,
       });
       setMapInstance(map);
-
-      // Removed: return () => { setMapInstance(null); };
-      // The map instance should persist as long as the component is mounted.
-      // React will handle cleanup of the DOM element when the component unmounts.
+      mapInitialized.current = true; // Mark map as initialized
     }
-  }, [mapApiLoaded, mapRef, mapInstance]); // mapInstance is still a dependency to prevent re-running if it's already set
+  }, [mapApiLoaded, mapRef]); // Dependencies remain the same
 
   // Effect to add/update markers when events or mapInstance change
   useEffect(() => {
@@ -178,7 +178,7 @@ const MapPage = () => {
         Explore soulful events near you on the map.
       </p>
       <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md border border-border relative">
-        {(loading || !mapApiLoaded) && (
+        {(loading || !mapApiLoaded || !mapInstance) && ( // Added !mapInstance to loading condition
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary z-10 rounded-lg">
             <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
             <p className="text-xl font-semibold text-foreground mb-2">Loading map and events...</p>
