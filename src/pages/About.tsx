@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, CalendarDays, MapPin, PlusCircle, Edit, MessageSquare, Heart } from 'lucide-react'; // Added Heart icon
-import { Button } from '@/components/ui/button'; // Import Button
+import { Sparkles, CalendarDays, MapPin, PlusCircle, Edit, MessageSquare, Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const About = () => {
   return (
@@ -62,10 +62,11 @@ const About = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-foreground leading-relaxed flex flex-col items-center text-center">
-            {/* Placeholder for logo - if you provide a logo, we can replace this div with an <img> tag */}
-            <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4 text-muted-foreground text-sm border border-border">
-              HeartBeats Logo
-            </div>
+            <img
+              src="/heartbeats-logo.png"
+              alt="HeartBeats Logo"
+              className="h-24 w-auto mb-4 object-contain"
+            />
             <p className="mb-4">
               We're thrilled to collaborate with HeartBeats, bringing you heartfelt open mic events that foster music, expression, and community connection.
             </p>
