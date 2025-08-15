@@ -29,7 +29,7 @@ const MapPage = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<Event[]>([]);
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapApiLoaded, setMapApiLoaded] = useState(false); // New state to track API loading
 
   useEffect(() => {
     console.log('MapPage: Component mounted. Starting event fetch.');
@@ -57,16 +57,30 @@ const MapPage = () => {
     };
 
     fetchEvents();
+
+    // Add event listener for Google Maps API readiness
+    const handleGoogleMapsApiReady = () => {
+      console.log('MapPage: Received google-maps-api-ready event.');
+      setMapApiLoaded(true);
+    };
+
+    window.addEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
+
+    // Cleanup the event listener
+    return () => {
+      window.removeEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
+    };
   }, []);
 
   useEffect(() => {
     console.log('MapPage: useEffect for map initialization triggered.');
+    console.log('MapPage: mapApiLoaded:', mapApiLoaded);
+    console.log('MapPage: mapRef.current:', !!mapRef.current);
     console.log('MapPage: window.google available?', !!window.google);
     console.log('MapPage: window.google.maps available?', !!(window.google && window.google.maps));
 
-    if (mapRef.current && !mapLoaded && window.google && window.google.maps) {
+    if (mapRef.current && mapApiLoaded && window.google && window.google.maps) {
       console.log('MapPage: Google Maps API is available. Initializing map.');
-      setMapLoaded(true);
       const map = new window.google.maps.Map(mapRef.current, {
         center: { lat: -37.8136, lng: 144.9631 }, // Centered around Melbourne, Australia
         zoom: 10,
@@ -123,10 +137,10 @@ const MapPage = () => {
           });
         }
       });
-    } else if (mapRef.current && !mapLoaded && (!window.google || !window.google.maps)) {
-      console.warn('MapPage: Google Maps API not yet loaded or available. Waiting for script.');
+    } else if (mapRef.current && !mapApiLoaded) {
+      console.warn('MapPage: Google Maps API not yet loaded. Waiting for callback.');
     }
-  }, [events, mapLoaded]); // Re-run when events or mapLoaded state changes
+  }, [events, mapApiLoaded]); // Depend on mapApiLoaded
 
   return (
     <div className="w-full max-w-screen-lg">
@@ -134,7 +148,7 @@ const MapPage = () => {
       <p className="text-xl text-muted-foreground mb-6 text-center">
         Explore soulful events near you on the map.
       </p>
-      {loading ? (
+      {loading || !mapApiLoaded ? (
         <div className="w-full h-[600px] rounded-lg shadow-md border border-border flex flex-col items-center justify-center bg-secondary">
           <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
           <p className="text-xl font-semibold text-foreground mb-2">Loading map and events...</p>

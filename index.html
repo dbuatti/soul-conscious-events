@@ -11,12 +11,21 @@
       console.log('index.html: VITE_GOOGLE_MAPS_API_KEY status:', googleMapsApiKey ? 'Loaded' : 'Not Found');
       if (googleMapsApiKey) {
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places`;
+        // Use the 'callback' parameter to ensure the map is loaded before use
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places&callback=initMap`;
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);
       } else {
         console.error("Google Maps API Key is not defined. Please ensure VITE_GOOGLE_MAPS_API_KEY is set in your environment variables.");
+      }
+    </script>
+    <script>
+      // Define the global callback function for Google Maps API
+      function initMap() {
+        console.log('Google Maps API is fully loaded and ready!');
+        // Dispatch a custom event to notify React components
+        window.dispatchEvent(new Event('google-maps-api-ready'));
       }
     </script>
   </head>
