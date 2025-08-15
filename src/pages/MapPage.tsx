@@ -135,14 +135,14 @@ const MapPage = () => {
         Explore soulful events near you on the map.
       </p>
       <div className="w-full h-[600px] rounded-lg shadow-md border border-border relative">
-        {/* Render MapContainer only if mapApiLoaded is true, otherwise show skeleton */}
-        {mapInstance ? (
-          <MapContainer
-            onMapLoad={handleMapLoad}
-            center={{ lat: -37.8136, lng: 144.9631 }}
-            zoom={10}
-          />
-        ) : (
+        {/* Always render MapContainer, and let it handle its own initialization */}
+        <MapContainer
+          onMapLoad={handleMapLoad}
+          center={{ lat: -37.8136, lng: 144.9631 }}
+          zoom={10}
+        />
+        {/* Show loading overlay if mapInstance is not yet available or events are loading */}
+        {(loading || !mapInstance) && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary z-10 rounded-lg">
             <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
             <p className="text-xl font-semibold text-foreground mb-2">Loading map and events...</p>
