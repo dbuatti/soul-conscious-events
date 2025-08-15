@@ -15,6 +15,7 @@ import { SessionContextProvider } from "./components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import EventEditPage from "./pages/EventEditPage";
+import EventDetailPage from "./pages/EventDetailPage"; // Import the new EventDetailPage
 import About from "./pages/About";
 import DevSpace from "./pages/DevSpace";
 
@@ -31,6 +32,7 @@ const App = () => (
           <Layout>
             <Routes>
               <Route path="/" element={<EventsList />} />
+              <Route path="/events/:id" element={<EventDetailPage />} /> {/* New route for event details */}
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />

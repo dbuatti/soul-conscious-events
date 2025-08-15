@@ -98,6 +98,23 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     }
   };
 
+  const handleTicketLinkClick = async () => {
+    if (!event?.ticket_link) return;
+
+    // Log the ticket link click
+    const { error: logError } = await supabase.from('event_analytics_logs').insert([
+      {
+        event_id: event.id,
+        user_id: user?.id || null,
+        log_type: 'ticket_click',
+      },
+    ]);
+    if (logError) {
+      console.error('Error logging ticket link click:', logError);
+    }
+    window.open(event.ticket_link, '_blank');
+  };
+
   if (!isOpen) {
     return null;
   }
@@ -225,10 +242,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.ticket_link && (
               <div className="flex items-center">
                 <LinkIcon className="mr-2 h-5 w-5 text-primary" />
-                <Button asChild variant="link" className="p-0 h-auto text-primary text-base transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
-                    Ticket/Booking Link
-                  </a>
+                <Button variant="link" className="p-0 h-auto text-primary text-base transition-all duration-300 ease-in-out transform hover:scale-105" onClick={handleTicketLinkClick}>
+                  Ticket/Booking Link
                 </Button>
               </div>
             )}

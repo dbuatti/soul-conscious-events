@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import EventManagementTable from '@/components/EventManagementTable'; // Will create this next
+import EventManagementTable from '@/components/EventManagementTable';
+import AnalyticsDashboard from '@/components/AnalyticsDashboard'; // Import the new AnalyticsDashboard
 
 interface ContactSubmission {
   id: string;
@@ -48,9 +49,10 @@ const AdminPanel = () => {
       </p>
 
       <Tabs defaultValue="events" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
+        <TabsList className="grid w-full grid-cols-3 dark:bg-secondary"> {/* Changed to 3 columns */}
           <TabsTrigger value="events">Manage Events</TabsTrigger>
           <TabsTrigger value="submissions">Contact Submissions</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger> {/* New tab for Analytics */}
         </TabsList>
         <TabsContent value="events" className="mt-6">
           <EventManagementTable />
@@ -106,6 +108,9 @@ const AdminPanel = () => {
               ))}
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="analytics" className="mt-6"> {/* Content for Analytics tab */}
+          <AnalyticsDashboard />
         </TabsContent>
       </Tabs>
     </div>

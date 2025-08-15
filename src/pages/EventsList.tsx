@@ -86,11 +86,11 @@ const EventsList = () => {
     let filtered = events;
 
     const now = new Date();
-    const todayFormatted = format(now, 'yyyy-MM-dd');
+    now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
 
     switch (dateFilter) {
       case 'Today':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === todayFormatted);
+        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd'));
         break;
       case 'This Week':
         const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -109,10 +109,10 @@ const EventsList = () => {
         });
         break;
       case 'Past Events':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') < todayFormatted);
+        filtered = filtered.filter(event => parseISO(event.event_date) < now);
         break;
       case 'All Upcoming':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') >= todayFormatted);
+        filtered = filtered.filter(event => parseISO(event.event_date) >= now);
         break;
       case 'All Events':
       default:
@@ -141,9 +141,6 @@ const EventsList = () => {
   };
 
   const filteredEventsForList = getFilteredEventsForList();
-
-  const now = new Date();
-  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
 
   const selectedDayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
 
@@ -202,8 +199,8 @@ const EventsList = () => {
   };
 
   const handleViewDetails = (event: Event) => {
-    setSelectedEvent(event);
-    setIsEventDetailDialogOpen(true);
+    // Navigate to the dedicated event detail page
+    navigate(`/events/${event.id}`);
   };
 
   const renderEventCard = (event: Event) => {
@@ -314,7 +311,7 @@ const EventsList = () => {
             <div>
               <AdvancedEventCalendar
                 events={events}
-                onEventSelect={handleViewDetails}
+                onEventSelect={handleViewDetails} // This will now navigate to the detail page
                 selectedDay={selectedDay}
                 onDayClick={setSelectedDay}
                 currentMonth={currentMonth}
