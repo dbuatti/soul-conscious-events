@@ -47,7 +47,7 @@ const MapPage = () => {
         .order('event_date', { ascending: true });
 
       if (error) {
-        console.error('MapPage: Error fetching events for map:', error);
+        console.error('MapPage: Error fetching events:', error);
         toast.error('Failed to load events.');
       } else {
         console.log('MapPage: Events fetched successfully:', data);
@@ -58,19 +58,27 @@ const MapPage = () => {
 
     fetchEvents();
 
-    // Add event listener for Google Maps API readiness
+    // Define the handler for the custom event
     const handleGoogleMapsApiReady = () => {
       console.log('MapPage: Received google-maps-api-ready event.');
       setMapApiLoaded(true);
     };
 
-    window.addEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
+    // Check if API is already loaded (e.g., on fast re-renders or initial load)
+    if (window.google && window.google.maps) {
+      console.log('MapPage: Google Maps API already available on mount.');
+      setMapApiLoaded(true);
+    } else {
+      // If not, add event listener to wait for it
+      console.log('MapPage: Google Maps API not yet available, adding event listener.');
+      window.addEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
+    }
 
     // Cleanup the event listener
     return () => {
       window.removeEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
     };
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   useEffect(() => {
     console.log('MapPage: useEffect for map initialization triggered.');
