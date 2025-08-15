@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO } from 'date-fns'; // Import parseISO
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2, Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -47,6 +47,7 @@ interface Event {
   state?: string;
   image_url?: string;
   user_id?: string;
+  discount_code?: string; // Added discount_code
 }
 
 interface EventDetailDialogProps {
@@ -71,6 +72,29 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       toast.success('Event deleted successfully!');
       onClose(); // Close the dialog after deletion
       navigate('/'); // Redirect to home page after deletion
+    }
+  };
+
+  const handleCopyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success('Discount code copied to clipboard!');
+
+      // Log the copy action
+      const { error: logError } = await supabase.from('discount_code_usage_logs').insert([
+        {
+          event_id: event?.id,
+          user_id: user?.id || null, // Log user ID if available
+          copied_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (logError) {
+        console.error('Error logging discount code copy:', logError);
+      }
+    } catch (err) {
+      console.error('Failed to copy discount code:', err);
+      toast.error('Failed to copy code. Please try again.');
     }
   };
 
@@ -208,6 +232,21 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 </Button>
               </div>
             )}
+            {event.discount_code && (
+              <div className="flex items-center text-foreground">
+                <Badge variant="secondary" className="bg-primary/10 text-primary text-base py-1 px-2 mr-2">
+                  Discount Code: {event.discount_code}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopyCode(event.discount_code!)}
+                  className="transition-all duration-300 ease-in-out transform hover:scale-105"
+                >
+                  <Copy className="mr-2 h-4 w-4" /> Copy Code
+                </Button>
+              </div>
+            )}
             {event.special_notes && (
               <div>
                 <h3 className="font-semibold text-foreground mb-2 flex items-center">
@@ -238,7 +277,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
           </Button>
           {event.full_address && (
             <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
-              <Button className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
+              <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                 <Globe className="mr-2 h-4 w-4" /> View on Map
               </Button>
             </a>
@@ -248,7 +287,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             navigator.clipboard.writeText(eventUrl)
               .then(() => toast.success('Event link copied to clipboard!'))
               .catch(() => toast.error('Failed to copy link. Please try again.'));
-          }} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
+          }} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
             <Share2 className="mr-2 h-4 w-4" /> Share Event
           </Button>
           {isCreatorOrAdmin && (

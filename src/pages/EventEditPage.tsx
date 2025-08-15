@@ -42,6 +42,7 @@ interface Event {
   state?: string;
   image_url?: string;
   user_id?: string;
+  discount_code?: string; // Added discount_code
 }
 
 const eventFormSchema = z.object({
@@ -59,6 +60,7 @@ const eventFormSchema = z.object({
   eventType: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
+  discountCode: z.string().optional().or(z.literal('')), // Added discountCode
 });
 
 const EventEditPage: React.FC = () => {
@@ -89,6 +91,7 @@ const EventEditPage: React.FC = () => {
       organizerContact: '',
       eventType: '',
       imageUrl: '',
+      discountCode: '', // Initialize new field
     },
   });
 
@@ -136,6 +139,7 @@ const EventEditPage: React.FC = () => {
           organizerContact: data.organizer_contact || '',
           eventType: data.event_type || '',
           imageUrl: data.image_url || '',
+          discountCode: data.discount_code || '', // Set discountCode from fetched data
         });
         setImagePreviewUrl(data.image_url || null);
         if (data.image_url) {
@@ -288,6 +292,7 @@ const EventEditPage: React.FC = () => {
       organizer_contact: values.organizerContact || null,
       event_type: values.eventType || null,
       image_url: finalImageUrl,
+      discount_code: values.discountCode || null, // Include discount_code
     }).eq('id', id);
 
     if (error) {
@@ -570,6 +575,20 @@ const EventEditPage: React.FC = () => {
             )}
           />
 
+          <FormField
+            control={form.control}
+            name="discountCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="discountCode">Discount Code (Optional)</FormLabel>
+                <FormControl>
+                  <Input id="discountCode" placeholder="e.g., SOULFLOW10" {...field} className="focus-visible:ring-primary" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormItem>
             <FormLabel>Event Image (Optional)</FormLabel>
             <Tabs
@@ -746,6 +765,12 @@ const EventEditPage: React.FC = () => {
                   <div className="grid grid-cols-4 items-center gap-4">
                     <p className="text-right font-medium text-foreground">Event Type:</p>
                     <p className="col-span-3 text-foreground">{previewData.eventType}</p>
+                  </div>
+                )}
+                {previewData.discountCode && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p className="text-right font-medium text-foreground">Discount Code:</p>
+                    <p className="col-span-3 text-foreground">{previewData.discountCode}</p>
                   </div>
                 )}
               </>

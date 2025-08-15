@@ -54,6 +54,7 @@ interface Event {
   event_type?: string;
   state?: string;
   image_url?: string;
+  discount_code?: string; // Added discount_code
 }
 
 const eventFormSchema = z.object({
@@ -71,6 +72,7 @@ const eventFormSchema = z.object({
   eventType: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
+  discountCode: z.string().optional().or(z.literal('')), // Added discountCode
 });
 
 const SubmitEvent = () => {
@@ -99,6 +101,7 @@ const SubmitEvent = () => {
       organizerContact: '',
       eventType: '',
       imageUrl: '',
+      discountCode: '', // Initialize new field
     },
   });
 
@@ -153,6 +156,7 @@ const SubmitEvent = () => {
             setSelectedImage(null);
             form.setValue('imageFile', undefined);
           }
+          if (parsed_data.discountCode) form.setValue('discountCode', parsed_data.discountCode); // Set discountCode
           toast.success('Event details parsed successfully!');
         } else {
           toast.info('No event details could be extracted from the text.');
@@ -242,6 +246,7 @@ const SubmitEvent = () => {
       state: 'approved',
       user_id: user?.id || null,
       image_url: finalImageUrl,
+      discount_code: values.discountCode || null, // Include discount_code
     }]);
 
     if (error) {
@@ -480,6 +485,14 @@ const SubmitEvent = () => {
             </FormItem>
           )} />
 
+          <FormField control={form.control} name="discountCode" render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="discountCode">Discount Code (Optional)</FormLabel>
+              <FormControl><Input id="discountCode" placeholder="e.g., SOULFLOW10" {...field} className="focus-visible:ring-primary" /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+
           <FormItem>
             <FormLabel>Event Image (Optional)</FormLabel>
             <Tabs
@@ -655,6 +668,12 @@ const SubmitEvent = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                       <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Event Type:</p>
                       <p className="text-foreground sm:w-3/4">{previewData.eventType}</p>
+                    </div>
+                  )}
+                  {previewData.discountCode && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                      <p className="font-medium text-foreground sm:w-1/4 sm:text-right">Discount Code:</p>
+                      <p className="text-foreground sm:w-3/4">{previewData.discountCode}</p>
                     </div>
                   )}
                 </div>
