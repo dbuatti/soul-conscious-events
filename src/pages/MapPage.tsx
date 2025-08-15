@@ -97,13 +97,11 @@ const MapPage = () => {
       });
       setMapInstance(map);
 
-      // Cleanup function for the map instance
-      return () => {
-        // No direct map.destroy() method, but setting it to null helps GC
-        setMapInstance(null);
-      };
+      // Removed: return () => { setMapInstance(null); };
+      // The map instance should persist as long as the component is mounted.
+      // React will handle cleanup of the DOM element when the component unmounts.
     }
-  }, [mapApiLoaded, mapRef]); // Removed mapInstance from dependencies
+  }, [mapApiLoaded, mapRef, mapInstance]); // mapInstance is still a dependency to prevent re-running if it's already set
 
   // Effect to add/update markers when events or mapInstance change
   useEffect(() => {
