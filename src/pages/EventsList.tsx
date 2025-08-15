@@ -14,7 +14,7 @@ import EventDetailDialog from '@/components/EventDetailDialog';
 import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
-
+import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 // Removed: import heroBackground from '@/assets/phil-hero-background.jpeg';
 
 interface Event {
@@ -62,6 +62,10 @@ const EventsList = () => {
 
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
 
+  // Define 'now' at a higher scope so it's accessible to all relevant functions
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
+
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
@@ -82,9 +86,6 @@ const EventsList = () => {
 
     fetchEvents();
   }, []);
-
-  const now = new Date(); // Define 'now' at a higher scope
-  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
 
   const getFilteredEventsForList = () => {
     let filtered = events;
