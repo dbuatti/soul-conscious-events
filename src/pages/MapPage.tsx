@@ -101,7 +101,7 @@ const MapPage = () => {
       setMapInstance(map);
       mapInitialized.current = true; // Mark map as initialized
     }
-  }, [mapApiLoaded, mapRef]); // Dependencies remain the same
+  }, [mapApiLoaded, mapRef]); // Removed mapInstance from dependencies
 
   // Effect to add/update markers when events or mapInstance change
   useEffect(() => {
