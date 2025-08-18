@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon, Map } from 'lucide-react'; // Added Map icon
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -13,9 +13,9 @@ import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-// Removed: import heroBackground from '@/assets/phil-hero-background.jpeg';
+import heroBackground from '@/assets/hero-background.jpg'; // Import the image
 
 interface Event {
   id: string;
@@ -48,23 +48,18 @@ const EventsList = () => {
   const [stateFilter, setStateFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All Upcoming');
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar'); // Updated viewMode type
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
 
   const { user, isLoading: isSessionLoading } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
   const location = useLocation();
-  const navigate = useNavigate();
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
-
-  // Define 'now' at a higher scope so it's accessible to all relevant functions
-  const now = new Date();
-  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -90,9 +85,12 @@ const EventsList = () => {
   const getFilteredEventsForList = () => {
     let filtered = events;
 
+    const now = new Date();
+    const todayFormatted = format(now, 'yyyy-MM-dd');
+
     switch (dateFilter) {
       case 'Today':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd'));
+        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === todayFormatted);
         break;
       case 'This Week':
         const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -111,10 +109,10 @@ const EventsList = () => {
         });
         break;
       case 'Past Events':
-        filtered = filtered.filter(event => parseISO(event.event_date) < now);
+        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') < todayFormatted);
         break;
       case 'All Upcoming':
-        filtered = filtered.filter(event => parseISO(event.event_date) >= now);
+        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') >= todayFormatted);
         break;
       case 'All Events':
       default:
@@ -143,6 +141,9 @@ const EventsList = () => {
   };
 
   const filteredEventsForList = getFilteredEventsForList();
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
 
   const selectedDayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
 
@@ -174,6 +175,7 @@ const EventsList = () => {
       case 'search': setSearchTerm(''); break;
       case 'eventType': setEventType('All'); break;
       case 'state': setStateFilter('All'); break;
+      case 'dateFilter': setDateFilter('All Upcoming'); break;
     }
   };
 
@@ -201,21 +203,8 @@ const EventsList = () => {
   };
 
   const handleViewDetails = (event: Event) => {
-    // Navigate to the dedicated event detail page
-    navigate(`/events/${event.id}`);
-  };
-
-  const handleAddEventClick = async () => {
-    const { error } = await supabase.from('page_visit_logs').insert([
-      {
-        user_id: user?.id || null,
-        page_path: '/submit-event',
-        action_type: 'click_add_event_button',
-      },
-    ]);
-    if (error) {
-      console.error('Error logging add event button click:', error);
-    }
+    setSelectedEvent(event);
+    setIsEventDetailDialogOpen(true);
   };
 
   const renderEventCard = (event: Event) => {
@@ -224,7 +213,7 @@ const EventsList = () => {
 
     return (
       <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden" onClick={() => handleViewDetails(event)}>
-        {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-black/30"></div></div>}
+        {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div></div>}
         <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2"><CardTitle className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">{event.event_name}</CardTitle><CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base"><Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{dateDisplay}{event.event_time && <><Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{event.event_time}</>}</CardDescription></CardHeader>
         <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
           {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
@@ -251,7 +240,7 @@ const EventsList = () => {
       >
         {/* Image element for background */}
         <img 
-          src="/phil-hero-background.jpeg" // Updated src to direct public path
+          src={heroBackground} 
           alt="Hero Background" 
           className="absolute inset-0 w-full h-full object-cover" 
         />
@@ -261,7 +250,7 @@ const EventsList = () => {
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">Discover Your Next Soulful Experience</h1>
           <p className="text-lg sm:text-xl font-light mb-8 opacity-90">Connect with events that nourish your mind, body, and spirit across Australia.</p>
-          <Link to="/submit-event" onClick={handleAddEventClick}>
+          <Link to="/submit-event">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
               Add Your Event
             </Button>
@@ -283,9 +272,10 @@ const EventsList = () => {
           </Button>
           <div className="flex flex-col gap-1 w-full sm:w-auto">
             <label htmlFor="view-mode" className="text-xs sm:text-sm font-medium text-foreground text-center sm:text-right">View Mode</label>
-            <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && setViewMode(value)} className="w-full sm:w-auto justify-center sm:justify-end">
+            <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && setViewMode(value)} className="w-full sm:w-auto justify-center sm:justify-end">
               <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><CalendarDays className="h-4 w-4" /></ToggleGroupItem>
               <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><List className="h-4 w-4" /></ToggleGroupItem>
+              <ToggleGroupItem value="map" aria-label="Map View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><Map className="h-4 w-4" /></ToggleGroupItem> {/* New Map View Toggle */}
             </ToggleGroup>
           </div>
         </div>
@@ -311,7 +301,7 @@ const EventsList = () => {
         <>
           {viewMode === 'list' ? (
             filteredEventsForList.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {filteredEventsForList.map(renderEventCard)}
               </div>
             ) : (
@@ -319,14 +309,14 @@ const EventsList = () => {
                 <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-lg font-semibold text-foreground mb-4">No events found matching your criteria.</p>
                 {hasActiveFilters ? <Button onClick={handleClearAllFilters} className="bg-primary hover:bg-primary/80 text-primary-foreground">Clear Filters</Button> :
-                  <Link to="/submit-event" onClick={handleAddEventClick}><Button className="bg-primary hover:bg-primary/80 text-primary-foreground"><PlusCircle className="mr-2 h-4 w-4" /> Add an Event</Button></Link>}
+                  <Link to="/submit-event"><Button className="bg-primary hover:bg-primary/80 text-primary-foreground"><PlusCircle className="mr-2 h-4 w-4" /> Add an Event</Button></Link>}
               </div>
             )
-          ) : (
+          ) : viewMode === 'calendar' ? ( // Conditional rendering for calendar view
             <div>
               <AdvancedEventCalendar
                 events={events}
-                onEventSelect={handleViewDetails} // This will now navigate to the detail page
+                onEventSelect={handleViewDetails}
                 selectedDay={selectedDay}
                 onDayClick={setSelectedDay}
                 currentMonth={currentMonth}
@@ -356,6 +346,12 @@ const EventsList = () => {
                   </div>
                 )}
               </div>
+            </div>
+          ) : ( // This block is for 'map' view
+            <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+              <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg font-semibold text-foreground mb-4">Map view coming soon!</p>
+              <p className="text-muted-foreground">This section will display events on a map.</p>
             </div>
           )}
         </>
