@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Share2, ExternalLink } from 'lucide-react';
+import { Edit, Trash2, Share2, ExternalLink, Calendar, Clock } from 'lucide-react'; // Added Calendar and Clock
 import {
   AlertDialog,
   AlertDialogAction,
