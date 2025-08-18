@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Lightbulb, Zap, CheckCircle, Database } from 'lucide-react'; // Import Database icon
+import { PlusCircle, Lightbulb, Zap, CheckCircle } from 'lucide-react'; // Removed Database icon
 import AddDevTaskDialog from '@/components/AddDevTaskDialog';
 import DevTaskCard from '@/components/DevTaskCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,7 +21,7 @@ const DevSpace = () => {
   const [tasks, setTasks] = useState<DevTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isSeeding, setIsSeeding] = useState(false);
+  // Removed isSeeding state
   const { session } = useSession(); // Get session to pass auth token
 
   const fetchTasks = useCallback(async () => {
@@ -44,35 +44,7 @@ const DevSpace = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const handleSeedData = async () => {
-    if (!session) {
-      toast.error('You must be logged in to seed data.');
-      return;
-    }
-
-    setIsSeeding(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('seed-data', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`, // Pass the user's access token
-        },
-      });
-
-      if (error) {
-        console.error('Error seeding data:', error);
-        toast.error(`Failed to seed data: ${error.message}`);
-      } else {
-        toast.success('Database seeded successfully!');
-        // Optionally refresh tasks or other data after seeding
-        fetchTasks();
-      }
-    } catch (error: any) {
-      console.error('Error invoking seed-data function:', error);
-      toast.error(`Failed to invoke seed function: ${error.message}`);
-    } finally {
-      setIsSeeding(false);
-    }
-  };
+  // Removed handleSeedData function
 
   const columns = {
     idea: tasks.filter(task => task.status === 'idea'),
@@ -110,10 +82,7 @@ const DevSpace = () => {
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-4xl font-bold text-foreground">Dev Space</h1>
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button onClick={handleSeedData} disabled={isSeeding} className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
-            {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
-            {isSeeding ? 'Seeding...' : 'Seed Data'}
-          </Button>
+          {/* Removed Seed Data Button */}
           <Button onClick={() => setIsAddDialogOpen(true)} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
             <PlusCircle className="mr-2 h-4 w-4" /> Add Idea
           </Button>
