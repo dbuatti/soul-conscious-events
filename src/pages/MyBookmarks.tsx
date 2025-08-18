@@ -77,10 +77,8 @@ const MyBookmarks: React.FC = () => {
       console.error('Error fetching bookmarked events:', error);
       toast.error('Failed to load your bookmarked events.');
     } else {
-      // Explicitly cast data to the expected type before mapping
-      const typedData = data as BookmarkedEventData[];
-      // Extract event data from the nested structure and filter out nulls
-      const eventsData = typedData.map(item => item.events).filter(Boolean) as Event[];
+      // Explicitly cast data to any[] first, then map and filter
+      const eventsData = (data as any[]).map(item => item.events).filter(Boolean) as Event[];
       setBookmarkedEvents(eventsData);
     }
     setLoadingBookmarks(false);
