@@ -76,7 +76,7 @@ const About = () => {
               </a>
             </Button>
             <p className="mt-4 text-sm text-muted-foreground">
-              If you're sharing your event on Instagram, feel free to tag <span className="font-semibold text-primary">@heartbeatslive</span> for a potential reshare!
+              If you're sharing your event on Instagram, feel free to tag <span className="font-semibold text-primary">@heartbeatslive</span> for a reshare!
             </p>
           </CardContent>
         </Card>
