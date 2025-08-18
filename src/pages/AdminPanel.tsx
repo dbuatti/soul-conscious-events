@@ -6,7 +6,9 @@ import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EventManagementTable from '@/components/EventManagementTable';
-import AnalyticsDashboard from '@/components/AnalyticsDashboard'; // Import the new AnalyticsDashboard
+import AnalyticsDashboard from '@/components/AnalyticsDashboard';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { User as UserIcon, Mail, CalendarDays } from 'lucide-react'; // Import User, Mail, CalendarDays icons
 
 interface ContactSubmission {
   id: string;
@@ -17,9 +19,19 @@ interface ContactSubmission {
   message: string;
 }
 
+interface UserProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string; // Assuming email can be fetched or joined
+  created_at: string; // Assuming created_at is available from auth.users or profiles
+}
+
 const AdminPanel = () => {
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
+  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -38,21 +50,52 @@ const AdminPanel = () => {
       setLoadingSubmissions(false);
     };
 
+    const fetchUserProfiles = async () => {
+      setLoadingUsers(true);
+      // Fetch profiles and join with auth.users to get email
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          auth_users:auth.users(email, created_at)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching user profiles:', error);
+        toast.error('Failed to load user profiles.');
+      } else {
+        const profilesWithEmail: UserProfile[] = (data || []).map((profile: any) => ({
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          email: profile.auth_users?.email || 'N/A',
+          created_at: profile.auth_users?.created_at || 'N/A',
+        }));
+        setUserProfiles(profilesWithEmail);
+      }
+      setLoadingUsers(false);
+    };
+
     fetchSubmissions();
+    fetchUserProfiles();
   }, []);
 
   return (
     <div className="w-full max-w-screen-lg">
       <h2 className="text-3xl font-bold text-foreground text-center mb-6">Admin Panel</h2>
       <p className="text-center text-muted-foreground mb-8">
-        Manage contact submissions and events from here.
+        Manage contact submissions, events, analytics, and users from here.
       </p>
 
       <Tabs defaultValue="events" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 dark:bg-secondary"> {/* Changed to 3 columns */}
+        <TabsList className="grid w-full grid-cols-4 dark:bg-secondary"> {/* Changed to 4 columns */}
           <TabsTrigger value="events">Manage Events</TabsTrigger>
           <TabsTrigger value="submissions">Contact Submissions</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger> {/* New tab for Analytics */}
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger> {/* New tab for Users */}
         </TabsList>
         <TabsContent value="events" className="mt-6">
           <EventManagementTable />
@@ -109,8 +152,49 @@ const AdminPanel = () => {
             </div>
           )}
         </TabsContent>
-        <TabsContent value="analytics" className="mt-6"> {/* Content for Analytics tab */}
+        <TabsContent value="analytics" className="mt-6">
           <AnalyticsDashboard />
+        </TabsContent>
+        <TabsContent value="users" className="mt-6"> {/* Content for Users tab */}
+          {loadingUsers ? (
+            <div className="flex flex-col items-center justify-center min-h-[300px] bg-secondary rounded-lg border border-border">
+              <Skeleton className="h-12 w-12 rounded-full mb-4" />
+              <Skeleton className="h-6 w-1/2 mb-2" />
+              <Skeleton className="h-4 w-1/3" />
+            </div>
+          ) : userProfiles.length === 0 ? (
+            <p className="text-center text-muted-foreground">No user profiles found.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table className="min-w-full bg-card border border-border rounded-lg shadow-lg">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-foreground">Name</TableHead>
+                    <TableHead className="text-foreground">Email</TableHead>
+                    <TableHead className="text-foreground">Joined</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userProfiles.map((profile) => (
+                    <TableRow key={profile.id}>
+                      <TableCell className="font-medium text-foreground flex items-center">
+                        <UserIcon className="mr-2 h-4 w-4 text-primary" />
+                        {profile.first_name || profile.last_name ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-foreground flex items-center">
+                        <Mail className="mr-2 h-4 w-4 text-primary" />
+                        {profile.email}
+                      </TableCell>
+                      <TableCell className="text-foreground flex items-center">
+                        <CalendarDays className="mr-2 h-4 w-4 text-primary" />
+                        {profile.created_at !== 'N/A' ? format(new Date(profile.created_at), 'PPP') : 'N/A'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
