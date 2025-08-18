@@ -18,7 +18,8 @@ import EventEditPage from "./pages/EventEditPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import About from "./pages/About";
 import DevSpace from "./pages/DevSpace";
-import CommunityGuidelines from "./pages/CommunityGuidelines"; // Import the new CommunityGuidelines page
+import CommunityGuidelines from "./pages/CommunityGuidelines";
+import MyEvents from "./pages/MyEvents"; // Import the new MyEvents page
 
 const queryClient = new QueryClient();
 
@@ -37,8 +38,16 @@ const App = () => (
               <Route path="/submit-event" element={<SubmitEvent />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
-              <Route path="/community-guidelines" element={<CommunityGuidelines />} /> {/* New route */}
+              <Route path="/community-guidelines" element={<CommunityGuidelines />} />
               <Route path="/login" element={<Login />} />
+              <Route
+                path="/my-events"
+                element={
+                  <ProtectedRoute>
+                    <MyEvents />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin/panel"
                 element={

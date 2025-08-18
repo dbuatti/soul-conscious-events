@@ -15,29 +15,10 @@ import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import MapPage from './MapPage'; // Import MapPage
-const heroBackground = '/phil-hero-background.jpeg';
+import MapPage from './MapPage';
+import { Event } from '@/types/event'; // Import the shared Event type
 
-interface Event {
-  id: string;
-  event_name: string;
-  event_date: string;
-  end_date?: string;
-  event_time?: string;
-  location?: string;
-  place_name?: string;
-  full_address?: string;
-  description?: string;
-  ticket_link?: string;
-  price?: string;
-  special_notes?: string;
-  organizer_contact?: string;
-  event_type?: string;
-  state?: string;
-  image_url?: string;
-  user_id?: string;
-  is_deleted?: boolean;
-}
+const heroBackground = '/phil-hero-background.jpeg';
 
 const EventsList = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -87,11 +68,11 @@ const EventsList = () => {
     let filtered = events;
 
     const now = new Date();
-    const todayFormatted = format(now, 'yyyy-MM-dd');
+    now.setHours(0, 0, 0, 0); // Normalize 'now' to start of day for consistent comparison
 
     switch (dateFilter) {
       case 'Today':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === todayFormatted);
+        filtered = filtered.filter(event => isSameDay(parseISO(event.event_date), now));
         break;
       case 'This Week':
         const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -110,10 +91,10 @@ const EventsList = () => {
         });
         break;
       case 'Past Events':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') < todayFormatted);
+        filtered = filtered.filter(event => parseISO(event.event_date) < now);
         break;
       case 'All Upcoming':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') >= todayFormatted);
+        filtered = filtered.filter(event => parseISO(event.event_date) >= now);
         break;
       case 'All Events':
       default:
@@ -142,9 +123,6 @@ const EventsList = () => {
   };
 
   const filteredEventsForList = getFilteredEventsForList();
-
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
 
   const selectedDayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
 

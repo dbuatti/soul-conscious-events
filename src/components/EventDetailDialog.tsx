@@ -29,26 +29,7 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-
-interface Event {
-  id: string;
-  event_name: string;
-  event_date: string;
-  end_date?: string;
-  event_time?: string;
-  place_name?: string;
-  full_address?: string;
-  description?: string;
-  ticket_link?: string;
-  price?: string;
-  special_notes?: string;
-  organizer_contact?: string;
-  event_type?: string;
-  state?: string;
-  image_url?: string;
-  user_id?: string;
-  discount_code?: string; // Added discount_code
-}
+import { Event } from '@/types/event'; // Import the shared Event type
 
 interface EventDetailDialogProps {
   event: Event | null;
@@ -298,7 +279,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             </a>
           )}
           <Button onClick={() => {
-            const eventUrl = `${window.location.origin}/events/${event.id}`; // Still provide a direct link for sharing
+            const eventUrl = `${window.location.origin}/events/${event.id}`;
             navigator.clipboard.writeText(eventUrl)
               .then(() => toast.success('Event link copied to clipboard!'))
               .catch(() => toast.error('Failed to copy link. Please try again.'));

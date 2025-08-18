@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Image as ImageIcon, XCircle } from 'lucide-react';
+import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,26 +24,11 @@ import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { eventTypes } from '@/lib/constants';
+import { Event } from '@/types/event'; // Import the shared Event type
 
-interface Event {
-  id: string;
-  event_name: string;
-  event_date: string;
-  end_date?: string;
-  event_time?: string;
-  place_name?: string;
-  full_address?: string;
-  description?: string;
-  ticket_link?: string;
-  price?: string;
-  special_notes?: string;
-  organizer_contact?: string;
-  event_type?: string;
-  state?: string;
-  image_url?: string;
-  user_id?: string;
-  discount_code?: string; // Added discount_code
-}
+const australianStates = [
+  'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
+];
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
@@ -60,7 +45,7 @@ const eventFormSchema = z.object({
   eventType: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  discountCode: z.string().optional().or(z.literal('')), // Added discountCode
+  discountCode: z.string().optional().or(z.literal('')),
 });
 
 const EventEditPage: React.FC = () => {
@@ -91,7 +76,7 @@ const EventEditPage: React.FC = () => {
       organizerContact: '',
       eventType: '',
       imageUrl: '',
-      discountCode: '', // Initialize new field
+      discountCode: '',
     },
   });
 
@@ -139,7 +124,7 @@ const EventEditPage: React.FC = () => {
           organizerContact: data.organizer_contact || '',
           eventType: data.event_type || '',
           imageUrl: data.image_url || '',
-          discountCode: data.discount_code || '', // Set discountCode from fetched data
+          discountCode: data.discount_code || '',
         });
         setImagePreviewUrl(data.image_url || null);
         if (data.image_url) {
@@ -292,7 +277,7 @@ const EventEditPage: React.FC = () => {
       organizer_contact: values.organizerContact || null,
       event_type: values.eventType || null,
       image_url: finalImageUrl,
-      discount_code: values.discountCode || null, // Include discount_code
+      discount_code: values.discountCode || null,
     }).eq('id', id);
 
     if (error) {

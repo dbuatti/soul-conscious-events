@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, LogOut, UserCog } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck } from 'lucide-react'; // Import CalendarCheck icon
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,7 +55,7 @@ const Header = () => {
 
   const navItems = [
     { to: "/", label: "Events" },
-    { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick }, // Add onClick handler
+    { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick },
     { to: "/map", label: "Map", badge: "Beta" },
     { to: "/contact", label: "Contact" },
     { to: "/about", label: "About" },
@@ -87,7 +87,7 @@ const Header = () => {
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.to}>
                     <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
-                      <Link to={item.to} onClick={item.onClick}> {/* Apply onClick here */}
+                      <Link to={item.to} onClick={item.onClick}>
                         {item.label}
                         {item.badge && (
                           <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
@@ -98,6 +98,15 @@ const Header = () => {
                     </Button>
                   </SheetClose>
                 ))}
+                {user && ( // Show "My Events" only if logged in
+                  <SheetClose asChild>
+                    <Button variant="ghost" className={cn(getButtonClass("/my-events"), "justify-start")} asChild>
+                      <Link to="/my-events">
+                        <CalendarCheck className="mr-2 h-4 w-4" /> My Events
+                      </Link>
+                    </Button>
+                  </SheetClose>
+                )}
                 {user?.email === 'daniele.buatti@gmail.com' && (
                   <>
                     <div className="border-t border-border my-2"></div>
@@ -137,7 +146,7 @@ const Header = () => {
             <nav className="hidden md:flex items-center space-x-2 absolute left-1/2 -translate-x-1/2">
               {navItems.map((item) => (
                 <Link to={item.to} key={item.to}>
-                  <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")} onClick={item.onClick}> {/* Apply onClick here */}
+                  <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")} onClick={item.onClick}>
                     {item.label}
                     {item.badge && (
                       <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
@@ -147,6 +156,13 @@ const Header = () => {
                   </Button>
                 </Link>
               ))}
+              {user && ( // Show "My Events" only if logged in
+                <Link to="/my-events">
+                  <Button variant="ghost" className={cn(getButtonClass("/my-events"), "flex items-center")}>
+                    <CalendarCheck className="mr-2 h-4 w-4" /> My Events
+                  </Button>
+                </Link>
+              )}
             </nav>
             <div className="hidden md:flex items-center space-x-4">
               {user?.email === 'daniele.buatti@gmail.com' && (

@@ -7,24 +7,8 @@ import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import MapContainer from '@/components/MapContainer'; // Import the new component
-
-interface Event {
-  id: string;
-  event_name: string;
-  event_date: string;
-  event_time?: string;
-  place_name?: string;
-  full_address?: string;
-  description?: string;
-  ticket_link?: string;
-  price?: string;
-  special_notes?: string;
-  organizer_contact?: string;
-  event_type?: string;
-  state?: string;
-  image_url?: string;
-}
+import MapContainer from '@/components/MapContainer';
+import { Event } from '@/types/event'; // Import the shared Event type
 
 const MapPage = () => {
   const [loading, setLoading] = useState(true);

@@ -20,26 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-
-interface Event {
-  id: string;
-  event_name: string;
-  event_date: string;
-  end_date?: string;
-  event_time?: string;
-  place_name?: string;
-  full_address?: string;
-  description?: string;
-  ticket_link?: string;
-  price?: string;
-  special_notes?: string;
-  organizer_contact?: string;
-  event_type?: string;
-  state?: string;
-  image_url?: string;
-  user_id?: string;
-  discount_code?: string;
-}
+import { Event } from '@/types/event'; // Import the shared Event type
 
 const EventDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
