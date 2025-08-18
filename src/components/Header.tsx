@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, LogOut, UserCog, CalendarCheck } from 'lucide-react'; // Import CalendarCheck icon
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark } from 'lucide-react'; // Import Bookmark icon
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -98,14 +98,23 @@ const Header = () => {
                     </Button>
                   </SheetClose>
                 ))}
-                {user && ( // Show "My Events" only if logged in
-                  <SheetClose asChild>
-                    <Button variant="ghost" className={cn(getButtonClass("/my-events"), "justify-start")} asChild>
-                      <Link to="/my-events">
-                        <CalendarCheck className="mr-2 h-4 w-4" /> My Events
-                      </Link>
-                    </Button>
-                  </SheetClose>
+                {user && ( // Show "My Events" and "My Bookmarks" only if logged in
+                  <>
+                    <SheetClose asChild>
+                      <Button variant="ghost" className={cn(getButtonClass("/my-events"), "justify-start")} asChild>
+                        <Link to="/my-events">
+                          <CalendarCheck className="mr-2 h-4 w-4" /> My Events
+                        </Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button variant="ghost" className={cn(getButtonClass("/my-bookmarks"), "justify-start")} asChild>
+                        <Link to="/my-bookmarks">
+                          <Bookmark className="mr-2 h-4 w-4" /> My Bookmarks
+                        </Link>
+                      </Button>
+                    </SheetClose>
+                  </>
                 )}
                 {user?.email === 'daniele.buatti@gmail.com' && (
                   <>
@@ -156,12 +165,19 @@ const Header = () => {
                   </Button>
                 </Link>
               ))}
-              {user && ( // Show "My Events" only if logged in
-                <Link to="/my-events">
-                  <Button variant="ghost" className={cn(getButtonClass("/my-events"), "flex items-center")}>
-                    <CalendarCheck className="mr-2 h-4 w-4" /> My Events
-                  </Button>
-                </Link>
+              {user && ( // Show "My Events" and "My Bookmarks" only if logged in
+                <>
+                  <Link to="/my-events">
+                    <Button variant="ghost" className={cn(getButtonClass("/my-events"), "flex items-center")}>
+                      <CalendarCheck className="mr-2 h-4 w-4" /> My Events
+                    </Button>
+                  </Link>
+                  <Link to="/my-bookmarks">
+                    <Button variant="ghost" className={cn(getButtonClass("/my-bookmarks"), "flex items-center")}>
+                      <Bookmark className="mr-2 h-4 w-4" /> My Bookmarks
+                    </Button>
+                  </Link>
+                </>
               )}
             </nav>
             <div className="hidden md:flex items-center space-x-4">

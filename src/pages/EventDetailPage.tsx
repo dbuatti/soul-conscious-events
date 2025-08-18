@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Event } from '@/types/event'; // Import the shared Event type
+import BookmarkButton from '@/components/BookmarkButton'; // Import BookmarkButton
 
 const EventDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -286,6 +287,7 @@ const EventDetailPage: React.FC = () => {
       </Card>
 
       <div className="flex flex-wrap justify-end gap-2 mt-6">
+        <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" /> {/* Bookmark Button */}
         <Button variant="outline" onClick={() => navigate(-1)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>

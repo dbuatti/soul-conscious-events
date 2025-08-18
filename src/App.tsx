@@ -19,7 +19,8 @@ import EventDetailPage from "./pages/EventDetailPage";
 import About from "./pages/About";
 import DevSpace from "./pages/DevSpace";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
-import MyEvents from "./pages/MyEvents"; // Import the new MyEvents page
+import MyEvents from "./pages/MyEvents";
+import MyBookmarks from "./pages/MyBookmarks"; // Import the new MyBookmarks page
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <MyEvents />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-bookmarks"
+                element={
+                  <ProtectedRoute>
+                    <MyBookmarks />
                   </ProtectedRoute>
                 }
               />

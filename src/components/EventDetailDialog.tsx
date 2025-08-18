@@ -30,6 +30,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Event } from '@/types/event'; // Import the shared Event type
+import BookmarkButton from '@/components/BookmarkButton'; // Import BookmarkButton
 
 interface EventDetailDialogProps {
   event: Event | null;
@@ -268,6 +269,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         </Card>
 
         <DialogFooter className="flex flex-wrap justify-end gap-2 mt-4">
+          <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" /> {/* Bookmark Button */}
           <Button variant="outline" onClick={onClose} className="transition-all duration-300 ease-in-out transform hover:scale-105">
             {cameFromCalendar ? 'Back to Calendar' : 'Close'}
           </Button>

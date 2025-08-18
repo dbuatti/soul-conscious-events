@@ -17,6 +17,7 @@ import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import MapPage from './MapPage';
 import { Event } from '@/types/event'; // Import the shared Event type
+import BookmarkButton from '@/components/BookmarkButton'; // Import BookmarkButton
 
 const heroBackground = '/phil-hero-background.jpeg';
 
@@ -198,11 +199,12 @@ const EventsList = () => {
         </CardContent>
         <CardFooter className="flex flex-col items-start pt-2 sm:pt-4">
           <div className="flex justify-end w-full space-x-1 sm:space-x-2">
+            <BookmarkButton eventId={event.id} size="icon" className="h-7 w-7 sm:h-9 sm:w-9" /> {/* Bookmark Button */}
             <Button variant="outline" size="icon" onClick={(e) => handleShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9"><Share2 className="h-3.5 w-3.5 sm:h-4 w-4" /></Button>
             {isCreatorOrAdmin && (
               <>
-                <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }} onClick={(e) => e.stopPropagation()}><Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9"><Edit className="h-3.5 w-3.5 sm:h-4 w-4" /></Button></Link>
-                <Button variant="destructive" size="icon" onClick={(e) => handleDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9"><Trash2 className="h-3.5 w-3.5 sm:h-4 w-4" /></Button>
+                <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }} onClick={(e) => e.stopPropagation()}><Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9"><Edit className="h-3.5 w-3.5 sm:h-3.5 w-3.5" /></Button></Link>
+                <Button variant="destructive" size="icon" onClick={(e) => handleDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9"><Trash2 className="h-3.5 w-3.5 sm:h-3.5 w-3.5" /></Button>
               </>
             )}
           </div>
