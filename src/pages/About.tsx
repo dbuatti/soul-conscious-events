@@ -68,13 +68,16 @@ const About = () => {
               className="h-24 w-auto mb-4 object-contain"
             />
             <p className="mb-4">
-              We're thrilled to collaborate with HeartBeats, bringing you heartfelt open mic events that foster music, expression, and community connection.
+              SoulFlow is proud to be collaborating with HeartBeats to share soulful events with the community. HeartBeats is a collective that runs events that foster expression, music, growth, and connection.
             </p>
             <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
               <a href="https://www.instagram.com/heartbeatslive" target="_blank" rel="noopener noreferrer">
-                Learn More about HeartBeats
+                Follow HeartBeats on Instagram
               </a>
             </Button>
+            <p className="mt-4 text-sm text-muted-foreground">
+              If you're sharing your event on Instagram, feel free to tag <span className="font-semibold text-primary">@heartbeatslive</span> for a potential reshare!
+            </p>
           </CardContent>
         </Card>
 
