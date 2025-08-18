@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Lightbulb, Zap, CheckCircle, UserPlus, Loader2 } from 'lucide-react'; // Added Loader2 icon
+import { PlusCircle, Lightbulb, Zap, CheckCircle, UserPlus, Loader2 } from 'lucide-react';
 import AddDevTaskDialog from '@/components/AddDevTaskDialog';
 import DevTaskCard from '@/components/DevTaskCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSession } from '@/components/SessionContextProvider'; // Import useSession
+import { useSession } from '@/components/SessionContextProvider';
 
 export interface DevTask {
   id: string;
@@ -21,8 +21,8 @@ const DevSpace = () => {
   const [tasks, setTasks] = useState<DevTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isCreatingUser, setIsCreatingUser] = useState(false); // New state for user creation loading
-  const { session, user: currentUser } = useSession(); // Get session and current user
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const { user: currentUser } = useSession();
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
@@ -54,27 +54,24 @@ const DevSpace = () => {
     try {
       const timestamp = Date.now();
       const email = `testuser_${timestamp}@example.com`;
-      const password = `password${timestamp}`; // A simple password for testing
+      const password = `password${timestamp}`;
       const firstName = `Test`;
       const lastName = `User ${timestamp.toString().slice(-4)}`;
 
-      const { data, error } = await supabase.rpc('create_test_user', {
-        user_email: email,
-        user_password: password,
-        first_name: firstName,
-        last_name: lastName,
+      const { data, error } = await supabase.functions.invoke('create-test-user', {
+        body: { email, password, first_name: firstName, last_name: lastName },
       });
 
       if (error) {
-        console.error('Error creating test user:', error);
+        console.error('Error creating test user via Edge Function:', error);
         toast.error(`Failed to create test user: ${error.message}`);
       } else {
-        toast.success(`Test user created: ${email} (Password: ${password})`);
-        // You might want to log this info somewhere accessible for testing
-        console.log(`Created Test User: Email: ${email}, Password: ${password}, ID: ${data}`);
+        const { userId, email: createdEmail, password: createdPassword } = data;
+        toast.success(`Test user created: ${createdEmail} (Password: ${createdPassword})`);
+        console.log(`Created Test User: Email: ${createdEmail}, Password: ${createdPassword}, ID: ${userId}`);
       }
     } catch (error: any) {
-      console.error('Error invoking create_test_user function:', error);
+      console.error('Error invoking create-test-user function:', error);
       toast.error(`Failed to create test user: ${error.message}`);
     } finally {
       setIsCreatingUser(false);

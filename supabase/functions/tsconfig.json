@@ -1,21 +1,14 @@
 {
   "compilerOptions": {
+    "lib": ["deno.ns", "esnext"],
     "target": "esnext",
     "module": "esnext",
-    "lib": [
-      "esnext",
-      "deno.ns"
-    ],
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "allowJs": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "https://esm.sh/react@18.2.0"
+    "noEmit": true
   },
-  "include": [
-    "./**/*.ts"
-  ]
+  "include": ["**/*.ts"]
 }
