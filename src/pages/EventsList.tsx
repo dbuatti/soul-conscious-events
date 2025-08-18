@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon, Map } from 'lucide-react'; // Added Map icon
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon, Map } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -15,8 +15,8 @@ import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-// Corrected import path for the image
-const heroBackground = '/phil-hero-background.jpeg'; // Import the image
+import MapPage from './MapPage'; // Import MapPage
+const heroBackground = '/phil-hero-background.jpeg';
 
 interface Event {
   id: string;
@@ -49,7 +49,7 @@ const EventsList = () => {
   const [stateFilter, setStateFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All Upcoming');
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar'); // Updated viewMode type
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
 
@@ -144,16 +144,14 @@ const EventsList = () => {
   const filteredEventsForList = getFilteredEventsForList();
 
   const now = new Date();
-  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
+  now.setHours(0, 0, 0, 0);
 
   const selectedDayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
 
   const currentMonthEvents = events.filter(event => {
     const eventStartDate = parseISO(event.event_date);
-    // Use end_date for multi-day events, otherwise use event_date
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
     
-    // Show event if it's in the current month AND it hasn't ended yet
     return isSameMonth(eventStartDate, currentMonth) && eventEndDate >= now;
   });
 
@@ -276,7 +274,7 @@ const EventsList = () => {
             <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && setViewMode(value)} className="w-full sm:w-auto justify-center sm:justify-end">
               <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><CalendarDays className="h-4 w-4" /></ToggleGroupItem>
               <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><List className="h-4 w-4" /></ToggleGroupItem>
-              <ToggleGroupItem value="map" aria-label="Map View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><Map className="h-4 w-4" /></ToggleGroupItem> {/* New Map View Toggle */}
+              <ToggleGroupItem value="map" aria-label="Map View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><Map className="h-4 w-4" /></ToggleGroupItem>
             </ToggleGroup>
           </div>
         </div>
@@ -313,7 +311,7 @@ const EventsList = () => {
                   <Link to="/submit-event"><Button className="bg-primary hover:bg-primary/80 text-primary-foreground"><PlusCircle className="mr-2 h-4 w-4" /> Add an Event</Button></Link>}
               </div>
             )
-          ) : viewMode === 'calendar' ? ( // Conditional rendering for calendar view
+          ) : viewMode === 'calendar' ? (
             <div>
               <AdvancedEventCalendar
                 events={events}
@@ -349,11 +347,7 @@ const EventsList = () => {
               </div>
             </div>
           ) : ( // This block is for 'map' view
-            <div className="p-8 bg-secondary rounded-lg border border-border text-center">
-              <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg font-semibold text-foreground mb-4">Map view coming soon!</p>
-              <p className="text-muted-foreground">This section will display events on a map.</p>
-            </div>
+            <MapPage />
           )}
         </>
       )}
