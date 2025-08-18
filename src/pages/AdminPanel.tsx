@@ -52,14 +52,15 @@ const AdminPanel = () => {
 
     const fetchUserProfiles = async () => {
       setLoadingUsers(true);
-      // Fetch profiles and join with auth.users to get email
+      // Fetch profiles directly, as email and created_at are now in the profiles table
       const { data, error } = await supabase
         .from('profiles')
         .select(`
           id,
           first_name,
           last_name,
-          auth_users:auth.users(email, created_at)
+          email,
+          created_at
         `)
         .order('created_at', { ascending: false });
 
@@ -67,14 +68,7 @@ const AdminPanel = () => {
         console.error('Error fetching user profiles:', error);
         toast.error('Failed to load user profiles.');
       } else {
-        const profilesWithEmail: UserProfile[] = (data || []).map((profile: any) => ({
-          id: profile.id,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          email: profile.auth_users?.email || 'N/A',
-          created_at: profile.auth_users?.created_at || 'N/A',
-        }));
-        setUserProfiles(profilesWithEmail);
+        setUserProfiles(data as UserProfile[]);
       }
       setLoadingUsers(false);
     };
