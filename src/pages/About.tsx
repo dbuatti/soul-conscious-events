@@ -65,7 +65,7 @@ const About = () => {
             <img
               src="/heartbeats-logo.png"
               alt="HeartBeats Logo"
-              className="h-24 w-auto mb-4 object-contain"
+              className="h-24 w-auto mb-4 object-contain rounded-lg"
             />
             <p className="mb-4">
               SoulFlow is proud to be collaborating with HeartBeats to share soulful events with the community. HeartBeats is a collective that runs events that foster expression, music, growth, and connection.
