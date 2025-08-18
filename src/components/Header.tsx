@@ -53,12 +53,13 @@ const Header = () => {
     }
   };
 
+  // Reordered navigation items
   const navItems = [
     { to: "/", label: "Events" },
-    { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick },
     { to: "/map", label: "Map", badge: "Beta" },
-    { to: "/contact", label: "Contact" },
+    { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick },
     { to: "/about", label: "About" },
+    { to: "/contact", label: "Contact" },
   ];
 
   const adminNavItems = [
@@ -70,7 +71,7 @@ const Header = () => {
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
-      <div className="w-full max-w-screen-lg flex justify-between items-center"> {/* Removed relative and absolute positioning */}
+      <div className="w-full max-w-screen-lg flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
           SoulFlow
         </Link>
@@ -151,7 +152,7 @@ const Header = () => {
             </SheetContent>
           </Sheet>
         ) : (
-          <nav className="hidden md:flex items-center space-x-4"> {/* Combined into one nav with space-x-4 */}
+          <nav className="hidden md:flex items-center space-x-4">
             {navItems.map((item) => (
               <Link to={item.to} key={item.to}>
                 <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")} onClick={item.onClick}>
