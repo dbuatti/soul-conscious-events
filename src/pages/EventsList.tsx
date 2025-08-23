@@ -23,7 +23,7 @@ const EventsList = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [eventType, setEventType] = useState('All');
-  const [geographicalStateFilter, setGeographicalStateFilter] = useState('All'); // Renamed from stateFilter
+  const [geographicalStateFilter, setGeographicalStateFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All Upcoming');
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar');
@@ -44,7 +44,7 @@ const EventsList = () => {
     const fetchEvents = async () => {
       setLoading(true);
       let query = supabase.from('events').select('*');
-      query = query.eq('approval_status', 'approved'); // Filter by new approval_status
+      query = query.eq('approval_status', 'approved');
       query = query.order('event_date', { ascending: true });
 
       const { data, error } = await query;
@@ -54,6 +54,7 @@ const EventsList = () => {
         toast.error('Failed to load events.');
       } else {
         setEvents(data || []);
+        console.log('EventsList: Fetched events data:', data); // Log fetched data
       }
       setLoading(false);
     };
@@ -63,6 +64,10 @@ const EventsList = () => {
 
   const getFilteredEventsForList = () => {
     let filtered = events;
+
+    console.log('EventsList: Filtering process started.');
+    console.log('EventsList: Current events count (before filter):', events.length);
+    console.log('EventsList: Current geographicalStateFilter:', geographicalStateFilter);
 
     switch (dateFilter) {
       case 'Today':
@@ -90,7 +95,7 @@ const EventsList = () => {
       case 'All Upcoming':
         filtered = filtered.filter(event => parseISO(event.event_date) >= now);
         break;
-      case 'All Events':
+      'All Events':
       default:
         break;
     }
@@ -99,8 +104,15 @@ const EventsList = () => {
       filtered = filtered.filter(event => event.event_type === eventType);
     }
 
-    if (geographicalStateFilter !== 'All') { // Use new geographicalStateFilter
-      filtered = filtered.filter(event => event.geographical_state === geographicalStateFilter);
+    if (geographicalStateFilter !== 'All') {
+      console.log(`EventsList: Applying geographical state filter: "${geographicalStateFilter}"`);
+      filtered = filtered.filter(event => {
+        const eventState = event.geographical_state;
+        const matches = eventState === geographicalStateFilter;
+        console.log(`  Event ID: ${event.id}, Event State: "${eventState}", Filter: "${geographicalStateFilter}", Matches: ${matches}`);
+        return matches;
+      });
+      console.log('EventsList: Filtered events by geographical state (count):', filtered.length);
     }
 
     if (searchTerm) {
@@ -113,6 +125,7 @@ const EventsList = () => {
         (event.place_name?.toLowerCase().includes(lowerCaseSearchTerm))
       );
     }
+    console.log('EventsList: Final filtered events count:', filtered.length);
     return filtered;
   };
 
@@ -130,14 +143,14 @@ const EventsList = () => {
   const handleApplyFilters = (filters: { searchTerm: string; eventType: string; state: string; dateFilter: string; }) => {
     setSearchTerm(filters.searchTerm);
     setEventType(filters.eventType);
-    setGeographicalStateFilter(filters.state); // Update new state filter
+    setGeographicalStateFilter(filters.state);
     setDateFilter(filters.dateFilter);
   };
 
   const handleClearAllFilters = () => {
     setSearchTerm('');
     setEventType('All');
-    setGeographicalStateFilter('All'); // Clear new state filter
+    setGeographicalStateFilter('All');
     setDateFilter('All Upcoming');
   };
 
@@ -222,7 +235,7 @@ const EventsList = () => {
       <EventFilterBar
         searchTerm={searchTerm}
         eventType={eventType}
-        stateFilter={geographicalStateFilter} // Pass new state filter
+        stateFilter={geographicalStateFilter}
         dateFilter={dateFilter}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -240,7 +253,7 @@ const EventsList = () => {
               onShare={handleShare}
               onDelete={handleDelete}
               onViewDetails={handleViewDetails}
-              hasActiveFilters={searchTerm !== '' || eventType !== 'All' || geographicalStateFilter !== 'All' || dateFilter !== 'All Upcoming'} // Use new state filter
+              hasActiveFilters={searchTerm !== '' || eventType !== 'All' || geographicalStateFilter !== 'All' || dateFilter !== 'All Upcoming'}
               onClearFilters={handleClearAllFilters}
             />
           ) : viewMode === 'calendar' ? (
