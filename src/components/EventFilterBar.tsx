@@ -16,6 +16,7 @@ interface EventFilterBarProps {
   onViewModeChange: (mode: 'list' | 'calendar' | 'map') => void;
   onApplyFilters: (filters: { searchTerm: string; eventType: string; state: string; dateFilter: string; }) => void;
   onClearAllFilters: () => void;
+  filteredEventsCount: number; // New prop for event count
 }
 
 const EventFilterBar: React.FC<EventFilterBarProps> = ({
@@ -27,6 +28,7 @@ const EventFilterBar: React.FC<EventFilterBarProps> = ({
   onViewModeChange,
   onApplyFilters,
   onClearAllFilters,
+  filteredEventsCount, // Destructure new prop
 }) => {
   const [isFilterOverlayOpen, setIsFilterOverlayOpen] = useState(false);
 
@@ -65,6 +67,11 @@ const EventFilterBar: React.FC<EventFilterBarProps> = ({
           {dateFilter !== 'All Upcoming' && <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">Date: {dateFilter}<Button variant="ghost" size="sm" className="h-3 w-3 p-0" onClick={() => removeFilter('dateFilter')}><X className="h-2.5 w-2.5" /></Button></Badge>}
           {hasActiveFilters && <Button variant="outline" onClick={onClearAllFilters} className="w-full sm:w-auto transition-all text-sm sm:text-base mt-2 sm:mt-0">Clear All</Button>}
         </div>
+      )}
+      {hasActiveFilters && (
+        <p className="mt-4 text-sm text-muted-foreground text-right">
+          Showing {filteredEventsCount} event{filteredEventsCount !== 1 ? 's' : ''}
+        </p>
       )}
       <FilterOverlay
         isOpen={isFilterOverlayOpen}
