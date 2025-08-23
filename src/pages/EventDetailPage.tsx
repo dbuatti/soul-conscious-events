@@ -121,7 +121,7 @@ const EventDetailPage: React.FC = () => {
     if (logError) {
       console.error('Error logging ticket link click:', logError);
     }
-    window.open(event.ticket_link, '_blank');
+    // Removed window.open here, as the <a> tag will handle navigation
   };
 
   if (loading || isSessionLoading) {
@@ -242,9 +242,15 @@ const EventDetailPage: React.FC = () => {
           {event.ticket_link && (
             <div className="flex items-center">
               <LinkIcon className="mr-2 h-5 w-5 text-primary" />
-              <Button variant="link" className="p-0 h-auto text-primary text-base transition-all duration-300 ease-in-out transform hover:scale-105" onClick={handleTicketLinkClick}>
+              <a
+                href={event.ticket_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline text-base transition-all duration-300 ease-in-out transform hover:scale-105"
+                onClick={handleTicketLinkClick} // Keep the logging here
+              >
                 Ticket/Booking Link
-              </Button>
+              </a>
             </div>
           )}
           {event.discount_code && (
@@ -287,7 +293,7 @@ const EventDetailPage: React.FC = () => {
       </Card>
 
       <div className="flex flex-wrap justify-end gap-2 mt-6">
-        <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" /> {/* Bookmark Button */}
+        <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" />
         <Button variant="outline" onClick={() => navigate(-1)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
