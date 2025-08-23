@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { eventTypes, australianStates } from '@/lib/constants'; // Ensure australianStates is imported
+import { eventTypes, australianStates } from '@/lib/constants';
 import { Filter as FilterIcon, X } from 'lucide-react';
 
 interface FilterOverlayProps {
@@ -21,7 +21,7 @@ interface FilterOverlayProps {
   currentFilters: {
     searchTerm: string;
     eventType: string;
-    state: string; // This is now geographicalState
+    state: string;
     dateFilter: string;
   };
   onApplyFilters: (filters: { searchTerm: string; eventType: string; state: string; dateFilter: string; }) => void;
@@ -41,7 +41,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
 }) => {
   const [localSearchTerm, setLocalSearchTerm] = useState(currentFilters.searchTerm);
   const [localEventType, setLocalEventType] = useState(currentFilters.eventType);
-  const [localGeographicalState, setLocalGeographicalState] = useState(currentFilters.state); // New state for geographical state
+  const [localGeographicalState, setLocalGeographicalState] = useState(currentFilters.state);
   const [localDateFilter, setLocalDateFilter] = useState(currentFilters.dateFilter);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
     onApplyFilters({
       searchTerm: localSearchTerm,
       eventType: localEventType,
-      state: localGeographicalState, // Pass new geographical state
+      state: localGeographicalState,
       dateFilter: localDateFilter,
     });
     onClose();
@@ -64,9 +64,9 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
   const handleClear = () => {
     setLocalSearchTerm('');
     setLocalEventType('All');
-    setLocalGeographicalState('All'); // Clear new geographical state
+    setLocalGeographicalState('All');
     setLocalDateFilter('All Upcoming');
-    onClearAllFilters(); // Also trigger parent clear all
+    onClearAllFilters();
     onClose();
   };
 
@@ -97,7 +97,9 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
             <Label htmlFor="event-type" className="text-foreground">Event Type</Label>
             <Select value={localEventType} onValueChange={setLocalEventType}>
               <SelectTrigger id="event-type" className="focus-visible:ring-primary">
-                <SelectValue placeholder="Select an event type" />
+                <SelectValue>
+                  {localEventType === 'All' ? 'All Types' : localEventType || 'Select an event type'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="dark:bg-card dark:border-border">
                 <SelectItem value="All">All Types</SelectItem>
@@ -114,7 +116,9 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
             <Label htmlFor="geographical-state" className="text-foreground">Australian State</Label>
             <Select value={localGeographicalState} onValueChange={setLocalGeographicalState}>
               <SelectTrigger id="geographical-state" className="focus-visible:ring-primary">
-                <SelectValue placeholder="Select a state" />
+                <SelectValue>
+                  {localGeographicalState === 'All' ? 'All States' : localGeographicalState || 'Select a state'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="dark:bg-card dark:border-border">
                 <SelectItem value="All">All States</SelectItem>
