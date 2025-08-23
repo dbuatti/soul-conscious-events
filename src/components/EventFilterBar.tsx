@@ -56,7 +56,7 @@ const EventFilterBar: React.FC<EventFilterBarProps> = ({
           </ToggleGroup>
         </div>
       </div>
-      {hasActiveFilters && viewMode === 'list' && (
+      {hasActiveFilters && (
         <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-1 sm:gap-2 items-center">
           <span className="text-xs sm:text-sm font-medium text-foreground">Active Filters:</span>
           {searchTerm && <Badge variant="secondary" className="bg-accent text-accent-foreground flex items-center gap-1 text-xs sm:text-sm py-0.5 px-1 sm:py-1 sm:px-2">Search: "{searchTerm}"<Button variant="ghost" size="sm" className="h-3 w-3 p-0" onClick={() => removeFilter('search')}><X className="h-2.5 w-2.5" /></Button></Badge>}
@@ -69,7 +69,7 @@ const EventFilterBar: React.FC<EventFilterBarProps> = ({
       <FilterOverlay
         isOpen={isFilterOverlayOpen}
         onClose={() => setIsFilterOverlayOpen(false)}
-        currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }} // Pass new state filter
+        currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }}
         onApplyFilters={onApplyFilters}
         onClearAllFilters={onClearAllFilters}
       />
