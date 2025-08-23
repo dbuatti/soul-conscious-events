@@ -34,7 +34,7 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
   return (
     <div>
       <AdvancedEventCalendar
-        events={events}
+        events={events} // Pass full events to calendar for dot display
         onEventSelect={onEventSelect}
         selectedDay={selectedDay}
         onDayClick={onDayClick}
@@ -44,17 +44,12 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
       <div className="mt-8">
         <h3 className="text-2xl font-bold text-foreground mb-4">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
         {selectedDayEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {selectedDayEvents.map(event => (
-              <EventCardList
-                key={`day-${event.id}`}
-                events={[event]}
-                onShare={onShare}
-                onDelete={onDelete}
-                onViewDetails={onViewDetails}
-              />
-            ))}
-          </div>
+          <EventCardList // Render once with the filtered list
+            events={selectedDayEvents}
+            onShare={onShare}
+            onDelete={onDelete}
+            onViewDetails={onViewDetails}
+          />
         ) : (
           <div className="text-center py-8 px-4 bg-secondary rounded-lg">
             <p className="text-muted-foreground">No events scheduled for this day.</p>
@@ -64,17 +59,12 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
       <div className="mt-12">
         <h3 className="text-2xl font-bold text-foreground mb-4">More events in {format(currentMonth, 'MMMM')}</h3>
         {currentMonthEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {currentMonthEvents.map(event => (
-              <EventCardList
-                key={`month-${event.id}`}
-                events={[event]}
-                onShare={onShare}
-                onDelete={onDelete}
-                onViewDetails={onViewDetails}
-              />
-            ))}
-          </div>
+          <EventCardList // Render once with the filtered list
+            events={currentMonthEvents}
+            onShare={onShare}
+            onDelete={onDelete}
+            onViewDetails={onViewDetails}
+          />
         ) : (
           <div className="text-center py-8 px-4 bg-secondary rounded-lg">
             <p className="text-muted-foreground">No upcoming events found for this month.</p>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { Lightbulb, Loader2, MapPin, UserPlus, X } from 'lucide-react';
+import { Lightbulb, Loader2, MapPin, UserPlus, X, ArrowUp } from 'lucide-react'; // Added ArrowUp icon
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
@@ -14,6 +14,7 @@ import EventCardList from '@/components/EventCardList';
 import EventCalendarView from '@/components/EventCalendarView';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import MonthSelector from '@/components/MonthSelector'; // New import
 
 const heroBackground = '/phil-hero-background.jpeg';
 
@@ -25,6 +26,7 @@ const EventsList = () => {
   const [eventType, setEventType] = useState('All');
   const [geographicalStateFilter, setGeographicalStateFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All Upcoming');
+  const [selectedMonthForList, setSelectedMonthForList] = useState<string | null>(null); // New state for month filter
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -36,6 +38,7 @@ const EventsList = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showSignUpPrompt, setShowSignUpPrompt] = useState(true);
+  const [showScrollToTop, setShowScrollToTop] = useState(false); // State for scroll to top button
 
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -54,7 +57,7 @@ const EventsList = () => {
         toast.error('Failed to load events.');
       } else {
         setEvents(data || []);
-        console.log('EventsList: Fetched events data:', data); // Log fetched data
+        console.log('EventsList: Fetched events data:', data);
       }
       setLoading(false);
     };
@@ -62,12 +65,32 @@ const EventsList = () => {
     fetchEvents();
   }, []);
 
+  // Effect for scroll to top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) { // Show button after scrolling 300px
+        setShowScrollToTop(true);
+      } else {
+        setShowScrollToTop(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const getFilteredEventsForList = () => {
     let filtered = events;
 
     console.log('EventsList: Filtering process started.');
     console.log('EventsList: Current events count (before filter):', events.length);
     console.log('EventsList: Current geographicalStateFilter:', geographicalStateFilter);
+    console.log('EventsList: Current selectedMonthForList:', selectedMonthForList);
+
 
     switch (dateFilter) {
       case 'Today':
@@ -95,7 +118,7 @@ const EventsList = () => {
       case 'All Upcoming':
         filtered = filtered.filter(event => parseISO(event.event_date) >= now);
         break;
-      case 'All Events': // Corrected from 'All Events':
+      case 'All Events':
       default:
         break;
     }
@@ -113,6 +136,11 @@ const EventsList = () => {
         return matches;
       });
       console.log('EventsList: Filtered events by geographical state (count):', filtered.length);
+    }
+
+    if (selectedMonthForList) { // Apply month filter
+      filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM') === selectedMonthForList);
+      console.log(`EventsList: Filtered by month "${selectedMonthForList}" (count):`, filtered.length);
     }
 
     if (searchTerm) {
@@ -145,6 +173,7 @@ const EventsList = () => {
     setEventType(filters.eventType);
     setGeographicalStateFilter(filters.state);
     setDateFilter(filters.dateFilter);
+    setSelectedMonthForList(null); // Clear month filter when applying general filters
   };
 
   const handleClearAllFilters = () => {
@@ -152,6 +181,7 @@ const EventsList = () => {
     setEventType('All');
     setGeographicalStateFilter('All');
     setDateFilter('All Upcoming');
+    setSelectedMonthForList(null); // Clear month filter
   };
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
@@ -243,6 +273,14 @@ const EventsList = () => {
         onClearAllFilters={handleClearAllFilters}
       />
 
+      {viewMode === 'list' && ( // Only show month selector in list view
+        <MonthSelector
+          events={events} // Pass all events to extract unique months
+          selectedMonth={selectedMonthForList}
+          onMonthSelect={setSelectedMonthForList}
+        />
+      )}
+
       {(loading || isSessionLoading) ? (
         <EventCardList events={[]} loading={true} onShare={handleShare} onDelete={handleDelete} onViewDetails={handleViewDetails} />
       ) : (
@@ -253,12 +291,12 @@ const EventsList = () => {
               onShare={handleShare}
               onDelete={handleDelete}
               onViewDetails={handleViewDetails}
-              hasActiveFilters={searchTerm !== '' || eventType !== 'All' || geographicalStateFilter !== 'All' || dateFilter !== 'All Upcoming'}
+              hasActiveFilters={searchTerm !== '' || eventType !== 'All' || geographicalStateFilter !== 'All' || dateFilter !== 'All Upcoming' || selectedMonthForList !== null}
               onClearFilters={handleClearAllFilters}
             />
           ) : viewMode === 'calendar' ? (
             <EventCalendarView
-              events={events}
+              events={events} // Pass full events to calendar for dot display
               selectedDay={selectedDay}
               onDayClick={setSelectedDay}
               currentMonth={currentMonth}
@@ -274,6 +312,17 @@ const EventsList = () => {
             <MapPage />
           )}
         </>
+      )}
+
+      {/* Scroll to Top Button */}
+      {showScrollToTop && (
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-4 right-4 p-3 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/80 transition-all duration-300 ease-in-out transform hover:scale-110 z-50"
+          title="Scroll to top"
+        >
+          <ArrowUp className="h-5 w-5" />
+        </Button>
       )}
 
       <EventDetailDialog event={selectedEvent} isOpen={isEventDetailDialogOpen} onClose={() => setIsEventDetailDialogOpen(false)} cameFromCalendar={viewMode === 'calendar'} />
