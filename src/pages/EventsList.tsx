@@ -95,7 +95,7 @@ const EventsList = () => {
       case 'All Upcoming':
         filtered = filtered.filter(event => parseISO(event.event_date) >= now);
         break;
-      'All Events':
+      case 'All Events': // Corrected from 'All Events':
       default:
         break;
     }
