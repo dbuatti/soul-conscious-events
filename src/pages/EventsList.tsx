@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { Lightbulb, Loader2, MapPin, UserPlus, X } from 'lucide-react'; // Added UserPlus and X icons
+import { Lightbulb, Loader2, MapPin, UserPlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
@@ -12,8 +12,8 @@ import { Event } from '@/types/event';
 import EventFilterBar from '@/components/EventFilterBar';
 import EventCardList from '@/components/EventCardList';
 import EventCalendarView from '@/components/EventCalendarView';
-import { Card, CardContent } from '@/components/ui/card'; // Import Card and CardContent
-import { Button } from '@/components/ui/button'; // Import Button
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const heroBackground = '/phil-hero-background.jpeg';
 
@@ -35,11 +35,10 @@ const EventsList = () => {
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [showSignUpPrompt, setShowSignUpPrompt] = useState(true); // State for the sign-up prompt
+  const [showSignUpPrompt, setShowSignUpPrompt] = useState(true);
 
-  // Define 'now' at the component level
   const now = new Date();
-  now.setHours(0, 0, 0, 0); // Normalize 'now' to start of day for consistent comparison
+  now.setHours(0, 0, 0, 0);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -191,13 +190,6 @@ const EventsList = () => {
         </div>
       </div>
 
-      <div className="mb-8 p-4 sm:p-6 bg-secondary border border-border rounded-lg shadow-lg text-center flex items-center justify-center">
-        <Lightbulb className="mr-3 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-primary" />
-        <p className="text-sm sm:text-base leading-relaxed text-foreground">
-          SoulFlow is a prototype app. Your feedback is invaluable! Please visit the <Link to="/contact" className="text-primary hover:underline font-medium">Contact Us</Link> page to share your suggestions.
-        </p>
-      </div>
-
       {!user && showSignUpPrompt && (
         <Card className="mb-8 p-4 sm:p-6 bg-blue-100 border border-blue-300 text-blue-900 rounded-lg shadow-md relative dark:bg-blue-950 dark:border-blue-700 dark:text-blue-100">
           <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-blue-700 hover:bg-blue-200 dark:text-blue-300 dark:hover:bg-blue-800" onClick={() => setShowSignUpPrompt(false)}>
@@ -219,6 +211,13 @@ const EventsList = () => {
           </CardContent>
         </Card>
       )}
+
+      <div className="mb-8 p-4 sm:p-6 bg-secondary border border-border rounded-lg shadow-lg text-center flex items-center justify-center">
+        <Lightbulb className="mr-3 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-primary" />
+        <p className="text-sm sm:text-base leading-relaxed text-foreground">
+          SoulFlow is a prototype app. Your feedback is invaluable! Please visit the <Link to="/contact" className="text-primary hover:underline font-medium">Contact Us</Link> page to share your suggestions.
+        </p>
+      </div>
 
       <EventFilterBar
         searchTerm={searchTerm}
