@@ -6,7 +6,7 @@ import { Lightbulb, Loader2, MapPin, UserPlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import { useLocation } => 'react-router-dom';
+import { useLocation } from 'react-router-dom'; // Corrected from '=>' to 'from'
 import MapPage from './MapPage';
 import { Event } from '@/types/event';
 import EventFilterBar from '@/components/EventFilterBar';
