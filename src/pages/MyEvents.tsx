@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, PlusCircle, Loader2 } from 'lucide-react';
+import { Frown, PlusCircle, Loader2, UserPlus, CalendarCheck } from 'lucide-react'; // Added UserPlus
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import UserEventCard from '@/components/UserEventCard';
@@ -65,10 +65,17 @@ const MyEvents: React.FC = () => {
   if (!user) {
     return (
       <div className="w-full max-w-screen-lg text-center p-8 bg-secondary rounded-lg border border-border">
-        <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-lg font-semibold text-foreground mb-4">You need to be logged in to view your events.</p>
+        <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <p className="text-lg font-semibold text-foreground mb-4">
+          Sign up or log in to create and manage your events!
+        </p>
+        <p className="text-muted-foreground mb-6">
+          As a registered user, you can easily submit new events, edit your existing ones, and track their approval status.
+        </p>
         <Link to="/login">
-          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">Login to View Events</Button>
+          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
+            <CalendarCheck className="mr-2 h-4 w-4" /> Sign Up / Log In
+          </Button>
         </Link>
       </div>
     );

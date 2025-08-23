@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { Lightbulb, Loader2, MapPin } from 'lucide-react';
+import { Lightbulb, Loader2, MapPin, UserPlus, X } from 'lucide-react'; // Added UserPlus and X icons
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
@@ -12,6 +12,8 @@ import { Event } from '@/types/event';
 import EventFilterBar from '@/components/EventFilterBar';
 import EventCardList from '@/components/EventCardList';
 import EventCalendarView from '@/components/EventCalendarView';
+import { Card, CardContent } from '@/components/ui/card'; // Import Card and CardContent
+import { Button } from '@/components/ui/button'; // Import Button
 
 const heroBackground = '/phil-hero-background.jpeg';
 
@@ -33,6 +35,7 @@ const EventsList = () => {
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showSignUpPrompt, setShowSignUpPrompt] = useState(true); // State for the sign-up prompt
 
   // Define 'now' at the component level
   const now = new Date();
@@ -194,6 +197,28 @@ const EventsList = () => {
           SoulFlow is a prototype app. Your feedback is invaluable! Please visit the <Link to="/contact" className="text-primary hover:underline font-medium">Contact Us</Link> page to share your suggestions.
         </p>
       </div>
+
+      {!user && showSignUpPrompt && (
+        <Card className="mb-8 p-4 sm:p-6 bg-blue-100 border border-blue-300 text-blue-900 rounded-lg shadow-md relative dark:bg-blue-950 dark:border-blue-700 dark:text-blue-100">
+          <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-blue-700 hover:bg-blue-200 dark:text-blue-300 dark:hover:bg-blue-800" onClick={() => setShowSignUpPrompt(false)}>
+            <X className="h-4 w-4" />
+          </Button>
+          <CardContent className="flex flex-col sm:flex-row items-center text-center sm:text-left p-0">
+            <UserPlus className="mr-4 h-8 w-8 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+            <div>
+              <p className="font-semibold text-lg mb-2">Unlock More Features!</p>
+              <p className="text-sm mb-4">
+                Sign up to **create your own events**, **bookmark your favorites**, and **manage your submissions** easily.
+              </p>
+              <Link to="/login">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  Sign Up / Log In
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <EventFilterBar
         searchTerm={searchTerm}

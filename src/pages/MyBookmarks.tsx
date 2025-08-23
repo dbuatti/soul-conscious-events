@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Bookmark, Loader2 } from 'lucide-react';
+import { Frown, Bookmark, Loader2, UserPlus } from 'lucide-react'; // Added UserPlus
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,8 +77,10 @@ const MyBookmarks: React.FC = () => {
       console.error('Error fetching bookmarked events:', error);
       toast.error('Failed to load your bookmarked events.');
     } else {
-      // Explicitly cast data to any[] first, then map and filter
-      const eventsData = (data as any[]).map(item => item.events).filter(Boolean) as Event[];
+      // Explicitly cast data to the expected type before mapping
+      const typedData = data as BookmarkedEventData[];
+      // Extract event data from the nested structure and filter out nulls
+      const eventsData = typedData.map(item => item.events).filter(Boolean) as Event[];
       setBookmarkedEvents(eventsData);
     }
     setLoadingBookmarks(false);
@@ -148,10 +150,17 @@ const MyBookmarks: React.FC = () => {
   if (!user) {
     return (
       <div className="w-full max-w-screen-lg text-center p-8 bg-secondary rounded-lg border border-border">
-        <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-lg font-semibold text-foreground mb-4">You need to be logged in to view your bookmarked events.</p>
+        <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <p className="text-lg font-semibold text-foreground mb-4">
+          Sign up or log in to save your favorite events!
+        </p>
+        <p className="text-muted-foreground mb-6">
+          As a registered user, you can bookmark events to easily find them later and keep track of your interests.
+        </p>
         <Link to="/login">
-          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">Login to View Bookmarks</Button>
+          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
+            <Bookmark className="mr-2 h-4 w-4" /> Sign Up / Log In
+          </Button>
         </Link>
       </div>
     );
