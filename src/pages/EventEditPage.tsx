@@ -45,16 +45,22 @@ const eventFormSchema = z.object({
   discountCode: z.string().optional().or(z.literal('')),
 });
 
-// Helper function to extract Australian state from address
+// Refined helper function to extract Australian state from address
 const extractAustralianState = (address: string): string | null => {
-  if (!address) return null;
-  const upperCaseAddress = address.toUpperCase();
-  for (const state of australianStates) {
-    const regex = new RegExp(`\\b${state}\\b`, 'i');
-    if (regex.test(upperCaseAddress)) {
-      return state;
-    }
+  if (!address) {
+    console.log('extractAustralianState: Address is empty, returning null.');
+    return null;
   }
+  const upperCaseAddress = address.toUpperCase();
+  const stateRegex = new RegExp(`\\b(${australianStates.join('|')})\\b(?:\\s+\\d{4})?`, 'i');
+  const match = upperCaseAddress.match(stateRegex);
+
+  if (match && match[1]) {
+    console.log(`extractAustralianState: Found state "${match[1]}" in address "${address}".`);
+    return match[1];
+  }
+
+  console.log(`extractAustralianState: No state found in address "${address}", returning null.`);
   return null;
 };
 
@@ -148,6 +154,7 @@ const EventEditPage: React.FC = () => {
         } else {
           setImageInputMode('upload');
         }
+        console.log('EventEditPage (Initial Load): geographicalState set to:', form.getValues('geographicalState'));
       } else {
         navigate('/404');
       }
@@ -182,6 +189,7 @@ const EventEditPage: React.FC = () => {
         } else {
           form.setValue('geographicalState', '', { shouldValidate: true });
         }
+        console.log('EventEditPage (Autocomplete): geographicalState set to:', form.getValues('geographicalState'));
       });
     }
   }, [form]);
@@ -224,6 +232,8 @@ const EventEditPage: React.FC = () => {
 
     console.log('[DEBUG] 3. Form values on submit:', values);
     console.log('[DEBUG] 3a. Date object from form:', values.eventDate.toString());
+    console.log('EventEditPage (onSubmit): geographicalState before submission:', form.getValues('geographicalState'));
+
 
     let finalImageUrl: string | null = null;
 
@@ -296,7 +306,7 @@ const EventEditPage: React.FC = () => {
       special_notes: values.specialNotes || null,
       organizer_contact: values.organizerContact || null,
       event_type: values.eventType || null,
-      geographical_state: values.geographicalState || null, // Save new field
+      geographical_state: values.geographicalState || null,
       image_url: finalImageUrl,
       discount_code: values.discountCode || null,
     }).eq('id', id);
@@ -397,326 +407,327 @@ const EventEditPage: React.FC = () => {
                   </Popover>
                   <FormMessage />
                 </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel htmlFor="endDate">End Date (Optional)</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          id="endDate"
-                          variant={'outline'}
-                          className={cn(
-                            'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
-                      <Calendar
-                        key={field.name}
-                        mode="single"
-                        selected={field.value as Date | undefined}
-                        onSelect={(date) => field.onChange(date)}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="eventTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="eventTime">Time (Optional)</FormLabel>
-                <FormControl>
-                  <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
             )}
           />
 
           <FormField
             control={form.control}
-            name="placeName"
+            name="endDate"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="placeName">Place Name (Optional)</FormLabel>
-                <FormControl>
-                  <Input id="placeName" placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="fullAddress"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="fullAddress">Full Address (Optional)</FormLabel>
-                <FormControl>
-                  <Input
-                    id="fullAddress"
-                    placeholder="e.g., 123 Main St, Suburb, State, Postcode"
-                    {...field}
-                    onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      const extractedState = extractAustralianState(e.target.value);
-                      if (extractedState) {
-                        form.setValue('geographicalState', extractedState, { shouldValidate: true });
-                      } else {
-                        form.setValue('geographicalState', '', { shouldValidate: true });
-                      }
-                    }}
-                    className="focus-visible:ring-primary"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="description">Description (Optional)</FormLabel>
-                <FormControl>
-                  <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="ticketLink"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="ticketLink">Ticket/Booking Link (Optional)</FormLabel>
-                <FormControl>
-                  <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="price">Price (Optional)</FormLabel>
-                <FormControl>
-                  <Input id="price" placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="specialNotes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="specialNotes">Special Notes (Optional)</FormLabel>
-                <FormControl>
-                  <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="organizerContact"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="organizerContact">Organizer Name/Contact (Optional)</FormLabel>
-                <FormControl>
-                  <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="eventType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="eventType">Event Type (Optional)</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger id="eventType" className="focus-visible:ring-primary">
-                      <SelectValue placeholder="Select an event type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="dark:bg-card dark:border-border">
-                    {eventTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="geographicalState"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="geographicalState">Australian State (Optional)</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
-                      <SelectValue placeholder="Select a state" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="dark:bg-card dark:border-border">
-                    {australianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="discountCode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="discountCode">Discount Code (Optional)</FormLabel>
-                <FormControl>
-                  <Input id="discountCode" placeholder="e.g., SOULFLOW10" {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormItem>
-            <FormLabel>Event Image (Optional)</FormLabel>
-            <Tabs
-              value={imageInputMode}
-              onValueChange={(value) => {
-                setImageInputMode(value as 'upload' | 'url');
-                if (value === 'upload') {
-                  form.setValue('imageUrl', '');
-                  setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : null);
-                } else {
-                  setSelectedImage(null);
-                  form.setValue('imageFile', undefined);
-                  setImagePreviewUrl(form.getValues('imageUrl') || null);
-                }
-              }}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
-                <TabsTrigger value="upload">Upload Image</TabsTrigger>
-                <TabsTrigger value="url">Image URL</TabsTrigger>
-              </TabsList>
-              <TabsContent value="upload" className="mt-4">
-                <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
-                  <span className="flex items-center">
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    {selectedImage ? selectedImage.name : (currentEvent?.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images') ? currentEvent.image_url.split('/').pop() : 'No file chosen')}
-                  </span>
-                  <Button type="button" variant="outline" size="sm" className="ml-4">
-                    Choose File
-                  </Button>
-                  <Input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageFileChange}
-                    className="sr-only"
-                  />
-                </label>
-              </TabsContent>
-              <TabsContent value="url" className="mt-4">
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel htmlFor="endDate">End Date (Optional)</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
                     <FormControl>
-                      <Input
-                        id="imageUrl"
-                        placeholder="e.g., https://example.com/image.jpg"
-                        {...field}
-                        onChange={handleImageUrlInputChange}
-                        className="focus-visible:ring-primary"
-                      />
+                      <Button
+                        id="endDate"
+                        variant={'outline'}
+                        className={cn(
+                          'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
+                          !field.value && 'text-muted-foreground'
+                        )}
+                      >
+                        {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
                     </FormControl>
-                  )}
-                />
-              </TabsContent>
-            </Tabs>
-            {imagePreviewUrl && (
-              <div className="mt-2 flex items-center space-x-2">
-                <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-border shadow-md" />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRemoveImage}
-                  className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105"
-                >
-                  <XCircle className="mr-1 h-4 w-4" /> Remove
-                </Button>
-              </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
+                    <Calendar
+                      key={field.name}
+                      mode="single"
+                      selected={field.value as Date | undefined}
+                      onSelect={(date) => field.onChange(date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
             )}
-            <FormMessage />
-          </FormItem>
+          />
+        </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => navigate(location.state?.from || '/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              Back
-            </Button>
-            <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              Preview
-            </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
-              {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
-        </form>
-      </Form>
+        <FormField
+          control={form.control}
+          name="eventTime"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="eventTime">Time (Optional)</FormLabel>
+              <FormControl>
+                <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="placeName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="placeName">Place Name (Optional)</FormLabel>
+              <FormControl>
+                <Input id="placeName" placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="fullAddress"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="fullAddress">Full Address (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  id="fullAddress"
+                  placeholder="e.g., 123 Main St, Suburb, State, Postcode"
+                  {...field}
+                  onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    const extractedState = extractAustralianState(e.target.value);
+                    if (extractedState) {
+                      form.setValue('geographicalState', extractedState, { shouldValidate: true });
+                    } else {
+                      form.setValue('geographicalState', '', { shouldValidate: true });
+                    }
+                    console.log('EventEditPage (Manual Input): geographicalState set to:', form.getValues('geographicalState'));
+                  }}
+                  className="focus-visible:ring-primary"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="description">Description (Optional)</FormLabel>
+              <FormControl>
+                <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="ticketLink"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="ticketLink">Ticket/Booking Link (Optional)</FormLabel>
+              <FormControl>
+                <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="price"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="price">Price (Optional)</FormLabel>
+              <FormControl>
+                <Input id="price" placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="specialNotes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="specialNotes">Special Notes (Optional)</FormLabel>
+              <FormControl>
+                <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="organizerContact"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="organizerContact">Organizer Name/Contact (Optional)</FormLabel>
+              <FormControl>
+                <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="eventType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="eventType">Event Type (Optional)</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger id="eventType" className="focus-visible:ring-primary">
+                    <SelectValue placeholder="Select an event type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="dark:bg-card dark:border-border">
+                  {eventTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="geographicalState"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="geographicalState">Australian State (Optional)</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
+                    <SelectValue placeholder="Select a state" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="dark:bg-card dark:border-border">
+                  {australianStates.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {state}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="discountCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="discountCode">Discount Code (Optional)</FormLabel>
+              <FormControl>
+                <Input id="discountCode" placeholder="e.g., SOULFLOW10" {...field} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormItem>
+          <FormLabel>Event Image (Optional)</FormLabel>
+          <Tabs
+            value={imageInputMode}
+            onValueChange={(value) => {
+              setImageInputMode(value as 'upload' | 'url');
+              if (value === 'upload') {
+                form.setValue('imageUrl', '');
+                setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : null);
+              } else {
+                setSelectedImage(null);
+                form.setValue('imageFile', undefined);
+                setImagePreviewUrl(form.getValues('imageUrl') || null);
+              }
+            }}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
+              <TabsTrigger value="upload">Upload Image</TabsTrigger>
+              <TabsTrigger value="url">Image URL</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upload" className="mt-4">
+              <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
+                <span className="flex items-center">
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  {selectedImage ? selectedImage.name : (currentEvent?.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images') ? currentEvent.image_url.split('/').pop() : 'No file chosen')}
+                </span>
+                <Button type="button" variant="outline" size="sm" className="ml-4">
+                  Choose File
+                </Button>
+                <Input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileChange}
+                  className="sr-only"
+                />
+              </label>
+            </TabsContent>
+            <TabsContent value="url" className="mt-4">
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormControl>
+                    <Input
+                      id="imageUrl"
+                      placeholder="e.g., https://example.com/image.jpg"
+                      {...field}
+                      onChange={handleImageUrlInputChange}
+                      className="focus-visible:ring-primary"
+                    />
+                  </FormControl>
+                )}
+              />
+            </TabsContent>
+          </Tabs>
+          {imagePreviewUrl && (
+            <div className="mt-2 flex items-center space-x-2">
+              <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-border shadow-md" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleRemoveImage}
+                className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105"
+              >
+                <XCircle className="mr-1 h-4 w-4" /> Remove
+              </Button>
+            </div>
+          )}
+          <FormMessage />
+        </FormItem>
+
+        <div className="flex justify-end space-x-2">
+          <Button type="button" variant="outline" onClick={() => navigate(location.state?.from || '/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            Back
+          </Button>
+          <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            Preview
+          </Button>
+          <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
+            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </Form>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">

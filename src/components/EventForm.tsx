@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Image as ImageIcon, XCircle, MapPin, Loader2 } from 'lucide-react'; // Added Loader2
+import { CalendarIcon, Image as ImageIcon, XCircle, MapPin, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +35,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')), // New field
+  geographicalState: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
@@ -51,17 +51,24 @@ interface EventFormProps {
   onPreview: () => void;
 }
 
-// Helper function to extract Australian state from address
+// Refined helper function to extract Australian state from address
 const extractAustralianState = (address: string): string | null => {
-  if (!address) return null;
-  const upperCaseAddress = address.toUpperCase();
-  for (const state of australianStates) {
-    // Look for the state abbreviation followed by a space, comma, or end of string
-    const regex = new RegExp(`\\b${state}\\b`, 'i'); // \b for word boundary, i for case-insensitive
-    if (regex.test(upperCaseAddress)) {
-      return state;
-    }
+  if (!address) {
+    console.log('extractAustralianState: Address is empty, returning null.');
+    return null;
   }
+  const upperCaseAddress = address.toUpperCase();
+  // Regex to find a 2-letter state abbreviation followed by a space and 4 digits (postcode)
+  // or just a 2-letter state abbreviation at a word boundary
+  const stateRegex = new RegExp(`\\b(${australianStates.join('|')})\\b(?:\\s+\\d{4})?`, 'i');
+  const match = upperCaseAddress.match(stateRegex);
+
+  if (match && match[1]) {
+    console.log(`extractAustralianState: Found state "${match[1]}" in address "${address}".`);
+    return match[1];
+  }
+
+  console.log(`extractAustralianState: No state found in address "${address}", returning null.`);
   return null;
 };
 
@@ -96,6 +103,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
         } else {
           form.setValue('geographicalState', '', { shouldValidate: true });
         }
+        console.log('EventForm (Autocomplete): geographicalState set to:', form.getValues('geographicalState'));
       });
     }
   }, [form]);
@@ -135,7 +143,10 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={(e) => {
+        console.log('EventForm (onSubmit): geographicalState before submission:', form.getValues('geographicalState'));
+        onSubmit(form.getValues());
+      }} className="space-y-6">
         <FormField
           control={form.control}
           name="eventName"
@@ -278,6 +289,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                     } else {
                       form.setValue('geographicalState', '', { shouldValidate: true });
                     }
+                    console.log('EventForm (Manual Input): geographicalState set to:', form.getValues('geographicalState'));
                   }}
                   className="focus-visible:ring-primary"
                 />
@@ -384,11 +396,11 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
 
         <FormField
           control={form.control}
-          name="geographicalState" // New field
+          name="geographicalState"
           render={({ field }) => (
             <FormItem>
               <FormLabel htmlFor="geographicalState">Australian State (Optional)</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}> {/* Use value prop */}
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
                     <SelectValue placeholder="Select a state" />
