@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Image as ImageIcon, XCircle, MapPin } from 'lucide-react'; // Added MapPin icon
+import { CalendarIcon, Image as ImageIcon, XCircle, MapPin, Loader2 } from 'lucide-react'; // Added Loader2
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { eventTypes, australianStates } from '@/lib/constants'; // Import australianStates
+import { eventTypes, australianStates } from '@/lib/constants';
 
 // Define the schema locally to avoid import issues
 const eventFormSchema = z.object({
@@ -51,6 +51,20 @@ interface EventFormProps {
   onPreview: () => void;
 }
 
+// Helper function to extract Australian state from address
+const extractAustralianState = (address: string): string | null => {
+  if (!address) return null;
+  const upperCaseAddress = address.toUpperCase();
+  for (const state of australianStates) {
+    // Look for the state abbreviation followed by a space, comma, or end of string
+    const regex = new RegExp(`\\b${state}\\b`, 'i'); // \b for word boundary, i for case-insensitive
+    if (regex.test(upperCaseAddress)) {
+      return state;
+    }
+  }
+  return null;
+};
+
 const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onBack, onPreview }) => {
   const placeNameInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -72,8 +86,16 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
 
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
+        const fullAddress = place.formatted_address || '';
         form.setValue('placeName', place.name || '', { shouldValidate: true });
-        form.setValue('fullAddress', place.formatted_address || '', { shouldValidate: true });
+        form.setValue('fullAddress', fullAddress, { shouldValidate: true });
+
+        const extractedState = extractAustralianState(fullAddress);
+        if (extractedState) {
+          form.setValue('geographicalState', extractedState, { shouldValidate: true });
+        } else {
+          form.setValue('geographicalState', '', { shouldValidate: true });
+        }
       });
     }
   }, [form]);
@@ -248,6 +270,15 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                   placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                   {...field}
                   onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    const extractedState = extractAustralianState(e.target.value);
+                    if (extractedState) {
+                      form.setValue('geographicalState', extractedState, { shouldValidate: true });
+                    } else {
+                      form.setValue('geographicalState', '', { shouldValidate: true });
+                    }
+                  }}
                   className="focus-visible:ring-primary"
                 />
               </FormControl>
@@ -357,7 +388,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           render={({ field }) => (
             <FormItem>
               <FormLabel htmlFor="geographicalState">Australian State (Optional)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}> {/* Use value prop */}
                 <FormControl>
                   <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
                     <SelectValue placeholder="Select a state" />

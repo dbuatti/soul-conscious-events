@@ -23,8 +23,8 @@ import {
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { eventTypes, australianStates } from '@/lib/constants'; // Import australianStates
-import { Event } from '@/types/event'; // Import the shared Event type
+import { eventTypes, australianStates } from '@/lib/constants';
+import { Event } from '@/types/event';
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
@@ -39,11 +39,24 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')), // New field
+  geographicalState: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
 });
+
+// Helper function to extract Australian state from address
+const extractAustralianState = (address: string): string | null => {
+  if (!address) return null;
+  const upperCaseAddress = address.toUpperCase();
+  for (const state of australianStates) {
+    const regex = new RegExp(`\\b${state}\\b`, 'i');
+    if (regex.test(upperCaseAddress)) {
+      return state;
+    }
+  }
+  return null;
+};
 
 const EventEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,7 +85,7 @@ const EventEditPage: React.FC = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      geographicalState: '', // Default for new field
+      geographicalState: '',
       imageUrl: '',
       discountCode: '',
     },
@@ -121,7 +134,7 @@ const EventEditPage: React.FC = () => {
           specialNotes: data.special_notes || '',
           organizerContact: data.organizer_contact || '',
           eventType: data.event_type || '',
-          geographicalState: data.geographical_state || '', // Set new field
+          geographicalState: data.geographical_state || '', // Set new field from fetched data
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
         });
@@ -159,8 +172,16 @@ const EventEditPage: React.FC = () => {
 
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
+        const fullAddress = place.formatted_address || '';
         form.setValue('placeName', place.name || '', { shouldValidate: true });
-        form.setValue('fullAddress', place.formatted_address || '', { shouldValidate: true });
+        form.setValue('fullAddress', fullAddress, { shouldValidate: true });
+
+        const extractedState = extractAustralianState(fullAddress);
+        if (extractedState) {
+          form.setValue('geographicalState', extractedState, { shouldValidate: true });
+        } else {
+          form.setValue('geographicalState', '', { shouldValidate: true });
+        }
       });
     }
   }, [form]);
@@ -457,6 +478,15 @@ const EventEditPage: React.FC = () => {
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
                     onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      const extractedState = extractAustralianState(e.target.value);
+                      if (extractedState) {
+                        form.setValue('geographicalState', extractedState, { shouldValidate: true });
+                      } else {
+                        form.setValue('geographicalState', '', { shouldValidate: true });
+                      }
+                    }}
                     className="focus-visible:ring-primary"
                   />
                 </FormControl>
@@ -562,11 +592,11 @@ const EventEditPage: React.FC = () => {
 
           <FormField
             control={form.control}
-            name="geographicalState" // New field
+            name="geographicalState"
             render={({ field }) => (
               <FormItem>
                 <FormLabel htmlFor="geographicalState">Australian State (Optional)</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
                       <SelectValue placeholder="Select a state" />
@@ -775,7 +805,7 @@ const EventEditPage: React.FC = () => {
                 <p className="col-span-3 text-foreground">{previewData.eventType}</p>
               </div>
             )}
-            {previewData?.geographicalState && ( // Display new field
+            {previewData?.geographicalState && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <p className="text-right font-medium text-foreground">State:</p>
                 <p className="col-span-3 text-foreground">{previewData.geographicalState}</p>
