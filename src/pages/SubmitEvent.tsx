@@ -9,7 +9,7 @@ import { useSession } from '@/components/SessionContextProvider';
 import EventForm from '@/components/EventForm';
 import AiParsingSection from '@/components/AiParsingSection';
 import EventPreviewDialog from '@/components/EventPreviewDialog';
-import { eventTypes } from '@/lib/constants';
+import { eventTypes, australianStates } from '@/lib/constants'; // Import australianStates
 
 // Define the schema locally to avoid import issues
 const eventFormSchema = z.object({
@@ -25,14 +25,13 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
+  geographicalState: z.string().optional().or(z.literal('')), // New field
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
-
-const australianStates = ['ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'];
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
@@ -54,6 +53,7 @@ const SubmitEvent = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
+      geographicalState: '', // Default for new field
       imageUrl: '',
       discountCode: '',
     },
@@ -90,6 +90,7 @@ const SubmitEvent = () => {
       specialNotes: parsedData.specialNotes || '',
       organizerContact: parsedData.organizerContact || '',
       eventType: parsedData.eventType || '',
+      geographicalState: parsedData.geographicalState || '', // Map to new field
       imageUrl: parsedData.imageUrl || '',
       discountCode: parsedData.discountCode || '',
     });
@@ -161,10 +162,11 @@ const SubmitEvent = () => {
           special_notes: values.specialNotes || null,
           organizer_contact: values.organizerContact || null,
           event_type: values.eventType || null,
+          geographical_state: values.geographicalState || null, // Save new field
           image_url: finalImageUrl,
           discount_code: values.discountCode || null,
           user_id: user.id,
-          state: 'pending', // Default to pending for admin review
+          approval_status: 'pending', // Renamed from 'state'
         },
       ]);
 

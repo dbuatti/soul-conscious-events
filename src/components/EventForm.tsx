@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Image as ImageIcon, XCircle } from 'lucide-react';
+import { CalendarIcon, Image as ImageIcon, XCircle, MapPin } from 'lucide-react'; // Added MapPin icon
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,9 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { eventTypes } from '@/lib/constants';
-
-const australianStates = ['ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'];
+import { eventTypes, australianStates } from '@/lib/constants'; // Import australianStates
 
 // Define the schema locally to avoid import issues
 const eventFormSchema = z.object({
@@ -37,6 +35,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
+  geographicalState: z.string().optional().or(z.literal('')), // New field
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
@@ -343,6 +342,31 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                   {eventTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="geographicalState" // New field
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="geographicalState">Australian State (Optional)</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
+                    <SelectValue placeholder="Select a state" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="dark:bg-card dark:border-border">
+                  {australianStates.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {state}
                     </SelectItem>
                   ))}
                 </SelectContent>

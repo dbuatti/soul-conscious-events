@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parseISO } from 'date-fns'; // Import parseISO
+import { format, parseISO } from 'date-fns';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2, Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
@@ -94,7 +94,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     if (logError) {
       console.error('Error logging ticket link click:', logError);
     }
-    // Removed window.open here, as the <a> tag will handle navigation
+    window.open(event.ticket_link, '_blank');
   };
 
   if (!isOpen) {
@@ -179,7 +179,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 </>
               )}
             </CardDescription>
-            {(event.place_name || event.full_address) && (
+            {(event.place_name || event.full_address || event.geographical_state) && ( // Include geographical_state
               <CardDescription className="flex flex-col items-start text-muted-foreground mt-1">
                 {event.place_name && (
                   <div className="flex items-center mb-1">
@@ -200,6 +200,14 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                     >
                       {event.full_address}
                     </a>
+                  </div>
+                )}
+                {event.geographical_state && ( // Display geographical_state
+                  <div className="flex items-center mt-1">
+                    <MapPin className="mr-2 h-4 w-4 text-primary" />
+                    <Badge variant="secondary" className="bg-accent text-accent-foreground text-base py-1 px-2">
+                      {event.geographical_state}
+                    </Badge>
                   </div>
                 )}
               </CardDescription>
@@ -229,7 +237,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline text-base transition-all duration-300 ease-in-out transform hover:scale-105"
-                  onClick={handleTicketLinkClick} // Keep the logging here
+                  onClick={handleTicketLinkClick}
                 >
                   Ticket/Booking Link
                 </a>

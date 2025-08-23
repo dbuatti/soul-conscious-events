@@ -23,12 +23,8 @@ import {
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { eventTypes } from '@/lib/constants';
+import { eventTypes, australianStates } from '@/lib/constants'; // Import australianStates
 import { Event } from '@/types/event'; // Import the shared Event type
-
-const australianStates = [
-  'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
-];
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
@@ -43,6 +39,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
+  geographicalState: z.string().optional().or(z.literal('')), // New field
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
@@ -75,6 +72,7 @@ const EventEditPage: React.FC = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
+      geographicalState: '', // Default for new field
       imageUrl: '',
       discountCode: '',
     },
@@ -123,6 +121,7 @@ const EventEditPage: React.FC = () => {
           specialNotes: data.special_notes || '',
           organizerContact: data.organizer_contact || '',
           eventType: data.event_type || '',
+          geographicalState: data.geographical_state || '', // Set new field
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
         });
@@ -276,6 +275,7 @@ const EventEditPage: React.FC = () => {
       special_notes: values.specialNotes || null,
       organizer_contact: values.organizerContact || null,
       event_type: values.eventType || null,
+      geographical_state: values.geographicalState || null, // Save new field
       image_url: finalImageUrl,
       discount_code: values.discountCode || null,
     }).eq('id', id);
@@ -562,6 +562,31 @@ const EventEditPage: React.FC = () => {
 
           <FormField
             control={form.control}
+            name="geographicalState" // New field
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="geographicalState">Australian State (Optional)</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
+                      <SelectValue placeholder="Select a state" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="dark:bg-card dark:border-border">
+                    {australianStates.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="discountCode"
             render={({ field }) => (
               <FormItem>
@@ -672,93 +697,95 @@ const EventEditPage: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {previewData && (
-              <>
-                {imagePreviewUrl && (
-                  <div className="col-span-full flex justify-center mb-4">
-                    <a href={imagePreviewUrl} target="_blank" rel="noopener noreferrer">
-                      <img
-                        src={imagePreviewUrl}
-                        alt="Event Preview"
-                        className="max-w-full h-auto rounded-lg shadow-lg"
-                      />
-                    </a>
-                  </div>
-                )}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-right font-medium text-foreground">Event Name:</p>
-                  <p className="col-span-3 text-foreground">{previewData.eventName}</p>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-right font-medium text-foreground">Date:</p>
-                  <p className="col-span-3 text-foreground">
-                    {previewData.eventDate ? format(previewData.eventDate, 'PPP') : 'N/A'}
-                    {previewData.endDate && ` - ${format(previewData.endDate, 'PPP')}`}
-                  </p>
-                </div>
-                {previewData.eventTime && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Time:</p>
-                    <p className="col-span-3 text-foreground">{previewData.eventTime}</p>
-                  </div>
-                )}
-                {previewData.placeName && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Place Name:</p>
-                    <p className="col-span-3 text-foreground">{previewData.placeName}</p>
-                  </div>
-                )}
-                {previewData.fullAddress && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Address:</p>
-                    <p className="col-span-3 text-foreground">{previewData.fullAddress}</p>
-                  </div>
-                )}
-                {previewData.description && (
-                  <div className="grid grid-cols-4 items-start gap-4">
-                    <p className="text-right font-medium text-foreground">Description:</p>
-                    <p className="col-span-3 whitespace-pre-wrap text-foreground">{previewData.description}</p>
-                  </div>
-                )}
-                {previewData.ticketLink && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Ticket Link:</p>
-                    <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
-                      {previewData.ticketLink}
-                    </a>
-                  </div>
-                )}
-                {previewData.price && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Price:</p>
-                    <p className="col-span-3 text-foreground">{previewData.price}</p>
-                  </div>
-                )}
-                {previewData.specialNotes && (
-                  <div className="grid grid-cols-4 items-start gap-4">
-                    <p className="text-right font-medium text-foreground">Special Notes:</p>
-                    <p className="col-span-3 whitespace-pre-wrap text-foreground">{previewData.specialNotes}</p>
-                  </div>
-                )}
-                {previewData.organizerContact && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Organizer:</p>
-                    <p className="col-span-3 text-foreground">{previewData.organizerContact}</p>
-                  </div>
-                )}
-                {previewData.eventType && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Event Type:</p>
-                    <p className="col-span-3 text-foreground">{previewData.eventType}</p>
-                  </div>
-                )}
-                {previewData.discountCode && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p className="text-right font-medium text-foreground">Discount Code:</p>
-                    <p className="col-span-3 text-foreground">{previewData.discountCode}</p>
-                  </div>
-                )}
-              </>
+            {imagePreviewUrl && (
+              <div className="col-span-full flex justify-center mb-4">
+                <a href={imagePreviewUrl} target="_blank" rel="noopener noreferrer">
+                  <img
+                    src={imagePreviewUrl}
+                    alt="Event Preview"
+                    className="max-w-full h-auto rounded-lg shadow-lg"
+                  />
+                </a>
+              </div>
+            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <p className="text-right font-medium text-foreground">Event Name:</p>
+              <p className="col-span-3 text-foreground">{previewData?.eventName}</p>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <p className="text-right font-medium text-foreground">Date:</p>
+              <p className="col-span-3 text-foreground">
+                {previewData?.eventDate ? format(new Date(previewData.eventDate), 'PPP') : 'N/A'}
+                {previewData?.endDate && ` - ${format(new Date(previewData.endDate), 'PPP')}`}
+              </p>
+            </div>
+            {previewData?.eventTime && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Time:</p>
+                <p className="col-span-3 text-foreground">{previewData.eventTime}</p>
+              </div>
+            )}
+            {previewData?.placeName && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Place Name:</p>
+                <p className="col-span-3 text-foreground">{previewData.placeName}</p>
+              </div>
+            )}
+            {previewData?.fullAddress && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Address:</p>
+                <p className="col-span-3 text-foreground">{previewData.fullAddress}</p>
+              </div>
+            )}
+            {previewData?.description && (
+              <div className="grid grid-cols-4 items-start gap-4">
+                <p className="text-right font-medium text-foreground">Description:</p>
+                <p className="col-span-3 whitespace-pre-wrap text-foreground">{previewData.description}</p>
+              </div>
+            )}
+            {previewData?.ticketLink && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Ticket Link:</p>
+                <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
+                  {previewData.ticketLink}
+                </a>
+              </div>
+            )}
+            {previewData?.price && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Price:</p>
+                <p className="col-span-3 text-foreground">{previewData.price}</p>
+              </div>
+            )}
+            {previewData?.specialNotes && (
+              <div className="grid grid-cols-4 items-start gap-4">
+                <p className="text-right font-medium text-foreground">Special Notes:</p>
+                <p className="col-span-3 whitespace-pre-wrap text-foreground">{previewData.specialNotes}</p>
+              </div>
+            )}
+            {previewData?.organizerContact && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Organizer:</p>
+                <p className="col-span-3 text-foreground">{previewData.organizerContact}</p>
+              </div>
+            )}
+            {previewData?.eventType && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Event Type:</p>
+                <p className="col-span-3 text-foreground">{previewData.eventType}</p>
+              </div>
+            )}
+            {previewData?.geographicalState && ( // Display new field
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">State:</p>
+                <p className="col-span-3 text-foreground">{previewData.geographicalState}</p>
+              </div>
+            )}
+            {previewData?.discountCode && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Discount Code:</p>
+                <p className="col-span-3 text-foreground">{previewData.discountCode}</p>
+              </div>
             )}
           </div>
           <DialogFooter>

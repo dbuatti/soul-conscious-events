@@ -121,7 +121,7 @@ const EventDetailPage: React.FC = () => {
     if (logError) {
       console.error('Error logging ticket link click:', logError);
     }
-    // Removed window.open here, as the <a> tag will handle navigation
+    window.open(event.ticket_link, '_blank');
   };
 
   if (loading || isSessionLoading) {
@@ -197,7 +197,7 @@ const EventDetailPage: React.FC = () => {
               </>
             )}
           </CardDescription>
-          {(event.place_name || event.full_address) && (
+          {(event.place_name || event.full_address || event.geographical_state) && ( // Include geographical_state
             <CardDescription className="flex flex-col items-start text-muted-foreground mt-1">
               {event.place_name && (
                 <div className="flex items-center mb-1">
@@ -218,6 +218,14 @@ const EventDetailPage: React.FC = () => {
                   >
                     {event.full_address}
                   </a>
+                </div>
+              )}
+              {event.geographical_state && ( // Display geographical_state
+                <div className="flex items-center mt-1">
+                  <MapPin className="mr-2 h-4 w-4 text-primary" />
+                  <Badge variant="secondary" className="bg-accent text-accent-foreground text-base py-1 px-2">
+                    {event.geographical_state}
+                  </Badge>
                 </div>
               )}
             </CardDescription>
@@ -247,7 +255,7 @@ const EventDetailPage: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline text-base transition-all duration-300 ease-in-out transform hover:scale-105"
-                onClick={handleTicketLinkClick} // Keep the logging here
+                onClick={handleTicketLinkClick}
               >
                 Ticket/Booking Link
               </a>

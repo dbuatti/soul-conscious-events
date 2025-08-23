@@ -6,7 +6,7 @@ import { Lightbulb, Loader2, MapPin, UserPlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import { useLocation } from 'react-router-dom'; // Corrected from '=>' to 'from'
+import { useLocation } from 'react-router-dom';
 import MapPage from './MapPage';
 import { Event } from '@/types/event';
 import EventFilterBar from '@/components/EventFilterBar';
@@ -23,7 +23,7 @@ const EventsList = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [eventType, setEventType] = useState('All');
-  const [stateFilter, setStateFilter] = useState('All');
+  const [geographicalStateFilter, setGeographicalStateFilter] = useState('All'); // Renamed from stateFilter
   const [dateFilter, setDateFilter] = useState('All Upcoming');
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar');
@@ -44,7 +44,7 @@ const EventsList = () => {
     const fetchEvents = async () => {
       setLoading(true);
       let query = supabase.from('events').select('*');
-      query = query.eq('state', 'approved');
+      query = query.eq('approval_status', 'approved'); // Filter by new approval_status
       query = query.order('event_date', { ascending: true });
 
       const { data, error } = await query;
@@ -99,8 +99,8 @@ const EventsList = () => {
       filtered = filtered.filter(event => event.event_type === eventType);
     }
 
-    if (stateFilter !== 'All') {
-      filtered = filtered.filter(event => event.state === stateFilter);
+    if (geographicalStateFilter !== 'All') { // Use new geographicalStateFilter
+      filtered = filtered.filter(event => event.geographical_state === geographicalStateFilter);
     }
 
     if (searchTerm) {
@@ -130,14 +130,14 @@ const EventsList = () => {
   const handleApplyFilters = (filters: { searchTerm: string; eventType: string; state: string; dateFilter: string; }) => {
     setSearchTerm(filters.searchTerm);
     setEventType(filters.eventType);
-    setStateFilter(filters.state);
+    setGeographicalStateFilter(filters.state); // Update new state filter
     setDateFilter(filters.dateFilter);
   };
 
   const handleClearAllFilters = () => {
     setSearchTerm('');
     setEventType('All');
-    setStateFilter('All');
+    setGeographicalStateFilter('All'); // Clear new state filter
     setDateFilter('All Upcoming');
   };
 
@@ -222,7 +222,7 @@ const EventsList = () => {
       <EventFilterBar
         searchTerm={searchTerm}
         eventType={eventType}
-        stateFilter={stateFilter}
+        stateFilter={geographicalStateFilter} // Pass new state filter
         dateFilter={dateFilter}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -240,7 +240,7 @@ const EventsList = () => {
               onShare={handleShare}
               onDelete={handleDelete}
               onViewDetails={handleViewDetails}
-              hasActiveFilters={searchTerm !== '' || eventType !== 'All' || stateFilter !== 'All' || dateFilter !== 'All Upcoming'}
+              hasActiveFilters={searchTerm !== '' || eventType !== 'All' || geographicalStateFilter !== 'All' || dateFilter !== 'All Upcoming'} // Use new state filter
               onClearFilters={handleClearAllFilters}
             />
           ) : viewMode === 'calendar' ? (

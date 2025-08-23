@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Share2, ExternalLink, Calendar, Clock } from 'lucide-react'; // Added Calendar and Clock
+import { Edit, Trash2, Share2, ExternalLink, Calendar, Clock, MapPin } from 'lucide-react'; // Added MapPin
 import {
   AlertDialog,
   AlertDialogAction,
@@ -96,11 +96,17 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
               </>
             )}
           </CardDescription>
-          {event.state && (
+          {event.approval_status && ( // Display approval_status
             <div className="mt-2">
-              <Badge variant={getStatusBadgeVariant(event.state)}>
-                Status: {event.state.charAt(0).toUpperCase() + event.state.slice(1)}
+              <Badge variant={getStatusBadgeVariant(event.approval_status)}>
+                Status: {event.approval_status.charAt(0).toUpperCase() + event.approval_status.slice(1)}
               </Badge>
+            </div>
+          )}
+          {event.geographical_state && ( // Display geographical_state
+            <div className="mt-1 flex items-center text-muted-foreground text-sm sm:text-base">
+              <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+              {event.geographical_state}
             </div>
           )}
         </CardHeader>

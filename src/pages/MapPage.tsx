@@ -33,7 +33,7 @@ const MapPage = () => {
         .select('*')
         .not('full_address', 'is', null)
         .gte('event_date', todayFormatted)
-        .eq('state', 'approved')
+        .eq('approval_status', 'approved') // Filter by new approval_status
         .order('event_date', { ascending: true });
 
       if (error) {

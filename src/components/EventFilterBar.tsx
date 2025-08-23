@@ -10,7 +10,7 @@ import { australianStates } from '@/lib/constants';
 interface EventFilterBarProps {
   searchTerm: string;
   eventType: string;
-  stateFilter: string;
+  stateFilter: string; // This is now geographicalStateFilter
   dateFilter: string;
   viewMode: 'list' | 'calendar' | 'map';
   onViewModeChange: (mode: 'list' | 'calendar' | 'map') => void;
@@ -21,7 +21,7 @@ interface EventFilterBarProps {
 const EventFilterBar: React.FC<EventFilterBarProps> = ({
   searchTerm,
   eventType,
-  stateFilter,
+  stateFilter, // This is now geographicalStateFilter
   dateFilter,
   viewMode,
   onViewModeChange,
@@ -36,7 +36,7 @@ const EventFilterBar: React.FC<EventFilterBarProps> = ({
     switch (filterType) {
       case 'search': onApplyFilters({ searchTerm: '', eventType, state: stateFilter, dateFilter }); break;
       case 'eventType': onApplyFilters({ searchTerm, eventType: 'All', state: stateFilter, dateFilter }); break;
-      case 'state': onApplyFilters({ searchTerm, eventType, state: 'All', dateFilter }); break;
+      case 'state': onApplyFilters({ searchTerm, eventType, state: 'All', dateFilter }); break; // Clears geographicalStateFilter
       case 'dateFilter': onApplyFilters({ searchTerm, eventType, state: stateFilter, dateFilter: 'All Upcoming' }); break;
     }
   };
@@ -69,7 +69,7 @@ const EventFilterBar: React.FC<EventFilterBarProps> = ({
       <FilterOverlay
         isOpen={isFilterOverlayOpen}
         onClose={() => setIsFilterOverlayOpen(false)}
-        currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }}
+        currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }} // Pass new state filter
         onApplyFilters={onApplyFilters}
         onClearAllFilters={onClearAllFilters}
       />
