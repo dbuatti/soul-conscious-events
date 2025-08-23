@@ -133,10 +133,10 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
   const formattedStartDate = event.event_date
-    ? format(parseISO(event.event_date), 'PPP') // Use parseISO
+    ? format(parseISO(event.event_date), 'PPP')
     : 'Date TBD';
   const formattedEndDate = event.end_date
-    ? format(parseISO(event.end_date), 'PPP') // Use parseISO
+    ? format(parseISO(event.end_date), 'PPP')
     : '';
 
   const dateDisplay =
@@ -179,7 +179,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 </>
               )}
             </CardDescription>
-            {(event.place_name || event.full_address || event.geographical_state) && ( // Include geographical_state
+            {(event.place_name || event.full_address || event.geographical_state) && (
               <CardDescription className="flex flex-col items-start text-muted-foreground mt-1">
                 {event.place_name && (
                   <div className="flex items-center mb-1">
@@ -202,7 +202,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                     </a>
                   </div>
                 )}
-                {event.geographical_state && ( // Display geographical_state
+                {event.geographical_state && (
                   <div className="flex items-center mt-1">
                     <MapPin className="mr-2 h-4 w-4 text-primary" />
                     <Badge variant="secondary" className="bg-accent text-accent-foreground text-base py-1 px-2">
@@ -223,7 +223,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.price && (
               <p className="flex items-center text-foreground">
                 <DollarSign className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Price: </span> {event.price}
+                <span className="font-medium">Price: </span> {event.price} {/* Added space */}
                 {event.price.toLowerCase() === 'free' && (
                   <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
                 )}
@@ -270,13 +270,13 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.organizer_contact && (
               <p className="flex items-center text-foreground">
                 <User className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Organizer: </span> {event.organizer_contact}
+                <span className="font-medium">Organizer: </span> {event.organizer_contact} {/* Added space */}
               </p>
             )}
             {event.event_type && (
               <p className="flex items-center text-foreground">
                 <Tag className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Event Type: </span> {event.event_type}
+                <span className="font-medium">Event Type: </span> {event.event_type} {/* Added space */}
               </p>
             )}
           </CardContent>
