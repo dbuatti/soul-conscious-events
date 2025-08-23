@@ -54,7 +54,7 @@ const EventsList = () => {
         toast.error('Failed to load events.');
       } else {
         setEvents(data || []);
-        console.log('EventsList: Fetched events data:', data);
+        console.log('EventsList: Fetched events data:', data); // Log fetched data
       }
       setLoading(false);
     };
@@ -95,7 +95,7 @@ const EventsList = () => {
       case 'All Upcoming':
         filtered = filtered.filter(event => parseISO(event.event_date) >= now);
         break;
-      case 'All Events':
+      case 'All Events': // Corrected from 'All Events':
       default:
         break;
     }
@@ -241,7 +241,6 @@ const EventsList = () => {
         onViewModeChange={setViewMode}
         onApplyFilters={handleApplyFilters}
         onClearAllFilters={handleClearAllFilters}
-        filteredEventsCount={filteredEventsForList.length} {/* Pass the count here */}
       />
 
       {(loading || isSessionLoading) ? (
