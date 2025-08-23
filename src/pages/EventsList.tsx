@@ -6,7 +6,7 @@ import { Lightbulb, Loader2, MapPin, UserPlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import { useLocation } from 'react-router-dom';
+import { useLocation } => 'react-router-dom';
 import MapPage from './MapPage';
 import { Event } from '@/types/event';
 import EventFilterBar from '@/components/EventFilterBar';
@@ -191,19 +191,19 @@ const EventsList = () => {
       </div>
 
       {!user && showSignUpPrompt && (
-        <Card className="mb-8 p-4 sm:p-6 bg-blue-100 border border-blue-300 text-blue-900 rounded-lg shadow-md relative dark:bg-blue-950 dark:border-blue-700 dark:text-blue-100">
-          <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-blue-700 hover:bg-blue-200 dark:text-blue-300 dark:hover:bg-blue-800" onClick={() => setShowSignUpPrompt(false)}>
+        <Card className="mb-8 p-4 sm:p-6 bg-gradient-to-r from-primary to-purple-500 text-white rounded-lg shadow-lg relative">
+          <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-white/80 hover:bg-white/20" onClick={() => setShowSignUpPrompt(false)}>
             <X className="h-4 w-4" />
           </Button>
           <CardContent className="flex flex-col sm:flex-row items-center text-center sm:text-left p-0">
-            <UserPlus className="mr-4 h-8 w-8 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+            <UserPlus className="mr-4 h-10 w-10 flex-shrink-0 text-white" />
             <div>
-              <p className="font-semibold text-lg mb-2">Unlock More Features!</p>
-              <p className="text-sm mb-4">
-                Sign up to **create your own events**, **bookmark your favorites**, and **manage your submissions** easily.
+              <p className="font-bold text-xl mb-2">Unlock More Features!</p>
+              <p className="text-base mb-4">
+                Sign up to <strong>create your own events</strong>, <strong>bookmark your favorites</strong>, and <strong>manage your submissions</strong> easily.
               </p>
               <Link to="/login">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button className="bg-white text-primary hover:bg-gray-100 font-semibold py-2 px-6 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
                   Sign Up / Log In
                 </Button>
               </Link>
