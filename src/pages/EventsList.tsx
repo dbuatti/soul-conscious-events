@@ -15,7 +15,7 @@ import { eventTypes, australianStates } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import heroBackground from '@/assets/phil-hero-background.jpeg'; // Corrected import for the image
+import heroBackground from '@/assets/hero-background.jpg'; // Import the image
 
 interface Event {
   id: string;
@@ -50,7 +50,7 @@ const EventsList = () => {
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar'); // Updated viewMode type
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDay, setSelectedDay] = new Date());
+  const [selectedDay, setSelectedDay] = useState(new Date());
 
   const { user, isLoading: isSessionLoading } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
