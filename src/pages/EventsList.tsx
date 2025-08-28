@@ -32,7 +32,7 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string;
+  state?: string; // This is for geographical state, not approval status
   image_url?: string;
   user_id?: string;
   is_deleted?: boolean;
@@ -50,7 +50,7 @@ const EventsList = () => {
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar'); // Updated viewMode type
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState(new Date()); // Fixed: Added useState()
+  const [selectedDay, setSelectedDay] = useState(new Date());
 
   const { user, isLoading: isSessionLoading } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
@@ -65,7 +65,7 @@ const EventsList = () => {
     const fetchEvents = async () => {
       setLoading(true);
       let query = supabase.from('events').select('*');
-      query = query.eq('state', 'approved');
+      query = query.eq('approval_status', 'approved'); // Corrected from 'state' to 'approval_status'
       query = query.order('event_date', { ascending: true });
 
       const { data, error } = await query;
