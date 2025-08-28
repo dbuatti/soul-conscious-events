@@ -32,7 +32,7 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string; // This is for geographical state, not approval status
+  state?: string;
   image_url?: string;
   user_id?: string;
   is_deleted?: boolean;
@@ -53,7 +53,7 @@ const EventsList = () => {
   const [selectedDay, setSelectedDay] = useState(new Date());
 
   const { user, isLoading: isSessionLoading } = useSession();
-  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
+  const isAdmin = user?.email === 'daniele.buatti@gmail.buatti@gmail.com';
   const location = useLocation();
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -65,7 +65,7 @@ const EventsList = () => {
     const fetchEvents = async () => {
       setLoading(true);
       let query = supabase.from('events').select('*');
-      query = query.eq('approval_status', 'approved'); // Corrected from 'state' to 'approval_status'
+      query = query.eq('approval_status', 'approved');
       query = query.order('event_date', { ascending: true });
 
       const { data, error } = await query;
@@ -351,7 +351,7 @@ const EventsList = () => {
             <div className="p-8 bg-secondary rounded-lg border border-border text-center">
               <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-semibold text-foreground mb-4">Map view temporarily disabled.</p>
-              <p className="text-muted-foreground">This feature requires paid credits, which have been exhausted. Please contact support to re-enable.</p>
+              <p className="text-muted-foreground">This feature requires paid credits, which have been exhausted.</p>
             </div>
           )}
         </>
