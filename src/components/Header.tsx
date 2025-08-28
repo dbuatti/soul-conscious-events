@@ -56,7 +56,7 @@ const Header = () => {
   // Reordered navigation items
   const navItems = [
     { to: "/", label: "Events" },
-    { to: "/map", label: "Map", badge: "Beta" },
+    // { to: "/map", label: "Map", badge: "Beta" }, // Removed Map link
     { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick },
     { to: "/about", label: "About" },
     { to: "/contact", label: "Contact" },
@@ -65,9 +65,10 @@ const Header = () => {
   const adminNavItems = [
     { to: "/admin/panel", label: "Admin Panel" },
     { to: "/dev-space", label: "Dev Space" },
+    { to: "/map", label: "Map" }, // Moved Map to admin section for debugging access
   ];
 
-  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dev-space');
+  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dev-space') || location.pathname.startsWith('/map');
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
