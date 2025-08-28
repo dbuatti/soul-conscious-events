@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon, Map } from 'lucide-react'; // Added Map icon back
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon, Map } from 'lucide-react'; // Added Map icon
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -48,9 +48,9 @@ const EventsList = () => {
   const [stateFilter, setStateFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All Upcoming');
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar'); // Re-added 'map' to viewMode type
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar'); // Updated viewMode type
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDay, setSelectedDay] = new Date());
+  const [selectedDay, setSelectedDay] = useState(new Date());
 
   const { user, isLoading: isSessionLoading } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
@@ -275,7 +275,7 @@ const EventsList = () => {
             <ToggleGroup id="view-mode" type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && setViewMode(value)} className="w-full sm:w-auto justify-center sm:justify-end">
               <ToggleGroupItem value="calendar" aria-label="Calendar View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><CalendarDays className="h-4 w-4" /></ToggleGroupItem>
               <ToggleGroupItem value="list" aria-label="List View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><List className="h-4 w-4" /></ToggleGroupItem>
-              <ToggleGroupItem value="map" aria-label="Map View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><Map className="h-4 w-4" /></ToggleGroupItem> {/* Map View Toggle re-added */}
+              <ToggleGroupItem value="map" aria-label="Map View" className="h-8 w-8 sm:h-9 sm:w-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"><Map className="h-4 w-4" /></ToggleGroupItem> {/* New Map View Toggle */}
             </ToggleGroup>
           </div>
         </div>
@@ -351,7 +351,7 @@ const EventsList = () => {
             <div className="p-8 bg-secondary rounded-lg border border-border text-center">
               <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-semibold text-foreground mb-4">Map view temporarily disabled.</p>
-              <p className="text-muted-foreground">This feature requires paid credits, which have been exhausted.</p>
+              <p className="text-muted-foreground">This feature requires paid credits, which have been exhausted. Please contact support to re-enable.</p>
             </div>
           )}
         </>
