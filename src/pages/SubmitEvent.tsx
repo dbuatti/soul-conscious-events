@@ -131,6 +131,7 @@ const SubmitEvent = () => {
   };
 
   const onSubmit = async (values: EventFormValues) => {
+    console.log("SubmitEvent: onSubmit function triggered."); // Added log
     const loadingToastId = toast.loading('Submitting your event...');
     console.log("SubmitEvent: Starting submission process.");
     console.log("SubmitEvent: Form values:", values);
