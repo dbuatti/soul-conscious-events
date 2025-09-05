@@ -15,7 +15,7 @@ import {
   isPast,
   addWeeks,
   subWeeks,
-  differenceInDays, // Import differenceInDays
+  differenceInDays,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -54,7 +54,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [loading, setLoading] = useState(true);
   const [isMonthPickerPopoverOpen, setIsMonthPickerPopoverOpen] = useState(false);
-  const isMobile = useIsMobile(); // Use the hook to determine if it's mobile
+  const isMobile = useIsMobile();
 
   const daysOfWeekShort = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
 
@@ -209,12 +209,11 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     key={format(day, 'yyyy-MM-dd')}
                     className={cn(
                       "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 p-1 cursor-pointer",
-                      // Removed "border-r border-b border-border",
                       isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50",
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
                       isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
-                      "overflow-hidden"
+                      // Removed "overflow-hidden" from here
                     )}
                     onClick={() => onDayClick(day)}
                   >
@@ -223,7 +222,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       {format(day, 'd')}
                     </div>
                     {/* Event Container */}
-                    <div className="pt-6 z-20 flex-grow overflow-y-auto space-y-0.5 overflow-hidden">
+                    <div className="pt-6 z-20 flex-grow space-y-0.5"> {/* Removed overflow-y-auto and overflow-hidden */}
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {dayEvents.map(event => (
@@ -238,22 +237,24 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                         <>
                           {/* Multi-Day Events */}
                           {multiDayEventsForThisDay.map((event) => {
-                            const eventStartDate = parseISO(event.event_date);
+                            const eventStartDate = parseISO(event.event_date); // Corrected: use event.event_date
                             const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
-                            const daysSpanned = eventDurationInDays(event);
-                            
-                            const roundingClasses = cn({
-                              'rounded-l-md': isFirstVisible,
-                              'rounded-r-md': isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView),
-                              'rounded-none': !isFirstVisible && !isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView),
-                            });
-
                             if (isFirstVisible) {
+                              const startIndex = visibleDaysInView.findIndex((d) => isSameDay(d, eventStartDate)); // Corrected
+                              const dayIndex = visibleDaysInView.findIndex((d) => isSameDay(d, day));
+                              const daysSpanned = eventDurationInDays(event);
+                              
+                              const roundingClasses = cn({
+                                'rounded-l-md': true, // Only first day needs left rounding
+                                'rounded-r-md': isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView),
+                                'rounded-none': !isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView) && !isFirstVisible,
+                              });
+
                               return (
                                 <div
                                   key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                   className={cn(
-                                    "absolute py-1.5 min-h-[2.5rem] overflow-hidden",
+                                    "absolute py-1.5 min-h-[2.5rem]", // Removed overflow-hidden from here, it's not needed for absolute elements
                                     "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
                                     "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                                     roundingClasses,
@@ -261,7 +262,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                   )}
                                   style={{
                                     width: `calc(100% * ${daysSpanned})`,
-                                    left: '0',
+                                    left: '0', // Position relative to the current day cell
                                     top: '-1px',
                                     bottom: '0',
                                     backgroundColor: 'hsl(var(--secondary))',
@@ -298,7 +299,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                           ) : singleDayEventsForThisDay.length > 1 ? (
                             <div
                               className={cn(
-                                "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]",
+                                "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]", // Changed min-h to 2.5rem for consistency
                                 "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70 cursor-pointer",
                                 "flex flex-col items-center justify-center text-xs font-medium whitespace-normal",
                                 "z-30"
