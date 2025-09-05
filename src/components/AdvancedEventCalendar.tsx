@@ -15,6 +15,7 @@ import {
   isPast,
   addWeeks,
   subWeeks,
+  differenceInDays, // Import differenceInDays
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -92,6 +93,12 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       });
   };
 
+  const eventDurationInDays = (event: Event): number => {
+    const startDate = parseISO(event.event_date);
+    const endDate = event.end_date ? parseISO(event.end_date) : startDate;
+    return differenceInDays(endDate, startDate) + 1;
+  };
+
   const startOfCurrentMonth = startOfMonth(currentMonth);
   const endOfCurrentMonth = endOfMonth(currentMonth);
   const startDay = startOfWeek(startOfCurrentMonth, { weekStartsOn: 1 });
@@ -128,25 +135,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       }
     }
     return lastDayInViewForEvent && isSameDay(day, lastDayInViewForEvent);
-  };
-
-  const getMultiDayRoundingClasses = (event: Event, day: Date, visibleDays: Date[]) => {
-    const eventStartDate = parseISO(event.event_date);
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    const isSingleDayEvent = isSameDay(eventStartDate, eventEndDate);
-
-    const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDays);
-    const isLastVisible = isLastVisibleDayOfMultiDayEvent(event, day, visibleDays);
-
-    if (isSingleDayEvent || (isFirstVisible && isLastVisible)) {
-      return "rounded-md";
-    }
-
-    return cn({
-      'rounded-l-md': isFirstVisible && !isLastVisible,
-      'rounded-r-md': isLastVisible && !isFirstVisible,
-      'rounded-none': !isFirstVisible && !isLastVisible,
-    });
   };
 
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
@@ -218,7 +206,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
 
                 return (
                   <div
-                    key={day.toISOString()}
+                    key={format(day, 'yyyy-MM-dd')}
                     className={cn(
                       "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 p-1 cursor-pointer",
                       "border-r border-b border-border",
@@ -230,11 +218,10 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     )}
                     onClick={() => onDayClick(day)}
                   >
-                    {/* Day number */}
+                    {/* Day Number */}
                     <div className={cn("absolute top-1 right-1 px-1 font-bold z-10 text-right", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
                     </div>
-
                     {/* Event Container */}
                     <div className="pt-6 z-20 flex-grow overflow-y-auto space-y-0.5 relative">
                       {isMobile ? (
@@ -250,23 +237,33 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       ) : (
                         <>
                           {/* Multi-Day Events */}
-                          {multiDayEventsForThisDay.map(event => {
-                            const roundingClasses = getMultiDayRoundingClasses(event, day, visibleDaysInView);
-
+                          {multiDayEventsForThisDay.map((event) => {
+                            const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
+                            const isLastVisible = isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
+                            const daysSpanned = eventDurationInDays(event);
+                            const roundingClasses = cn({
+                              'rounded-l-md': isFirstVisible,
+                              'rounded-r-md': isLastVisible,
+                              'rounded-none': !isFirstVisible && !isLastVisible,
+                            });
                             return (
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                 className={cn(
                                   "relative py-1.5 min-h-[2.5rem]",
-                                  "w-[calc(100%+2px)] -ml-[1px] -mr-[1px]",
                                   "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
                                   "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                                   roundingClasses,
-                                  "z-30"
+                                  "z-30",
+                                  isFirstVisible ? `w-[calc(100%*${daysSpanned}+2px)] -ml-[1px]` : "w-full"
                                 )}
+                                style={{
+                                  position: 'relative' as const,
+                                  left: isFirstVisible ? '0' : '-1px',
+                                }}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
-                                {isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView) && (
+                                {isFirstVisible && (
                                   <div className="px-2 text-center">
                                     {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
                                     <div className="text-foreground">{event.event_name}</div>
@@ -275,7 +272,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               </div>
                             );
                           })}
-
                           {/* Single-Day Events or Consolidated Pill */}
                           {singleDayEventsForThisDay.length === 1 ? (
                             singleDayEventsForThisDay.map((event) => (
