@@ -9,7 +9,8 @@ import { useSession } from '@/components/SessionContextProvider';
 import EventForm from '@/components/EventForm';
 import AiParsingSection from '@/components/AiParsingSection';
 import EventPreviewDialog from '@/components/EventPreviewDialog';
-import { eventTypes, australianStates } from '@/lib/constants'; // Import australianStates
+import { eventTypes, australianStates } from '@/lib/constants';
+import { format } from 'date-fns'; // Import format
 
 // Define the schema locally to avoid import issues
 const eventFormSchema = z.object({
@@ -25,7 +26,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')), // New field
+  geographicalState: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
@@ -53,7 +54,7 @@ const SubmitEvent = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      geographicalState: '', // Default for new field
+      geographicalState: '',
       imageUrl: '',
       discountCode: '',
     },
@@ -76,7 +77,7 @@ const SubmitEvent = () => {
   }, [user?.id]);
 
   const handleAiParseComplete = (response: any) => {
-    const parsedData = response?.parsed_data; // Access the nested parsed_data object
+    const parsedData = response?.parsed_data;
     if (!parsedData) {
       toast.error('AI parsing returned no data.');
       return;
@@ -95,15 +96,13 @@ const SubmitEvent = () => {
       }
     }
 
-    // Ensure dates are valid, otherwise set to undefined
     if (eventDate && isNaN(eventDate.getTime())) eventDate = undefined;
     if (endDate && isNaN(endDate.getTime())) endDate = undefined;
 
-    // Map parsed data to form fields
     form.reset({
       eventName: parsedData.eventName || '',
       eventDate: eventDate,
-      endDate: endDate, // Map to new field
+      endDate: endDate,
       eventTime: parsedData.eventTime || '',
       placeName: parsedData.placeName || '',
       fullAddress: parsedData.fullAddress || '',
@@ -113,12 +112,11 @@ const SubmitEvent = () => {
       specialNotes: parsedData.specialNotes || '',
       organizerContact: parsedData.organizerContact || '',
       eventType: parsedData.eventType || '',
-      geographicalState: parsedData.geographicalState || '', // Map to new field
+      geographicalState: parsedData.geographicalState || '',
       imageUrl: parsedData.imageUrl || '',
       discountCode: parsedData.discountCode || '',
     });
     
-    // Set image preview if URL was parsed
     if (parsedData.imageUrl) {
       setImagePreviewUrl(parsedData.imageUrl);
     }
@@ -131,17 +129,12 @@ const SubmitEvent = () => {
   };
 
   const onSubmit = async (values: EventFormValues) => {
-    console.log("SubmitEvent: onSubmit function triggered."); // Added log
     const loadingToastId = toast.loading('Submitting your event...');
-    console.log("SubmitEvent: Starting submission process.");
-    console.log("SubmitEvent: Form values:", values);
-    console.log("SubmitEvent: Form endDate value:", values.endDate?.toString()); // Added log
 
     try {
       let finalImageUrl: string | null = null;
 
       if (values.imageFile) {
-        console.log("SubmitEvent: Image file detected, attempting upload.");
         const fileExtension = values.imageFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExtension}`;
         const { error: uploadError } = await supabase.storage
@@ -152,7 +145,7 @@ const SubmitEvent = () => {
           });
 
         if (uploadError) {
-          console.error('SubmitEvent: Error uploading image:', uploadError);
+          console.error('Error uploading image:', uploadError);
           toast.error(`Failed to upload image: ${uploadError.message}. Please try again.`, { id: loadingToastId });
           return;
         }
@@ -162,24 +155,19 @@ const SubmitEvent = () => {
           .getPublicUrl(fileName);
 
         finalImageUrl = publicUrlData.publicUrl;
-        console.log("SubmitEvent: Image uploaded, public URL:", finalImageUrl);
       } else if (values.imageUrl) {
         finalImageUrl = values.imageUrl;
-        console.log("SubmitEvent: Image URL provided:", finalImageUrl);
-      } else {
-        console.log("SubmitEvent: No image file or URL provided.");
       }
 
       let formattedTicketLink = values.ticketLink;
       if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
         formattedTicketLink = `https://${formattedTicketLink}`;
-        console.log("SubmitEvent: Formatted ticket link with https://:", formattedTicketLink);
       }
 
       const eventDataToInsert = {
         event_name: values.eventName,
-        event_date: values.eventDate.toISOString().split('T')[0],
-        end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null,
+        event_date: format(values.eventDate, 'yyyy-MM-dd'),
+        end_date: values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null,
         event_time: values.eventTime || null,
         place_name: values.placeName || null,
         full_address: values.fullAddress || null,
@@ -196,20 +184,17 @@ const SubmitEvent = () => {
         approval_status: 'approved',
       };
 
-      console.log("SubmitEvent: Data prepared for Supabase insertion:", eventDataToInsert);
-
       const { data: insertData, error } = await supabase.from('events').insert([eventDataToInsert]);
 
       if (error) {
-        console.error('SubmitEvent: Supabase insert error:', error);
+        console.error('Supabase insert error:', error);
         toast.error(`Failed to submit event: ${error.message}. Please try again.`, { id: loadingToastId });
       } else {
-        console.log('SubmitEvent: Supabase insert successful, data:', insertData);
         toast.success('Event submitted successfully! It is now live!', { id: loadingToastId });
         navigate('/');
       }
     } catch (error: any) {
-      console.error('SubmitEvent: Unexpected error during event submission:', error);
+      console.error('Unexpected error during event submission:', error);
       toast.error(`An unexpected error occurred: ${error.message}`, { id: loadingToastId });
     }
   };

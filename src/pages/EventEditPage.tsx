@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon, XCircle } from 'lucide-react';
+import { CalendarIcon, Loader2, Image as ImageIcon, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,16 +39,14 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')), // New field
+  geographicalState: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
 });
 
-// Refined helper function to extract Australian state from address
 const extractAustralianState = (address: string): string | null => {
   if (!address) {
-    console.log('extractAustralianState: Address is empty, returning null.');
     return null;
   }
   const upperCaseAddress = address.toUpperCase();
@@ -56,11 +54,8 @@ const extractAustralianState = (address: string): string | null => {
   const match = upperCaseAddress.match(stateRegex);
 
   if (match && match[1]) {
-    console.log(`extractAustralianState: Found state "${match[1]}" in address "${address}".`);
     return match[1];
   }
-
-  console.log(`extractAustralianState: No state found in address "${address}", returning null.`);
   return null;
 };
 
@@ -117,15 +112,10 @@ const EventEditPage: React.FC = () => {
         toast.error('Failed to load event details.');
         navigate('/404');
       } else if (data) {
-        console.log(`[DEBUG] EventEditPage: 1. Fetched raw event_date from Supabase: '${data.event_date}'`);
         setCurrentEvent(data);
         
         const eventDate = new Date(`${data.event_date}T00:00:00`);
-        console.log(`[DEBUG] EventEditPage: 2. Parsed event_date into Date object:`, eventDate.toString());
         const endDate = data.end_date ? new Date(`${data.end_date}T00:00:00`) : undefined;
-        if (endDate) {
-          console.log(`[DEBUG] EventEditPage: 2a. Parsed end_date into Date object:`, endDate.toString());
-        }
 
         form.reset({
           eventName: data.event_name,
@@ -140,7 +130,7 @@ const EventEditPage: React.FC = () => {
           specialNotes: data.special_notes || '',
           organizerContact: data.organizer_contact || '',
           eventType: data.event_type || '',
-          geographicalState: data.geographical_state || '', // Set new field from fetched data
+          geographicalState: data.geographical_state || '',
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
         });
@@ -154,7 +144,6 @@ const EventEditPage: React.FC = () => {
         } else {
           setImageInputMode('upload');
         }
-        console.log('EventEditPage (Initial Load): geographicalState set to:', form.getValues('geographicalState'));
       } else {
         navigate('/404');
       }
@@ -189,7 +178,6 @@ const EventEditPage: React.FC = () => {
         } else {
           form.setValue('geographicalState', '', { shouldValidate: true });
         }
-        console.log('EventEditPage (Autocomplete): geographicalState set to:', form.getValues('geographicalState'));
       });
     }
   }, [form]);
@@ -229,12 +217,6 @@ const EventEditPage: React.FC = () => {
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
-
-    console.log('[DEBUG] EventEditPage: 3. Form values on submit:', values);
-    console.log('[DEBUG] EventEditPage: 3a. Start Date object from form:', values.eventDate.toString());
-    console.log('[DEBUG] EventEditPage: 3b. End Date object from form:', values.endDate?.toString());
-    console.log('EventEditPage (onSubmit): geographicalState before submission:', form.getValues('geographicalState'));
-
 
     let finalImageUrl: string | null = null;
 
@@ -291,10 +273,8 @@ const EventEditPage: React.FC = () => {
       formattedTicketLink = `https://${formattedTicketLink}`;
     }
 
-    const dateToSave = values.eventDate.toISOString().split('T')[0];
-    console.log(`[DEBUG] EventEditPage: 4. Final start date string being sent to Supabase: '${dateToSave}'`);
-    const endDateToSave = values.endDate ? values.endDate.toISOString().split('T')[0] : null;
-    console.log(`[DEBUG] EventEditPage: 4a. Final end date string being sent to Supabase: '${endDateToSave}'`);
+    const dateToSave = format(values.eventDate, 'yyyy-MM-dd');
+    const endDateToSave = values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null;
 
     const { error } = await supabase.from('events').update({
       event_name: values.eventName,
@@ -400,7 +380,6 @@ const EventEditPage: React.FC = () => {
                         selected={field.value}
                         onSelect={(date) => {
                           field.onChange(date);
-                          // Removed the automatic setting of endDate to eventDate
                         }}
                         initialFocus
                       />
@@ -497,7 +476,6 @@ const EventEditPage: React.FC = () => {
                     } else {
                       form.setValue('geographicalState', '', { shouldValidate: true });
                     }
-                    console.log('EventEditPage (Manual Input): geographicalState set to:', form.getValues('geographicalState'));
                   }}
                   className="focus-visible:ring-primary"
                 />
