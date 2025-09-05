@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, ChevronDown } => 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -120,8 +120,15 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
     if (!isMultiDayEvent(event)) return false;
 
-    // Find the last day in visibleDays that is part of this event
-    const lastDayInViewForEvent = visibleDays.findLast(d => d >= eventStartDate && d <= eventEndDate);
+    // Manual implementation of findLast for broader TypeScript compatibility
+    let lastDayInViewForEvent: Date | undefined;
+    for (let i = visibleDays.length - 1; i >= 0; i--) {
+      const d = visibleDays[i];
+      if (d >= eventStartDate && d <= eventEndDate) {
+        lastDayInViewForEvent = d;
+        break;
+      }
+    }
     return lastDayInViewForEvent && isSameDay(day, lastDayInViewForEvent);
   };
 
