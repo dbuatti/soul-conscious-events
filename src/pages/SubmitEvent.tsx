@@ -82,11 +82,28 @@ const SubmitEvent = () => {
       return;
     }
 
+    let eventDate: Date | undefined;
+    let endDate: Date | undefined;
+
+    if (parsedData.eventDate) {
+      const dateParts = String(parsedData.eventDate).split(/ & | - /).map(s => s.trim());
+      if (dateParts.length > 1) {
+        eventDate = new Date(dateParts[0]);
+        endDate = new Date(dateParts[1]);
+      } else {
+        eventDate = new Date(parsedData.eventDate);
+      }
+    }
+
+    // Ensure dates are valid, otherwise set to undefined
+    if (eventDate && isNaN(eventDate.getTime())) eventDate = undefined;
+    if (endDate && isNaN(endDate.getTime())) endDate = undefined;
+
     // Map parsed data to form fields
     form.reset({
       eventName: parsedData.eventName || '',
-      eventDate: parsedData.eventDate ? new Date(parsedData.eventDate) : undefined,
-      endDate: parsedData.endDate ? new Date(parsedData.endDate) : undefined,
+      eventDate: eventDate,
+      endDate: endDate,
       eventTime: parsedData.eventTime || '',
       placeName: parsedData.placeName || '',
       fullAddress: parsedData.fullAddress || '',
