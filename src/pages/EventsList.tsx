@@ -382,7 +382,7 @@ const EventsList = () => {
         </>
       )}
 
-      <EventDetailDialog event={selectedEvent} isOpen={isEventDetailDialogOpen} onClose={()={() => setIsEventDetailDialogOpen(false)}} cameFromCalendar={viewMode === 'calendar'} />
+      <EventDetailDialog event={selectedEvent} isOpen={isEventDetailDialogOpen} onClose={() => setIsEventDetailDialogOpen(false)} cameFromCalendar={viewMode === 'calendar'} />
       <FilterOverlay isOpen={isFilterOverlayOpen} onClose={() => setIsFilterOverlayOpen(false)} currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }} onApplyFilters={handleApplyFilters} onClearAllFilters={handleClearAllFilters} />
     </div>
   );
