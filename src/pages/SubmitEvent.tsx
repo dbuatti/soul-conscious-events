@@ -187,7 +187,7 @@ const SubmitEvent = () => {
           image_url: finalImageUrl,
           discount_code: values.discountCode || null,
           user_id: user?.id || null, // Set user_id to null if no user is logged in
-          approval_status: 'pending', // Renamed from 'state'
+          approval_status: 'approved', // Changed from 'pending' to 'approved'
         },
       ]);
 
@@ -195,7 +195,7 @@ const SubmitEvent = () => {
         console.error('Error submitting event:', error);
         toast.error('Failed to submit event. Please try again.', { id: loadingToastId });
       } else {
-        toast.success('Event submitted successfully! It will be reviewed by an admin.', { id: loadingToastId });
+        toast.success('Event submitted successfully! It is now live!', { id: loadingToastId });
         navigate('/');
       }
     } catch (error: any) {
