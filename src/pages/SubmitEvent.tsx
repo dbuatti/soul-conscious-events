@@ -75,7 +75,13 @@ const SubmitEvent = () => {
     logPageVisit();
   }, [user?.id]);
 
-  const handleAiParseComplete = (parsedData: any) => {
+  const handleAiParseComplete = (response: any) => {
+    const parsedData = response?.parsed_data; // Access the nested parsed_data object
+    if (!parsedData) {
+      toast.error('AI parsing returned no data.');
+      return;
+    }
+
     // Map parsed data to form fields
     form.reset({
       eventName: parsedData.eventName || '',
