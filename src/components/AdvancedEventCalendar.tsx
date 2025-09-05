@@ -223,7 +223,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       {format(day, 'd')}
                     </div>
                     {/* Event Container */}
-                    <div className="pt-6 z-20 flex-grow overflow-y-auto space-y-0.5 relative overflow-hidden"> {/* Added overflow-hidden here */}
+                    <div className="pt-6 z-20 flex-grow overflow-y-auto space-y-0.5 relative overflow-hidden">
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {dayEvents.map(event => (
@@ -251,16 +251,17 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                 className={cn(
                                   "relative py-1.5 min-h-[2.5rem]",
-                                  "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
                                   "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                                   roundingClasses,
                                   "z-30",
-                                  isFirstVisible ? `w-[calc(100%*${daysSpanned}+4px)] -ml-[2px]` : "w-full"
+                                  isFirstVisible ? `w-[calc(100%*${daysSpanned}+6px)] -ml-[3px]` : "w-full"
                                 )}
                                 style={{
                                   position: 'relative' as const,
-                                  top: '-1px', // Slight vertical adjustment to align with cell top
-                                  left: isFirstVisible ? '0' : '-2px', // Align with extended width of first day
+                                  top: '-1px',
+                                  bottom: '0',
+                                  left: isFirstVisible ? '0' : '-3px',
+                                  backgroundColor: 'hsl(var(--secondary))',
                                 }}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
