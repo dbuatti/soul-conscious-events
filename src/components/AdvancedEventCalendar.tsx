@@ -213,7 +213,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
                       isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
-                      // Removed "overflow-hidden" from here
                     )}
                     onClick={() => onDayClick(day)}
                   >
@@ -222,7 +221,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       {format(day, 'd')}
                     </div>
                     {/* Event Container */}
-                    <div className="pt-6 z-20 flex-grow space-y-0.5"> {/* Removed overflow-y-auto and overflow-hidden */}
+                    <div className="pt-8 z-20 flex-grow space-y-0.5">
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {dayEvents.map(event => (
@@ -237,15 +236,15 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                         <>
                           {/* Multi-Day Events */}
                           {multiDayEventsForThisDay.map((event) => {
-                            const eventStartDate = parseISO(event.event_date); // Corrected: use event.event_date
+                            const eventStartDate = parseISO(event.event_date);
                             const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
                             if (isFirstVisible) {
-                              const startIndex = visibleDaysInView.findIndex((d) => isSameDay(d, eventStartDate)); // Corrected
+                              const startIndex = visibleDaysInView.findIndex((d) => isSameDay(d, eventStartDate));
                               const dayIndex = visibleDaysInView.findIndex((d) => isSameDay(d, day));
                               const daysSpanned = eventDurationInDays(event);
                               
                               const roundingClasses = cn({
-                                'rounded-l-md': true, // Only first day needs left rounding
+                                'rounded-l-md': true,
                                 'rounded-r-md': isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView),
                                 'rounded-none': !isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView) && !isFirstVisible,
                               });
@@ -254,7 +253,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                 <div
                                   key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                   className={cn(
-                                    "absolute py-1.5 min-h-[2.5rem]", // Removed overflow-hidden from here, it's not needed for absolute elements
+                                    "absolute py-1 min-h-[2rem] overflow-hidden",
                                     "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
                                     "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                                     roundingClasses,
@@ -262,11 +261,9 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                   )}
                                   style={{
                                     width: `calc(100% * ${daysSpanned})`,
-                                    left: '0', // Position relative to the current day cell
-                                    top: '-1px',
-                                    bottom: '0',
+                                    left: '0',
+                                    top: '0',
                                     backgroundColor: 'hsl(var(--secondary))',
-                                    boxShadow: 'inset 0 0 0 1px hsl(var(--secondary))',
                                   }}
                                   onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                                 >
@@ -285,7 +282,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-single'}
                                 className={cn(
-                                  "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]",
+                                  "relative w-full px-2 py-1 rounded-md min-h-[2rem]",
                                   "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70 cursor-pointer",
                                   "flex flex-col items-center justify-center text-xs font-medium whitespace-normal",
                                   "z-30"
@@ -299,7 +296,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                           ) : singleDayEventsForThisDay.length > 1 ? (
                             <div
                               className={cn(
-                                "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]", // Changed min-h to 2.5rem for consistency
+                                "relative w-full px-2 py-1 rounded-md min-h-[2rem]",
                                 "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70 cursor-pointer",
                                 "flex flex-col items-center justify-center text-xs font-medium whitespace-normal",
                                 "z-30"
