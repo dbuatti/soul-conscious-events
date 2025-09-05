@@ -256,7 +256,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                 className={cn(
                                   "relative w-[calc(100%+2px)] -ml-[1px] -mr-[1px] py-1.5 px-2 min-h-[2.5rem]",
-                                  "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground hover:bg-primary/90",
+                                  "bg-secondary text-foreground hover:bg-secondary/70 dark:bg-secondary dark:text-foreground dark:hover:bg-secondary/70", // Adjusted colors here
                                   roundingClasses,
                                   "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal"
                                 )}
