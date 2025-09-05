@@ -16,6 +16,8 @@ import {
   addWeeks,
   subWeeks,
   differenceInDays,
+  getDay, // Added getDay
+  addDays, // Added addDays
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -112,31 +114,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     return !isSameDay(eventStartDate, eventEndDate);
   };
 
-  const isFirstVisibleDayOfMultiDayEvent = (event: Event, day: Date, visibleDays: Date[]) => {
-    const eventStartDate = parseISO(event.event_date);
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    if (!isMultiDayEvent(event)) return false;
-
-    const firstDayInViewForEvent = visibleDays.find(d => d >= eventStartDate && d <= eventEndDate);
-    return firstDayInViewForEvent && isSameDay(day, firstDayInViewForEvent);
-  };
-
-  const isLastVisibleDayOfMultiDayEvent = (event: Event, day: Date, visibleDays: Date[]) => {
-    const eventStartDate = parseISO(event.event_date);
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    if (!isMultiDayEvent(event)) return false;
-
-    let lastDayInViewForEvent: Date | undefined;
-    for (let i = visibleDays.length - 1; i >= 0; i--) {
-      const d = visibleDays[i];
-      if (d >= eventStartDate && d <= eventEndDate) {
-        lastDayInViewForEvent = d;
-        break;
-      }
-    }
-    return lastDayInViewForEvent && isSameDay(day, lastDayInViewForEvent);
-  };
-
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
 
   return (
@@ -190,7 +167,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 border border-border rounded-lg" style={{ overflow: 'visible' }}> {/* Removed overflow-hidden here */}
+            <div className="grid grid-cols-7 border border-border rounded-lg" style={{ overflow: 'visible' }}>
               {daysOfWeekShort.map((dayName, index) => (
                 <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>
               ))}
@@ -201,7 +178,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                 const isSelected = selectedDay && isSameDay(day, selectedDay);
                 const isPastDate = isPast(day) && !isToday(day);
 
-                const multiDayEventsForThisDay = dayEvents.filter(isMultiDayEvent);
                 const singleDayEventsForThisDay = dayEvents.filter(e => !isMultiDayEvent(e));
 
                 return (
@@ -235,31 +211,31 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       ) : (
                         <>
                           {/* Multi-Day Events */}
-                          {multiDayEventsForThisDay.map((event) => {
+                          {events.map((event) => {
+                            if (!isMultiDayEvent(event)) return null;
+
                             const eventStartDate = parseISO(event.event_date);
                             const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
 
-                            const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
+                            const startOfCurrentWeek = startOfWeek(day, { weekStartsOn: 1 });
+                            const endOfCurrentWeek = endOfWeek(day, { weekStartsOn: 1 });
 
-                            if (isFirstVisible) {
-                              // Calculate the end of the current week (Sunday) for the 'day' being processed
-                              const endOfCurrentWeekForDay = endOfWeek(day, { weekStartsOn: 1 }); // Assuming week starts on Monday
+                            const segmentStart = new Date(Math.max(eventStartDate.getTime(), startOfCurrentWeek.getTime()));
+                            const segmentEnd = new Date(Math.min(eventEndDate.getTime(), endOfCurrentWeek.getTime()));
 
-                              // The segment of the event starts on 'day'
-                              // The segment ends either at the event's actual end date, or at the end of the current week, whichever comes first.
-                              const segmentEndDate = new Date(Math.min(eventEndDate.getTime(), endOfCurrentWeekForDay.getTime()));
-
-                              const effectiveDaysSpanned = differenceInDays(segmentEndDate, day) + 1;
+                            if (isSameDay(day, segmentStart) && segmentStart <= segmentEnd) {
+                              const dayOfWeekIndex = (getDay(segmentStart) - 1 + 7) % 7;
+                              const effectiveDaysSpanned = differenceInDays(segmentEnd, segmentStart) + 1;
 
                               const roundingClasses = cn({
-                                'rounded-l-md': isSameDay(day, eventStartDate), // Round left if this segment starts on the event's actual start date
-                                'rounded-r-md': isSameDay(segmentEndDate, eventEndDate), // Round right if this segment ends on the event's actual end date
-                                'rounded-none': !isSameDay(day, eventStartDate) && !isSameDay(segmentEndDate, eventEndDate), // No rounding if it's a middle segment
+                                'rounded-l-md': isSameDay(segmentStart, eventStartDate),
+                                'rounded-r-md': isSameDay(segmentEnd, eventEndDate),
+                                'rounded-none': !isSameDay(segmentStart, eventStartDate) && !isSameDay(segmentEnd, eventEndDate),
                               });
 
                               return (
                                 <div
-                                  key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
+                                  key={event.id + format(segmentStart, 'yyyy-MM-dd') + '-multi'}
                                   className={cn(
                                     "absolute py-1 min-h-[2rem]",
                                     "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
@@ -268,9 +244,9 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                     "z-30"
                                   )}
                                   style={{
-                                    width: `calc(100% * ${effectiveDaysSpanned})`,
-                                    left: '0', // Always start at the left edge of the current day cell
-                                    top: '32px', // This is relative to the day cell, which has pt-8 (32px)
+                                    width: `calc(100% / 7 * ${effectiveDaysSpanned})`,
+                                    left: `calc(100% / 7 * ${dayOfWeekIndex})`,
+                                    top: '32px',
                                     backgroundColor: 'hsl(var(--secondary))',
                                   }}
                                   onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
