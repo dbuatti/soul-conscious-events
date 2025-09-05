@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown } => 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -262,7 +262,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                   style={{
                                     width: `calc(100% * ${daysSpanned})`,
                                     left: '0',
-                                    top: '24px', /* Adjusted to push it down */
+                                    top: '32px', /* Adjusted to align with single-day events */
                                     backgroundColor: 'hsl(var(--secondary))',
                                   }}
                                   onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
