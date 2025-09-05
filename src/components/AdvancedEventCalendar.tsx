@@ -182,7 +182,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
             <div className="grid grid-cols-7 border-t border-l border-r border-border rounded-lg divide-y divide-border" style={{ overflow: 'hidden', boxSizing: 'border-box' }}>
-              {/* Increased padding and font size for day headers */}
               {daysOfWeekShort.map((dayName, index) => (
                 <div key={dayName + index} className="font-semibold text-foreground text-xs py-2 sm:text-sm sm:py-3 bg-secondary text-center border-b border-border">{daysOfWeekShort[index]}</div>
               ))}
@@ -235,7 +234,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                           <div
                             key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                             className={cn(
-                              "absolute py-1 min-h-[2rem] px-1",
+                              "absolute py-1 min-h-[2.5rem] px-2", // Increased min-h and px
                               "bg-primary/20 text-primary-foreground dark:bg-primary/30 dark:text-primary-foreground hover:bg-primary/40",
                               "flex items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                               roundingClasses,
@@ -253,7 +252,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                             <div className="px-1 text-center flex items-center">
                               <CalendarDaysIcon className="h-3 w-3 mr-1 flex-shrink-0" />
                               {event.event_time && <div className="font-bold text-primary-foreground mr-1 flex-shrink-0">{event.event_time}</div>}
-                              <div className="text-primary-foreground truncate">{event.event_name}</div>
+                              <div className="text-primary-foreground">{event.event_name}</div> {/* Removed truncate */}
                             </div>
                           </div>
                         );
@@ -289,7 +288,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
                                 {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
-                                <div className="text-foreground truncate w-full">{event.event_name}</div>
+                                <div className="text-foreground w-full">{event.event_name}</div> {/* Removed truncate */}
                               </div>
                             ))
                           ) : singleDayEventsForThisDay.length > 1 ? (
