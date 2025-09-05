@@ -71,7 +71,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     onDayClick(today);
   };
   const handlePrevWeek = () => onMonthChange(subWeeks(currentMonth, 1));
-  const handleNextWeek = () => onWeeksChange(addWeeks(currentMonth, 1)); // Changed to onWeeksChange
+  const handleNextWeek = () => onMonthChange(addWeeks(currentMonth, 1)); // Corrected to onMonthChange for week view
 
   const getEventsForDay = (day: Date) => {
     return events
@@ -136,25 +136,26 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDays);
     const isLastVisible = isLastVisibleDayOfMultiDayEvent(event, day, visibleDays);
 
-    // If it's a single-day event (but rendered as multi-day for consistency)
-    if (!isMultiDayEvent(event)) {
+    // If it's a single-day event (or a multi-day event that only spans one visible day)
+    if (!isMultiDayEvent(event) || (isFirstVisible && isLastVisible)) {
       return "rounded-md";
     }
 
-    // If it's a multi-day event
-    if (isFirstVisible && isLastVisible) {
-      // Event starts and ends on the same visible day (e.g., a 1-day event in a multi-day slot)
-      return "rounded-md";
-    } else if (isFirstVisible) {
-      // First visible day of a multi-day event
-      return "rounded-l-md rounded-tr-none rounded-br-none"; // Explicitly unround right corners
-    } else if (isLastVisible) {
-      // Last visible day of a multi-day event
-      return "rounded-r-md rounded-tl-none rounded-bl-none"; // Explicitly unround left corners
+    // If it's a multi-day event spanning multiple visible days
+    let classes = "";
+    if (isFirstVisible) {
+      classes += "rounded-l-md "; // Round left side
     } else {
-      // Intermediate day of a multi-day event
-      return "rounded-none"; // All corners unrounded
+      classes += "rounded-l-none "; // No rounding on left side
     }
+
+    if (isLastVisible) {
+      classes += "rounded-r-md "; // Round right side
+    } else {
+      classes += "rounded-r-none "; // No rounding on right side
+    }
+    
+    return classes.trim();
   };
 
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
