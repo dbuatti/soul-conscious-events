@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, ChevronDown } => 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import { useIsMobile } from '@/hooks/use-mobile';
