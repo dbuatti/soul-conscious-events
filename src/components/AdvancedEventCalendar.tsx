@@ -276,8 +276,8 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               >
                                 {isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView) && (
                                   <div className="px-2"> {/* Apply padding to content only on the first visible day */}
-                                    {event.event_time && <span className="font-bold">{event.event_time}</span>}
-                                    <span>{event.event_name}</span>
+                                    {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
+                                    <div className="text-foreground">{event.event_name}</div>
                                   </div>
                                 )}
                               </div>
@@ -296,8 +296,8 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               )}
                               onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                             >
-                              {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
-                              <span className="text-foreground">{event.event_name}</span>
+                              {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
+                              <div className="text-foreground">{event.event_name}</div>
                             </div>
                           ))}
                         </>
