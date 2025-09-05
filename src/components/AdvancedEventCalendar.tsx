@@ -223,7 +223,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       {format(day, 'd')}
                     </div>
                     {/* Event Container */}
-                    <div className="pt-6 z-20 flex-grow overflow-y-auto space-y-0.5 relative">
+                    <div className="pt-6 z-20 flex-grow overflow-y-auto space-y-0.5 relative overflow-hidden"> {/* Added overflow-hidden here */}
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {dayEvents.map(event => (
@@ -255,11 +255,12 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                   "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                                   roundingClasses,
                                   "z-30",
-                                  isFirstVisible ? `w-[calc(100%*${daysSpanned}+2px)] -ml-[1px]` : "w-full"
+                                  isFirstVisible ? `w-[calc(100%*${daysSpanned}+4px)] -ml-[2px]` : "w-full"
                                 )}
                                 style={{
                                   position: 'relative' as const,
-                                  left: isFirstVisible ? '0' : '-1px',
+                                  top: '-1px', // Slight vertical adjustment to align with cell top
+                                  left: isFirstVisible ? '0' : '-2px', // Align with extended width of first day
                                 }}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
