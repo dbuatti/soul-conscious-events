@@ -138,24 +138,20 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
 
     // If it's a single-day event (or a multi-day event that only spans one visible day)
     if (!isMultiDayEvent(event) || (isFirstVisible && isLastVisible)) {
-      return "rounded-md";
+      return "rounded-md"; // All corners rounded
     }
 
     // If it's a multi-day event spanning multiple visible days
-    let classes = "";
     if (isFirstVisible) {
-      classes += "rounded-l-md "; // Round left side
+      // First visible day: round top-left and bottom-left, unround right
+      return "rounded-tl-md rounded-bl-md rounded-tr-none rounded-br-none";
+    } else if (isLastVisible) {
+      // Last visible day: round top-right and bottom-right, unround left
+      return "rounded-tr-md rounded-br-md rounded-tl-none rounded-bl-none";
     } else {
-      classes += "rounded-l-none "; // No rounding on left side
+      // Intermediate day: no rounding on any corner
+      return "rounded-none";
     }
-
-    if (isLastVisible) {
-      classes += "rounded-r-md "; // Round right side
-    } else {
-      classes += "rounded-r-none "; // No rounding on right side
-    }
-    
-    return classes.trim();
   };
 
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
