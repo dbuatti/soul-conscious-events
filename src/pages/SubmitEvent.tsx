@@ -131,15 +131,15 @@ const SubmitEvent = () => {
   };
 
   const onSubmit = async (values: EventFormValues) => {
-    // Removed the check for logged-in user here.
-    // Events can now be submitted by unauthenticated users.
-
     const loadingToastId = toast.loading('Submitting your event...');
+    console.log("SubmitEvent: Starting submission process.");
+    console.log("SubmitEvent: Form values:", values);
 
     try {
       let finalImageUrl: string | null = null;
 
       if (values.imageFile) {
+        console.log("SubmitEvent: Image file detected, attempting upload.");
         const fileExtension = values.imageFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExtension}`;
         const { error: uploadError } = await supabase.storage
@@ -150,7 +150,7 @@ const SubmitEvent = () => {
           });
 
         if (uploadError) {
-          console.error('Error uploading image:', uploadError);
+          console.error('SubmitEvent: Error uploading image:', uploadError);
           toast.error(`Failed to upload image: ${uploadError.message}. Please try again.`, { id: loadingToastId });
           return;
         }
@@ -160,46 +160,54 @@ const SubmitEvent = () => {
           .getPublicUrl(fileName);
 
         finalImageUrl = publicUrlData.publicUrl;
+        console.log("SubmitEvent: Image uploaded, public URL:", finalImageUrl);
       } else if (values.imageUrl) {
         finalImageUrl = values.imageUrl;
+        console.log("SubmitEvent: Image URL provided:", finalImageUrl);
+      } else {
+        console.log("SubmitEvent: No image file or URL provided.");
       }
 
       let formattedTicketLink = values.ticketLink;
       if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
         formattedTicketLink = `https://${formattedTicketLink}`;
+        console.log("SubmitEvent: Formatted ticket link with https://:", formattedTicketLink);
       }
 
-      const { error } = await supabase.from('events').insert([
-        {
-          event_name: values.eventName,
-          event_date: values.eventDate.toISOString().split('T')[0],
-          end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null,
-          event_time: values.eventTime || null,
-          place_name: values.placeName || null,
-          full_address: values.fullAddress || null,
-          description: values.description || null,
-          ticket_link: formattedTicketLink || null,
-          price: values.price || null,
-          special_notes: values.specialNotes || null,
-          organizer_contact: values.organizerContact || null,
-          event_type: values.eventType || null,
-          geographical_state: values.geographicalState || null, // Save new field
-          image_url: finalImageUrl,
-          discount_code: values.discountCode || null,
-          user_id: user?.id || null, // Set user_id to null if no user is logged in
-          approval_status: 'approved', // Changed from 'pending' to 'approved'
-        },
-      ]);
+      const eventDataToInsert = {
+        event_name: values.eventName,
+        event_date: values.eventDate.toISOString().split('T')[0],
+        end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null,
+        event_time: values.eventTime || null,
+        place_name: values.placeName || null,
+        full_address: values.fullAddress || null,
+        description: values.description || null,
+        ticket_link: formattedTicketLink || null,
+        price: values.price || null,
+        special_notes: values.specialNotes || null,
+        organizer_contact: values.organizerContact || null,
+        event_type: values.eventType || null,
+        geographical_state: values.geographicalState || null,
+        image_url: finalImageUrl,
+        discount_code: values.discountCode || null,
+        user_id: user?.id || null,
+        approval_status: 'approved',
+      };
+
+      console.log("SubmitEvent: Data prepared for Supabase insertion:", eventDataToInsert);
+
+      const { data: insertData, error } = await supabase.from('events').insert([eventDataToInsert]);
 
       if (error) {
-        console.error('Error submitting event:', error);
-        toast.error('Failed to submit event. Please try again.', { id: loadingToastId });
+        console.error('SubmitEvent: Supabase insert error:', error);
+        toast.error(`Failed to submit event: ${error.message}. Please try again.`, { id: loadingToastId });
       } else {
+        console.log('SubmitEvent: Supabase insert successful, data:', insertData);
         toast.success('Event submitted successfully! It is now live!', { id: loadingToastId });
         navigate('/');
       }
     } catch (error: any) {
-      console.error('Unexpected error submitting event:', error);
+      console.error('SubmitEvent: Unexpected error during event submission:', error);
       toast.error(`An unexpected error occurred: ${error.message}`, { id: loadingToastId });
     }
   };
