@@ -190,7 +190,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 border border-border rounded-lg" style={{ overflow: 'visible', boxSizing: 'border-box' }}> {/* Added box-sizing */}
+            <div className="grid grid-cols-7 border border-border rounded-lg" style={{ overflow: 'visible', boxSizing: 'border-box' }}>
               {daysOfWeekShort.map((dayName, index) => (
                 <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>
               ))}
@@ -208,21 +208,68 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                   <div
                     key={format(day, 'yyyy-MM-dd')}
                     className={cn(
-                      "flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer", // Removed p-1
+                      "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer",
                       isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50",
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
                       isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
                     )}
-                    style={{ position: 'relative', boxSizing: 'border-box' }} // Explicit relative and border-box
+                    style={{ position: 'relative', boxSizing: 'border-box' }}
                     onClick={() => onDayClick(day)}
                   >
                     {/* Day Number */}
                     <div className={cn("absolute top-1 right-1 px-1 font-bold z-10 text-right", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
                     </div>
-                    {/* Event Container */}
-                    <div className="pt-8 z-20 flex-grow space-y-0.5"> {/* No px-1 here */}
+
+                    {/* Multi-Day Events - Rendered directly inside day cell */}
+                    {!isMobile && multiDayEventsForThisDay.map((event) => {
+                      const eventStartDate = parseISO(event.event_date);
+                      const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+                      const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
+
+                      if (isFirstVisible) {
+                        const endOfCurrentWeekForDay = endOfWeek(day, { weekStartsOn: 1 });
+                        const segmentEndDate = new Date(Math.min(eventEndDate.getTime(), endOfCurrentWeekForDay.getTime()));
+                        const effectiveDaysSpanned = differenceInDays(segmentEndDate, day) + 1;
+
+                        const roundingClasses = cn({
+                          'rounded-l-md': isSameDay(day, eventStartDate),
+                          'rounded-r-md': isSameDay(segmentEndDate, eventEndDate),
+                          'rounded-none': !isSameDay(day, eventStartDate) && !isSameDay(segmentEndDate, eventEndDate),
+                        });
+
+                        return (
+                          <div
+                            key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
+                            className={cn(
+                              "absolute py-1 min-h-[2rem]",
+                              "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
+                              "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                              roundingClasses,
+                              "z-30"
+                            )}
+                            style={{
+                              width: `calc(100% * ${effectiveDaysSpanned})`,
+                              left: '0',
+                              top: '32px', // Explicitly set top to 32px (pt-8 equivalent)
+                              backgroundColor: 'hsl(var(--secondary))',
+                              boxSizing: 'border-box'
+                            }}
+                            onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
+                          >
+                            <div className="px-2 text-center">
+                              {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
+                              <div className="text-foreground">{event.event_name}</div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+
+                    {/* Event Container for single-day events and mobile dots */}
+                    <div className="pt-8 z-20 flex-grow space-y-0.5">
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {dayEvents.map(event => (
@@ -235,57 +282,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                         </div>
                       ) : (
                         <>
-                          {/* Multi-Day Events */}
-                          {multiDayEventsForThisDay.map((event) => {
-                            const eventStartDate = parseISO(event.event_date);
-                            const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-
-                            const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
-
-                            if (isFirstVisible) {
-                              // Calculate the end of the current week (Sunday) for the 'day' being processed
-                              const endOfCurrentWeekForDay = endOfWeek(day, { weekStartsOn: 1 }); // Assuming week starts on Monday
-
-                              // The segment of the event starts on 'day'
-                              // The segment ends either at the event's actual end date, or at the end of the current week, whichever comes first.
-                              const segmentEndDate = new Date(Math.min(eventEndDate.getTime(), endOfCurrentWeekForDay.getTime()));
-
-                              const effectiveDaysSpanned = differenceInDays(segmentEndDate, day) + 1;
-
-                              const roundingClasses = cn({
-                                'rounded-l-md': isSameDay(day, eventStartDate), // Round left if this segment starts on the event's actual start date
-                                'rounded-r-md': isSameDay(segmentEndDate, eventEndDate), // Round right if this segment ends on the event's actual end date
-                                'rounded-none': !isSameDay(day, eventStartDate) && !isSameDay(segmentEndDate, eventEndDate), // No rounding if it's a middle segment
-                              });
-
-                              return (
-                                <div
-                                  key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
-                                  className={cn(
-                                    "absolute py-1 min-h-[2rem]",
-                                    "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
-                                    "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
-                                    roundingClasses,
-                                    "z-30"
-                                  )}
-                                  style={{
-                                    width: `calc(100% * ${effectiveDaysSpanned})`,
-                                    left: '0', // Keep left: 0
-                                    top: '0', // Relative to the inner event container
-                                    backgroundColor: 'hsl(var(--secondary))',
-                                    boxSizing: 'border-box' // Explicit border-box
-                                  }}
-                                  onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
-                                >
-                                  <div className="px-2 text-center">
-                                    {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
-                                    <div className="text-foreground">{event.event_name}</div>
-                                  </div>
-                                </div>
-                              );
-                            }
-                            return null;
-                          })}
                           {/* Single-Day Events or Consolidated Pill */}
                           {singleDayEventsForThisDay.length === 1 ? (
                             singleDayEventsForThisDay.map((event) => (
