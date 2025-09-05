@@ -1,14 +1,14 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   const supabaseClient = createClient(
@@ -19,7 +19,7 @@ serve(async (req) => {
         headers: { 'x-my-custom-header': 'SoulFlow-Edge-Function' },
       },
     }
-  );
+  )
 
   let input_text = '';
   let parsed_data: any = null;
@@ -50,6 +50,7 @@ serve(async (req) => {
       - For the 'description' and 'specialNotes' fields, preserve the original paragraph structure and line breaks from the input text. Use '\\n' for newlines within the JSON string.
       - If a field is not found, omit it from the JSON.
       - Ensure dates are in 'YYYY-MM-DD' format. If a year is not explicitly mentioned for a date, assume the current year, which is ${currentYear}.
+      - If a date range is provided (e.g., "Oct 11-12"), extract the start date as 'eventDate' and the end date as 'endDate'.
       - Ensure the 'ticketLink' includes 'https://' if present.
 
       Here is the event text:
@@ -59,6 +60,7 @@ serve(async (req) => {
       {
         "eventName": "Example Event",
         "eventDate": "2024-12-25",
+        "endDate": "2024-12-26",
         "eventTime": "7:00 PM",
         "placeName": "The Venue",
         "fullAddress": "123 Main St, City, State, Postcode",

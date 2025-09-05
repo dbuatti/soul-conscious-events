@@ -39,7 +39,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')),
+  geographicalState: z.string().optional().or(z.literal('')), // New field
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
@@ -397,9 +397,7 @@ const EventEditPage: React.FC = () => {
                         selected={field.value}
                         onSelect={(date) => {
                           field.onChange(date);
-                          if (date && !form.getValues('endDate')) {
-                            form.setValue('endDate', date);
-                          }
+                          // Removed the automatic setting of endDate to eventDate
                         }}
                         initialFocus
                       />

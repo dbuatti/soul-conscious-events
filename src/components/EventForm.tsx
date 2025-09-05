@@ -187,9 +187,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                       selected={field.value}
                       onSelect={(date) => {
                         field.onChange(date);
-                        if (date && !form.getValues('endDate')) {
-                          form.setValue('endDate', date);
-                        }
+                        // Removed the automatic setting of endDate to eventDate
                       }}
                       initialFocus
                     />
