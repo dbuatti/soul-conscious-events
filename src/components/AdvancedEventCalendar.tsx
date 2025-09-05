@@ -241,10 +241,10 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               "z-30"
                             )}
                             style={{
-                              width: `calc(100% * ${effectiveDaysSpanned})`,
-                              left: '0',
-                              top: '32px', // Explicitly set top to 32px (pt-8 equivalent)
-                              backgroundColor: 'hsl(var(--primary) / 0.2)', // Use HSL for consistency
+                              width: `calc(100% * ${effectiveDaysSpanned} + 1px)`, // Adjusted width to cover the right border
+                              left: '0', // Keep left at 0 relative to the parent cell
+                              top: '32px',
+                              backgroundColor: 'hsl(var(--primary) / 0.2)',
                               boxSizing: 'border-box'
                             }}
                             onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
