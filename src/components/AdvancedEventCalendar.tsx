@@ -125,24 +125,27 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     }
 
     const trackClasses = cn("relative z-30 -mx-[1px] w-[calc(100%+2px)]");
-    let rounding = "rounded-md";
+    let rounding = "rounded-none";
     if (isEventStartDay && isEventEndDay) rounding = "rounded-md";
     else if (isEventStartDay) rounding = "rounded-l-md rounded-r-none";
     else if (isEventEndDay) rounding = "rounded-r-md rounded-l-none";
-    else if (isContinuationDay) rounding = "rounded-none";
 
     return (
       <div key={event.id + format(day, 'yyyy-MM-dd')} className={trackClasses}>
         <div
-          className={cn(basePillClasses, "bg-primary text-primary-foreground dark:bg-primary/80 dark:text-primary-foreground hover:bg-primary/70", rounding)}
+          className={cn(
+            basePillClasses,
+            "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground hover:bg-primary/90", // Changed dark:bg-primary/80 to dark:bg-primary
+            rounding
+          )}
           onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
         >
-          {(isEventStartDay) && (
-            <span className="flex flex-col text-left pl-1">
-              {event.event_time && <span className="font-bold">{event.event_time}</span>}
-              <span>{event.event_name}</span>
+          <span className="flex flex-col text-left pl-1">
+            {isEventStartDay && event.event_time && <span className="font-bold">{event.event_time}</span>}
+            <span className={cn(isContinuationDay && "opacity-80")}>
+              {event.event_name}
             </span>
-          )}
+          </span>
         </div>
       </div>
     );
