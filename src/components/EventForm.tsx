@@ -35,7 +35,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')),
+  geographicalState: z.string().optional().or(z.literal('')), // New field
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
@@ -143,10 +143,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => {
-        console.log('EventForm (onSubmit): geographicalState before submission:', form.getValues('geographicalState'));
-        onSubmit(form.getValues());
-      }} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="eventName"
