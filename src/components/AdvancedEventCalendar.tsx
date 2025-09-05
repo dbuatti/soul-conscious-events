@@ -71,7 +71,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     onDayClick(today);
   };
   const handlePrevWeek = () => onMonthChange(subWeeks(currentMonth, 1));
-  const handleNextWeek = () => onMonthChange(addWeeks(currentMonth, 1));
+  const handleNextWeek = () => onWeeksChange(addWeeks(currentMonth, 1)); // Changed to onWeeksChange
 
   const getEventsForDay = (day: Date) => {
     return events
@@ -155,19 +155,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       // Intermediate day of a multi-day event
       return "rounded-none"; // All corners unrounded
     }
-  };
-
-  // New helper to determine if the next day is also part of the same multi-day event
-  const isNextDayPartOfSameEvent = (event: Event, day: Date, visibleDays: Date[]) => {
-    const eventStartDate = parseISO(event.event_date);
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    if (!isMultiDayEvent(event)) return false;
-
-    const dayIndex = visibleDays.findIndex(d => isSameDay(d, day));
-    if (dayIndex === -1 || dayIndex === visibleDays.length - 1) return false; // Not found or last day
-
-    const nextDay = visibleDays[dayIndex + 1];
-    return nextDay >= eventStartDate && nextDay <= eventEndDate;
   };
 
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
@@ -272,29 +259,24 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                           {/* Render multi-day events first, as they act like a background bar */}
                           {multiDayEventsForThisDay.map(event => {
                             const roundingClasses = getMultiDayRoundingClasses(event, day, visibleDaysInView);
-                            const hasNextPart = isNextDayPartOfSameEvent(event, day, visibleDaysInView);
-                            // Adjust margin/padding to eliminate gaps
-                            const gapAdjustmentClasses = hasNextPart 
-                              ? "pr-0 -mr-[1px]" // Remove right padding/margin if next day is part of the event
-                              : "";
 
                             return (
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                 className={cn(
-                                  "relative w-full py-1.5 px-2 min-h-[2.5rem]", // Changed from w-[calc(100%+2px)] to w-full
+                                  "relative py-1.5 min-h-[2.5rem]",
+                                  "w-[calc(100%+2px)] -ml-[1px] -mr-[1px]", // Make element slightly wider and use negative margins to overlap borders
                                   "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
                                   "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal",
-                                  roundingClasses, // Apply rounding classes here
-                                  gapAdjustmentClasses // Apply gap adjustment
+                                  roundingClasses // Apply rounding classes here
                                 )}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
                                 {isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView) && (
-                                  <>
+                                  <div className="px-2"> {/* Apply padding to content only on the first visible day */}
                                     {event.event_time && <span className="font-bold">{event.event_time}</span>}
                                     <span>{event.event_name}</span>
-                                  </>
+                                  </div>
                                 )}
                               </div>
                             );
