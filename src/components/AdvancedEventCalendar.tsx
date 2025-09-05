@@ -174,16 +174,16 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
-          {daysOfWeekShort.map((day, index) => (<div key={day + index} className="font-semibold text-foreground py-2 border-r border-b border-border bg-secondary">{day}</div>))}
+        <div className="grid grid-cols-7 gap-px text-center border-t border-l border-r border-border rounded-lg overflow-hidden">
+          {daysOfWeekShort.map((day, index) => (<div key={day + index} className="font-semibold text-foreground py-2 border-b border-border bg-secondary">{day}</div>))}
           {Array.from({ length: 35 }).map((_, i) => (<div key={i} className="h-32 sm:h-40 md:h-48 lg:h-56 border-r border-b border-border p-2 flex flex-col items-center justify-center bg-muted"><Skeleton className="h-5 w-1/2 mb-2" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-2/3 mt-1" /></div>))}
         </div>
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 border border-border rounded-lg divide-x divide-y divide-border" style={{ overflow: 'hidden', boxSizing: 'border-box' }}>
+            <div className="grid grid-cols-7 border-t border-l border-r border-border rounded-lg divide-y divide-border" style={{ overflow: 'hidden', boxSizing: 'border-box' }}>
               {daysOfWeekShort.map((dayName, index) => (
-                <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 bg-secondary text-center">{daysOfWeekShort[index]}</div>
+                <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 bg-secondary text-center border-b border-border">{daysOfWeekShort[index]}</div>
               ))}
               {visibleDaysInView.map((day, dayIndex) => {
                 const dayEvents = getEventsForDay(day);
@@ -199,11 +199,11 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                   <div
                     key={format(day, 'yyyy-MM-dd')}
                     className={cn(
-                      "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer", // Removed borders here
+                      "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer",
                       isCurrentMonth || viewMode === 'week' ? "bg-card hover:bg-accent/10" : "bg-secondary opacity-50",
                       isPastDate && "opacity-70",
-                      isTodayDate && "ring-2 ring-primary/50", // Enhanced today styling with ring
-                      isSelected && !isTodayDate && "bg-accent/20 ring-2 ring-primary", // Enhanced selected styling with ring
+                      isTodayDate && "ring-2 ring-primary/50",
+                      isSelected && !isTodayDate && "bg-accent/20 ring-2 ring-primary",
                     )}
                     style={{ position: 'relative', boxSizing: 'border-box' }}
                     onClick={() => onDayClick(day)}
@@ -235,13 +235,13 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                             key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                             className={cn(
                               "absolute py-1 min-h-[2rem]",
-                              "bg-primary/20 text-primary-foreground dark:bg-primary/30 dark:text-primary-foreground hover:bg-primary/40", // Distinct multi-day styling
+                              "bg-primary/20 text-primary-foreground dark:bg-primary/30 dark:text-primary-foreground hover:bg-primary/40",
                               "flex items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                               roundingClasses,
                               "z-30"
                             )}
                             style={{
-                              width: `calc(100% * ${effectiveDaysSpanned})`, // Adjusted width, removed +1px
+                              width: `calc(100% * ${effectiveDaysSpanned})`,
                               left: '0',
                               top: '32px',
                               backgroundColor: 'hsl(var(--primary) / 0.2)',
