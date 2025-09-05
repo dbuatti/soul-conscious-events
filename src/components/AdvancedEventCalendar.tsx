@@ -120,7 +120,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       return (
         <div
           key={event.id + format(day, 'yyyy-MM-dd')}
-          className={cn("relative z-10 w-full px-2 py-1 rounded-md mb-1", basePillClasses, "bg-accent/20 text-foreground hover:bg-accent/40")}
+          className={cn("relative z-10 w-full px-2 py-1 rounded-md", basePillClasses, "bg-accent/20 text-foreground hover:bg-accent/40")}
           onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
         >
           <span className="flex flex-col text-left">
@@ -131,25 +131,26 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       );
     }
 
-    // Multi-day event - using absolute positioning to fill the cell
-    const multiDayPillClasses = cn(
-      "absolute inset-0 z-0", // Fill the entire parent day cell
-      "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground hover:bg-primary/90",
-      "flex items-center", // For vertical centering of text
-      "py-1", // Add vertical padding here
-      isFirstVisibleDay ? "pl-2" : "pl-1" // Horizontal padding for text
-    );
-
+    // Multi-day event
     let rounding = "rounded-none";
     if (isEventStartDay && isEventEndDay) rounding = "rounded-md";
     else if (isEventStartDay) rounding = "rounded-l-md rounded-r-none";
     else if (isEventEndDay) rounding = "rounded-r-md rounded-l-none";
 
     return (
-      <div key={event.id + format(day, 'yyyy-MM-dd')} className={cn(multiDayPillClasses, rounding)}
-           onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}>
+      <div
+        key={event.id + format(day, 'yyyy-MM-dd')}
+        className={cn(
+          "relative w-full py-1", // Removed mb-1 here
+          "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground hover:bg-primary/90",
+          rounding,
+          "-ml-[1px] -mr-[1px]", // Negative margins to cover borders
+          basePillClasses
+        )}
+        onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
+      >
         {isFirstVisibleDay ? (
-          <span className="flex flex-col text-left">
+          <span className="flex flex-col text-left pl-2"> {/* Added pl-2 for text */}
             {event.event_time && <span className="font-bold">{event.event_time}</span>}
             <span>{event.event_name}</span>
           </span>
@@ -208,14 +209,14 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       {loading ? (
         <div className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
           {daysOfWeekShort.map((day, index) => (<div key={day + index} className="font-semibold text-foreground py-2 border-r border-b border-border bg-secondary">{day}</div>))}
-          {Array.from({ length: 35 }).map((_, i) => (<div key={i} className="h-28 sm:h-40 md:h-48 lg:h-56 border-r border-b border-border p-2 flex flex-col items-center justify-center bg-muted"><Skeleton className="h-5 w-1/2 mb-2" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-2/3 mt-1" /></div>))}
+          {Array.from({ length: 35 }).map((_, i) => (<div key={i} className="h-32 sm:h-40 md:h-48 lg:h-56 border-r border-b border-border p-2 flex flex-col items-center justify-center bg-muted"><Skeleton className="h-5 w-1/2 mb-2" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-2/3 mt-1" /></div>))}
         </div>
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 gap-px text-center border border-border rounded-lg overflow-visible">
+            <div className="grid grid-cols-7 text-center border-t border-l border-border rounded-lg overflow-hidden"> {/* Removed gap-px */}
               {daysOfWeekShort.map((dayName, index) => (<div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>))}
-              {(viewMode === 'month' ? daysInMonthView : currentWeek).map((day) => {
+              {visibleDaysInView.map((day) => {
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isTodayDate = isToday(day);
@@ -235,12 +236,13 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     key={day.toISOString()}
                     className={cn(
                       "relative flex flex-col h-32 sm:h-40 md:h-48 lg:h-56 w-full transition-colors duration-200 p-1 cursor-pointer",
+                      "border-r border-b border-border", // Added borders to each cell
                       isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50",
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
                       isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
-                      // Apply a subtle primary background if a multi-day event spans this day
-                      hasMultiDayEventSpanning && "bg-primary/20 dark:bg-primary/20"
+                      hasMultiDayEventSpanning && "bg-primary/20 dark:bg-primary/20",
+                      "overflow-hidden" // Crucial for negative margins
                     )}
                     onClick={() => onDayClick(day)}
                   >
@@ -259,7 +261,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                         </div>
                       )
                     ) : (
-                      <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 pr-1 relative z-0">
+                      <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 relative z-5"> {/* Removed pr-1, added z-5 */}
                         {dayEvents.map((event) => renderDayEventPill(event, day, visibleDaysInView))}
                       </div>
                     )}
