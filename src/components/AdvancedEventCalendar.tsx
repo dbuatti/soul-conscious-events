@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, ChevronDown, CalendarDays as CalendarDaysIcon } from 'lucide-react'; // Added CalendarDaysIcon
+import { ArrowLeft, ArrowRight, ChevronDown, CalendarDays as CalendarDaysIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -181,9 +181,9 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 border border-border rounded-lg" style={{ overflow: 'visible', boxSizing: 'border-box' }}>
+            <div className="grid grid-cols-7 border border-border rounded-lg divide-x divide-y divide-border" style={{ overflow: 'hidden', boxSizing: 'border-box' }}>
               {daysOfWeekShort.map((dayName, index) => (
-                <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary text-center">{daysOfWeekShort[index]}</div>
+                <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 bg-secondary text-center">{daysOfWeekShort[index]}</div>
               ))}
               {visibleDaysInView.map((day, dayIndex) => {
                 const dayEvents = getEventsForDay(day);
@@ -199,11 +199,11 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                   <div
                     key={format(day, 'yyyy-MM-dd')}
                     className={cn(
-                      "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer border-r border-b border-border",
+                      "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer", // Removed borders here
                       isCurrentMonth || viewMode === 'week' ? "bg-card hover:bg-accent/10" : "bg-secondary opacity-50",
                       isPastDate && "opacity-70",
-                      isTodayDate && "ring-2 ring-primary/50 border-primary/50", // Enhanced today styling
-                      isSelected && !isTodayDate && "bg-accent/20 border-primary border-2", // Enhanced selected styling
+                      isTodayDate && "ring-2 ring-primary/50", // Enhanced today styling with ring
+                      isSelected && !isTodayDate && "bg-accent/20 ring-2 ring-primary", // Enhanced selected styling with ring
                     )}
                     style={{ position: 'relative', boxSizing: 'border-box' }}
                     onClick={() => onDayClick(day)}
@@ -241,8 +241,8 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               "z-30"
                             )}
                             style={{
-                              width: `calc(100% * ${effectiveDaysSpanned} + 1px)`, // Adjusted width to cover the right border
-                              left: '0', // Keep left at 0 relative to the parent cell
+                              width: `calc(100% * ${effectiveDaysSpanned})`, // Adjusted width, removed +1px
+                              left: '0',
                               top: '32px',
                               backgroundColor: 'hsl(var(--primary) / 0.2)',
                               boxSizing: 'border-box'
@@ -250,7 +250,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                             onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                           >
                             <div className="px-2 text-center flex items-center">
-                              <CalendarDaysIcon className="h-3 w-3 mr-1" /> {/* Icon for multi-day event */}
+                              <CalendarDaysIcon className="h-3 w-3 mr-1" />
                               {event.event_time && <div className="font-bold text-primary-foreground mr-1">{event.event_time}</div>}
                               <div className="text-primary-foreground">{event.event_name}</div>
                             </div>
@@ -263,11 +263,11 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     {/* Event Container for single-day events and mobile dots */}
                     <div className="pt-8 z-20 flex-grow space-y-0.5">
                       {isMobile ? (
-                        <div className="flex flex-wrap gap-1 mt-1 justify-center"> {/* Centered dots */}
+                        <div className="flex flex-wrap gap-1 mt-1 justify-center">
                           {dayEvents.map(event => (
                             <div
                               key={event.id + format(day, 'yyyy-MM-dd') + '-dot'}
-                              className="h-2.5 w-2.5 rounded-full bg-primary" // Slightly larger dots
+                              className="h-2.5 w-2.5 rounded-full bg-primary"
                               title={event.event_name}
                             />
                           ))}
