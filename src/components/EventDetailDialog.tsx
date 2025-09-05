@@ -147,8 +147,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
-        <DialogHeader>
-          <DialogTitle className="text-3xl font-bold text-foreground text-center">{event.event_name}</DialogTitle>
+        <DialogHeader className="text-center">
+          <DialogTitle className="text-3xl font-bold text-foreground">{event.event_name}</DialogTitle>
           <DialogDescriptionUI className="text-muted-foreground">
             Details about this soulful event.
           </DialogDescriptionUI>
@@ -168,45 +168,44 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         )}
 
         <Card className="shadow-lg rounded-lg border-none dark:bg-secondary dark:border-border">
-          <CardHeader>
-            <CardDescription className="flex items-center text-muted-foreground mt-2">
-              <Calendar className="mr-2 h-4 w-4 text-primary" />
-              {dateDisplay}
+          <CardHeader className="pb-2">
+            <div className="flex flex-wrap items-center text-muted-foreground text-sm sm:text-base mb-2">
+              <Calendar className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+              <span className="font-medium">{dateDisplay}</span>
               {event.event_time && (
                 <>
-                  <Clock className="ml-4 mr-2 h-4 w-4 text-primary" />
-                  {event.event_time}
+                  <Clock className="ml-4 mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="font-medium">{event.event_time}</span>
                 </>
               )}
-            </CardDescription>
+            </div>
             {(event.place_name || event.full_address || event.geographical_state) && (
-              // Changed CardDescription to a div to fix DOM nesting warning
-              <div className="flex flex-col items-start text-muted-foreground mt-1">
+              <div className="flex flex-col items-start text-muted-foreground text-sm sm:text-base">
                 {event.place_name && (
                   <div className="flex items-center mb-1">
-                    <MapPin className="mr-2 h-4 w-4 text-primary" />
-                    <Badge variant="secondary" className="bg-accent text-accent-foreground text-base py-1 px-2">
+                    <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                    <Badge variant="secondary" className="bg-accent text-accent-foreground py-1 px-2">
                       {event.place_name}
                     </Badge>
                   </div>
                 )}
                 {event.full_address && (
-                  <div className="flex items-center">
-                    {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-primary" />}
+                  <div className="flex items-center mb-1">
+                    {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0" />}
                     <a
                       href={googleMapsLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline text-base"
+                      className="text-primary hover:underline"
                     >
                       {event.full_address}
                     </a>
                   </div>
                 )}
                 {event.geographical_state && (
-                  <div className="flex items-center mt-1">
-                    <MapPin className="mr-2 h-4 w-4 text-primary" />
-                    <Badge variant="secondary" className="bg-accent text-accent-foreground text-base py-1 px-2">
+                  <div className="flex items-center">
+                    <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                    <Badge variant="secondary" className="bg-accent text-accent-foreground py-1 px-2">
                       {event.geographical_state}
                     </Badge>
                   </div>
@@ -214,7 +213,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </div>
             )}
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             {event.description && (
               <div>
                 <h3 className="font-semibold text-foreground mb-2">Description:</h3>
@@ -222,11 +221,11 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </div>
             )}
             {event.price && (
-              <p className="flex items-start text-foreground"> {/* Changed to items-start */}
-                <DollarSign className="mr-2 h-5 w-5 text-primary flex-shrink-0" /> {/* Added flex-shrink-0 */}
-                <span className="flex-1 min-w-0"> {/* Added flex-1 min-w-0 to allow wrapping */}
+              <p className="flex items-start text-foreground">
+                <DollarSign className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
+                <span className="flex-1 min-w-0">
                   <span className="font-medium">Price: </span>
-                  <span className="break-words">{event.price}</span> {/* Wrapped price in span with break-words */}
+                  <span className="break-words">{event.price}</span>
                   {event.price.toLowerCase() === 'free' && (
                     <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
                   )}
@@ -235,7 +234,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             )}
             {event.ticket_link && (
               <div className="flex items-center">
-                <LinkIcon className="mr-2 h-5 w-5 text-primary" />
+                <LinkIcon className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
                 <a
                   href={event.ticket_link}
                   target="_blank"
@@ -265,7 +264,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.special_notes && (
               <div>
                 <h3 className="font-semibold text-foreground mb-2 flex items-center">
-                  <Info className="mr-2 h-5 w-5 text-primary" />
+                  <Info className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
                   Special Notes:
                 </h3>
                 <p className="text-foreground whitespace-pre-wrap pl-7">{event.special_notes}</p>
@@ -273,14 +272,14 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             )}
             {event.organizer_contact && (
               <p className="flex items-center text-foreground">
-                <User className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Organizer: </span> {event.organizer_contact} {/* Added space */}
+                <User className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
+                <span className="font-medium">Organizer: </span> {event.organizer_contact}
               </p>
             )}
             {event.event_type && (
               <p className="flex items-center text-foreground">
-                <Tag className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Event Type: </span> {event.event_type} {/* Added space */}
+                <Tag className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
+                <span className="font-medium">Event Type: </span> {event.event_type}
               </p>
             )}
           </CardContent>
