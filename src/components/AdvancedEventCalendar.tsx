@@ -268,14 +268,14 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                   "relative py-1.5 min-h-[2.5rem]",
                                   "w-[calc(100%+2px)] -ml-[1px] -mr-[1px]", // Overlap borders for seamless look
                                   "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
-                                  "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                                  "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal", // Changed items-start to items-center
                                   "z-20", // Ensure it's above event container
                                   roundingClasses
                                 )}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
                                 {isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView) && (
-                                  <div className="px-2"> {/* Apply padding to content only on the first visible day */}
+                                  <div className="px-2 text-center"> {/* Added text-center */}
                                     {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
                                     <div className="text-foreground">{event.event_name}</div>
                                   </div>
@@ -291,7 +291,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               className={cn(
                                 "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]",
                                 "bg-accent/20 text-foreground hover:bg-accent/40",
-                                "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                                "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal", // Changed items-start to items-center
                                 "z-30" // Ensure single-day events are above multi-day events
                               )}
                               onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
