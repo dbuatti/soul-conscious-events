@@ -99,17 +99,23 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
   const daysInMonthView = eachDayOfInterval({ start: startDay, end: endDay });
   const currentWeek = eachDayOfInterval({ start: startOfWeek(currentMonth, { weekStartsOn: 1 }), end: endOfWeek(currentMonth, { weekStartsOn: 1 }) });
 
-  const renderDayEventPill = (event: Event, day: Date) => {
+  const renderDayEventPill = (event: Event, day: Date, visibleDays: Date[]) => {
     const eventStartDate = parseISO(event.event_date);
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
     const isMultiDay = !isSameDay(eventStartDate, eventEndDate);
     const isEventStartDay = isSameDay(day, eventStartDate);
     const isEventEndDay = isSameDay(day, eventEndDate);
-    const isContinuationDay = isMultiDay && !isEventStartDay && !isEventEndDay;
+
+    // Determine if this 'day' is the first visible day of the event within the current calendar view
+    const firstSpanningDayInView = visibleDays.find(d => {
+      return d >= eventStartDate && d <= eventEndDate;
+    });
+    const isFirstVisibleDay = firstSpanningDayInView && isSameDay(day, firstSpanningDayInView);
 
     const basePillClasses = "py-1 px-2 text-xs font-medium whitespace-normal min-h-[1.5rem] mb-1 cursor-pointer";
 
     if (!isMultiDay) {
+      // Single day event: render with time and name
       return (
         <div
           key={event.id + format(day, 'yyyy-MM-dd')}
@@ -124,6 +130,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       );
     }
 
+    // Multi-day event
     const trackClasses = cn("relative z-30 -mx-[1px] w-[calc(100%+2px)]");
     let rounding = "rounded-none";
     if (isEventStartDay && isEventEndDay) rounding = "rounded-md";
@@ -135,21 +142,26 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
         <div
           className={cn(
             basePillClasses,
-            "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground hover:bg-primary/90", // Changed dark:bg-primary/80 to dark:bg-primary
+            "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground hover:bg-primary/90",
             rounding
           )}
           onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
         >
-          <span className="flex flex-col text-left pl-1">
-            {isEventStartDay && event.event_time && <span className="font-bold">{event.event_time}</span>}
-            <span className={cn(isContinuationDay && "opacity-80")}>
-              {event.event_name}
+          {isFirstVisibleDay ? ( // Only show text on the first visible day of the event in the current view
+            <span className="flex flex-col text-left">
+              {event.event_time && <span className="font-bold">{event.event_time}</span>}
+              <span>{event.event_name}</span>
             </span>
-          </span>
+          ) : (
+            // For continuation days, just a visual block (text hidden for visual continuity, but available for screen readers)
+            <span className="sr-only">{event.event_name} (continuation)</span>
+          )}
         </div>
       </div>
     );
   };
+
+  const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
 
   return (
     <div className="w-full">
@@ -197,14 +209,14 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       {loading ? (
         <div className="grid grid-cols-7 gap-px text-center border-t border-l border-border rounded-lg overflow-hidden">
           {daysOfWeekShort.map((day, index) => (<div key={day + index} className="font-semibold text-foreground py-2 border-r border-b border-border bg-secondary">{day}</div>))}
-          {Array.from({ length: 35 }).map((_, i) => (<div key={i} className="h-28 sm:h-40 md:h-48 lg:h-56 border-r border-b border-border p-2 flex flex-col items-center justify-center bg-muted"><Skeleton className="h-5 w-1/2 mb-2" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-2/3 mt-1" /></div>))}
+          {Array.from({ length: 35 }).map((_, i) => (<div key={i} className="h-32 sm:h-40 md:h-48 lg:h-56 border-r border-b border-border p-2 flex flex-col items-center justify-center bg-muted"><Skeleton className="h-5 w-1/2 mb-2" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-2/3 mt-1" /></div>))}
         </div>
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
             <div className="grid grid-cols-7 gap-px text-center border border-border rounded-lg overflow-visible">
               {daysOfWeekShort.map((dayName, index) => (<div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>))}
-              {(viewMode === 'month' ? daysInMonthView : currentWeek).map((day) => {
+              {visibleDaysInView.map((day) => {
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isTodayDate = isToday(day);
@@ -233,7 +245,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       )
                     ) : (
                       <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 pr-1">
-                        {dayEvents.map((event) => renderDayEventPill(event, day))}
+                        {dayEvents.map((event) => renderDayEventPill(event, day, visibleDaysInView))}
                       </div>
                     )}
                   </div>
