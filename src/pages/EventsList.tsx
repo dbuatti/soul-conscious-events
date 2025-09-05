@@ -36,6 +36,7 @@ interface Event {
   image_url?: string;
   user_id?: string;
   is_deleted?: boolean;
+  approval_status?: string; // Added approval_status to Event interface
 }
 
 const EventsList = () => {
@@ -53,7 +54,7 @@ const EventsList = () => {
   const [selectedDay, setSelectedDay] = useState(new Date());
 
   const { user, isLoading: isSessionLoading } = useSession();
-  const isAdmin = user?.email === 'daniele.buatti@gmail.buatti@gmail.com';
+  const isAdmin = user?.email === 'daniele.buatti@gmail.com'; // Corrected admin email
   const location = useLocation();
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -75,6 +76,7 @@ const EventsList = () => {
         toast.error('Failed to load events.');
       } else {
         setEvents(data || []);
+        console.log("EventsList: Fetched events:", data); // Added this log
       }
       setLoading(false);
     };
@@ -86,11 +88,11 @@ const EventsList = () => {
     let filtered = events;
 
     const now = new Date();
-    const todayFormatted = format(now, 'yyyy-MM-dd');
+    now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
 
     switch (dateFilter) {
       case 'Today':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === todayFormatted);
+        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd'));
         break;
       case 'This Week':
         const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -109,10 +111,10 @@ const EventsList = () => {
         });
         break;
       case 'Past Events':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') < todayFormatted);
+        filtered = filtered.filter(event => parseISO(event.event_date) < now);
         break;
       case 'All Upcoming':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') >= todayFormatted);
+        filtered = filtered.filter(event => parseISO(event.event_date) >= now);
         break;
       case 'All Events':
       default:
@@ -213,7 +215,7 @@ const EventsList = () => {
 
     return (
       <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden" onClick={() => handleViewDetails(event)}>
-        {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div></div>}
+        {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-black/30"></div></div>}
         <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2"><CardTitle className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">{event.event_name}</CardTitle><CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base"><Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{dateDisplay}{event.event_time && <><Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{event.event_time}</>}</CardDescription></CardHeader>
         <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
           {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
@@ -264,6 +266,29 @@ const EventsList = () => {
           SoulFlow is a prototype app. Your feedback is invaluable! Please visit the <Link to="/contact" className="text-primary hover:underline font-medium">Contact Us</Link> page to share your suggestions.
         </p>
       </div>
+
+      {/* Temporary Debug Section */}
+      <div className="mb-8 p-4 bg-yellow-100 border border-yellow-300 rounded-lg shadow-md dark:bg-yellow-900 dark:border-yellow-700">
+        <h3 className="text-xl font-bold text-yellow-800 dark:text-yellow-200 mb-4">DEBUG: All Fetched Events (Bypassing Filters)</h3>
+        {loading ? (
+          <p className="text-yellow-700 dark:text-yellow-300">Loading debug events...</p>
+        ) : events.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4">
+            {events.map(event => (
+              <Card key={event.id} className="shadow-sm rounded-lg p-3 bg-yellow-50 dark:bg-yellow-950">
+                <CardTitle className="text-lg font-semibold text-yellow-800 dark:text-yellow-200">{event.event_name}</CardTitle>
+                <CardDescription className="text-sm text-yellow-700 dark:text-yellow-300">
+                  Date: {event.event_date ? format(parseISO(event.event_date), 'PPP') : 'N/A'} | Status: {event.approval_status || 'N/A'}
+                </CardDescription>
+                {event.full_address && <p className="text-sm text-yellow-700 dark:text-yellow-300">Address: {event.full_address}</p>}
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-yellow-700 dark:text-yellow-300">No events fetched for debugging.</p>
+        )}
+      </div>
+      {/* End Temporary Debug Section */}
 
       <div className="mb-8 rounded-xl shadow-lg border border-border bg-card p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -357,7 +382,7 @@ const EventsList = () => {
         </>
       )}
 
-      <EventDetailDialog event={selectedEvent} isOpen={isEventDetailDialogOpen} onClose={() => setIsEventDetailDialogOpen(false)} cameFromCalendar={viewMode === 'calendar'} />
+      <EventDetailDialog event={selectedEvent} isOpen={isEventDetailDialogOpen} onClose={()={() => setIsEventDetailDialogOpen(false)}} cameFromCalendar={viewMode === 'calendar'} />
       <FilterOverlay isOpen={isFilterOverlayOpen} onClose={() => setIsFilterOverlayOpen(false)} currentFilters={{ searchTerm, eventType, state: stateFilter, dateFilter }} onApplyFilters={handleApplyFilters} onClearAllFilters={handleClearAllFilters} />
     </div>
   );

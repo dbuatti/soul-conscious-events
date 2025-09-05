@@ -180,7 +180,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               )}
             </CardDescription>
             {(event.place_name || event.full_address || event.geographical_state) && (
-              <CardDescription className="flex flex-col items-start text-muted-foreground mt-1">
+              // Changed CardDescription to a div to fix DOM nesting warning
+              <div className="flex flex-col items-start text-muted-foreground mt-1">
                 {event.place_name && (
                   <div className="flex items-center mb-1">
                     <MapPin className="mr-2 h-4 w-4 text-primary" />
@@ -210,7 +211,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                     </Badge>
                   </div>
                 )}
-              </CardDescription>
+              </div>
             )}
           </CardHeader>
           <CardContent className="space-y-4">
