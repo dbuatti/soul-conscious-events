@@ -267,29 +267,6 @@ const EventsList = () => {
         </p>
       </div>
 
-      {/* Temporary Debug Section */}
-      <div className="mb-8 p-4 bg-yellow-100 border border-yellow-300 rounded-lg shadow-md dark:bg-yellow-900 dark:border-yellow-700">
-        <h3 className="text-xl font-bold text-yellow-800 dark:text-yellow-200 mb-4">DEBUG: All Fetched Events (Bypassing Filters)</h3>
-        {loading ? (
-          <p className="text-yellow-700 dark:text-yellow-300">Loading debug events...</p>
-        ) : events.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4">
-            {events.map(event => (
-              <Card key={event.id} className="shadow-sm rounded-lg p-3 bg-yellow-50 dark:bg-yellow-950">
-                <CardTitle className="text-lg font-semibold text-yellow-800 dark:text-yellow-200">{event.event_name}</CardTitle>
-                <CardDescription className="text-sm text-yellow-700 dark:text-yellow-300">
-                  Date: {event.event_date ? format(parseISO(event.event_date), 'PPP') : 'N/A'} | Status: {event.approval_status || 'N/A'}
-                </CardDescription>
-                {event.full_address && <p className="text-sm text-yellow-700 dark:text-yellow-300">Address: {event.full_address}</p>}
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <p className="text-yellow-700 dark:text-yellow-300">No events fetched for debugging.</p>
-        )}
-      </div>
-      {/* End Temporary Debug Section */}
-
       <div className="mb-8 rounded-xl shadow-lg border border-border bg-card p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <Button onClick={() => setIsFilterOverlayOpen(true)} className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base">
