@@ -157,6 +157,19 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     }
   };
 
+  // New helper to determine if the next day is also part of the same multi-day event
+  const isNextDayPartOfSameEvent = (event: Event, day: Date, visibleDays: Date[]) => {
+    const eventStartDate = parseISO(event.event_date);
+    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+    if (!isMultiDayEvent(event)) return false;
+
+    const dayIndex = visibleDays.findIndex(d => isSameDay(d, day));
+    if (dayIndex === -1 || dayIndex === visibleDays.length - 1) return false; // Not found or last day
+
+    const nextDay = visibleDays[dayIndex + 1];
+    return nextDay >= eventStartDate && nextDay <= eventEndDate;
+  };
+
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
 
   return (
@@ -259,15 +272,21 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                           {/* Render multi-day events first, as they act like a background bar */}
                           {multiDayEventsForThisDay.map(event => {
                             const roundingClasses = getMultiDayRoundingClasses(event, day, visibleDaysInView);
+                            const hasNextPart = isNextDayPartOfSameEvent(event, day, visibleDaysInView);
+                            // Adjust margin/padding to eliminate gaps
+                            const gapAdjustmentClasses = hasNextPart 
+                              ? "pr-0 -mr-[1px]" // Remove right padding/margin if next day is part of the event
+                              : "";
 
                             return (
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                 className={cn(
-                                  "relative w-[calc(100%+2px)] -ml-[1px] -mr-[1px] py-1.5 px-2 min-h-[2.5rem]",
+                                  "relative w-full py-1.5 px-2 min-h-[2.5rem]", // Changed from w-[calc(100%+2px)] to w-full
                                   "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
                                   "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal",
-                                  roundingClasses // Apply rounding classes here
+                                  roundingClasses, // Apply rounding classes here
+                                  gapAdjustmentClasses // Apply gap adjustment
                                 )}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
