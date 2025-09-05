@@ -238,13 +238,13 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     )}
                     onClick={() => onDayClick(day)}
                   >
-                    {/* Day number (absolute position, lower z-index) */}
-                    <span className={cn("absolute top-1 left-1 font-bold z-10", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
+                    {/* Day number (absolute position, higher z-index, right-aligned) */}
+                    <span className={cn("absolute top-1 right-1 px-1 font-bold z-20 text-right", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
                     </span>
 
-                    {/* Container for events */}
-                    <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 relative z-0"> {/* z-0 for container */}
+                    {/* Container for events (starts below day number, lower z-index) */}
+                    <div className="flex-grow overflow-y-auto pt-6 space-y-0.5 relative z-10">
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {dayEvents.map(event => (
@@ -266,10 +266,10 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                 className={cn(
                                   "relative py-1.5 min-h-[2.5rem]",
-                                  "w-full", // Changed to w-full
+                                  "w-[calc(100%+2px)] -ml-[1px] -mr-[1px]", // Overlap borders for seamless look
                                   "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
                                   "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal",
-                                  "z-20", // Ensure it's above day number (z-10)
+                                  "z-20", // Ensure it's above event container
                                   roundingClasses
                                 )}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
@@ -292,7 +292,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                 "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]",
                                 "bg-accent/20 text-foreground hover:bg-accent/40",
                                 "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal",
-                                "z-30" // Ensure single-day events are above multi-day events (z-20)
+                                "z-30" // Ensure single-day events are above multi-day events
                               )}
                               onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                             >
