@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown } => 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -115,26 +115,28 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     return firstDayInViewForEvent && isSameDay(day, firstDayInViewForEvent);
   };
 
-  const getMultiDayRoundingClasses = (event: Event, day: Date, visibleDays: Date[]) => {
+  const isLastVisibleDayOfMultiDayEvent = (event: Event, day: Date, visibleDays: Date[]) => {
     const eventStartDate = parseISO(event.event_date);
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+    if (!isMultiDayEvent(event)) return false;
 
-    const isEventStartDay = isSameDay(day, eventStartDate);
-    const isEventEndDay = isSameDay(day, eventEndDate);
+    // Find the last day in visibleDays that is part of this event
+    const lastDayInViewForEvent = visibleDays.findLast(d => d >= eventStartDate && d <= eventEndDate);
+    return lastDayInViewForEvent && isSameDay(day, lastDayInViewForEvent);
+  };
 
-    // Check if the event starts *before* the visible range but continues into it
-    const startsBeforeVisible = eventStartDate < visibleDays[0] && isSameDay(day, visibleDays[0]);
-    // Check if the event ends *after* the visible range but starts within it
-    const endsAfterVisible = eventEndDate > visibleDays[visibleDays.length - 1] && isSameDay(day, visibleDays[visibleDays.length - 1]);
+  const getMultiDayRoundingClasses = (event: Event, day: Date, visibleDays: Date[]) => {
+    const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDays);
+    const isLastVisible = isLastVisibleDayOfMultiDayEvent(event, day, visibleDays);
 
-    if ((isEventStartDay || startsBeforeVisible) && (isEventEndDay || endsAfterVisible)) {
-      return "rounded-md"; // Event starts and ends within or at the visible boundaries of this single cell
-    } else if (isEventStartDay || startsBeforeVisible) {
+    if (isFirstVisible && isLastVisible) {
+      return "rounded-md";
+    } else if (isFirstVisible) {
       return "rounded-l-md rounded-r-none";
-    } else if (isEventEndDay || endsAfterVisible) {
+    } else if (isLastVisible) {
       return "rounded-r-md rounded-l-none";
     } else {
-      return "rounded-none"; // Middle day of a multi-day event
+      return "rounded-none";
     }
   };
 
@@ -191,7 +193,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 text-center border-t border-l border-border rounded-lg"> {/* Removed overflow-hidden from here */}
+            <div className="grid grid-cols-7 text-center border border-border rounded-lg">
               {daysOfWeekShort.map((dayName, index) => (<div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>))}
               {visibleDaysInView.map((day) => {
                 const dayEvents = getEventsForDay(day);
@@ -214,7 +216,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
                       isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
-                      // Removed bg-primary/20 from cell itself, as the pill will provide the color
+                      "overflow-hidden" // Crucial for negative margins to work without scrollbars
                     )}
                     onClick={() => onDayClick(day)}
                   >
@@ -228,38 +230,24 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       {/* Render multi-day events first, as they act like a background bar */}
                       {multiDayEventsForThisDay.map(event => {
                         const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
-                        
-                        // Determine if this day is the actual start/end of the event, or just a continuation
-                        const eventStartDate = parseISO(event.event_date);
-                        const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-                        const isActualEventStart = isSameDay(day, eventStartDate);
-                        const isActualEventEnd = isSameDay(day, eventEndDate);
-
-                        let roundingClasses = "rounded-none";
-                        if (isActualEventStart && isActualEventEnd) {
-                          roundingClasses = "rounded-md";
-                        } else if (isActualEventStart) {
-                          roundingClasses = "rounded-l-md rounded-r-none";
-                        } else if (isActualEventEnd) {
-                          roundingClasses = "rounded-r-md rounded-l-none";
-                        }
+                        const roundingClasses = getMultiDayRoundingClasses(event, day, visibleDaysInView);
 
                         return (
                           <div
                             key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                             className={cn(
-                              "relative w-[calc(100%+2px)] -ml-[1px] -mr-[1px] py-1 h-6", // Span full width + borders, fixed height
+                              "relative w-[calc(100%+2px)] -ml-[1px] -mr-[1px] py-1.5 px-2 min-h-[2.5rem]", // Span full width + borders, fixed height
                               "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground hover:bg-primary/90",
                               roundingClasses,
-                              "flex items-center text-xs font-medium cursor-pointer"
+                              "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal"
                             )}
                             onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                           >
                             {isFirstVisible && (
-                              <span className="flex flex-col text-left pl-2">
+                              <>
                                 {event.event_time && <span className="font-bold">{event.event_time}</span>}
                                 <span>{event.event_name}</span>
-                              </span>
+                              </>
                             )}
                           </div>
                         );
@@ -270,16 +258,14 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                         <div
                           key={event.id + format(day, 'yyyy-MM-dd') + '-single'}
                           className={cn(
-                            "relative w-full px-2 py-1 rounded-md h-6", // Fixed height
+                            "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]", // Fixed height
                             "bg-accent/20 text-foreground hover:bg-accent/40",
-                            "flex items-center text-xs font-medium cursor-pointer"
+                            "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal"
                           )}
                           onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                         >
-                          <span className="flex flex-col text-left">
-                            {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
-                            <span className="text-foreground">{event.event_name}</span>
-                          </span>
+                          {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
+                          <span className="text-foreground">{event.event_name}</span>
                         </div>
                       ))}
                     </div>
