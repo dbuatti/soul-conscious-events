@@ -83,7 +83,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       .sort((a, b) => {
         const aIsMultiDay = a.end_date && !isSameDay(parseISO(a.event_date), parseISO(a.end_date));
         const bIsMultiDay = b.end_date && !isSameDay(parseISO(b.event_date), parseISO(b.end_date));
-        if (aIsMultiDay && !bIsMultiDay) return -1;
+        if (aIsMultiDay && !bIsMultiDay) return -1; // Multi-day events first
         if (!aIsMultiDay && bIsMultiDay) return 1;
         const timeA = a.event_time || '';
         const timeB = b.event_time || '';
@@ -191,7 +191,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 text-center border border-border rounded-lg overflow-hidden">
+            <div className="grid grid-cols-7 text-center border-t border-l border-border rounded-lg"> {/* Removed overflow-hidden from here */}
               {daysOfWeekShort.map((dayName, index) => (<div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>))}
               {visibleDaysInView.map((day) => {
                 const dayEvents = getEventsForDay(day);
@@ -214,68 +214,75 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
                       isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
-                      // Apply a subtle primary background if *any* multi-day event spans this day
-                      multiDayEventsForThisDay.length > 0 && "bg-primary/20 dark:bg-primary/20",
-                      "overflow-hidden"
+                      // Removed bg-primary/20 from cell itself, as the pill will provide the color
                     )}
                     onClick={() => onDayClick(day)}
                   >
-                    {/* Render multi-day event backgrounds first */}
-                    {multiDayEventsForThisDay.map(event => {
-                      const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
-                      return (
-                        <div
-                          key={event.id + format(day, 'yyyy-MM-dd') + '-bg'}
-                          className={cn(
-                            "absolute inset-0 z-0 bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground",
-                            getMultiDayRoundingClasses(event, day, visibleDaysInView),
-                            "flex items-center text-xs font-medium"
-                          )}
-                          onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
-                        >
-                          {isFirstVisible && (
-                            <span className="flex flex-col text-left pl-2 pt-1">
-                              {event.event_time && <span className="font-bold">{event.event_time}</span>}
-                              <span>{event.event_name}</span>
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-
                     {/* Day number (always on top) */}
-                    <span className={cn("font-bold text-left relative z-10", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
+                    <span className={cn("font-bold text-left relative z-20", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
                     </span>
 
-                    {/* Container for single-day events */}
-                    {isMobile ? (
-                      singleDayEventsForThisDay.length > 0 && (
-                        <div className="flex justify-center items-center mt-1 space-x-1 relative z-5">
-                          {singleDayEventsForThisDay.slice(0, 3).map((event, index) => (
-                            <div key={event.id + index} className="h-2 w-2 rounded-full bg-primary" />
-                          ))}
-                          {singleDayEventsForThisDay.length > 3 && (
-                            <span className="text-xs font-bold text-primary">+{singleDayEventsForThisDay.length - 3}</span>
-                          )}
-                        </div>
-                      )
-                    ) : (
-                      <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 relative z-5">
-                        {singleDayEventsForThisDay.map((event) => (
+                    {/* Container for events */}
+                    <div className="flex-grow overflow-y-auto mt-1 space-y-0.5 relative z-10">
+                      {/* Render multi-day events first, as they act like a background bar */}
+                      {multiDayEventsForThisDay.map(event => {
+                        const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
+                        
+                        // Determine if this day is the actual start/end of the event, or just a continuation
+                        const eventStartDate = parseISO(event.event_date);
+                        const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
+                        const isActualEventStart = isSameDay(day, eventStartDate);
+                        const isActualEventEnd = isSameDay(day, eventEndDate);
+
+                        let roundingClasses = "rounded-none";
+                        if (isActualEventStart && isActualEventEnd) {
+                          roundingClasses = "rounded-md";
+                        } else if (isActualEventStart) {
+                          roundingClasses = "rounded-l-md rounded-r-none";
+                        } else if (isActualEventEnd) {
+                          roundingClasses = "rounded-r-md rounded-l-none";
+                        }
+
+                        return (
                           <div
-                            key={event.id + format(day, 'yyyy-MM-dd')}
-                            className={cn("relative z-10 w-full px-2 py-1 rounded-md", "bg-accent/20 text-foreground hover:bg-accent/40")}
+                            key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
+                            className={cn(
+                              "relative w-[calc(100%+2px)] -ml-[1px] -mr-[1px] py-1 h-6", // Span full width + borders, fixed height
+                              "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground hover:bg-primary/90",
+                              roundingClasses,
+                              "flex items-center text-xs font-medium cursor-pointer"
+                            )}
                             onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                           >
-                            <span className="flex flex-col text-left">
-                              {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
-                              <span className="text-foreground">{event.event_name}</span>
-                            </span>
+                            {isFirstVisible && (
+                              <span className="flex flex-col text-left pl-2">
+                                {event.event_time && <span className="font-bold">{event.event_time}</span>}
+                                <span>{event.event_name}</span>
+                              </span>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        );
+                      })}
+
+                      {/* Render single-day events on top of multi-day events */}
+                      {singleDayEventsForThisDay.map((event) => (
+                        <div
+                          key={event.id + format(day, 'yyyy-MM-dd') + '-single'}
+                          className={cn(
+                            "relative w-full px-2 py-1 rounded-md h-6", // Fixed height
+                            "bg-accent/20 text-foreground hover:bg-accent/40",
+                            "flex items-center text-xs font-medium cursor-pointer"
+                          )}
+                          onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
+                        >
+                          <span className="flex flex-col text-left">
+                            {event.event_time && <span className="font-bold text-blue-700 dark:text-blue-300">{event.event_time}</span>}
+                            <span className="text-foreground">{event.event_name}</span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
