@@ -192,7 +192,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
           <div className="flex-grow">
             <div className="grid grid-cols-7 border border-border rounded-lg" style={{ overflow: 'visible', boxSizing: 'border-box' }}>
               {daysOfWeekShort.map((dayName, index) => (
-                <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>
+                <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary text-center">{daysOfWeekShort[index]}</div>
               ))}
               {visibleDaysInView.map((day) => {
                 const dayEvents = getEventsForDay(day);
