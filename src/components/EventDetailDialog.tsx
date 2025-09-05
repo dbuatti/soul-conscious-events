@@ -221,12 +221,15 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </div>
             )}
             {event.price && (
-              <p className="flex items-center text-foreground">
-                <DollarSign className="mr-2 h-5 w-5 text-primary" />
-                <span className="font-medium">Price: </span> {event.price} {/* Added space */}
-                {event.price.toLowerCase() === 'free' && (
-                  <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
-                )}
+              <p className="flex items-start text-foreground"> {/* Changed to items-start */}
+                <DollarSign className="mr-2 h-5 w-5 text-primary flex-shrink-0" /> {/* Added flex-shrink-0 */}
+                <span className="flex-1 min-w-0"> {/* Added flex-1 min-w-0 to allow wrapping */}
+                  <span className="font-medium">Price: </span>
+                  <span className="break-words">{event.price}</span> {/* Wrapped price in span with break-words */}
+                  {event.price.toLowerCase() === 'free' && (
+                    <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
+                  )}
+                </span>
               </p>
             )}
             {event.ticket_link && (
