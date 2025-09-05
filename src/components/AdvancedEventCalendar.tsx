@@ -268,7 +268,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                   "relative py-1.5 min-h-[2.5rem]",
                                   "w-[calc(100%+2px)] -ml-[1px] -mr-[1px]", // Overlap borders for seamless look
                                   "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
-                                  "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal", // Changed items-start to items-center
+                                  "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                                   "z-20", // Ensure it's above event container
                                   roundingClasses
                                 )}
@@ -284,22 +284,41 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                             );
                           })}
 
-                          {/* Render single-day events on top of multi-day events */}
-                          {singleDayEventsForThisDay.map((event) => (
-                            <div
-                              key={event.id + format(day, 'yyyy-MM-dd') + '-single'}
-                              className={cn(
-                                "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]",
-                                "bg-accent/20 text-foreground hover:bg-accent/40",
-                                "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal", // Changed items-start to items-center
-                                "z-30" // Ensure single-day events are above multi-day events
-                              )}
-                              onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
-                            >
-                              {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
-                              <div className="text-foreground">{event.event_name}</div>
-                            </div>
-                          ))}
+                          {/* Render single-day events or a consolidated pill */}
+                          {singleDayEventsForThisDay.length > 0 && (
+                            singleDayEventsForThisDay.length === 1 ? (
+                              // Render single event pill
+                              <div
+                                key={singleDayEventsForThisDay[0].id + format(day, 'yyyy-MM-dd') + '-single'}
+                                className={cn(
+                                  "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]",
+                                  "bg-accent/20 text-foreground hover:bg-accent/40",
+                                  "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                                  "z-30"
+                                )}
+                                onClick={(e) => { e.stopPropagation(); onEventSelect(singleDayEventsForThisDay[0]); }}
+                              >
+                                <div className="px-2 text-center">
+                                  {singleDayEventsForThisDay[0].event_time && <div className="font-bold text-foreground">{singleDayEventsForThisDay[0].event_time}</div>}
+                                  <div className="text-foreground">{singleDayEventsForThisDay[0].event_name}</div>
+                                </div>
+                              </div>
+                            ) : (
+                              // Render consolidated pill for multiple events
+                              <div
+                                key={format(day, 'yyyy-MM-dd') + '-consolidated'}
+                                className={cn(
+                                  "relative w-full px-2 py-1.5 rounded-md min-h-[2.5rem]",
+                                  "bg-primary text-primary-foreground hover:bg-primary/80",
+                                  "flex items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                                  "z-30"
+                                )}
+                                onClick={(e) => { e.stopPropagation(); onDayClick(day); }} // Click to show all events for the day
+                              >
+                                {singleDayEventsForThisDay.length} Events
+                              </div>
+                            )
+                          )}
                         </>
                       )}
                     </div>
