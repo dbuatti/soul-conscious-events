@@ -117,14 +117,14 @@ const EventEditPage: React.FC = () => {
         toast.error('Failed to load event details.');
         navigate('/404');
       } else if (data) {
-        console.log(`[DEBUG] 1. Fetched raw event_date from Supabase: '${data.event_date}'`);
+        console.log(`[DEBUG] EventEditPage: 1. Fetched raw event_date from Supabase: '${data.event_date}'`);
         setCurrentEvent(data);
         
         const eventDate = new Date(`${data.event_date}T00:00:00`);
-        console.log(`[DEBUG] 2. Parsed event_date into Date object:`, eventDate.toString());
+        console.log(`[DEBUG] EventEditPage: 2. Parsed event_date into Date object:`, eventDate.toString());
         const endDate = data.end_date ? new Date(`${data.end_date}T00:00:00`) : undefined;
         if (endDate) {
-          console.log(`[DEBUG] 2a. Parsed end_date into Date object:`, endDate.toString());
+          console.log(`[DEBUG] EventEditPage: 2a. Parsed end_date into Date object:`, endDate.toString());
         }
 
         form.reset({
@@ -230,8 +230,9 @@ const EventEditPage: React.FC = () => {
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
 
-    console.log('[DEBUG] 3. Form values on submit:', values);
-    console.log('[DEBUG] 3a. Date object from form:', values.eventDate.toString());
+    console.log('[DEBUG] EventEditPage: 3. Form values on submit:', values);
+    console.log('[DEBUG] EventEditPage: 3a. Start Date object from form:', values.eventDate.toString());
+    console.log('[DEBUG] EventEditPage: 3b. End Date object from form:', values.endDate?.toString());
     console.log('EventEditPage (onSubmit): geographicalState before submission:', form.getValues('geographicalState'));
 
 
@@ -291,12 +292,14 @@ const EventEditPage: React.FC = () => {
     }
 
     const dateToSave = values.eventDate.toISOString().split('T')[0];
-    console.log(`[DEBUG] 4. Final date string being sent to Supabase: '${dateToSave}'`);
+    console.log(`[DEBUG] EventEditPage: 4. Final start date string being sent to Supabase: '${dateToSave}'`);
+    const endDateToSave = values.endDate ? values.endDate.toISOString().split('T')[0] : null;
+    console.log(`[DEBUG] EventEditPage: 4a. Final end date string being sent to Supabase: '${endDateToSave}'`);
 
     const { error } = await supabase.from('events').update({
       event_name: values.eventName,
       event_date: dateToSave,
-      end_date: values.endDate ? values.endDate.toISOString().split('T')[0] : null,
+      end_date: endDateToSave,
       event_time: values.eventTime || null,
       place_name: values.placeName || null,
       full_address: values.fullAddress || null,

@@ -103,7 +103,7 @@ const SubmitEvent = () => {
     form.reset({
       eventName: parsedData.eventName || '',
       eventDate: eventDate,
-      endDate: endDate,
+      endDate: endDate, // Map to new field
       eventTime: parsedData.eventTime || '',
       placeName: parsedData.placeName || '',
       fullAddress: parsedData.fullAddress || '',
@@ -135,6 +135,7 @@ const SubmitEvent = () => {
     const loadingToastId = toast.loading('Submitting your event...');
     console.log("SubmitEvent: Starting submission process.");
     console.log("SubmitEvent: Form values:", values);
+    console.log("SubmitEvent: Form endDate value:", values.endDate?.toString()); // Added log
 
     try {
       let finalImageUrl: string | null = null;
