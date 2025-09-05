@@ -136,14 +136,24 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDays);
     const isLastVisible = isLastVisibleDayOfMultiDayEvent(event, day, visibleDays);
 
+    // If it's a single-day event (but rendered as multi-day for consistency)
+    if (!isMultiDayEvent(event)) {
+      return "rounded-md";
+    }
+
+    // If it's a multi-day event
     if (isFirstVisible && isLastVisible) {
+      // Event starts and ends on the same visible day (e.g., a 1-day event in a multi-day slot)
       return "rounded-md";
     } else if (isFirstVisible) {
-      return "rounded-l-md rounded-r-none";
+      // First visible day of a multi-day event
+      return "rounded-l-md rounded-tr-none rounded-br-none"; // Explicitly unround right corners
     } else if (isLastVisible) {
-      return "rounded-r-md rounded-l-none";
+      // Last visible day of a multi-day event
+      return "rounded-r-md rounded-tl-none rounded-bl-none"; // Explicitly unround left corners
     } else {
-      return "rounded-none";
+      // Intermediate day of a multi-day event
+      return "rounded-none"; // All corners unrounded
     }
   };
 
@@ -248,7 +258,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                         <>
                           {/* Render multi-day events first, as they act like a background bar */}
                           {multiDayEventsForThisDay.map(event => {
-                            const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
                             const roundingClasses = getMultiDayRoundingClasses(event, day, visibleDaysInView);
 
                             return (
@@ -256,13 +265,13 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                                 className={cn(
                                   "relative w-[calc(100%+2px)] -ml-[1px] -mr-[1px] py-1.5 px-2 min-h-[2.5rem]",
-                                  "bg-secondary text-foreground hover:bg-secondary/70 dark:bg-secondary dark:text-foreground dark:hover:bg-secondary/70", // Adjusted colors here
-                                  roundingClasses,
-                                  "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal"
+                                  "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
+                                  "flex flex-col items-start justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                                  roundingClasses // Apply rounding classes here
                                 )}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
-                                {isFirstVisible && (
+                                {isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView) && (
                                   <>
                                     {event.event_time && <span className="font-bold">{event.event_time}</span>}
                                     <span>{event.event_name}</span>
