@@ -134,7 +134,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
         break;
       }
     }
-    return lastDayInViewForEvent && isSameDay(day, lastDayInViewForEvent);
+    return lastDayInViewForEvent && isSameDay(day, eventEndDate); // Check against actual event end date
   };
 
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
@@ -190,7 +190,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 border border-border rounded-lg" style={{ overflow: 'visible' }}> {/* Removed overflow-hidden here */}
+            <div className="grid grid-cols-7 border border-border rounded-lg" style={{ overflow: 'visible', boxSizing: 'border-box' }}> {/* Added box-sizing */}
               {daysOfWeekShort.map((dayName, index) => (
                 <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>
               ))}
@@ -208,12 +208,13 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                   <div
                     key={format(day, 'yyyy-MM-dd')}
                     className={cn(
-                      "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 p-1 cursor-pointer",
+                      "flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer", // Removed p-1
                       isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50",
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
                       isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
                     )}
+                    style={{ position: 'relative', boxSizing: 'border-box' }} // Explicit relative and border-box
                     onClick={() => onDayClick(day)}
                   >
                     {/* Day Number */}
@@ -221,7 +222,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       {format(day, 'd')}
                     </div>
                     {/* Event Container */}
-                    <div className="pt-8 z-20 flex-grow space-y-0.5">
+                    <div className="pt-8 z-20 flex-grow space-y-0.5"> {/* No px-1 here */}
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {dayEvents.map(event => (
@@ -269,9 +270,10 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                   )}
                                   style={{
                                     width: `calc(100% * ${effectiveDaysSpanned})`,
-                                    left: '0', // Always start at the left edge of the current day cell
-                                    top: '32px', // This is relative to the day cell, which has pt-8 (32px)
+                                    left: '0', // Keep left: 0
+                                    top: '0', // Relative to the inner event container
                                     backgroundColor: 'hsl(var(--secondary))',
+                                    boxSizing: 'border-box' // Explicit border-box
                                   }}
                                   onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                                 >
