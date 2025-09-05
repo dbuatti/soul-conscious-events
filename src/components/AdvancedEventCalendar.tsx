@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, CalendarDays as CalendarDaysIcon } from 'lucide-react'; // Added CalendarDaysIcon
 import { Skeleton } from '@/components/ui/skeleton';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -117,24 +117,15 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
     if (!isMultiDayEvent(event)) return false;
 
+    // Check if 'day' is the actual start date of the event
+    if (isSameDay(day, eventStartDate)) {
+      return true;
+    }
+
+    // If the event started before the current week/month view,
+    // check if 'day' is the first day of the event that is visible in the current view.
     const firstDayInViewForEvent = visibleDays.find(d => d >= eventStartDate && d <= eventEndDate);
     return firstDayInViewForEvent && isSameDay(day, firstDayInViewForEvent);
-  };
-
-  const isLastVisibleDayOfMultiDayEvent = (event: Event, day: Date, visibleDays: Date[]) => {
-    const eventStartDate = parseISO(event.event_date);
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    if (!isMultiDayEvent(event)) return false;
-
-    let lastDayInViewForEvent: Date | undefined;
-    for (let i = visibleDays.length - 1; i >= 0; i--) {
-      const d = visibleDays[i];
-      if (d >= eventStartDate && d <= eventEndDate) {
-        lastDayInViewForEvent = d;
-        break;
-      }
-    }
-    return lastDayInViewForEvent && isSameDay(day, eventEndDate); // Check against actual event end date
   };
 
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
@@ -194,7 +185,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
               {daysOfWeekShort.map((dayName, index) => (
                 <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary text-center">{daysOfWeekShort[index]}</div>
               ))}
-              {visibleDaysInView.map((day) => {
+              {visibleDaysInView.map((day, dayIndex) => {
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isTodayDate = isToday(day);
@@ -208,11 +199,11 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                   <div
                     key={format(day, 'yyyy-MM-dd')}
                     className={cn(
-                      "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer",
-                      isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50",
+                      "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer border-r border-b border-border",
+                      isCurrentMonth || viewMode === 'week' ? "bg-card hover:bg-accent/10" : "bg-secondary opacity-50",
                       isPastDate && "opacity-70",
-                      isTodayDate && "bg-primary/10 text-primary",
-                      isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
+                      isTodayDate && "ring-2 ring-primary/50 border-primary/50", // Enhanced today styling
+                      isSelected && !isTodayDate && "bg-accent/20 border-primary border-2", // Enhanced selected styling
                     )}
                     style={{ position: 'relative', boxSizing: 'border-box' }}
                     onClick={() => onDayClick(day)}
@@ -244,8 +235,8 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                             key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                             className={cn(
                               "absolute py-1 min-h-[2rem]",
-                              "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
-                              "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                              "bg-primary/20 text-primary-foreground dark:bg-primary/30 dark:text-primary-foreground hover:bg-primary/40", // Distinct multi-day styling
+                              "flex items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                               roundingClasses,
                               "z-30"
                             )}
@@ -253,14 +244,15 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               width: `calc(100% * ${effectiveDaysSpanned})`,
                               left: '0',
                               top: '32px', // Explicitly set top to 32px (pt-8 equivalent)
-                              backgroundColor: 'hsl(var(--secondary))',
+                              backgroundColor: 'hsl(var(--primary) / 0.2)', // Use HSL for consistency
                               boxSizing: 'border-box'
                             }}
                             onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                           >
-                            <div className="px-2 text-center">
-                              {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
-                              <div className="text-foreground">{event.event_name}</div>
+                            <div className="px-2 text-center flex items-center">
+                              <CalendarDaysIcon className="h-3 w-3 mr-1" /> {/* Icon for multi-day event */}
+                              {event.event_time && <div className="font-bold text-primary-foreground mr-1">{event.event_time}</div>}
+                              <div className="text-primary-foreground">{event.event_name}</div>
                             </div>
                           </div>
                         );
@@ -271,11 +263,11 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     {/* Event Container for single-day events and mobile dots */}
                     <div className="pt-8 z-20 flex-grow space-y-0.5">
                       {isMobile ? (
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <div className="flex flex-wrap gap-1 mt-1 justify-center"> {/* Centered dots */}
                           {dayEvents.map(event => (
                             <div
                               key={event.id + format(day, 'yyyy-MM-dd') + '-dot'}
-                              className="h-2 w-2 rounded-full bg-primary"
+                              className="h-2.5 w-2.5 rounded-full bg-primary" // Slightly larger dots
                               title={event.event_name}
                             />
                           ))}
