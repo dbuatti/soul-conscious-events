@@ -1,0 +1,21 @@
+AI_RULES (backup).md
+AI_RULES.md
+components.json
+eslint.config.js
+filelist.txt
+index.html
+node_modules
+package.json
+pnpm-lock.yaml
+postcss.config.js
+public
+README.md
+src
+supabase
+tailwind.config.ts
+test_event_text.txt
+tsconfig.app.json
+tsconfig.json
+tsconfig.node.json
+vercel.json
+vite.config.ts

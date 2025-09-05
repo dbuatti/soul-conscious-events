@@ -108,10 +108,8 @@ const SubmitEvent = () => {
   };
 
   const onSubmit = async (values: EventFormValues) => {
-    if (!user) {
-      toast.error('You must be logged in to submit an event.');
-      return;
-    }
+    // Removed the check for logged-in user here.
+    // Events can now be submitted by unauthenticated users.
 
     const loadingToastId = toast.loading('Submitting your event...');
 
@@ -165,7 +163,7 @@ const SubmitEvent = () => {
           geographical_state: values.geographicalState || null, // Save new field
           image_url: finalImageUrl,
           discount_code: values.discountCode || null,
-          user_id: user.id,
+          user_id: user?.id || null, // Set user_id to null if no user is logged in
           approval_status: 'pending', // Renamed from 'state'
         },
       ]);
