@@ -36,15 +36,23 @@ const EventCardList: React.FC<EventCardListProps> = ({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
-          <Card key={i} className="shadow-lg rounded-lg">
-            <CardHeader>
+          <Card key={i} className="shadow-lg rounded-lg border border-border dark:bg-card">
+            <div className="relative w-full aspect-video overflow-hidden">
+              <Skeleton className="w-full h-full" />
+            </div>
+            <CardHeader className="p-4 pb-2">
               <Skeleton className="h-6 w-3/4 mb-2" />
               <Skeleton className="h-4 w-1/2" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-2 space-y-2">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-5/6" />
             </CardContent>
+            <CardFooter className="p-4 pt-2 flex justify-end space-x-2">
+              <Skeleton className="h-9 w-9 rounded-md" />
+              <Skeleton className="h-9 w-9 rounded-md" />
+              <Skeleton className="h-9 w-9 rounded-md" />
+            </CardFooter>
           </Card>
         ))}
       </div>
@@ -53,14 +61,14 @@ const EventCardList: React.FC<EventCardListProps> = ({
 
   if (events.length === 0) {
     return (
-      <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+      <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
         <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-lg font-semibold text-foreground mb-4">No events found matching your criteria.</p>
         {hasActiveFilters && onClearFilters ? (
-          <Button onClick={onClearFilters} className="bg-primary hover:bg-primary/80 text-primary-foreground">Clear Filters</Button>
+          <Button onClick={onClearFilters} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">Clear Filters</Button>
         ) : (
           <Link to="/submit-event">
-            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
               <PlusCircle className="mr-2 h-4 w-4" /> Add an Event
             </Button>
           </Link>
@@ -76,7 +84,7 @@ const EventCardList: React.FC<EventCardListProps> = ({
       : format(parseISO(event.event_date), 'PPP');
 
     return (
-      <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden" onClick={() => onViewDetails(event)}>
+      <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>
         {event.image_url && (
           <div className="relative w-full aspect-video overflow-hidden">
             <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
@@ -102,17 +110,17 @@ const EventCardList: React.FC<EventCardListProps> = ({
         <CardFooter className="flex flex-col items-start pt-2 sm:pt-4">
           <div className="flex justify-end w-full space-x-1 sm:space-x-2">
             <BookmarkButton eventId={event.id} size="icon" className="h-7 w-7 sm:h-9 sm:w-9" />
-            <Button variant="outline" size="icon" onClick={(e) => onShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9">
+            <Button variant="outline" size="icon" onClick={(e) => onShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
               <Share2 className="h-3.5 w-3.5 sm:h-4 w-4" />
             </Button>
             {isCreatorOrAdmin && (
               <>
                 <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9">
+                  <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                     <Edit className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
                   </Button>
                 </Link>
-                <Button variant="destructive" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9">
+                <Button variant="destructive" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                   <Trash2 className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
                 </Button>
               </>
@@ -124,7 +132,7 @@ const EventCardList: React.FC<EventCardListProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {events.map(renderEventCard)}
     </div>
   );

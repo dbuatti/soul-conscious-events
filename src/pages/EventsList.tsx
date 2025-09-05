@@ -221,7 +221,7 @@ const EventsList = () => {
       <div className="mb-8 p-4 sm:p-6 bg-secondary border border-border rounded-lg shadow-lg text-center flex items-center justify-center">
         <Lightbulb className="mr-3 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-primary" />
         <p className="text-sm sm:text-base leading-relaxed text-foreground">
-          SoulFlow is a prototype app. Your feedback is invaluable! Please visit the <Link to="/contact" className="text-primary hover:underline font-medium">Contact Us</Link> page to share your suggestions.
+          SoulFlow is a prototype app. Your feedback is invaluable! Please visit the <Link to="/contact" className="text-primary hover:underline font-medium transition-all duration-300 ease-in-out transform hover:scale-105">Contact Us</Link> page to share your suggestions.
         </p>
       </div>
 
@@ -238,11 +238,13 @@ const EventsList = () => {
       />
 
       {(loading || isSessionLoading) ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="shadow-lg rounded-lg"><CardHeader><Skeleton className="h-6 w-3/4 mb-2" /><Skeleton className="h-4 w-1/2" /></CardHeader><CardContent><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /></CardContent></Card>
-          ))}
-        </div>
+        <EventCardList
+          events={[]} // Pass empty array as events are loading
+          loading={true}
+          onShare={handleShare}
+          onDelete={handleDelete}
+          onViewDetails={handleViewDetails}
+        />
       ) : (
         <>
           {viewMode === 'list' ? (
@@ -274,8 +276,9 @@ const EventsList = () => {
                     onViewDetails={handleViewDetails}
                   />
                 ) : (
-                  <div className="text-center py-8 px-4 bg-secondary rounded-lg">
-                    <p className="text-muted-foreground">No events scheduled for this day.</p>
+                  <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
+                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-foreground mb-4">No events scheduled for this day.</p>
                   </div>
                 )}
               </div>
@@ -289,14 +292,15 @@ const EventsList = () => {
                     onViewDetails={handleViewDetails}
                   />
                 ) : (
-                  <div className="text-center py-8 px-4 bg-secondary rounded-lg">
-                    <p className="text-muted-foreground">No upcoming events found for this month.</p>
+                  <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
+                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-foreground mb-4">No upcoming events found for this month.</p>
                   </div>
                 )}
               </div>
             </div>
           ) : ( // This block is for 'map' view
-            <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+            <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
               <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-semibold text-foreground mb-4">Map view temporarily disabled.</p>
               <p className="text-muted-foreground">This feature requires paid credits, which have been exhausted.</p>
