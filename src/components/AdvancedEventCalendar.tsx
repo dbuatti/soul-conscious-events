@@ -183,7 +183,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
           <div className="flex-grow">
             <div className="grid grid-cols-7 border-t border-l border-r border-border rounded-lg divide-y divide-border" style={{ overflow: 'hidden', boxSizing: 'border-box' }}>
               {daysOfWeekShort.map((dayName, index) => (
-                <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 bg-secondary text-center border-b border-border">{daysOfWeekShort[index]}</div>
+                <div key={dayName + index} className="font-semibold text-foreground text-xs py-2 sm:text-sm sm:py-3 bg-secondary text-center border-b border-border">{daysOfWeekShort[index]}</div> {/* Increased padding and font size */}
               ))}
               {visibleDaysInView.map((day, dayIndex) => {
                 const dayEvents = getEventsForDay(day);
@@ -209,9 +209,9 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     onClick={() => onDayClick(day)}
                   >
                     {/* Day Number */}
-                    <div className={cn("absolute top-1 right-1 px-1 font-bold z-10 text-right", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
+                    <div className={cn("absolute top-1 right-1 px-1.5 py-0.5 font-bold z-10 text-right rounded-full", isTodayDate ? "bg-primary text-primary-foreground" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
-                    </div>
+                    </div> {/* Added padding, rounded background for today */}
 
                     {/* Multi-Day Events - Rendered directly inside day cell */}
                     {!isMobile && multiDayEventsForThisDay.map((event) => {
@@ -234,7 +234,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                           <div
                             key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                             className={cn(
-                              "absolute py-1 min-h-[2rem]",
+                              "absolute py-1 min-h-[2rem] px-1", // Added horizontal padding
                               "bg-primary/20 text-primary-foreground dark:bg-primary/30 dark:text-primary-foreground hover:bg-primary/40",
                               "flex items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                               roundingClasses,
@@ -249,10 +249,10 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                             }}
                             onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                           >
-                            <div className="px-2 text-center flex items-center">
-                              <CalendarDaysIcon className="h-3 w-3 mr-1" />
-                              {event.event_time && <div className="font-bold text-primary-foreground mr-1">{event.event_time}</div>}
-                              <div className="text-primary-foreground">{event.event_name}</div>
+                            <div className="px-1 text-center flex items-center"> {/* Reduced inner padding */}
+                              <CalendarDaysIcon className="h-3 w-3 mr-1 flex-shrink-0" /> {/* Added flex-shrink-0 */}
+                              {event.event_time && <div className="font-bold text-primary-foreground mr-1 flex-shrink-0">{event.event_time}</div>}
+                              <div className="text-primary-foreground truncate">{event.event_name}</div> {/* Added truncate */}
                             </div>
                           </div>
                         );
@@ -261,7 +261,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     })}
 
                     {/* Event Container for single-day events and mobile dots */}
-                    <div className="pt-8 z-20 flex-grow space-y-0.5">
+                    <div className="pt-8 pb-1 px-1 z-20 flex-grow space-y-0.5"> {/* Added bottom padding and horizontal padding */}
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1 justify-center">
                           {dayEvents.map(event => (
@@ -280,28 +280,28 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                               <div
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-single'}
                                 className={cn(
-                                  "relative w-full px-2 py-1 rounded-md min-h-[2rem]",
+                                  "w-full px-2 py-1 rounded-md min-h-[2rem]", // Removed relative positioning
                                   "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70 cursor-pointer",
-                                  "flex flex-col items-center justify-center text-xs font-medium whitespace-normal",
+                                  "flex flex-col items-start justify-center text-xs font-medium whitespace-normal", // Changed items-center to items-start
                                   "z-30"
                                 )}
                                 onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
                               >
                                 {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
-                                <div className="text-foreground">{event.event_name}</div>
+                                <div className="text-foreground truncate w-full">{event.event_name}</div> {/* Added truncate and full width */}
                               </div>
                             ))
                           ) : singleDayEventsForThisDay.length > 1 ? (
                             <div
                               className={cn(
-                                "relative w-full px-2 py-1 rounded-md min-h-[2rem]",
+                                "w-full px-2 py-1 rounded-md min-h-[2rem]",
                                 "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70 cursor-pointer",
-                                "flex flex-col items-center justify-center text-xs font-medium whitespace-normal",
+                                "flex items-center justify-center text-xs font-medium whitespace-normal",
                                 "z-30"
                               )}
                               onClick={() => onDayClick(day)}
                             >
-                              <div>{singleDayEventsForThisDay.length} Events</div>
+                              <div className="truncate w-full text-center">{singleDayEventsForThisDay.length} Events</div> {/* Centered and truncated text */}
                             </div>
                           ) : null}
                         </>

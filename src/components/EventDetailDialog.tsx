@@ -168,7 +168,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         )}
 
         <Card className="shadow-lg rounded-lg border-none dark:bg-secondary dark:border-border">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-3"> {/* Increased bottom padding */}
             <div className="flex flex-wrap items-center text-muted-foreground text-sm sm:text-base mb-2">
               <Calendar className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
               <span className="font-medium">{dateDisplay}</span>
@@ -213,7 +213,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </div>
             )}
           </CardHeader>
-          <CardContent className="space-y-4 pt-4">
+          <CardContent className="space-y-4 pt-2"> {/* Reduced top padding */}
             {event.description && (
               <div>
                 <h3 className="font-semibold text-foreground mb-2">Description:</h3>
@@ -222,7 +222,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             )}
             {event.price && (
               <p className="flex items-start text-foreground">
-                <DollarSign className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
+                <DollarSign className="mr-2 h-5 w-5 text-primary flex-shrink-0 mt-0.5" /> {/* Added top margin for alignment */}
                 <span className="flex-1 min-w-0">
                   <span className="font-medium">Price: </span>
                   <span className="break-words">{event.price}</span>
