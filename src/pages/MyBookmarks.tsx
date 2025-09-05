@@ -27,7 +27,7 @@ import { Event } from '@/types/event';
 // Define the expected structure of the data returned by the Supabase query
 interface BookmarkedEventData {
   event_id: string;
-  events: Event | null; // 'events' is the name of the joined table, and it can be null if the related event is not found
+  events: Event[]; // Changed to array based on error message
 }
 
 const MyBookmarks: React.FC = () => {
@@ -80,7 +80,8 @@ const MyBookmarks: React.FC = () => {
       // Explicitly cast data to the expected type before mapping
       const typedData = data as BookmarkedEventData[];
       // Extract event data from the nested structure and filter out nulls
-      const eventsData = typedData.map(item => item.events).filter(Boolean) as Event[];
+      // Access the first element of the 'events' array, as it should contain the single joined event
+      const eventsData = typedData.map(item => item.events?.[0]).filter(Boolean) as Event[];
       setBookmarkedEvents(eventsData);
     }
     setLoadingBookmarks(false);

@@ -17,6 +17,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+interface NavItem {
+  to: string;
+  label: string;
+  onClick?: () => Promise<void> | void;
+  badge?: string; // Optional badge property
+}
+
 const Header = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -54,7 +61,7 @@ const Header = () => {
   };
 
   // Reordered navigation items
-  const navItems = [
+  const navItems: NavItem[] = [
     { to: "/", label: "Events" },
     // { to: "/map", label: "Map", badge: "Beta" }, // Removed Map link
     { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick },
@@ -62,7 +69,7 @@ const Header = () => {
     { to: "/contact", label: "Contact" },
   ];
 
-  const adminNavItems = [
+  const adminNavItems: NavItem[] = [
     { to: "/admin/panel", label: "Admin Panel" },
     { to: "/dev-space", label: "Dev Space" },
     { to: "/map", label: "Map" }, // Moved Map to admin section for debugging access
