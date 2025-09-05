@@ -112,32 +112,14 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
     return !isSameDay(eventStartDate, eventEndDate);
   };
 
-  const isFirstVisibleDayOfMultiDayEvent = (event: Event, day: Date, visibleDays: Date[]) => {
-    const eventStartDate = parseISO(event.event_date);
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    if (!isMultiDayEvent(event)) return false;
-
-    const firstDayInViewForEvent = visibleDays.find(d => d >= eventStartDate && d <= eventEndDate);
-    return firstDayInViewForEvent && isSameDay(day, firstDayInViewForEvent);
-  };
-
-  const isLastVisibleDayOfMultiDayEvent = (event: Event, day: Date, visibleDays: Date[]) => {
-    const eventStartDate = parseISO(event.event_date);
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    if (!isMultiDayEvent(event)) return false;
-
-    let lastDayInViewForEvent: Date | undefined;
-    for (let i = visibleDays.length - 1; i >= 0; i--) {
-      const d = visibleDays[i];
-      if (d >= eventStartDate && d <= eventEndDate) {
-        lastDayInViewForEvent = d;
-        break;
-      }
-    }
-    return lastDayInViewForEvent && isSameDay(day, lastDayInViewForEvent);
-  };
-
   const visibleDaysInView = viewMode === 'month' ? daysInMonthView : currentWeek;
+
+  // Constants for positioning calculations
+  const headerRowHeight = 32; // Approximate height of the day name header row
+  const dayCellMinHeight = 100; // From min-h-[100px]
+  const dayCellPadding = 8; // From p-1 (4px top + 4px bottom)
+  const dayCellTotalHeight = dayCellMinHeight + dayCellPadding; // 108px
+  const eventPillVerticalOffset = 32; // From pt-8 on the event container inside each day cell
 
   return (
     <div className="w-full">
@@ -190,10 +172,71 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex-grow">
-            <div className="grid grid-cols-7 border border-border rounded-lg overflow-hidden">
+            <div className="grid grid-cols-7 border border-border rounded-lg overflow-hidden relative"> {/* Added relative here */}
+              {/* Day headers */}
               {daysOfWeekShort.map((dayName, index) => (
                 <div key={dayName + index} className="font-semibold text-foreground text-xs py-1 sm:text-base sm:py-2 border-b border-r border-border bg-secondary">{daysOfWeekShort[index]}</div>
               ))}
+
+              {/* Render multi-day events first, absolutely positioned within the grid */}
+              {events.map((event) => {
+                if (isMultiDayEvent(event)) {
+                  const eventStartDate = parseISO(event.event_date);
+                  const eventEndDate = parseISO(event.end_date || event.event_date);
+                  
+                  // Find the first visible day of this event within the current calendar view
+                  const firstVisibleDayOfEvent = visibleDaysInView.find(d => 
+                    (isSameDay(d, eventStartDate) || d > eventStartDate) && d <= eventEndDate
+                  );
+                  
+                  if (firstVisibleDayOfEvent) {
+                    const startIndexInView = visibleDaysInView.findIndex((d) => isSameDay(d, firstVisibleDayOfEvent));
+                    const daysSpannedInView = visibleDaysInView.filter(d => d >= firstVisibleDayOfEvent && d <= eventEndDate).length;
+
+                    const columnOffset = startIndexInView % 7;
+                    const rowNumber = Math.floor(startIndexInView / 7);
+
+                    const topPosition = (rowNumber * dayCellTotalHeight) + headerRowHeight + eventPillVerticalOffset;
+
+                    const isEventStartVisible = isSameDay(firstVisibleDayOfEvent, eventStartDate);
+                    const isEventEndVisible = isSameDay(visibleDaysInView[startIndexInView + daysSpannedInView - 1], eventEndDate);
+
+                    const roundingClasses = cn({
+                      'rounded-l-md': isEventStartVisible,
+                      'rounded-r-md': isEventEndVisible,
+                      'rounded-none': !isEventStartVisible && !isEventEndVisible,
+                    });
+
+                    return (
+                      <div
+                        key={event.id + format(firstVisibleDayOfEvent, 'yyyy-MM-dd') + '-multi-global'}
+                        className={cn(
+                          "absolute py-1 min-h-[2rem] overflow-hidden",
+                          "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
+                          "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                          roundingClasses,
+                          "z-30",
+                          "bg-green-300" // Temporary debug background
+                        )}
+                        style={{
+                          width: `calc(${100 / 7}% * ${daysSpannedInView})`,
+                          left: `calc(${100 / 7}% * ${columnOffset})`,
+                          top: `${topPosition}px`,
+                        }}
+                        onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
+                      >
+                        <div className="px-2 text-center">
+                          {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
+                          <div className="text-foreground">{event.event_name}</div>
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+                return null;
+              })}
+
+              {/* Render individual day cells and single-day events */}
               {visibleDaysInView.map((day) => {
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
@@ -201,7 +244,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                 const isSelected = selectedDay && isSameDay(day, selectedDay);
                 const isPastDate = isPast(day) && !isToday(day);
 
-                const multiDayEventsForThisDay = dayEvents.filter(isMultiDayEvent);
+                // Filter out multi-day events from this list, as they are rendered globally
                 const singleDayEventsForThisDay = dayEvents.filter(e => !isMultiDayEvent(e));
 
                 return (
@@ -213,6 +256,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
                       isSelected && !isTodayDate && "bg-accent/20 border-primary border-2",
+                      "bg-red-100" // Temporary debug background
                     )}
                     onClick={() => onDayClick(day)}
                   >
@@ -220,11 +264,11 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     <div className={cn("absolute top-1 right-1 px-1 font-bold z-10 text-right", isTodayDate ? "text-primary" : "text-foreground", isPastDate && "text-muted-foreground")}>
                       {format(day, 'd')}
                     </div>
-                    {/* Event Container */}
+                    {/* Event Container for single-day events */}
                     <div className="pt-8 z-20 flex-grow space-y-0.5">
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {dayEvents.map(event => (
+                          {singleDayEventsForThisDay.map(event => (
                             <div
                               key={event.id + format(day, 'yyyy-MM-dd') + '-dot'}
                               className="h-2 w-2 rounded-full bg-primary"
@@ -234,48 +278,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                         </div>
                       ) : (
                         <>
-                          {/* Multi-Day Events */}
-                          {multiDayEventsForThisDay.map((event) => {
-                            const eventStartDate = parseISO(event.event_date);
-                            const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
-                            if (isFirstVisible) {
-                              const startIndex = visibleDaysInView.findIndex((d) => isSameDay(d, eventStartDate));
-                              const dayIndex = visibleDaysInView.findIndex((d) => isSameDay(d, day));
-                              const daysSpanned = eventDurationInDays(event);
-                              
-                              const roundingClasses = cn({
-                                'rounded-l-md': true,
-                                'rounded-r-md': isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView),
-                                'rounded-none': !isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView) && !isFirstVisible,
-                              });
-
-                              return (
-                                <div
-                                  key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
-                                  className={cn(
-                                    "absolute py-1 min-h-[2rem] overflow-hidden",
-                                    "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
-                                    "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
-                                    roundingClasses,
-                                    "z-30"
-                                  )}
-                                  style={{
-                                    width: `calc(100% * ${daysSpanned})`,
-                                    left: '0',
-                                    top: '32px', /* Adjusted to align with single-day events */
-                                    backgroundColor: 'hsl(var(--secondary))',
-                                  }}
-                                  onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
-                                >
-                                  <div className="px-2 text-center">
-                                    {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
-                                    <div className="text-foreground">{event.event_name}</div>
-                                  </div>
-                                </div>
-                              );
-                            }
-                            return null;
-                          })}
                           {/* Single-Day Events or Consolidated Pill */}
                           {singleDayEventsForThisDay.length === 1 ? (
                             singleDayEventsForThisDay.map((event) => (
