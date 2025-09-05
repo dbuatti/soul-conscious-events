@@ -209,7 +209,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                     key={format(day, 'yyyy-MM-dd')}
                     className={cn(
                       "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 p-1 cursor-pointer",
-                      "border-r border-b border-border",
+                      // Removed "border-r border-b border-border",
                       isCurrentMonth || viewMode === 'week' ? "bg-card" : "bg-secondary opacity-50",
                       isPastDate && "opacity-70",
                       isTodayDate && "bg-primary/10 text-primary",
@@ -223,7 +223,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                       {format(day, 'd')}
                     </div>
                     {/* Event Container */}
-                    <div className="pt-6 z-20 flex-grow overflow-y-auto space-y-0.5 relative overflow-hidden">
+                    <div className="pt-6 z-20 flex-grow overflow-y-auto space-y-0.5 overflow-hidden">
                       {isMobile ? (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {dayEvents.map(event => (
@@ -238,41 +238,45 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                         <>
                           {/* Multi-Day Events */}
                           {multiDayEventsForThisDay.map((event) => {
+                            const eventStartDate = parseISO(event.event_date);
                             const isFirstVisible = isFirstVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
-                            const isLastVisible = isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView);
                             const daysSpanned = eventDurationInDays(event);
+                            
                             const roundingClasses = cn({
                               'rounded-l-md': isFirstVisible,
-                              'rounded-r-md': isLastVisible,
-                              'rounded-none': !isFirstVisible && !isLastVisible,
+                              'rounded-r-md': isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView),
+                              'rounded-none': !isFirstVisible && !isLastVisibleDayOfMultiDayEvent(event, day, visibleDaysInView),
                             });
-                            return (
-                              <div
-                                key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
-                                className={cn(
-                                  "relative py-1.5 min-h-[2.5rem]",
-                                  "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
-                                  roundingClasses,
-                                  "z-30",
-                                  isFirstVisible ? `w-[calc(100%*${daysSpanned}+6px)] -ml-[3px]` : "w-full"
-                                )}
-                                style={{
-                                  position: 'relative' as const,
-                                  top: '-1px',
-                                  bottom: '0',
-                                  left: isFirstVisible ? '0' : '-3px',
-                                  backgroundColor: 'hsl(var(--secondary))',
-                                }}
-                                onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
-                              >
-                                {isFirstVisible && (
+
+                            if (isFirstVisible) {
+                              return (
+                                <div
+                                  key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
+                                  className={cn(
+                                    "absolute py-1.5 min-h-[2.5rem] overflow-hidden",
+                                    "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70",
+                                    "flex flex-col items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
+                                    roundingClasses,
+                                    "z-30"
+                                  )}
+                                  style={{
+                                    width: `calc(100% * ${daysSpanned})`,
+                                    left: '0',
+                                    top: '-1px',
+                                    bottom: '0',
+                                    backgroundColor: 'hsl(var(--secondary))',
+                                    boxShadow: 'inset 0 0 0 1px hsl(var(--secondary))',
+                                  }}
+                                  onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
+                                >
                                   <div className="px-2 text-center">
                                     {event.event_time && <div className="font-bold text-foreground">{event.event_time}</div>}
                                     <div className="text-foreground">{event.event_name}</div>
                                   </div>
-                                )}
-                              </div>
-                            );
+                                </div>
+                              );
+                            }
+                            return null;
                           })}
                           {/* Single-Day Events or Consolidated Pill */}
                           {singleDayEventsForThisDay.length === 1 ? (
