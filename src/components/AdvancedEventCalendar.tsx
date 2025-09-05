@@ -262,7 +262,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                   style={{
                                     width: `calc(100% * ${daysSpanned})`,
                                     left: '0',
-                                    top: '0',
+                                    top: '24px', /* Adjusted to push it down */
                                     backgroundColor: 'hsl(var(--secondary))',
                                   }}
                                   onClick={(e) => { e.stopPropagation(); onEventSelect(event); }}
