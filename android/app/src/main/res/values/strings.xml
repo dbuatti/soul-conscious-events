@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Soul Conscious Events</string>
+    <string name="title_activity_main">Soul Conscious Events</string>
+    <string name="package_name">com.example.soulconsciousevents</string>
+    <string name="custom_url_scheme">com.example.soulconsciousevents</string>
+</resources>
