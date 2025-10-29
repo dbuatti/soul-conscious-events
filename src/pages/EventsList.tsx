@@ -1,23 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon, Map } from 'lucide-react'; // Added Map icon
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth, isPast } from 'date-fns';
+import { Lightbulb, Loader2, PlusCircle, Frown, MapPin, CalendarDays, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import { eventTypes, australianStates } from '@/lib/constants';
-import FilterOverlay from '@/components/FilterOverlay';
-import { useLocation } from 'react-router-dom';
-import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import heroBackground from '@/assets/phil-hero-background.jpeg'; // Corrected import for the image
-import EventFilterBar from '@/components/EventFilterBar'; // Import the EventFilterBar component
-import EventCardList from '@/components/EventCardList'; // Import EventCardList
+import EventCardV2 from '@/components/EventCardV2'; // Import the new EventCardV2
 
 interface Event {
   id: string;
@@ -38,180 +29,64 @@ interface Event {
   image_url?: string;
   user_id?: string;
   is_deleted?: boolean;
-  approval_status?: string; // Added approval_status to Event interface
+  approval_status?: string;
 }
 
 const EventsList = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [eventType, setEventType] = useState('All');
-  const [stateFilter, setStateFilter] = useState('All');
-  const [dateFilter, setDateFilter] = useState('All Upcoming');
-
-  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('calendar');
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState(new Date());
-
-  const { user, isLoading: isSessionLoading } = useSession();
-  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
-  const location = useLocation();
-
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const { user, isLoading: isSessionLoading } = useSession();
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      let query = supabase.from('events').select('*');
-      query = query.eq('approval_status', 'approved');
-      query = query.order('event_date', { ascending: true });
+  const fetchEvents = useCallback(async () => {
+    setLoading(true);
+    const now = new Date();
+    const todayFormatted = format(now, 'yyyy-MM-dd');
 
-      const { data, error } = await query;
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('approval_status', 'approved')
+      .order('event_date', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching events:', error);
-        toast.error('Failed to load events.');
-      } else {
-        setEvents(data || []);
-      }
-      setLoading(false);
-    };
-
-    fetchEvents();
+    if (error) {
+      console.error('Error fetching events:', error);
+      toast.error('Failed to load events.');
+    } else {
+      setEvents(data || []);
+    }
+    setLoading(false);
   }, []);
 
-  const getFilteredEventsForList = () => {
-    let filtered = events;
-
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
-
-    switch (dateFilter) {
-      case 'Today':
-        filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd'));
-        break;
-      case 'This Week':
-        const startW = startOfWeek(now, { weekStartsOn: 1 });
-        const endW = endOfWeek(now, { weekStartsOn: 1 });
-        filtered = filtered.filter(event => {
-          const eventDate = parseISO(event.event_date);
-          return eventDate >= startW && eventDate <= endW;
-        });
-        break;
-      case 'This Month':
-        const startM = startOfMonth(now);
-        const endM = endOfMonth(now);
-        filtered = filtered.filter(event => {
-          const eventDate = parseISO(event.event_date);
-          return eventDate >= startM && eventDate <= endM;
-        });
-        break;
-      case 'Past Events':
-        filtered = filtered.filter(event => parseISO(event.event_date) < now);
-        break;
-      case 'All Upcoming':
-        filtered = filtered.filter(event => parseISO(event.event_date) >= now);
-        break;
-      case 'All Events':
-      default:
-        break;
-    }
-
-    if (eventType !== 'All') {
-      filtered = filtered.filter(event => event.event_type === eventType);
-    }
-
-    if (stateFilter !== 'All') {
-      filtered = filtered.filter(event => event.state === stateFilter);
-    }
-
-    if (searchTerm) {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(event =>
-        event.event_name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        (event.description?.toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (event.organizer_contact?.toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (event.full_address?.toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (event.place_name?.toLowerCase().includes(lowerCaseSearchTerm))
-      );
-    }
-    return filtered;
-  };
-
-  const filteredEventsForList = getFilteredEventsForList();
-
-  const now = new Date();
-  now.setHours(0, 0, 0, 0); // Set to the beginning of today for accurate comparison
-
-  const selectedDayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
-
-  const currentMonthEvents = events.filter(event => {
-    const eventStartDate = parseISO(event.event_date);
-    // Use end_date for multi-day events, otherwise use event_date
-    const eventEndDate = event.end_date ? parseISO(event.end_date) : eventStartDate;
-    
-    // Show event if it's in the current month AND it hasn't ended yet
-    return isSameMonth(eventStartDate, currentMonth) && eventEndDate >= now;
-  });
-
-  const handleApplyFilters = (filters: { searchTerm: string; eventType: string; state: string; dateFilter: string; }) => {
-    setSearchTerm(filters.searchTerm);
-    setEventType(filters.eventType);
-    setStateFilter(filters.state);
-    setDateFilter(filters.dateFilter);
-  };
-
-  const handleClearAllFilters = () => {
-    setSearchTerm('');
-    setEventType('All');
-    setStateFilter('All');
-    setDateFilter('All Upcoming');
-  };
-
-  const hasActiveFilters = searchTerm !== '' || eventType !== 'All' || stateFilter !== 'All' || dateFilter !== 'All Upcoming';
-
-  const handleShare = (event: Event, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const eventUrl = `${window.location.origin}/events/${event.id}`;
-    navigator.clipboard.writeText(eventUrl)
-      .then(() => toast.success('Event link copied to clipboard!'))
-      .catch(() => toast.error('Failed to copy link. Please try again.'));
-  };
-
-  const handleDelete = async (eventId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm('Are you sure you want to delete this event? It will be hidden from public view but can be restored from the Admin Panel.')) {
-      const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', eventId);
-      if (error) {
-        toast.error('Failed to delete event.');
-      } else {
-        toast.success('Event moved to trash.');
-        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
-      }
-    }
-  };
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const handleViewDetails = (event: Event) => {
     setSelectedEvent(event);
     setIsEventDetailDialogOpen(true);
   };
 
-  return (
-    <div className="w-full max-w-screen-lg">
-      <div 
-        className="relative text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 rounded-xl shadow-xl text-white overflow-hidden bg-center bg-cover" // Added bg-center bg-cover
-        style={{ backgroundImage: `url(${heroBackground})` }} // Set background image
-      >
-        {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-black/30"></div>
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
+  const upcomingEvents = events.filter(event => parseISO(event.event_date) >= today);
+  const pastEvents = events.filter(event => parseISO(event.event_date) < today);
+
+  const todayHighlights = upcomingEvents.filter(event => isSameDay(parseISO(event.event_date), today));
+  const upcomingOtherDays = upcomingEvents.filter(event => !isSameDay(parseISO(event.event_date), today));
+
+  return (
+    <div className="w-full max-w-screen-lg px-4">
+      <div className="relative text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 rounded-xl shadow-xl text-white overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-800">
         <div className="relative z-10">
-          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">Discover Your Next Soulful Experience</h1>
-          <p className="text-lg sm:text-xl font-light mb-8 opacity-90">Connect with events that nourish your mind, body, and spirit across Australia.</p>
+          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">Today's Highlights</h1>
+          <p className="text-lg sm:text-xl font-light mb-8 opacity-90">
+            Discover the best events happening today.
+          </p>
           <Link to="/submit-event">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button className="bg-white text-primary hover:bg-gray-100 text-base sm:text-lg font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
               Add Your Event
             </Button>
           </Link>
@@ -225,91 +100,81 @@ const EventsList = () => {
         </p>
       </div>
 
-      {/* Integrated EventFilterBar */}
-      <EventFilterBar
-        searchTerm={searchTerm}
-        eventType={eventType}
-        stateFilter={stateFilter}
-        dateFilter={dateFilter}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        onApplyFilters={handleApplyFilters}
-        onClearAllFilters={handleClearAllFilters}
-      />
-
       {(loading || isSessionLoading) ? (
-        <EventCardList
-          events={[]} // Pass empty array as events are loading
-          loading={true}
-          onShare={handleShare}
-          onDelete={handleDelete}
-          onViewDetails={handleViewDetails}
-        />
-      ) : (
-        <>
-          {viewMode === 'list' ? (
-            <EventCardList
-              events={filteredEventsForList}
-              onShare={handleShare}
-              onDelete={handleDelete}
-              onViewDetails={handleViewDetails}
-              hasActiveFilters={hasActiveFilters}
-              onClearFilters={handleClearAllFilters}
-            />
-          ) : viewMode === 'calendar' ? (
-            <div>
-              <AdvancedEventCalendar
-                events={events}
-                onEventSelect={handleViewDetails}
-                selectedDay={selectedDay}
-                onDayClick={setSelectedDay}
-                currentMonth={currentMonth}
-                onMonthChange={setCurrentMonth}
-              />
-              <div className="mt-8">
-                <h3 className="text-2xl font-bold text-foreground mb-4 border-b pb-2 border-border">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3> {/* Styled heading */}
-                {selectedDayEvents.length > 0 ? (
-                  <EventCardList
-                    events={selectedDayEvents}
-                    onShare={handleShare}
-                    onDelete={handleDelete}
-                    onViewDetails={handleViewDetails}
-                  />
-                ) : (
-                  <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
-                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-lg font-semibold text-foreground mb-4">No events scheduled for this day.</p>
-                  </div>
-                )}
-              </div>
-              <div className="mt-12">
-                <h3 className="text-2xl font-bold text-foreground mb-4 border-b pb-2 border-border">More events in {format(currentMonth, 'MMMM')}</h3> {/* Styled heading */}
-                {currentMonthEvents.length > 0 ? (
-                  <EventCardList
-                    events={currentMonthEvents}
-                    onShare={handleShare}
-                    onDelete={handleDelete}
-                    onViewDetails={handleViewDetails}
-                  />
-                ) : (
-                  <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
-                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-lg font-semibold text-foreground mb-4">No upcoming events found for this month.</p>
-                  </div>
-                )}
+        <div className="grid grid-cols-1 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex flex-col sm:flex-row bg-card rounded-lg shadow-md overflow-hidden border border-border">
+              <Skeleton className="w-full sm:w-1/3 flex-shrink-0 aspect-video sm:aspect-auto h-48 sm:h-auto" />
+              <div className="flex-1 p-4 flex flex-col justify-between">
+                <div>
+                  <Skeleton className="h-4 w-1/4 mb-2" />
+                  <Skeleton className="h-6 w-3/4 mb-1" />
+                  <Skeleton className="h-4 w-1/2 mb-1" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+                <Skeleton className="h-5 w-1/4 mt-3" />
               </div>
             </div>
-          ) : ( // This block is for 'map' view
+          ))}
+        </div>
+      ) : (
+        <>
+          {todayHighlights.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Today's Highlights</h2>
+              <div className="grid grid-cols-1 gap-4">
+                {todayHighlights.map(event => (
+                  <EventCardV2 key={event.id} event={event} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {upcomingOtherDays.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Upcoming</h2>
+              <div className="grid grid-cols-1 gap-4">
+                {upcomingOtherDays.map(event => (
+                  <EventCardV2 key={event.id} event={event} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {pastEvents.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Past Events</h2>
+              <div className="grid grid-cols-1 gap-4">
+                {pastEvents.map(event => (
+                  <EventCardV2 key={event.id} event={event} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {events.length === 0 && (
             <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
-              <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg font-semibold text-foreground mb-4">Map view temporarily disabled.</p>
-              <p className="text-muted-foreground">This feature requires paid credits, which have been exhausted.</p>
+              <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg font-semibold text-foreground mb-4">No events found.</p>
+              <Link to="/submit-event">
+                <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add the First Event!
+                </Button>
+              </Link>
+            </div>
+          )}
+
+          {events.length > 0 && (
+            <div className="flex justify-center mt-8">
+              <Button variant="outline" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Load More Events (Prototype)
+              </Button>
             </div>
           )}
         </>
       )}
 
-      <EventDetailDialog event={selectedEvent} isOpen={isEventDetailDialogOpen} onClose={() => setIsEventDetailDialogOpen(false)} cameFromCalendar={viewMode === 'calendar'} />
+      <EventDetailDialog event={selectedEvent} isOpen={isEventDetailDialogOpen} onClose={() => setIsEventDetailDialogOpen(false)} />
     </div>
   );
 };
