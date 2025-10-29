@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO, isToday, isPast, isFuture, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO, isToday, isPast, isFuture, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, PlusCircle, Loader2 } from 'lucide-react';
@@ -23,7 +23,7 @@ const EventsListV2 = () => {
   const [offset, setOffset] = useState(0);
 
   const [filters, setFilters] = useState({
-    date: 'All Upcoming', // New date filter
+    date: 'Today', // Default to 'Today'
     category: 'All',
     venue: 'All',
     price: 'All',
@@ -64,6 +64,8 @@ const EventsListV2 = () => {
   useEffect(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
+    const tomorrow = addDays(now, 1);
+    tomorrow.setHours(0, 0, 0, 0);
 
     let filtered = allEvents.filter(event => {
       const eventDate = parseISO(event.event_date);
@@ -72,6 +74,9 @@ const EventsListV2 = () => {
       switch (filters.date) {
         case 'Today':
           if (!isToday(eventDate)) return false;
+          break;
+        case 'Tomorrow':
+          if (!isToday(eventDate) && !isSameDay(eventDate, tomorrow)) return false;
           break;
         case 'This Week':
           const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -121,6 +126,8 @@ const EventsListV2 = () => {
     setLoadingMore(true);
     const now = new Date();
     now.setHours(0, 0, 0, 0);
+    const tomorrow = addDays(now, 1);
+    tomorrow.setHours(0, 0, 0, 0);
 
     let filtered = allEvents.filter(event => {
       const eventDate = parseISO(event.event_date);
@@ -129,6 +136,9 @@ const EventsListV2 = () => {
       switch (filters.date) {
         case 'Today':
           if (!isToday(eventDate)) return false;
+          break;
+        case 'Tomorrow':
+          if (!isToday(eventDate) && !isSameDay(eventDate, tomorrow)) return false;
           break;
         case 'This Week':
           const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -186,6 +196,8 @@ const EventsListV2 = () => {
   const getSectionEvents = (sectionType: 'highlights' | 'upcoming') => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
+    const tomorrow = addDays(now, 1);
+    tomorrow.setHours(0, 0, 0, 0);
 
     let sectionFilteredEvents = allEvents.filter(event => {
       const eventDate = parseISO(event.event_date);
@@ -194,6 +206,9 @@ const EventsListV2 = () => {
       switch (filters.date) {
         case 'Today':
           if (!isToday(eventDate)) return false;
+          break;
+        case 'Tomorrow':
+          if (!isToday(eventDate) && !isSameDay(eventDate, tomorrow)) return false;
           break;
         case 'This Week':
           const startW = startOfWeek(now, { weekStartsOn: 1 });

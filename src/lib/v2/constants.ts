@@ -54,6 +54,7 @@ export const v2Areas = [
 
 export const v2DateOptions = [
   'Today',
+  'Tomorrow', // Added Tomorrow
   'This Week',
   'This Month',
   'All Upcoming',
