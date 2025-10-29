@@ -3,8 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Image as ImageIcon, XCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { CalendarIcon, Loader2 } from 'lucide-react';
+import { cn, extractAustralianState } from '@/lib/utils'; // Import extractAustralianState
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,9 +22,9 @@ import {
 } from '@/components/ui/dialog';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { eventTypes, australianStates } from '@/lib/constants';
 import { Event } from '@/types/event';
+import ImageUploadInput from '@/components/ImageUploadInput'; // Import the new component
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
@@ -45,20 +45,6 @@ const eventFormSchema = z.object({
   discountCode: z.string().optional().or(z.literal('')),
 });
 
-const extractAustralianState = (address: string): string | null => {
-  if (!address) {
-    return null;
-  }
-  const upperCaseAddress = address.toUpperCase();
-  const stateRegex = new RegExp(`\\b(${australianStates.join('|')})\\b(?:\\s+\\d{4})?`, 'i');
-  const match = upperCaseAddress.match(stateRegex);
-
-  if (match && match[1]) {
-    return match[1];
-  }
-  return null;
-};
-
 const EventEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -69,9 +55,7 @@ const EventEditPage: React.FC = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const placeNameInputRef = useRef<HTMLInputElement>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); // State for preview URL
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -134,16 +118,7 @@ const EventEditPage: React.FC = () => {
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
         });
-        setImagePreviewUrl(data.image_url || null);
-        if (data.image_url) {
-          if (data.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
-            setImageInputMode('upload');
-          } else {
-            setImageInputMode('url');
-          }
-        } else {
-          setImageInputMode('upload');
-        }
+        setImagePreviewUrl(data.image_url || null); // Set initial preview URL
       } else {
         navigate('/404');
       }
@@ -182,57 +157,32 @@ const EventEditPage: React.FC = () => {
     }
   }, [form]);
 
-  const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setSelectedImage(file);
-      setImagePreviewUrl(URL.createObjectURL(file));
-      form.setValue('imageFile', file);
-      form.setValue('imageUrl', '');
-    } else {
-      setSelectedImage(null);
-      setImagePreviewUrl(currentEvent?.image_url || null);
-      form.setValue('imageFile', undefined);
-    }
-  };
-
-  const handleImageUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    form.setValue('imageUrl', url);
-    if (url) {
-      setImagePreviewUrl(url);
-      setSelectedImage(null);
-      form.setValue('imageFile', undefined);
-    } else {
-      setImagePreviewUrl(null);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    setImagePreviewUrl(null);
-    form.setValue('imageFile', undefined);
-    form.setValue('imageUrl', '');
-  };
-
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
 
     let finalImageUrl: string | null = null;
+    
+    // Handle image upload/URL logic
+    const imageFile = form.getValues('imageFile');
+    const imageUrlField = form.getValues('imageUrl');
 
-    if (selectedImage) {
+    if (imageFile) { // If a new file was selected, upload it
+      // Delete old image if it exists and is a Supabase storage URL
       if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
-          await supabase.storage.from('event-images').remove([oldFileName]);
+          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
+          if (deleteError) {
+            console.error('Error deleting old image:', deleteError);
+          }
         }
       }
 
-      const fileExtension = selectedImage.name.split('.').pop();
+      const fileExtension = imageFile.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('event-images')
-        .upload(fileName, selectedImage, {
+        .upload(fileName, imageFile, {
           cacheControl: '3600',
           upsert: false,
         });
@@ -248,23 +198,31 @@ const EventEditPage: React.FC = () => {
         .getPublicUrl(fileName);
 
       finalImageUrl = publicUrlData.publicUrl;
-    } else if (values.imageUrl) {
+    } else if (imageUrlField) { // If a URL was provided
+      // If the old image was a file and a new URL is provided, delete the old file
       if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
-          await supabase.storage.from('event-images').remove([oldFileName]);
+          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
+          if (deleteError) {
+            console.error('Error deleting old image:', deleteError);
+          }
         }
       }
-      finalImageUrl = values.imageUrl;
-    } else if (currentEvent.image_url && !selectedImage && !values.imageUrl) {
+      finalImageUrl = imageUrlField;
+    } else if (currentEvent.image_url && !imageFile && !imageUrlField) { // If no new image and no URL, but there was an old image
+      // This means the user explicitly removed the image or it was never set
       if (currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
         const oldFileName = currentEvent.image_url.split('/').pop();
         if (oldFileName) {
-          await supabase.storage.from('event-images').remove([oldFileName]);
+          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
+          if (deleteError) {
+            console.error('Error deleting old image:', deleteError);
+          }
         }
       }
       finalImageUrl = null;
-    } else {
+    } else { // Keep existing image if no changes
       finalImageUrl = currentEvent.image_url;
     }
 
@@ -306,6 +264,16 @@ const EventEditPage: React.FC = () => {
   const handlePreview = () => {
     const data = form.getValues();
     setPreviewData(data);
+    // Update imagePreviewUrl from form values for the dialog
+    const currentImageFile = form.getValues('imageFile');
+    const currentImageUrlField = form.getValues('imageUrl');
+    if (currentImageFile) {
+      setImagePreviewUrl(URL.createObjectURL(currentImageFile));
+    } else if (currentImageUrlField) {
+      setImagePreviewUrl(currentImageUrlField);
+    } else {
+      setImagePreviewUrl(currentEvent?.image_url || null); // Fallback to original event image
+    }
     setIsPreviewOpen(true);
   };
 
@@ -619,79 +587,7 @@ const EventEditPage: React.FC = () => {
           )}
         />
 
-        <FormItem>
-          <FormLabel>Event Image (Optional)</FormLabel>
-          <Tabs
-            value={imageInputMode}
-            onValueChange={(value) => {
-              setImageInputMode(value as 'upload' | 'url');
-              if (value === 'upload') {
-                form.setValue('imageUrl', '');
-                setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : null);
-              } else {
-                setSelectedImage(null);
-                form.setValue('imageFile', undefined);
-                setImagePreviewUrl(form.getValues('imageUrl') || null);
-              }
-            }}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
-              <TabsTrigger value="upload">Upload Image</TabsTrigger>
-              <TabsTrigger value="url">Image URL</TabsTrigger>
-            </TabsList>
-            <TabsContent value="upload" className="mt-4">
-              <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
-                <span className="flex items-center">
-                  <ImageIcon className="mr-2 h-4 w-4" />
-                  {selectedImage ? selectedImage.name : (currentEvent?.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images') ? currentEvent.image_url.split('/').pop() : 'No file chosen')}
-                </span>
-                <Button type="button" variant="outline" size="sm" className="ml-4">
-                  Choose File
-                </Button>
-                <Input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageFileChange}
-                  className="sr-only"
-                />
-              </label>
-            </TabsContent>
-            <TabsContent value="url" className="mt-4">
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormControl>
-                    <Input
-                      id="imageUrl"
-                      placeholder="e.g., https://example.com/image.jpg"
-                      {...field}
-                      onChange={handleImageUrlInputChange}
-                      className="focus-visible:ring-primary"
-                    />
-                  </FormControl>
-                )}
-              />
-            </TabsContent>
-          </Tabs>
-          {imagePreviewUrl && (
-            <div className="mt-2 flex items-center space-x-2">
-              <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-border shadow-md" />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleRemoveImage}
-                className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105"
-              >
-                <XCircle className="mr-1 h-4 w-4" /> Remove
-              </Button>
-            </div>
-          )}
-          <FormMessage />
-        </FormItem>
+        <ImageUploadInput form={form} currentImageUrl={currentEvent?.image_url} name="imageFile" />
 
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="outline" onClick={() => navigate(location.state?.from || '/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">

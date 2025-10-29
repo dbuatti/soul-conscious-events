@@ -9,7 +9,6 @@ import { useSession } from '@/components/SessionContextProvider';
 import EventForm from '@/components/EventForm';
 import AiParsingSection from '@/components/AiParsingSection';
 import EventPreviewDialog from '@/components/EventPreviewDialog';
-import { eventTypes, australianStates } from '@/lib/constants';
 import { format } from 'date-fns'; // Import format
 
 // Define the schema locally to avoid import issues
@@ -125,6 +124,16 @@ const SubmitEvent = () => {
   const handlePreview = () => {
     const data = form.getValues();
     setPreviewData(data);
+    // Update imagePreviewUrl from form values for the dialog
+    const currentImageFile = form.getValues('imageFile');
+    const currentImageUrlField = form.getValues('imageUrl');
+    if (currentImageFile) {
+      setImagePreviewUrl(URL.createObjectURL(currentImageFile));
+    } else if (currentImageUrlField) {
+      setImagePreviewUrl(currentImageUrlField);
+    } else {
+      setImagePreviewUrl(null);
+    }
     setIsPreviewOpen(true);
   };
 
@@ -214,6 +223,7 @@ const SubmitEvent = () => {
         isSubmitting={form.formState.isSubmitting}
         onBack={() => navigate('/')}
         onPreview={handlePreview}
+        currentImageUrl={imagePreviewUrl} // Pass current image URL to EventForm
       />
 
       <EventPreviewDialog

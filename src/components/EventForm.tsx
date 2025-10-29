@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Image as ImageIcon, XCircle, MapPin, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { CalendarIcon, Loader2 } from 'lucide-react';
+import { cn, extractAustralianState } from '@/lib/utils'; // Import extractAustralianState
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,8 +18,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { eventTypes, australianStates } from '@/lib/constants';
+import ImageUploadInput from './ImageUploadInput'; // Import the new component
 
 // Define the schema locally to avoid import issues
 const eventFormSchema = z.object({
@@ -49,34 +49,11 @@ interface EventFormProps {
   isSubmitting: boolean;
   onBack: () => void;
   onPreview: () => void;
+  currentImageUrl?: string | null; // Prop to pass current image URL for ImageUploadInput
 }
 
-// Refined helper function to extract Australian state from address
-const extractAustralianState = (address: string): string | null => {
-  if (!address) {
-    console.log('extractAustralianState: Address is empty, returning null.');
-    return null;
-  }
-  const upperCaseAddress = address.toUpperCase();
-  // Regex to find a 2-letter state abbreviation followed by a space and 4 digits (postcode)
-  // or just a 2-letter state abbreviation at a word boundary
-  const stateRegex = new RegExp(`\\b(${australianStates.join('|')})\\b(?:\\s+\\d{4})?`, 'i');
-  const match = upperCaseAddress.match(stateRegex);
-
-  if (match && match[1]) {
-    console.log(`extractAustralianState: Found state "${match[1]}" in address "${address}".`);
-    return match[1];
-  }
-
-  console.log(`extractAustralianState: No state found in address "${address}", returning null.`);
-  return null;
-};
-
-const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onBack, onPreview }) => {
+const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onBack, onPreview, currentImageUrl }) => {
   const placeNameInputRef = useRef<HTMLInputElement>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload');
 
   useEffect(() => {
     if (placeNameInputRef.current && window.google && window.google.maps && window.google.maps.places) {
@@ -103,43 +80,9 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
         } else {
           form.setValue('geographicalState', '', { shouldValidate: true });
         }
-        console.log('EventForm (Autocomplete): geographicalState set to:', form.getValues('geographicalState'));
       });
     }
   }, [form]);
-
-  const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setSelectedImage(file);
-      setImagePreviewUrl(URL.createObjectURL(file));
-      form.setValue('imageFile', file);
-      form.setValue('imageUrl', '');
-    } else {
-      setSelectedImage(null);
-      setImagePreviewUrl(null);
-      form.setValue('imageFile', undefined);
-    }
-  };
-
-  const handleImageUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    form.setValue('imageUrl', url);
-    if (url) {
-      setImagePreviewUrl(url);
-      setSelectedImage(null);
-      form.setValue('imageFile', undefined);
-    } else {
-      setImagePreviewUrl(null);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    setImagePreviewUrl(null);
-    form.setValue('imageFile', undefined);
-    form.setValue('imageUrl', '');
-  };
 
   return (
     <Form {...form}>
@@ -284,7 +227,6 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                     } else {
                       form.setValue('geographicalState', '', { shouldValidate: true });
                     }
-                    console.log('EventForm (Manual Input): geographicalState set to:', form.getValues('geographicalState'));
                   }}
                   className="focus-visible:ring-primary"
                 />
@@ -428,79 +370,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
-        <FormItem>
-          <FormLabel>Event Image (Optional)</FormLabel>
-          <Tabs
-            value={imageInputMode}
-            onValueChange={(value) => {
-              setImageInputMode(value as 'upload' | 'url');
-              if (value === 'upload') {
-                form.setValue('imageUrl', '');
-                setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : null);
-              } else {
-                setSelectedImage(null);
-                form.setValue('imageFile', undefined);
-                setImagePreviewUrl(form.getValues('imageUrl') || null);
-              }
-            }}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
-              <TabsTrigger value="upload">Upload Image</TabsTrigger>
-              <TabsTrigger value="url">Image URL</TabsTrigger>
-            </TabsList>
-            <TabsContent value="upload" className="mt-4">
-              <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
-                <span className="flex items-center">
-                  <ImageIcon className="mr-2 h-4 w-4" />
-                  {selectedImage ? selectedImage.name : 'No file chosen'}
-                </span>
-                <Button type="button" variant="outline" size="sm" className="ml-4">
-                  Choose File
-                </Button>
-                <Input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageFileChange}
-                  className="sr-only"
-                />
-              </label>
-            </TabsContent>
-            <TabsContent value="url" className="mt-4">
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormControl>
-                    <Input
-                      id="imageUrl"
-                      placeholder="e.g., https://example.com/image.jpg"
-                      {...field}
-                      onChange={handleImageUrlInputChange}
-                      className="focus-visible:ring-primary"
-                    />
-                  </FormControl>
-                )}
-              />
-            </TabsContent>
-          </Tabs>
-          {imagePreviewUrl && (
-            <div className="mt-2 flex items-center space-x-2">
-              <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-border shadow-md" />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleRemoveImage}
-                className="text-destructive hover:text-destructive/80 transition-all duration-300 ease-in-out transform hover:scale-105"
-              >
-                <XCircle className="mr-1 h-4 w-4" /> Remove
-              </Button>
-            </div>
-          )}
-          <FormMessage />
-        </FormItem>
+        <ImageUploadInput form={form} currentImageUrl={currentImageUrl} name="imageFile" />
 
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="outline" onClick={onBack} className="transition-all duration-300 ease-in-out transform hover:scale-105">
