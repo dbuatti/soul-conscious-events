@@ -123,12 +123,14 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     </DropdownMenuContent>
   );
 
+  const buttonClasses = "flex items-center gap-1 max-w-[120px] truncate rounded-xl px-4 py-2 h-9"; // Added rounded-xl and explicit padding/height
+
   if (isMobile) {
     return (
       <div className="flex flex-col space-y-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full justify-between max-w-[120px] truncate">
+            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
               {getTriggerText('date', 'Date')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -137,7 +139,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full justify-between max-w-[120px] truncate">
+            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
               {getTriggerText('category', 'Category')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -146,7 +148,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full justify-between max-w-[120px] truncate">
+            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
               {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -155,7 +157,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full justify-between max-w-[120px] truncate">
+            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
               {getTriggerText('price', 'Price')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -164,7 +166,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full justify-between max-w-[120px] truncate">
+            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
               {getTriggerText('area', 'Area')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -178,7 +180,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     <div className="flex space-x-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-1 max-w-[120px] truncate">
+          <Button variant="outline" className={buttonClasses}>
             {getTriggerText('date', 'Date')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -187,7 +189,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-1 max-w-[120px] truncate">
+          <Button variant="outline" className={buttonClasses}>
             {getTriggerText('category', 'Category')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -196,7 +198,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-1 max-w-[120px] truncate">
+          <Button variant="outline" className={buttonClasses}>
             {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -205,7 +207,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-1 max-w-[120px] truncate">
+          <Button variant="outline" className={buttonClasses}>
             {getTriggerText('price', 'Price')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -214,7 +216,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-1 max-w-[120px] truncate">
+          <Button variant="outline" className={buttonClasses}>
             {getTriggerText('area', 'Area')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
