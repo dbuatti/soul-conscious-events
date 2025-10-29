@@ -300,14 +300,14 @@ const EventsListV2 = () => {
   const upcomingEvents = getSectionEvents('upcoming');
 
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl"> {/* Changed to max-w-2xl */}
       {/* Filters below the header */}
       <div className="mb-8 flex justify-center">
         <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} />
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6"> {/* Changed to grid-cols-1 */}
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex flex-col space-y-3">
               <Skeleton className="h-[200px] w-full rounded-lg" />
@@ -323,7 +323,7 @@ const EventsListV2 = () => {
           {highlights.length > 0 && (
             <section className="mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Today's Highlights</h2>
-              <div className="grid grid-cols-1 gap-6"> {/* Single column for highlights */}
+              <div className="grid grid-cols-1 gap-6"> {/* Ensured grid-cols-1 */}
                 {highlights.map(event => (
                   <EventCardV2
                     key={event.id}
@@ -341,7 +341,7 @@ const EventsListV2 = () => {
           {upcomingEvents.length > 0 && (
             <section className="mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Upcoming Events</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Grid for upcoming events */}
+              <div className="grid grid-cols-1 gap-6"> {/* Changed to grid-cols-1 */}
                 {upcomingEvents.map(event => (
                   <EventCardV2
                     key={event.id}

@@ -71,7 +71,7 @@ const HeaderV2 = () => {
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-3 px-4 md:px-8 flex justify-center dark:bg-background dark:border-gray-800 sticky top-0 z-50">
-      <div className="w-full max-w-screen-lg flex justify-between items-center">
+      <div className="w-full max-w-2xl flex justify-between items-center"> {/* Changed to max-w-2xl */}
         {/* Logo and Location Placeholder */}
         <div className="flex items-center space-x-2">
           <Link to="/v2" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">

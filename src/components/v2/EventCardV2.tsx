@@ -48,7 +48,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   return (
     <Card className="group flex flex-col sm:flex-row shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>
       {event.image_url && (
-        <div className="relative w-full sm:w-1/3 md:w-2/5 lg:w-1/3 aspect-video sm:aspect-square overflow-hidden flex-shrink-0">
+        <div className="relative w-full sm:w-40 aspect-video sm:aspect-square overflow-hidden flex-shrink-0"> {/* Changed sm:w-1/3 to sm:w-40 */}
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           
