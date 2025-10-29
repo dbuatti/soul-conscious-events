@@ -4,91 +4,91 @@
 
 @layer base {
   :root {
-    /* Light Mode: Daybreak Minimal */
-    --background: 30 10% 97%; /* soft stone white #F8F7F5 */
-    --foreground: 0 0% 17%; /* deep warm charcoal #2C2C2C */
+    /* Light Mode: Ethereal Dawn */
+    --background: 220 20% 98%; /* #F7F9FB */
+    --foreground: 220 20% 15%; /* #20262E */
 
-    --card: 0 0% 100%; /* pure white for cards #FFFFFF */
-    --card-foreground: 0 0% 17%;
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 220 20% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 17%;
+    --popover-foreground: 220 20% 15%;
 
-    --primary: 39 29% 50%; /* muted antique gold #A08A60 */
-    --primary-foreground: 0 0% 100%; /* white text on primary */
+    --primary: 240 60% 70%; /* #9999FF */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 39 29% 77%; /* pale sand gold #D7CBB3 */
-    --secondary-foreground: 0 0% 17%;
+    --secondary: 180 30% 90%; /* #E0F2F2 */
+    --secondary-foreground: 220 20% 15%;
 
-    --muted: 0 0% 90%; /* slightly lighter for muted background elements */
-    --muted-foreground: 0 0% 45%; /* medium grey for muted text */
+    --muted: 220 10% 90%; /* #E6E9ED */
+    --muted-foreground: 220 10% 50%; /* #737D8C */
 
-    --accent: 39 30% 66%; /* brushed gold highlight #C8B589 */
-    --accent-foreground: 0 0% 17%;
+    --accent: 280 50% 75%; /* #D199E6 */
+    --accent-foreground: 220 20% 15%;
 
-    --destructive: 0 70% 40%; /* Deep red (consistent) */
+    --destructive: 0 70% 40%; /* #A61A1A */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 77%; /* cool neutral grey for subtle structure #C4C4C4 */
-    --input: 0 0% 77%;
-    --ring: 39 29% 50%; /* Same as primary */
+    --border: 220 10% 80%; /* #C4CCD6 */
+    --input: 220 10% 80%;
+    --ring: 240 60% 70%;
 
-    --link: 39 30% 36%; /* grounded olive-gold tone #7A6A40 */
-    --link-hover: 39 30% 66%; /* brushed gold highlight #C8B589 (same as accent) */
+    --link: 240 60% 50%; /* #6666FF */
+    --link-hover: 240 60% 70%;
 
-    /* Sidebar colors (adjusting to new scheme) */
-    --sidebar-background: 30 10% 97%;
-    --sidebar-foreground: 0 0% 17%;
-    --sidebar-primary: 39 29% 50%;
+    /* Sidebar colors */
+    --sidebar-background: 220 20% 98%;
+    --sidebar-foreground: 220 20% 15%;
+    --sidebar-primary: 240 60% 70%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 39 30% 66%;
-    --sidebar-accent-foreground: 0 0% 17%;
-    --sidebar-border: 0 0% 77%;
-    --sidebar-ring: 39 29% 50%;
+    --sidebar-accent: 280 50% 75%;
+    --sidebar-accent-foreground: 220 20% 15%;
+    --sidebar-border: 220 10% 80%;
+    --sidebar-ring: 240 60% 70%;
   }
 
   .dark {
-    /* Dark Mode: Nightfall Minimal */
-    --background: 0 0% 10%; /* Deep charcoal #1A1A1A */
-    --foreground: 0 0% 92%; /* Soft grey-white #EAEAEA */
+    /* Dark Mode: Cosmic Veil */
+    --background: 240 10% 8%; /* #12121A */
+    --foreground: 220 20% 90%; /* #D9DDE3 */
 
-    --card: 0 0% 15%; /* Slightly lighter charcoal for cards */
-    --card-foreground: 0 0% 92%;
+    --card: 240 10% 12%; /* #1F1F2B */
+    --card-foreground: 220 20% 90%;
 
-    --popover: 0 0% 15%;
-    --popover-foreground: 0 0% 92%;
+    --popover: 240 10% 12%;
+    --popover-foreground: 220 20% 90%;
 
-    --primary: 42 29% 61%; /* Antique gold #B7A77E */
-    --primary-foreground: 0 0% 10%; /* Deep charcoal text on primary */
+    --primary: 240 60% 70%; /* #9999FF */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 31%; /* Smoke grey #4E4E4E */
-    --secondary-foreground: 0 0% 92%;
+    --secondary: 220 10% 25%; /* #3A3F47 */
+    --secondary-foreground: 220 20% 90%;
 
-    --muted: 0 0% 20%; /* Lighter smoke grey for muted elements */
-    --muted-foreground: 0 0% 60%; /* Medium grey for muted text */
+    --muted: 240 10% 18%; /* #2E2E3D */
+    --muted-foreground: 220 10% 65%; /* #A3AAB3 */
 
-    --accent: 39 30% 74%; /* Golden cream #D3C5A5 */
-    --accent-foreground: 0 0% 10%; /* Deep charcoal text on accent */
+    --accent: 280 50% 75%; /* #D199E6 */
+    --accent-foreground: 220 20% 90%;
 
-    --destructive: 0 70% 40%; /* Deep red (consistent) */
+    --destructive: 0 70% 40%; /* #A61A1A */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 35%; /* Slightly lighter smoke grey for borders */
-    --input: 0 0% 25%; /* Darker than muted, lighter than secondary */
-    --ring: 42 29% 61%; /* Same as primary */
+    --border: 240 10% 30%; /* #4A4A5C */
+    --input: 240 10% 20%;
+    --ring: 240 60% 70%;
 
-    --link: 42 29% 61%; /* Using primary for links in dark mode for now */
-    --link-hover: 39 30% 74%; /* Using accent for link hover in dark mode */
+    --link: 240 60% 70%; /* #9999FF */
+    --link-hover: 280 50% 75%;
 
-    /* Sidebar colors (adjusting to new scheme) */
-    --sidebar-background: 0 0% 12%;
-    --sidebar-foreground: 0 0% 92%;
-    --sidebar-primary: 42 29% 61%;
-    --sidebar-primary-foreground: 0 0% 10%;
-    --sidebar-accent: 39 30% 74%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 0 0% 35%;
-    --sidebar-ring: 42 29% 61%;
+    /* Sidebar colors */
+    --sidebar-background: 240 10% 10%;
+    --sidebar-foreground: 220 20% 90%;
+    --sidebar-primary: 240 60% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 280 50% 75%;
+    --sidebar-accent-foreground: 220 20% 90%;
+    --sidebar-border: 240 10% 30%;
+    --sidebar-ring: 240 60% 70%;
   }
 }
 
