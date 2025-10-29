@@ -25,6 +25,7 @@ import MyBookmarks from "./pages/MyBookmarks";
 import EventsListV2 from "./pages/v2/EventsListV2";
 import LoginV2 from "./pages/v2/LoginV2";
 import HeaderV2 from "./components/v2/HeaderV2"; // Import HeaderV2
+import AccountSettings from "./pages/AccountSettings"; // Import new AccountSettings page
 
 const queryClient = new QueryClient();
 
@@ -104,6 +105,14 @@ const App = () => (
             {/* V2 Prototype Routes */}
             <Route path="/v2" element={<LayoutV2><EventsListV2 /></LayoutV2>} />
             <Route path="/v2/login" element={<LayoutV2><LoginV2 /></LayoutV2>} />
+            <Route
+              path="/v2/account-settings"
+              element={
+                <ProtectedRoute>
+                  <LayoutV2><AccountSettings /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
             {/* Add other V2 specific routes here if needed */}
 
             <Route path="*" element={<Layout><NotFound /></Layout>} />
