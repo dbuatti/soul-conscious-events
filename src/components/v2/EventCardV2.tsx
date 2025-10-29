@@ -15,9 +15,20 @@ interface EventCardV2Props {
   onShare: (event: Event, e: React.MouseEvent) => void;
   onDelete: (eventId: string, e: React.MouseEvent) => void;
   onViewDetails: (event: Event) => void;
+  isFeaturedToday?: boolean; // New prop for the "Featured Today" badge
+  isWalkIn?: boolean; // Placeholder prop for "Walk-in" badge
+  isRSVPRecommended?: boolean; // Placeholder prop for "RSVP recommended" badge
 }
 
-const EventCardV2: React.FC<EventCardV2Props> = ({ event, onShare, onDelete, onViewDetails }) => {
+const EventCardV2: React.FC<EventCardV2Props> = ({
+  event,
+  onShare,
+  onDelete,
+  onViewDetails,
+  isFeaturedToday = false,
+  isWalkIn = false, // Default to false
+  isRSVPRecommended = false, // Default to false
+}) => {
   const { user } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
   const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
@@ -40,50 +51,67 @@ const EventCardV2: React.FC<EventCardV2Props> = ({ event, onShare, onDelete, onV
         <div className="relative w-full aspect-video overflow-hidden">
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+          
+          {/* Top Left Badges */}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-            {event.event_type && (
-              <Badge variant="secondary" className="bg-primary/80 text-primary-foreground text-xs px-2 py-0.5">
-                {event.event_type}
+            {isFeaturedToday && (
+              <Badge variant="default" className="bg-primary text-primary-foreground text-xs px-2 py-0.5">
+                FEATURED TODAY
               </Badge>
             )}
-            {event.price && (
-              <Badge variant={getPriceBadgeVariant(event.price)} className="text-xs px-2 py-0.5">
-                {event.price.toLowerCase().includes('free') ? 'FREE' : event.price.toLowerCase().includes('donation') ? 'DONATION' : 'PAID'}
+            {isWalkIn && ( // Placeholder for Walk-in
+              <Badge variant="secondary" className="bg-blue-500 text-white text-xs px-2 py-0.5">
+                Walk-in
               </Badge>
             )}
-            {/* Example of other badges, these would need logic based on event data */}
-            {/* <Badge variant="outline" className="text-xs px-2 py-0.5">WALK-IN</Badge> */}
-            {/* <Badge variant="outline" className="text-xs px-2 py-0.5">WEEKLY</Badge> */}
+            {isRSVPRecommended && ( // Placeholder for RSVP
+              <Badge variant="secondary" className="bg-purple-500 text-white text-xs px-2 py-0.5">
+                RSVP recommended
+              </Badge>
+            )}
           </div>
+
+          {/* Top Right Share Button */}
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={(e) => onShare(event, e)}
+            title="Share Event"
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/80 text-foreground hover:bg-white transition-all duration-300 ease-in-out transform hover:scale-110"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
         </div>
       )}
       <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2">
         <CardTitle className="text-xl sm:text-2xl font-bold text-foreground mb-1 sm:mb-2">{event.event_name}</CardTitle>
-        <CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base">
-          <Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
-          {dateDisplay}
-          {event.event_time && (
-            <>
-              <Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
-              {event.event_time}
-            </>
+        <CardDescription className="flex flex-col text-muted-foreground text-sm sm:text-base">
+          <div className="flex items-center mb-1">
+            <Clock className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+            {event.event_time || 'Time TBD'}
+            <span className="mx-2">•</span>
+            <Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+            {dateDisplay}
+          </div>
+          {(event.place_name || event.geographical_state) && (
+            <div className="flex items-center mt-1">
+              <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+              {event.place_name || event.geographical_state}
+            </div>
+          )}
+          {event.price && (
+            <div className="flex items-center mt-1">
+              <DollarSign className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+              {event.price}
+            </div>
           )}
         </CardDescription>
-        {(event.place_name || event.geographical_state) && (
-          <CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base mt-1">
-            <MapPin className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
-            {event.place_name || event.geographical_state}
-          </CardDescription>
-        )}
       </CardHeader>
       <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2 flex-grow">
         {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
       </CardContent>
       <CardFooter className="p-4 pt-2 flex justify-end space-x-1 sm:space-x-2">
         <BookmarkButton eventId={event.id} size="icon" className="h-7 w-7 sm:h-9 sm:w-9" />
-        <Button variant="outline" size="icon" onClick={(e) => onShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
-          <Share2 className="h-3.5 w-3.5 sm:h-4 w-4" />
-        </Button>
         {isCreatorOrAdmin && (
           <>
             <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>

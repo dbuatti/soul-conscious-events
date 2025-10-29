@@ -10,7 +10,7 @@ import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
 import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas, v2DateOptions } from '@/lib/v2/constants';
-import FilterDropdownsV2 from '@/components/v2/FilterDropdownsV2'; // Import FilterDropdownsV2
+import FilterDropdownsV2, { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2'; // Import FilterDropdownsV2Props
 
 const EVENTS_PER_LOAD = 6; // Number of events to load at a time
 
@@ -22,12 +22,12 @@ const EventsListV2 = () => {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
 
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
     date: 'Today', // Default to 'Today'
-    category: 'All',
-    venue: 'All',
-    price: 'All',
-    area: 'All',
+    category: ['All'],
+    venue: ['All'],
+    price: ['All'],
+    area: ['All'],
   });
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -76,7 +76,7 @@ const EventsListV2 = () => {
           if (!isToday(eventDate)) return false;
           break;
         case 'Tomorrow':
-          if (!isToday(eventDate) && !isSameDay(eventDate, tomorrow)) return false;
+          if (!isSameDay(eventDate, tomorrow)) return false;
           break;
         case 'This Week':
           const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -95,23 +95,29 @@ const EventsListV2 = () => {
           break;
       }
 
-      // Apply category filter
-      if (filters.category !== 'All' && event.event_type !== filters.category) {
+      // Apply category filter (multi-select)
+      if (!filters.category.includes('All') && !filters.category.includes(event.event_type || '')) {
         return false;
       }
-      // Apply venue filter (using place_name)
-      if (filters.venue !== 'All' && event.place_name !== filters.venue) {
+      // Apply venue filter (multi-select, using place_name)
+      if (!filters.venue.includes('All') && !filters.venue.includes(event.place_name || '')) {
         return false;
       }
-      // Apply price filter
-      if (filters.price !== 'All') {
+      // Apply price filter (multi-select)
+      if (!filters.price.includes('All')) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
-        if (filters.price === 'Free' && !lowerCasePrice.includes('free')) return false;
-        if (filters.price === 'Paid' && (lowerCasePrice.includes('free') || lowerCasePrice.includes('donation') || !lowerCasePrice)) return false;
-        if (filters.price === 'Donation' && !lowerCasePrice.includes('donation')) return false;
+        const isFree = lowerCasePrice.includes('free');
+        const isDonation = lowerCasePrice.includes('donation');
+        const isPaid = !isFree && !isDonation && !!lowerCasePrice;
+
+        let priceMatch = false;
+        if (filters.price.includes('Free') && isFree) priceMatch = true;
+        if (filters.price.includes('Paid') && isPaid) priceMatch = true;
+        if (filters.price.includes('Donation') && isDonation) priceMatch = true;
+        if (!priceMatch) return false;
       }
-      // Apply area filter (using geographical_state)
-      if (filters.area !== 'All' && event.geographical_state !== filters.area) {
+      // Apply area filter (multi-select, using geographical_state)
+      if (!filters.area.includes('All') && !filters.area.includes(event.geographical_state || '')) {
         return false;
       }
       return true;
@@ -138,7 +144,7 @@ const EventsListV2 = () => {
           if (!isToday(eventDate)) return false;
           break;
         case 'Tomorrow':
-          if (!isToday(eventDate) && !isSameDay(eventDate, tomorrow)) return false;
+          if (!isSameDay(eventDate, tomorrow)) return false;
           break;
         case 'This Week':
           const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -157,23 +163,29 @@ const EventsListV2 = () => {
           break;
       }
 
-      // Apply category filter
-      if (filters.category !== 'All' && event.event_type !== filters.category) {
+      // Apply category filter (multi-select)
+      if (!filters.category.includes('All') && !filters.category.includes(event.event_type || '')) {
         return false;
       }
-      // Apply venue filter (using place_name)
-      if (filters.venue !== 'All' && event.place_name !== filters.venue) {
+      // Apply venue filter (multi-select, using place_name)
+      if (!filters.venue.includes('All') && !filters.venue.includes(event.place_name || '')) {
         return false;
       }
-      // Apply price filter
-      if (filters.price !== 'All') {
+      // Apply price filter (multi-select)
+      if (!filters.price.includes('All')) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
-        if (filters.price === 'Free' && !lowerCasePrice.includes('free')) return false;
-        if (filters.price === 'Paid' && (lowerCasePrice.includes('free') || lowerCasePrice.includes('donation') || !lowerCasePrice)) return false;
-        if (filters.price === 'Donation' && !lowerCasePrice.includes('donation')) return false;
+        const isFree = lowerCasePrice.includes('free');
+        const isDonation = lowerCasePrice.includes('donation');
+        const isPaid = !isFree && !isDonation && !!lowerCasePrice;
+
+        let priceMatch = false;
+        if (filters.price.includes('Free') && isFree) priceMatch = true;
+        if (filters.price.includes('Paid') && isPaid) priceMatch = true;
+        if (filters.price.includes('Donation') && isDonation) priceMatch = true;
+        if (!priceMatch) return false;
       }
-      // Apply area filter (using geographical_state)
-      if (filters.area !== 'All' && event.geographical_state !== filters.area) {
+      // Apply area filter (multi-select, using geographical_state)
+      if (!filters.area.includes('All') && !filters.area.includes(event.geographical_state || '')) {
         return false;
       }
       return true;
@@ -186,7 +198,7 @@ const EventsListV2 = () => {
     setLoadingMore(false);
   };
 
-  const handleFilterChange = (newFilters: typeof filters) => {
+  const handleFilterChange = (newFilters: FilterDropdownsV2Props['currentFilters']) => {
     setFilters(newFilters);
     // When filters change, reset pagination and re-apply filters
     setOffset(0);
@@ -208,7 +220,7 @@ const EventsListV2 = () => {
           if (!isToday(eventDate)) return false;
           break;
         case 'Tomorrow':
-          if (!isToday(eventDate) && !isSameDay(eventDate, tomorrow)) return false;
+          if (!isSameDay(eventDate, tomorrow)) return false;
           break;
         case 'This Week':
           const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -227,16 +239,22 @@ const EventsListV2 = () => {
           break;
       }
 
-      // Apply other filters
-      if (filters.category !== 'All' && event.event_type !== filters.category) return false;
-      if (filters.venue !== 'All' && event.place_name !== filters.venue) return false;
-      if (filters.price !== 'All') {
+      // Apply other filters (multi-select)
+      if (!filters.category.includes('All') && !filters.category.includes(event.event_type || '')) return false;
+      if (!filters.venue.includes('All') && !filters.venue.includes(event.place_name || '')) return false;
+      if (!filters.price.includes('All')) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
-        if (filters.price === 'Free' && !lowerCasePrice.includes('free')) return false;
-        if (filters.price === 'Paid' && (lowerCasePrice.includes('free') || lowerCasePrice.includes('donation') || !lowerCasePrice)) return false;
-        if (filters.price === 'Donation' && !lowerCasePrice.includes('donation')) return false;
+        const isFree = lowerCasePrice.includes('free');
+        const isDonation = lowerCasePrice.includes('donation');
+        const isPaid = !isFree && !isDonation && !!lowerCasePrice;
+
+        let priceMatch = false;
+        if (filters.price.includes('Free') && isFree) priceMatch = true;
+        if (filters.price.includes('Paid') && isPaid) priceMatch = true;
+        if (filters.price.includes('Donation') && isDonation) priceMatch = true;
+        if (!priceMatch) return false;
       }
-      if (filters.area !== 'All' && event.geographical_state !== filters.area) return false;
+      if (!filters.area.includes('All') && !filters.area.includes(event.geographical_state || '')) return false;
       return true;
     });
 
@@ -313,6 +331,7 @@ const EventsListV2 = () => {
                     onShare={handleShare}
                     onDelete={handleDelete}
                     onViewDetails={handleViewDetails}
+                    isFeaturedToday={isToday(parseISO(event.event_date))} // Pass prop for badge
                   />
                 ))}
               </div>
@@ -330,6 +349,7 @@ const EventsListV2 = () => {
                     onShare={handleShare}
                     onDelete={handleDelete}
                     onViewDetails={handleViewDetails}
+                    isFeaturedToday={isToday(parseISO(event.event_date))} // Pass prop for badge
                   />
                 ))}
               </div>

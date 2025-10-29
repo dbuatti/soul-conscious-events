@@ -30,11 +30,11 @@ const HeaderV2 = () => {
 
   // This state is specifically for the mobile filter dropdowns within the sheet
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
-    date: 'All Upcoming',
-    category: 'All',
-    venue: 'All',
-    price: 'All',
-    area: 'All',
+    date: 'Today',
+    category: ['All'],
+    venue: ['All'],
+    price: ['All'],
+    area: ['All'],
   });
 
   const handleFilterChange = (newFilters: FilterDropdownsV2Props['currentFilters']) => {

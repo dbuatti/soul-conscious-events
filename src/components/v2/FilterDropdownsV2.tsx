@@ -12,15 +12,15 @@ import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas, v2DateOptions } f
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
-export interface FilterDropdownsV2Props { // Exporting the interface
+export interface FilterDropdownsV2Props {
   currentFilters: {
-    date: string; // New date filter
-    category: string;
-    venue: string;
-    price: string;
-    area: string;
+    date: string;
+    category: string[]; // Changed to string[] for multi-select
+    venue: string[];     // Changed to string[] for multi-select
+    price: string[];     // Changed to string[] for multi-select
+    area: string[];      // Changed to string[] for multi-select
   };
-  onFilterChange: (filters: { date: string; category: string; venue: string; price: string; area: string; }) => void;
+  onFilterChange: (filters: FilterDropdownsV2Props['currentFilters']) => void;
   isMobile?: boolean;
 }
 
@@ -29,19 +29,53 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
   const [areaSearchTerm, setAreaSearchTerm] = useState('');
 
-  const handleCheckboxChange = (filterType: keyof FilterDropdownsV2Props['currentFilters'], value: string) => {
+  const handleSingleSelectChange = (filterType: 'date', value: string) => {
     onFilterChange({
       ...currentFilters,
-      [filterType]: currentFilters[filterType] === value ? 'All' : value, // Toggle selection
+      [filterType]: value,
     });
   };
 
-  const renderDropdownContent = (
-    filterType: keyof FilterDropdownsV2Props['currentFilters'],
+  const handleMultiSelectChange = (filterType: 'category' | 'venue' | 'price' | 'area', value: string) => {
+    const currentValues = currentFilters[filterType];
+    let newValues: string[];
+
+    if (value === 'All') {
+      newValues = ['All']; // Selecting 'All' deselects others
+    } else if (currentValues.includes('All')) {
+      newValues = [value]; // If 'All' was selected, deselect it and select current
+    } else if (currentValues.includes(value)) {
+      newValues = currentValues.filter(item => item !== value);
+      if (newValues.length === 0) newValues = ['All']; // If all deselected, default to 'All'
+    } else {
+      newValues = [...currentValues, value];
+    }
+    onFilterChange({
+      ...currentFilters,
+      [filterType]: newValues,
+    });
+  };
+
+  const getTriggerText = (filterType: keyof FilterDropdownsV2Props['currentFilters'], label: string) => {
+    const values = currentFilters[filterType];
+    if (Array.isArray(values)) {
+      if (values.includes('All') || values.length === 0) {
+        return `${label}: All`;
+      }
+      if (values.length === 1) {
+        return `${label}: ${values[0]}`;
+      }
+      return `${label} (${values.length})`;
+    }
+    return `${label}: ${values}`; // For single-select like 'date'
+  };
+
+  const renderMultiSelectDropdownContent = (
+    filterType: 'category' | 'venue' | 'price' | 'area',
     options: string[],
-    searchTerm: string | null, // Can be null for date/price
-    setSearchTerm: ((term: string) => void) | null, // Can be null for date/price
-    placeholder: string | null // Can be null for date/price
+    searchTerm: string | null,
+    setSearchTerm: ((term: string) => void) | null,
+    placeholder: string | null
   ) => {
     const filteredOptions = searchTerm
       ? options.filter(option => option.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -64,8 +98,8 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
           {filteredOptions.map((option) => (
             <DropdownMenuCheckboxItem
               key={option}
-              checked={currentFilters[filterType] === option}
-              onCheckedChange={() => handleCheckboxChange(filterType, option)}
+              checked={currentFilters[filterType].includes(option)}
+              onCheckedChange={() => handleMultiSelectChange(filterType, option)}
               className="cursor-pointer"
             >
               {option}
@@ -76,13 +110,13 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     );
   };
 
-  const renderSimpleDropdownContent = (filterType: keyof FilterDropdownsV2Props['currentFilters'], options: string[]) => (
+  const renderSingleSelectDropdownContent = (filterType: 'date', options: string[]) => (
     <DropdownMenuContent className="w-48 p-2 dark:bg-card dark:border-border">
       {options.map((option) => (
         <DropdownMenuCheckboxItem
           key={option}
           checked={currentFilters[filterType] === option}
-          onCheckedChange={() => handleCheckboxChange(filterType, option)}
+          onCheckedChange={() => handleSingleSelectChange(filterType, option)}
           className="cursor-pointer"
         >
           {option}
@@ -97,46 +131,46 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-full justify-between">
-              Today: {currentFilters.date === 'All Upcoming' ? 'All Upcoming' : currentFilters.date} <ChevronDown className="ml-2 h-4 w-4" />
+              {getTriggerText('date', 'Today')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          {renderSimpleDropdownContent('date', v2DateOptions)}
+          {renderSingleSelectDropdownContent('date', v2DateOptions)}
         </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-full justify-between">
-              Category: {currentFilters.category === 'All' ? 'All' : currentFilters.category} <ChevronDown className="ml-2 h-4 w-4" />
+              {getTriggerText('category', 'Category')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          {renderDropdownContent('category', v2EventCategories, categorySearchTerm, setCategorySearchTerm, 'Search category')}
+          {renderMultiSelectDropdownContent('category', v2EventCategories, categorySearchTerm, setCategorySearchTerm, 'Search category')}
         </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-full justify-between">
-              Venue: {currentFilters.venue === 'All' ? 'All' : currentFilters.venue} <ChevronDown className="ml-2 h-4 w-4" />
+              {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          {renderDropdownContent('venue', v2Venues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
+          {renderMultiSelectDropdownContent('venue', v2Venues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
         </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-full justify-between">
-              Price: {currentFilters.price === 'All' ? 'All' : currentFilters.price} <ChevronDown className="ml-2 h-4 w-4" />
+              {getTriggerText('price', 'Price')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          {renderSimpleDropdownContent('price', v2PriceOptions)}
+          {renderMultiSelectDropdownContent('price', v2PriceOptions, null, null, null)}
         </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-full justify-between">
-              Area: {currentFilters.area === 'All' ? 'All' : currentFilters.area} <ChevronDown className="ml-2 h-4 w-4" />
+              {getTriggerText('area', 'Area')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          {renderDropdownContent('area', v2Areas, areaSearchTerm, setAreaSearchTerm, 'Search area')}
+          {renderMultiSelectDropdownContent('area', v2Areas, areaSearchTerm, setAreaSearchTerm, 'Search area')}
         </DropdownMenu>
       </div>
     );
@@ -147,46 +181,46 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-1">
-            Today <ChevronDown className="ml-1 h-4 w-4" />
+            {getTriggerText('date', 'Today')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        {renderSimpleDropdownContent('date', v2DateOptions)}
+        {renderSingleSelectDropdownContent('date', v2DateOptions)}
       </DropdownMenu>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-1">
-            Category <ChevronDown className="ml-1 h-4 w-4" />
+            {getTriggerText('category', 'Category')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        {renderDropdownContent('category', v2EventCategories, categorySearchTerm, setCategorySearchTerm, 'Search category')}
+        {renderMultiSelectDropdownContent('category', v2EventCategories, categorySearchTerm, setCategorySearchTerm, 'Search category')}
       </DropdownMenu>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-1">
-            Venue <ChevronDown className="ml-1 h-4 w-4" />
+            {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        {renderDropdownContent('venue', v2Venues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
+        {renderMultiSelectDropdownContent('venue', v2Venues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
       </DropdownMenu>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-1">
-            Price <ChevronDown className="ml-1 h-4 w-4" />
+            {getTriggerText('price', 'Price')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        {renderSimpleDropdownContent('price', v2PriceOptions)}
+        {renderMultiSelectDropdownContent('price', v2PriceOptions, null, null, null)}
       </DropdownMenu>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-1">
-            Area <ChevronDown className="ml-1 h-4 w-4" />
+            {getTriggerText('area', 'Area')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        {renderDropdownContent('area', v2Areas, areaSearchTerm, setAreaSearchTerm, 'Search area')}
+        {renderMultiSelectDropdownContent('area', v2Areas, areaSearchTerm, setAreaSearchTerm, 'Search area')}
       </DropdownMenu>
     </div>
   );
