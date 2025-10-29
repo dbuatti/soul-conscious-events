@@ -55,27 +55,9 @@ const App = () => (
             {/* Original App Routes */}
             <Route path="/" element={<Layout><EventsList /></Layout>} />
             <Route path="/events/:id" element={<Layout><EventDetailPage /></Layout>} />
-            <Route path="/submit-event" element={<Layout><SubmitEvent /></Layout>} />
-            <Route path="/contact" element={<Layout><Contact /></Layout>} />
-            <Route path="/about" element={<Layout><About /></Layout>} />
-            <Route path="/community-guidelines" element={<Layout><CommunityGuidelines /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />
-            <Route
-              path="/my-events"
-              element={
-                <ProtectedRoute>
-                  <Layout><MyEvents /></Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-bookmarks"
-              element={
-                <ProtectedRoute>
-                  <Layout><MyBookmarks /></Layout>
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/contact" element={<Layout><Contact /></Layout>} />
+            <Route path="/community-guidelines" element={<Layout><CommunityGuidelines /></Layout>} />
             <Route
               path="/admin/panel"
               element={
@@ -102,9 +84,27 @@ const App = () => (
             />
             <Route path="/map" element={<Layout><MapPage /></Layout>} />
 
-            {/* V2 Prototype Routes */}
+            {/* V2 Prototype Routes - now including more pages */}
             <Route path="/v2" element={<LayoutV2><EventsListV2 /></LayoutV2>} />
             <Route path="/v2/login" element={<LayoutV2><LoginV2 /></LayoutV2>} />
+            <Route path="/submit-event" element={<LayoutV2><SubmitEvent /></LayoutV2>} />
+            <Route path="/about" element={<LayoutV2><About /></LayoutV2>} />
+            <Route
+              path="/my-events"
+              element={
+                <ProtectedRoute>
+                  <LayoutV2><MyEvents /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-bookmarks"
+              element={
+                <ProtectedRoute>
+                  <LayoutV2><MyBookmarks /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/v2/account-settings"
               element={
