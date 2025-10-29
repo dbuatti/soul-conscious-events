@@ -33,10 +33,6 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
   const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
 
-  const dateDisplay = event.end_date && event.event_date !== event.end_date
-    ? `${format(parseISO(event.event_date), 'MMM d')} - ${format(parseISO(event.end_date), 'MMM d, yyyy')}`
-    : format(parseISO(event.event_date), 'MMM d, yyyy');
-
   const renderLocation = () => {
     const locationText = event.place_name || event.geographical_state;
     if (!locationText) return 'Location TBD';
@@ -58,9 +54,9 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   };
 
   return (
-    <Card className="group flex flex-col shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>
+    <Card className="group flex flex-row shadow-lg rounded-xl border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border">
       {event.image_url && (
-        <div className="relative w-full aspect-video overflow-hidden">
+        <div className="relative w-2/5 flex-shrink-0 aspect-square sm:aspect-video overflow-hidden"> {/* Adjusted width and aspect ratio */}
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           
@@ -100,7 +96,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           </Button>
         </div>
       )}
-      <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
+      <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between" onClick={() => onViewDetails(event)}> {/* Added onClick here */}
         <CardHeader className="p-0 pb-3 space-y-2">
           <CardTitle className="text-xl font-extrabold text-foreground leading-tight">
             {event.event_name}
@@ -122,9 +118,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-0 pt-3 flex-grow">
-          {event.description && <p className="text-foreground leading-relaxed text-sm line-clamp-2">{event.description}</p>}
-        </CardContent>
+        {/* Removed CardContent with description */}
         <CardFooter className="p-0 pt-4 flex justify-end space-x-2">
           <BookmarkButton eventId={event.id} size="icon" className="h-8 w-8" />
           {isCreatorOrAdmin && (
