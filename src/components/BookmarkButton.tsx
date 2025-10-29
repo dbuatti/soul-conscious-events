@@ -24,16 +24,16 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
         setLoading(true);
         const { data, error } = await supabase
           .from('user_bookmarks')
-          .select('event_id')
+          .select('*') // Changed to select all
           .eq('user_id', user.id)
           .eq('event_id', eventId)
-          .single();
+          .maybeSingle(); // Changed to maybeSingle()
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+        if (error) { // maybeSingle() will only return error for server issues, not for no rows found
           console.error('Error checking bookmark status:', error);
           toast.error('Failed to check bookmark status.');
         } else {
-          setIsBookmarked(!!data);
+          setIsBookmarked(!!data); // data will be null if no row found
         }
         setLoading(false);
       };

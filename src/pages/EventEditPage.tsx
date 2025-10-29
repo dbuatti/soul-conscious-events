@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useState, useEffect } from 'react';
+import { useForm } from '@hookform/resolvers/zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
@@ -224,7 +224,7 @@ const EventEditPage: React.FC = () => {
       special_notes: values.specialNotes || null,
       organizer_contact: values.organizerContact || null,
       event_type: values.eventType || null,
-      geographical_state: values.geographicalState || null,
+      geographicalState: values.geographicalState || null,
       image_url: finalImageUrl,
       discount_code: values.discountCode || null,
       google_maps_link: values.googleMapsLink || null, // Include new field
