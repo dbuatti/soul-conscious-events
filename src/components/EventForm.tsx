@@ -119,7 +119,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             name="endDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel htmlFor="endDate">End Date (Optional)</FormLabel>
+                <FormLabel htmlFor="endDate">End Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -157,7 +157,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="eventTime"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="eventTime">Time (Optional)</FormLabel>
+              <FormLabel htmlFor="eventTime">Time</FormLabel>
               <FormControl>
                 <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-primary" />
               </FormControl>
@@ -171,7 +171,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="placeName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="placeName">Place Name (Optional)</FormLabel>
+              <FormLabel htmlFor="placeName">Place Name</FormLabel>
               <FormControl>
                 <GooglePlaceAutocomplete
                   form={form}
@@ -193,7 +193,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             name="fullAddress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel htmlFor="fullAddress">Address</FormLabel> {/* Changed label */}
+                <FormLabel htmlFor="fullAddress">Address</FormLabel>
                 <FormControl>
                   <Input
                     id="fullAddress"
@@ -222,7 +222,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             name="geographicalState"
             render={({ field }) => (
               <FormItem>
-                <FormLabel htmlFor="geographicalState">State</FormLabel> {/* Changed label */}
+                <FormLabel htmlFor="geographicalState">State</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
@@ -248,7 +248,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="googleMapsLink"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="googleMapsLink">Google Maps Link (Optional)</FormLabel>
+              <FormLabel htmlFor="googleMapsLink">Google Maps Link</FormLabel>
               <FormControl>
                 <Input id="googleMapsLink" placeholder="e.g., https://maps.app.goo.gl/..." {...field} className="focus-visible:ring-primary" />
               </FormControl>
@@ -262,7 +262,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="description">Description (Optional)</FormLabel>
+              <FormLabel htmlFor="description">Description</FormLabel>
               <FormControl>
                 <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary" />
               </FormControl>
@@ -276,7 +276,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="ticketLink"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="ticketLink">Ticket/Booking Link (Optional)</FormLabel>
+              <FormLabel htmlFor="ticketLink">Ticket/Booking Link</FormLabel>
               <FormControl>
                 <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
               </FormControl>
@@ -290,9 +290,9 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="price">Price (Optional)</FormLabel>
+              <FormLabel htmlFor="price">Price</FormLabel>
               <FormControl>
-                <Input id="price" placeholder="e.g., $90, Free, $15-$20 donation" {...field} className="focus-visible:ring-primary" />
+                <Input id="price" placeholder="e.g., 90, Free, 15-20 donation" {...field} className="focus-visible:ring-primary" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -304,7 +304,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="specialNotes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="specialNotes">Special Notes (Optional)</FormLabel>
+              <FormLabel htmlFor="specialNotes">Special Notes</FormLabel>
               <FormControl>
                 <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary" />
               </FormControl>
@@ -318,7 +318,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="organizerContact"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="organizerContact">Organizer Name/Contact (Optional)</FormLabel>
+              <FormLabel htmlFor="organizerContact">Organizer Name/Contact</FormLabel>
               <FormControl>
                 <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-primary" />
               </FormControl>
@@ -332,7 +332,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="eventType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="eventType">Event Type (Optional)</FormLabel>
+              <FormLabel htmlFor="eventType">Event Type</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger id="eventType" className="focus-visible:ring-primary">
@@ -346,7 +346,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                     </SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
+                </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -357,7 +357,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="discountCode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="discountCode">Discount Code (Optional)</FormLabel>
+              <FormLabel htmlFor="discountCode">Discount Code</FormLabel>
               <FormControl>
                 <Input id="discountCode" placeholder="e.g., SOULFLOW10" {...field} className="focus-visible:ring-primary" />
               </FormControl>
