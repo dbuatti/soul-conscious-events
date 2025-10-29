@@ -134,7 +134,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const formattedStartDate = event.event_date
     ? format(parseISO(event.event_date), 'MMM d, yyyy')
     : 'Date TBD';
-  const formattedEndDate = event.end_date && event.event_date !== event.end_date
+  const formattedEndDate = event.end_date && event.event_date !== event.event_date
     ? format(parseISO(event.end_date), 'MMM d, yyyy')
     : '';
 
@@ -199,7 +199,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.price && (
               <p className="flex items-start text-foreground text-base leading-relaxed">
                 <DollarSign className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <span className="font-medium">Price: </span>
+                <span className="font-medium">Price:&nbsp;</span>
                 <span className="break-words">{event.price}</span>
                 {event.price.toLowerCase() === 'free' && (
                   <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
@@ -209,7 +209,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.event_type && (
               <p className="flex items-start text-foreground text-base leading-relaxed">
                 <Sparkles className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <span className="font-medium">Type: </span> {event.event_type}
+                <span className="font-medium">Type:&nbsp;</span> {event.event_type}
               </p>
             )}
           </section>
