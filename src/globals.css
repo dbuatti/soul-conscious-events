@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 17%;
 
-    --primary: 39 29% 60%; /* muted antique gold #B79C6D */
+    --primary: 39 29% 50%; /* muted antique gold #A08A60 */
     --primary-foreground: 0 0% 100%; /* white text on primary */
 
     --secondary: 39 29% 77%; /* pale sand gold #D7CBB3 */
@@ -31,17 +31,20 @@
 
     --border: 0 0% 77%; /* cool neutral grey for subtle structure #C4C4C4 */
     --input: 0 0% 77%;
-    --ring: 39 29% 60%; /* Same as primary */
+    --ring: 39 29% 50%; /* Same as primary */
+
+    --link: 39 30% 36%; /* grounded olive-gold tone #7A6A40 */
+    --link-hover: 39 30% 66%; /* brushed gold highlight #C8B589 (same as accent) */
 
     /* Sidebar colors (adjusting to new scheme) */
     --sidebar-background: 30 10% 97%;
     --sidebar-foreground: 0 0% 17%;
-    --sidebar-primary: 39 29% 60%;
+    --sidebar-primary: 39 29% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 39 30% 66%;
     --sidebar-accent-foreground: 0 0% 17%;
     --sidebar-border: 0 0% 77%;
-    --sidebar-ring: 39 29% 60%;
+    --sidebar-ring: 39 29% 50%;
   }
 
   .dark {
@@ -73,6 +76,9 @@
     --border: 0 0% 35%; /* Slightly lighter smoke grey for borders */
     --input: 0 0% 25%; /* Darker than muted, lighter than secondary */
     --ring: 42 29% 61%; /* Same as primary */
+
+    --link: 42 29% 61%; /* Using primary for links in dark mode for now */
+    --link-hover: 39 30% 74%; /* Using accent for link hover in dark mode */
 
     /* Sidebar colors (adjusting to new scheme) */
     --sidebar-background: 0 0% 12%;
