@@ -300,33 +300,33 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
         <DialogFooter className="flex flex-wrap justify-end gap-2 mt-4">
           <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" />
-          <Button variant="outline" onClick={onClose} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+          <Button variant="ghost" onClick={onClose} className="transition-all duration-300 ease-in-out transform hover:scale-105">
             {cameFromCalendar ? 'Back to Calendar' : 'Close'}
           </Button>
           {event.full_address && (
             <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
-              <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button variant="ghost" className="text-primary hover:bg-accent transition-all duration-300 ease-in-out transform hover:scale-105">
                 <Globe className="mr-2 h-4 w-4" /> View on Map
               </Button>
             </a>
           )}
-          <Button onClick={() => {
+          <Button variant="ghost" onClick={() => {
             const eventUrl = `${window.location.origin}/events/${event.id}`;
             navigator.clipboard.writeText(eventUrl)
               .then(() => toast.success('Event link copied to clipboard!'))
               .catch(() => toast.error('Failed to copy link. Please try again.'));
-          }} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+          }} className="text-primary hover:bg-accent transition-all duration-300 ease-in-out transform hover:scale-105">
             <Share2 className="mr-2 h-4 w-4" /> Share Event
           </Button>
           {isCreatorOrAdmin && (
             <>
-              <Button variant="outline" onClick={() => { onClose(); navigate(`/edit-event/${event.id}`); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button variant="ghost" onClick={() => { onClose(); navigate(`/edit-event/${event.id}`); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                 <Edit className="mr-2 h-4 w-4" /> Edit
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  <Button variant="ghost" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Delete
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="dark:bg-card dark:border-border">

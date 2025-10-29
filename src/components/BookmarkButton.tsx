@@ -87,7 +87,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
 
   return (
     <Button
-      variant="outline"
+      variant="ghost" // Changed to ghost for minimalist look
       size={size}
       onClick={handleBookmarkToggle}
       disabled={loading || isSessionLoading}

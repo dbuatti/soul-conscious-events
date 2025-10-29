@@ -93,7 +93,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
 
           {/* Top Right Share Button */}
           <Button
-            variant="secondary"
+            variant="ghost" // Changed to ghost
             size="icon"
             onClick={(e) => onShare(event, e)}
             title="Share Event"
@@ -134,12 +134,12 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           {isCreatorOrAdmin && (
             <>
               <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
-                <Button variant="outline" size="icon" title="Edit Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button variant="ghost" size="icon" title="Edit Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                   <Edit className="h-4 w-4" />
                 </Button>
               </Link>
-              <Button variant="destructive" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
-                <Trash2 className="h-4 w-4" />
+              <Button variant="ghost" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Trash2 className="h-4 w-4 text-destructive" /> {/* Added text-destructive */}
               </Button>
             </>
           )}
