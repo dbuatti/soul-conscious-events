@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2, Copy } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2, Copy, Sparkles } from 'lucide-react'; // Added Sparkles for event type
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -29,6 +29,7 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator'; // Import Separator
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 
@@ -131,10 +132,10 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
   const formattedStartDate = event.event_date
-    ? format(parseISO(event.event_date), 'PPP')
+    ? format(parseISO(event.event_date), 'MMM d, yyyy')
     : 'Date TBD';
-  const formattedEndDate = event.end_date
-    ? format(parseISO(event.end_date), 'PPP')
+  const formattedEndDate = event.end_date && event.event_date !== event.end_date
+    ? format(parseISO(event.end_date), 'MMM d, yyyy')
     : '';
 
   const dateDisplay =
@@ -145,204 +146,205 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
-        <DialogHeader className="text-center">
-          <DialogTitle className="text-3xl font-bold text-foreground">{event.event_name}</DialogTitle>
-          <DialogDescriptionUI className="text-muted-foreground">
-            Details about this soulful event.
-          </DialogDescriptionUI>
+        <DialogHeader className="text-center pt-6 pb-4"> {/* Increased padding */}
+          <DialogTitle className="text-3xl font-bold text-foreground mb-2">{event.event_name}</DialogTitle>
+          {/* Top Section Simplification */}
+          <div className="flex flex-wrap justify-center items-center text-sm text-muted-foreground gap-x-3 gap-y-1">
+            <span className="flex items-center">
+              <Calendar className="mr-1 h-3.5 w-3.5 text-primary" /> {dateDisplay}
+            </span>
+            {event.event_time && (
+              <span className="flex items-center">
+                <Clock className="mr-1 h-3.5 w-3.5 text-primary" /> {event.event_time}
+              </span>
+            )}
+            {(event.place_name || event.geographical_state) && (
+              <span className="flex items-center">
+                <MapPin className="mr-1 h-3.5 w-3.5 text-primary" /> {event.place_name || event.geographical_state}
+              </span>
+            )}
+          </div>
         </DialogHeader>
 
         {event.image_url && (
-          <div className="mb-4">
+          <div className="mb-6 rounded-lg overflow-hidden shadow-lg"> {/* Added rounded-lg and shadow */}
             <a href={event.image_url} target="_blank" rel="noopener noreferrer">
               <img
                 src={event.image_url}
                 alt={`Image for ${event.event_name}`}
-                className="w-full h-64 object-cover rounded-lg shadow-lg"
+                className="w-full h-64 object-cover" // Removed rounded-lg here as it's on parent div
                 loading="lazy"
               />
             </a>
           </div>
         )}
 
-        <Card className="shadow-lg rounded-lg border-none dark:bg-secondary dark:border-border">
-          <CardHeader className="pb-3">
-            <div className="flex flex-wrap items-center text-muted-foreground text-sm sm:text-base mb-2">
-              <Calendar className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
-              <span className="font-medium">{dateDisplay}</span>
-              {event.event_time && (
-                <>
-                  <Clock className="ml-4 mr-2 h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="font-medium">{event.event_time}</span>
-                </>
-              )}
-            </div>
-            {(event.place_name || event.full_address || event.geographical_state) && (
-              <div className="flex flex-col items-start text-muted-foreground text-sm sm:text-base">
-                {event.place_name && (
-                  <div className="flex items-center mb-1">
-                    <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
-                    <Badge variant="secondary" className="bg-accent text-accent-foreground py-1 px-2">
-                      {event.place_name}
-                    </Badge>
-                  </div>
-                )}
-                {event.full_address && (
-                  <div className="flex items-center mb-1">
-                    {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0" />}
-                    <a
-                      href={googleMapsLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      {event.full_address}
-                    </a>
-                  </div>
-                )}
-                {event.geographical_state && (
-                  <div className="flex items-center">
-                    <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
-                    <Badge variant="secondary" className="bg-accent text-accent-foreground py-1 px-2">
-                      {event.geographical_state}
-                    </Badge>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4 pt-2">
-            {event.description && (
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">Description:</h3>
-                <p className="text-foreground whitespace-pre-wrap">{event.description}</p>
-              </div>
-            )}
-            {event.price && (
-              <p className="flex items-start text-foreground">
-                <DollarSign className="mr-2 h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <span className="flex-1 min-w-0">
-                  <span className="font-medium">Price: </span>
-                  <span className="break-words">{event.price}</span>
-                  {event.price.toLowerCase() === 'free' && (
-                    <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
-                  )}
-                </span>
+        <div className="px-4 sm:px-6 pb-4 space-y-6"> {/* Main content wrapper with increased padding */}
+          {/* 🪷 Event Overview */}
+          <section className="space-y-2">
+            <h3 className="text-xs uppercase font-semibold text-muted-foreground mb-2">Event Overview</h3>
+            {event.full_address && (
+              <p className="flex items-start text-foreground text-base leading-relaxed">
+                <MapPin className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <a
+                  href={googleMapsLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  {event.full_address}
+                </a>
               </p>
             )}
-            {event.ticket_link && (
-              <div className="flex items-center">
-                <LinkIcon className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
-                <a
-                  href={event.ticket_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline text-base transition-all duration-300 ease-in-out transform hover:scale-105"
-                  onClick={handleTicketLinkClick}
-                >
-                  Ticket/Booking Link
-                </a>
-              </div>
-            )}
-            {event.google_maps_link && (
-              <div className="flex items-center">
-                <Globe className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
-                <a
-                  href={event.google_maps_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline text-base transition-all duration-300 ease-in-out transform hover:scale-105"
-                >
-                  View on Google Maps
-                </a>
-              </div>
-            )}
-            {event.discount_code && (
-              <div className="flex items-center text-foreground">
-                <Badge variant="secondary" className="bg-primary/10 text-primary text-base py-1 px-2 mr-2">
-                  Discount Code: {event.discount_code}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopyCode(event.discount_code!)}
-                  className="transition-all duration-300 ease-in-out transform hover:scale-105"
-                >
-                  <Copy className="mr-2 h-4 w-4" /> Copy Code
-                </Button>
-              </div>
-            )}
-            {event.special_notes && (
-              <div>
-                <h3 className="font-semibold text-foreground mb-2 flex items-center">
-                  <Info className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
-                  Special Notes:
-                </h3>
-                <p className="text-foreground whitespace-pre-wrap pl-7">{event.special_notes}</p>
-              </div>
-            )}
-            {event.organizer_contact && (
-              <p className="flex items-center text-foreground">
-                <User className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
-                <span className="font-medium">Organizer: </span> {event.organizer_contact}
+            {event.price && (
+              <p className="flex items-start text-foreground text-base leading-relaxed">
+                <DollarSign className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <span className="font-medium">Price: </span>
+                <span className="break-words">{event.price}</span>
+                {event.price.toLowerCase() === 'free' && (
+                  <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
+                )}
               </p>
             )}
             {event.event_type && (
-              <p className="flex items-center text-foreground">
-                <Tag className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
-                <span className="font-medium">Event Type: </span> {event.event_type}
+              <p className="flex items-start text-foreground text-base leading-relaxed">
+                <Sparkles className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <span className="font-medium">Type: </span> {event.event_type}
               </p>
             )}
-          </CardContent>
-        </Card>
+          </section>
 
-        <DialogFooter className="flex flex-wrap justify-end gap-2 mt-4">
-          <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" />
-          <Button variant="outline" onClick={onClose} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-            {cameFromCalendar ? 'Back to Calendar' : 'Close'}
-          </Button>
-          {event.full_address && (
-            <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
-              <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-                <Globe className="mr-2 h-4 w-4" /> View on Map
-              </Button>
-            </a>
-          )}
-          <Button onClick={() => {
-            const eventUrl = `${window.location.origin}/events/${event.id}`;
-            navigator.clipboard.writeText(eventUrl)
-              .then(() => toast.success('Event link copied to clipboard!'))
-              .catch(() => toast.error('Failed to copy link. Please try again.'));
-          }} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-            <Share2 className="mr-2 h-4 w-4" /> Share Event
-          </Button>
-          {isCreatorOrAdmin && (
+          {event.description && (
             <>
-              <Button variant="outline" onClick={() => { onClose(); navigate(`/edit-event/${event.id}`); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                <Edit className="mr-2 h-4 w-4" /> Edit
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="dark:bg-card dark:border-border">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-foreground">Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-muted-foreground">
-                      This action cannot be undone. This will permanently delete your event
-                      and remove its data from our servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/80 text-destructive-foreground">Continue</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Separator className="my-4" />
+              {/* 🕊️ Description */}
+              <section className="space-y-2">
+                <h3 className="text-xs uppercase font-semibold text-muted-foreground mb-2">Description</h3>
+                <p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">{event.description}</p>
+              </section>
             </>
           )}
+
+          {(event.ticket_link || event.google_maps_link || event.special_notes || event.organizer_contact || event.discount_code) && (
+            <>
+              <Separator className="my-4" />
+              {/* 🌙 Details & Links */}
+              <section className="space-y-4">
+                <h3 className="text-xs uppercase font-semibold text-muted-foreground mb-2">More Details</h3>
+                {event.ticket_link && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">TICKETS</h4>
+                    <div className="flex items-center text-foreground text-base">
+                      <LinkIcon className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                      <a
+                        href={event.ticket_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline transition-all duration-300 ease-in-out transform hover:scale-105"
+                        onClick={handleTicketLinkClick}
+                      >
+                        Ticket/Booking Link
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {event.google_maps_link && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">LOCATION</h4>
+                    <div className="flex items-center text-foreground text-base">
+                      <Globe className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                      <a
+                        href={event.google_maps_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline transition-all duration-300 ease-in-out transform hover:scale-105"
+                      >
+                        View on Google Maps
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {event.discount_code && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">DISCOUNT CODE</h4>
+                    <div className="flex items-center text-foreground text-base">
+                      <Badge variant="secondary" className="bg-primary/10 text-primary py-1 px-2 mr-2">
+                        {event.discount_code}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCopyCode(event.discount_code!)}
+                        className="transition-all duration-300 ease-in-out transform hover:scale-105"
+                      >
+                        <Copy className="mr-2 h-4 w-4" /> Copy
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {event.special_notes && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">SPECIAL NOTES</h4>
+                    <p className="text-foreground whitespace-pre-wrap text-base leading-relaxed">{event.special_notes}</p>
+                  </div>
+                )}
+                {event.organizer_contact && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">ORGANIZER</h4>
+                    <p className="flex items-center text-foreground text-base leading-relaxed">
+                      <User className="mr-2 h-4 w-4 text-muted-foreground flex-shrink-0" /> {event.organizer_contact}
+                    </p>
+                  </div>
+                )}
+              </section>
+            </>
+          )}
+        </div>
+
+        <DialogFooter className="flex flex-wrap justify-between items-center p-4 sm:p-6 border-t border-border mt-4"> {/* Adjusted padding and border */}
+          <div className="flex gap-2">
+            <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" />
+            <Button variant="ghost" onClick={() => {
+              const eventUrl = `${window.location.origin}/events/${event.id}`;
+              navigator.clipboard.writeText(eventUrl)
+                .then(() => toast.success('Event link copied to clipboard!'))
+                .catch(() => toast.error('Failed to copy link. Please try again.'));
+            }} className="text-primary hover:bg-accent transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Share2 className="mr-2 h-4 w-4" /> Share
+            </Button>
+          </div>
+          <div className="flex gap-2 mt-2 sm:mt-0"> {/* Grouped right-aligned buttons */}
+            <Button variant="outline" onClick={onClose} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              {cameFromCalendar ? 'Back to Calendar' : 'Close'}
+            </Button>
+            {isCreatorOrAdmin && (
+              <>
+                <Button variant="outline" onClick={() => { onClose(); navigate(`/edit-event/${event.id}`); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Edit className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="dark:bg-card dark:border-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-foreground">Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription className="text-muted-foreground">
+                        This action cannot be undone. This will permanently delete your event
+                        and remove its data from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/80 text-destructive-foreground">Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
