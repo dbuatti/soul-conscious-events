@@ -63,11 +63,13 @@ const MyBookmarks: React.FC = () => {
           special_notes,
           organizer_contact,
           event_type,
-          state,
+          approval_status,
+          geographical_state,
           image_url,
           user_id,
           is_deleted,
-          discount_code
+          discount_code,
+          google_maps_link
         )
       `)
       .eq('user_id', user.id)

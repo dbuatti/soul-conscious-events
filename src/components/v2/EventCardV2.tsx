@@ -106,7 +106,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
       <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between">
         <CardHeader className="p-0 pb-2">
           <CardTitle className="text-lg sm:text-xl font-bold text-foreground mb-1">{event.event_name}</CardTitle>
-          <CardDescription className="flex flex-col text-muted-foreground text-xs sm:text-sm">
+          {/* Changed CardDescription to a div to fix nesting warning */}
+          <div className="flex flex-col text-muted-foreground text-xs sm:text-sm">
             <div className="flex items-center mb-1">
               <Clock className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />
               {event.event_time || 'Time TBD'}
@@ -124,7 +125,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
                 {event.price}
               </div>
             )}
-          </CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="p-0 pt-2 flex-grow">
           {event.description && <p className="text-foreground leading-relaxed text-xs sm:text-sm line-clamp-2">{event.description}</p>}

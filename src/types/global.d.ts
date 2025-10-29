@@ -72,14 +72,6 @@ declare namespace google {
       region?: string;
     }
 
-    interface GeocoderComponentRestrictions {
-      route?: string;
-      locality?: string;
-      administrativeArea?: string;
-      country?: string;
-      postalCode?: string;
-    }
-
     type GeocoderStatus = 'OK' | 'ZERO_RESULTS' | 'OVER_QUERY_LIMIT' | 'REQUEST_DENIED' | 'INVALID_REQUEST' | 'UNKNOWN_ERROR';
 
     type GeocoderCallback = (results: GeocoderResult[] | null, status: GeocoderStatus) => void;
@@ -194,6 +186,14 @@ declare namespace google {
     class StreetViewPanorama {}
 
     namespace places {
+      // Declare the custom element interface
+      interface PlaceAutocompleteElement extends HTMLElement {
+        value: string; // Custom elements have a value property
+        addEventListener(type: 'gmp-placeselect', listener: (event: CustomEvent<{ place: PlaceResult }>) => void): void;
+        removeEventListener(type: 'gmp-placeselect', listener: (event: CustomEvent<{ place: PlaceResult }>) => void): void;
+        // Add other properties/methods if needed
+      }
+
       class Autocomplete {
         constructor(inputField: HTMLInputElement, options?: AutocompleteOptions);
         addListener(eventName: string, handler: Function): void;
@@ -215,6 +215,8 @@ declare namespace google {
       interface PlaceResult {
         formatted_address?: string;
         name?: string; // Added this line
+        id?: string; // Added place ID for geocoding
+        displayName?: string; // Added displayName for PlaceAutocompleteElement
         // Add other fields you might use, e.g., geometry, etc.
       }
     }

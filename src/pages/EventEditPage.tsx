@@ -25,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { eventTypes, australianStates } from '@/lib/constants';
 import { Event } from '@/types/event';
 import ImageUploadInput from '@/components/ImageUploadInput'; // Import the new component
+import GooglePlaceAutocomplete from '@/components/GooglePlaceAutocomplete'; // Import new component
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
@@ -55,7 +56,7 @@ const EventEditPage: React.FC = () => {
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
-  const placeNameInputRef = useRef<HTMLInputElement>(null);
+  // Removed placeNameInputRef as it's now handled by GooglePlaceAutocomplete
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); // State for preview URL
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
@@ -131,34 +132,7 @@ const EventEditPage: React.FC = () => {
     fetchEvent();
   }, [id, navigate, form]);
 
-  useEffect(() => {
-    if (placeNameInputRef.current && window.google && window.google.maps && window.google.maps.places) {
-      const melbourneBounds = new window.google.maps.LatLngBounds(
-        new window.google.maps.LatLng(-38.2, 144.5),
-        new window.google.maps.LatLng(-37.5, 145.5)
-      );
-
-      const autocomplete = new window.google.maps.places.Autocomplete(placeNameInputRef.current, {
-        bounds: melbourneBounds,
-        componentRestrictions: { country: 'au' },
-        fields: ['formatted_address', 'name'],
-      });
-
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        const fullAddress = place.formatted_address || '';
-        form.setValue('placeName', place.name || '', { shouldValidate: true });
-        form.setValue('fullAddress', fullAddress, { shouldValidate: true });
-
-        const extractedState = extractAustralianState(fullAddress);
-        if (extractedState) {
-          form.setValue('geographicalState', extractedState, { shouldValidate: true });
-        } else {
-          form.setValue('geographicalState', '', { shouldValidate: true });
-        }
-      });
-    }
-  }, [form]);
+  // Removed useEffect for Autocomplete, now handled by GooglePlaceAutocomplete component
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
@@ -421,7 +395,14 @@ const EventEditPage: React.FC = () => {
             <FormItem>
               <FormLabel htmlFor="placeName">Place Name (Optional)</FormLabel>
               <FormControl>
-                <Input id="placeName" placeholder="e.g., Art of Living Centre" {...field} ref={placeNameInputRef} className="focus-visible:ring-primary" />
+                <GooglePlaceAutocomplete
+                  form={form}
+                  name="placeName"
+                  addressName="fullAddress"
+                  stateName="geographicalState"
+                  placeholder="e.g., Art of Living Centre"
+                  className="focus-visible:ring-primary"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
