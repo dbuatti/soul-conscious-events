@@ -8,18 +8,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Search } from 'lucide-react';
-import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas } from '@/lib/v2/constants';
+import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
-interface FilterDropdownsV2Props {
+export interface FilterDropdownsV2Props { // Exporting the interface
   currentFilters: {
+    date: string; // New date filter
     category: string;
     venue: string;
     price: string;
     area: string;
   };
-  onFilterChange: (filters: { category: string; venue: string; price: string; area: string; }) => void;
+  onFilterChange: (filters: { date: string; category: string; venue: string; price: string; area: string; }) => void;
   isMobile?: boolean;
 }
 
@@ -28,7 +29,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
   const [areaSearchTerm, setAreaSearchTerm] = useState('');
 
-  const handleCheckboxChange = (filterType: keyof typeof currentFilters, value: string) => {
+  const handleCheckboxChange = (filterType: keyof FilterDropdownsV2Props['currentFilters'], value: string) => {
     onFilterChange({
       ...currentFilters,
       [filterType]: currentFilters[filterType] === value ? 'All' : value, // Toggle selection
@@ -36,27 +37,29 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
   };
 
   const renderDropdownContent = (
-    filterType: keyof typeof currentFilters,
+    filterType: keyof FilterDropdownsV2Props['currentFilters'],
     options: string[],
-    searchTerm: string,
-    setSearchTerm: (term: string) => void,
-    placeholder: string
+    searchTerm: string | null, // Can be null for date/price
+    setSearchTerm: ((term: string) => void) | null, // Can be null for date/price
+    placeholder: string | null // Can be null for date/price
   ) => {
-    const filteredOptions = options.filter(option =>
-      option.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredOptions = searchTerm
+      ? options.filter(option => option.toLowerCase().includes(searchTerm.toLowerCase()))
+      : options;
 
     return (
       <DropdownMenuContent className="w-64 p-2 dark:bg-card dark:border-border">
-        <div className="relative mb-2">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={placeholder}
-            className="pl-8 focus-visible:ring-primary"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {searchTerm !== null && setSearchTerm !== null && placeholder !== null && (
+          <div className="relative mb-2">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={placeholder}
+              className="pl-8 focus-visible:ring-primary"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        )}
         <ScrollArea className="h-48">
           {filteredOptions.map((option) => (
             <DropdownMenuCheckboxItem
@@ -73,13 +76,13 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     );
   };
 
-  const renderPriceDropdownContent = (options: string[]) => (
+  const renderSimpleDropdownContent = (filterType: keyof FilterDropdownsV2Props['currentFilters'], options: string[]) => (
     <DropdownMenuContent className="w-48 p-2 dark:bg-card dark:border-border">
       {options.map((option) => (
         <DropdownMenuCheckboxItem
           key={option}
-          checked={currentFilters.price === option}
-          onCheckedChange={() => handleCheckboxChange('price', option)}
+          checked={currentFilters[filterType] === option}
+          onCheckedChange={() => handleCheckboxChange(filterType, option)}
           className="cursor-pointer"
         >
           {option}
@@ -91,6 +94,15 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
   if (isMobile) {
     return (
       <div className="flex flex-col space-y-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              Today: {currentFilters.date === 'All Upcoming' ? 'All Upcoming' : currentFilters.date} <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          {renderSimpleDropdownContent('date', v2DateOptions)}
+        </DropdownMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-full justify-between">
@@ -115,7 +127,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
               Price: {currentFilters.price === 'All' ? 'All' : currentFilters.price} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          {renderPriceDropdownContent(v2PriceOptions)}
+          {renderSimpleDropdownContent('price', v2PriceOptions)}
         </DropdownMenu>
 
         <DropdownMenu>
@@ -132,6 +144,15 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
   return (
     <div className="flex space-x-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="flex items-center gap-1">
+            Today <ChevronDown className="ml-1 h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        {renderSimpleDropdownContent('date', v2DateOptions)}
+      </DropdownMenu>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-1">
@@ -156,7 +177,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
             Price <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        {renderPriceDropdownContent(v2PriceOptions)}
+        {renderSimpleDropdownContent('price', v2PriceOptions)}
       </DropdownMenu>
 
       <DropdownMenu>

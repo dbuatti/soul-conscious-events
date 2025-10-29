@@ -51,3 +51,10 @@ export const v2Areas = [
   'Regional QLD',
   'Other Area',
 ];
+
+export const v2DateOptions = [
+  'Today',
+  'This Week',
+  'This Month',
+  'All Upcoming',
+];

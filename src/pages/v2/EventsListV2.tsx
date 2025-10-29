@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
-import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas } from '@/lib/v2/constants';
+import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas, v2DateOptions } from '@/lib/v2/constants';
+import FilterDropdownsV2 from '@/components/v2/FilterDropdownsV2'; // Import FilterDropdownsV2
 
 const EVENTS_PER_LOAD = 6; // Number of events to load at a time
 
@@ -22,6 +23,7 @@ const EventsListV2 = () => {
   const [offset, setOffset] = useState(0);
 
   const [filters, setFilters] = useState({
+    date: 'All Upcoming', // New date filter
     category: 'All',
     venue: 'All',
     price: 'All',
@@ -64,6 +66,30 @@ const EventsListV2 = () => {
     now.setHours(0, 0, 0, 0);
 
     let filtered = allEvents.filter(event => {
+      const eventDate = parseISO(event.event_date);
+
+      // Apply date filter
+      switch (filters.date) {
+        case 'Today':
+          if (!isToday(eventDate)) return false;
+          break;
+        case 'This Week':
+          const startW = startOfWeek(now, { weekStartsOn: 1 });
+          const endW = endOfWeek(now, { weekStartsOn: 1 });
+          if (!(eventDate >= startW && eventDate <= endW)) return false;
+          break;
+        case 'This Month':
+          const startM = startOfMonth(now);
+          const endM = endOfMonth(now);
+          if (!(eventDate >= startM && eventDate <= endM)) return false;
+          break;
+        case 'All Upcoming':
+          if (isPast(eventDate) && !isToday(eventDate)) return false; // Only show future or today
+          break;
+        default:
+          break;
+      }
+
       // Apply category filter
       if (filters.category !== 'All' && event.event_type !== filters.category) {
         return false;
@@ -85,9 +111,6 @@ const EventsListV2 = () => {
       }
       return true;
     });
-
-    // Only show upcoming or today's events for the main list
-    filtered = filtered.filter(event => isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date)));
 
     setDisplayedEvents(filtered.slice(0, EVENTS_PER_LOAD));
     setOffset(EVENTS_PER_LOAD);
@@ -100,6 +123,30 @@ const EventsListV2 = () => {
     now.setHours(0, 0, 0, 0);
 
     let filtered = allEvents.filter(event => {
+      const eventDate = parseISO(event.event_date);
+
+      // Apply date filter
+      switch (filters.date) {
+        case 'Today':
+          if (!isToday(eventDate)) return false;
+          break;
+        case 'This Week':
+          const startW = startOfWeek(now, { weekStartsOn: 1 });
+          const endW = endOfWeek(now, { weekStartsOn: 1 });
+          if (!(eventDate >= startW && eventDate <= endW)) return false;
+          break;
+        case 'This Month':
+          const startM = startOfMonth(now);
+          const endM = endOfMonth(now);
+          if (!(eventDate >= startM && eventDate <= endM)) return false;
+          break;
+        case 'All Upcoming':
+          if (isPast(eventDate) && !isToday(eventDate)) return false; // Only show future or today
+          break;
+        default:
+          break;
+      }
+
       // Apply category filter
       if (filters.category !== 'All' && event.event_type !== filters.category) {
         return false;
@@ -121,9 +168,6 @@ const EventsListV2 = () => {
       }
       return true;
     });
-
-    // Only show upcoming or today's events for the main list
-    filtered = filtered.filter(event => isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date)));
 
     const nextEvents = filtered.slice(offset, offset + EVENTS_PER_LOAD);
     setDisplayedEvents(prevEvents => [...prevEvents, ...nextEvents]);
@@ -144,25 +188,40 @@ const EventsListV2 = () => {
     now.setHours(0, 0, 0, 0);
 
     let sectionFilteredEvents = allEvents.filter(event => {
-      // Apply category filter
-      if (filters.category !== 'All' && event.event_type !== filters.category) {
-        return false;
+      const eventDate = parseISO(event.event_date);
+
+      // Apply date filter from main filters state
+      switch (filters.date) {
+        case 'Today':
+          if (!isToday(eventDate)) return false;
+          break;
+        case 'This Week':
+          const startW = startOfWeek(now, { weekStartsOn: 1 });
+          const endW = endOfWeek(now, { weekStartsOn: 1 });
+          if (!(eventDate >= startW && eventDate <= endW)) return false;
+          break;
+        case 'This Month':
+          const startM = startOfMonth(now);
+          const endM = endOfMonth(now);
+          if (!(eventDate >= startM && eventDate <= endM)) return false;
+          break;
+        case 'All Upcoming':
+          if (isPast(eventDate) && !isToday(eventDate)) return false; // Only show future or today
+          break;
+        default:
+          break;
       }
-      // Apply venue filter (using place_name)
-      if (filters.venue !== 'All' && event.place_name !== filters.venue) {
-        return false;
-      }
-      // Apply price filter
+
+      // Apply other filters
+      if (filters.category !== 'All' && event.event_type !== filters.category) return false;
+      if (filters.venue !== 'All' && event.place_name !== filters.venue) return false;
       if (filters.price !== 'All') {
         const lowerCasePrice = event.price?.toLowerCase() || '';
         if (filters.price === 'Free' && !lowerCasePrice.includes('free')) return false;
         if (filters.price === 'Paid' && (lowerCasePrice.includes('free') || lowerCasePrice.includes('donation') || !lowerCasePrice)) return false;
         if (filters.price === 'Donation' && !lowerCasePrice.includes('donation')) return false;
       }
-      // Apply area filter (using geographical_state)
-      if (filters.area !== 'All' && event.geographical_state !== filters.area) {
-        return false;
-      }
+      if (filters.area !== 'All' && event.geographical_state !== filters.area) return false;
       return true;
     });
 
@@ -209,7 +268,10 @@ const EventsListV2 = () => {
 
   return (
     <div className="w-full max-w-screen-lg">
-      <h1 className="text-4xl font-bold text-foreground mb-8 text-center">SoulFlow V2 Events</h1>
+      {/* Filters below the header */}
+      <div className="mb-8 flex justify-center">
+        <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} />
+      </div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

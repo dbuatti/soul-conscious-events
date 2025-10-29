@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import FilterDropdownsV2 from './FilterDropdownsV2';
+import FilterDropdownsV2, { FilterDropdownsV2Props } from './FilterDropdownsV2'; // Import FilterDropdownsV2Props
 
 interface NavItem {
   to: string;
@@ -28,17 +28,19 @@ const HeaderV2 = () => {
   const isMobile = useIsMobile();
   const { user } = useSession();
 
-  const [filters, setFilters] = useState({
+  // This state is specifically for the mobile filter dropdowns within the sheet
+  const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
+    date: 'All Upcoming',
     category: 'All',
     venue: 'All',
     price: 'All',
     area: 'All',
   });
 
-  const handleFilterChange = (newFilters: typeof filters) => {
+  const handleFilterChange = (newFilters: FilterDropdownsV2Props['currentFilters']) => {
     setFilters(newFilters);
     // In a real app, this would trigger a re-fetch of events in EventsListV2
-    console.log('Applied filters:', newFilters);
+    console.log('Applied mobile filters:', newFilters);
   };
 
   const getButtonClass = (path: string) => {
@@ -90,10 +92,9 @@ const HeaderV2 = () => {
           </DropdownMenu>
         </div>
 
-        {/* Desktop Filters and User Menu */}
+        {/* Desktop User Menu (Filters are now below the header) */}
         {!isMobile ? (
           <div className="flex items-center space-x-4">
-            <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} />
             {user ? (
               <>
                 <Link to="/my-events">
@@ -138,7 +139,7 @@ const HeaderV2 = () => {
             <ThemeToggle />
           </div>
         ) : (
-          <React.Fragment> {/* Wrap mobile menu content in a Fragment */}
+          <React.Fragment>
             {/* Mobile Hamburger Menu */}
             <Sheet>
               <SheetTrigger asChild>
