@@ -72,25 +72,10 @@ const HeaderV2 = () => {
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-3 px-4 md:px-8 flex justify-center dark:bg-background dark:border-gray-800 sticky top-0 z-50">
       <div className="w-full max-w-2xl flex justify-between items-center"> {/* Changed to max-w-2xl */}
-        {/* Logo and Location Placeholder */}
-        <div className="flex items-center space-x-2">
-          <Link to="/v2" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
-            SoulFlow V2
-          </Link>
-          {/* Placeholder for Location Selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
-                Select Location <ChevronDown className="ml-1 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="dark:bg-card dark:border-border">
-              <DropdownMenuItem disabled>
-                <span className="text-muted-foreground">Location selection coming soon!</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {/* Logo only */}
+        <Link to="/v2" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
+          SoulFlow V2
+        </Link>
 
         {/* Desktop User Menu (Filters are now below the header) */}
         {!isMobile ? (

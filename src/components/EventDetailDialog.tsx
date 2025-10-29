@@ -126,9 +126,9 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     );
   }
 
-  const googleMapsLink = event.full_address
+  const googleMapsLink = event.google_maps_link || (event.full_address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
-    : '#';
+    : '#');
 
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
@@ -243,6 +243,19 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                   onClick={handleTicketLinkClick}
                 >
                   Ticket/Booking Link
+                </a>
+              </div>
+            )}
+            {event.google_maps_link && (
+              <div className="flex items-center">
+                <Globe className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
+                <a
+                  href={event.google_maps_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline text-base transition-all duration-300 ease-in-out transform hover:scale-105"
+                >
+                  View on Google Maps
                 </a>
               </div>
             )}

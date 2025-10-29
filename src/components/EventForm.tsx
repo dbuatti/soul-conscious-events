@@ -30,7 +30,7 @@ const eventFormSchema = z.object({
   placeName: z.string().optional().or(z.literal('')),
   fullAddress: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
-  ticketLink: z.string().optional().or(z.literal('')),
+  ticketLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   price: z.string().optional().or(z.literal('')),
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
@@ -39,6 +39,7 @@ const eventFormSchema = z.object({
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
+  googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -230,6 +231,20 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                   }}
                   className="focus-visible:ring-primary"
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="googleMapsLink"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="googleMapsLink">Google Maps Link (Optional)</FormLabel>
+              <FormControl>
+                <Input id="googleMapsLink" placeholder="e.g., https://maps.app.goo.gl/..." {...field} className="focus-visible:ring-primary" />
               </FormControl>
               <FormMessage />
             </FormItem>

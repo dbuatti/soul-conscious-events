@@ -20,7 +20,7 @@ const eventFormSchema = z.object({
   placeName: z.string().optional().or(z.literal('')),
   fullAddress: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
-  ticketLink: z.string().optional().or(z.literal('')),
+  ticketLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   price: z.string().optional().or(z.literal('')),
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
@@ -29,6 +29,7 @@ const eventFormSchema = z.object({
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
+  googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -56,6 +57,7 @@ const SubmitEvent = () => {
       geographicalState: '',
       imageUrl: '',
       discountCode: '',
+      googleMapsLink: '', // Initialize new field
     },
   });
 
@@ -114,6 +116,7 @@ const SubmitEvent = () => {
       geographicalState: parsedData.geographicalState || '',
       imageUrl: parsedData.imageUrl || '',
       discountCode: parsedData.discountCode || '',
+      googleMapsLink: parsedData.googleMapsLink || '', // Set new field from AI parse
     });
     
     if (parsedData.imageUrl) {
@@ -189,6 +192,7 @@ const SubmitEvent = () => {
         geographical_state: values.geographicalState || null,
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
+        google_maps_link: values.googleMapsLink || null, // Include new field
         user_id: user?.id || null,
         approval_status: 'approved',
       };

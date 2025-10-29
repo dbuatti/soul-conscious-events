@@ -34,7 +34,7 @@ const eventFormSchema = z.object({
   placeName: z.string().optional().or(z.literal('')),
   fullAddress: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
-  ticketLink: z.string().optional().or(z.literal('')),
+  ticketLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   price: z.string().optional().or(z.literal('')),
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
@@ -43,6 +43,7 @@ const eventFormSchema = z.object({
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
+  googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
 });
 
 const EventEditPage: React.FC = () => {
@@ -73,6 +74,7 @@ const EventEditPage: React.FC = () => {
       geographicalState: '',
       imageUrl: '',
       discountCode: '',
+      googleMapsLink: '', // Initialize new field
     },
   });
 
@@ -117,6 +119,7 @@ const EventEditPage: React.FC = () => {
           geographicalState: data.geographical_state || '',
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
+          googleMapsLink: data.google_maps_link || '', // Set new field from fetched data
         });
         setImagePreviewUrl(data.image_url || null); // Set initial preview URL
       } else {
@@ -250,6 +253,7 @@ const EventEditPage: React.FC = () => {
       geographical_state: values.geographicalState || null,
       image_url: finalImageUrl,
       discount_code: values.discountCode || null,
+      google_maps_link: values.googleMapsLink || null, // Include new field
     }).eq('id', id);
 
     if (error) {
@@ -455,6 +459,20 @@ const EventEditPage: React.FC = () => {
 
         <FormField
           control={form.control}
+          name="googleMapsLink"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="googleMapsLink">Google Maps Link (Optional)</FormLabel>
+              <FormControl>
+                <Input id="googleMapsLink" placeholder="e.g., https://maps.app.goo.gl/..." {...field} className="focus-visible:ring-primary" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
@@ -651,6 +669,14 @@ const EventEditPage: React.FC = () => {
               <div className="grid grid-cols-4 items-center gap-4">
                 <p className="text-right font-medium text-foreground">Address:</p>
                 <p className="col-span-3 text-foreground">{previewData.fullAddress}</p>
+              </div>
+            )}
+            {previewData?.googleMapsLink && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-right font-medium text-foreground">Google Maps Link:</p>
+                <a href={previewData.googleMapsLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
+                  {previewData.googleMapsLink}
+                </a>
               </div>
             )}
             {previewData?.description && (

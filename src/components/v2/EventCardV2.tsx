@@ -45,6 +45,26 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
     return 'outline';
   };
 
+  const renderLocation = () => {
+    const locationText = event.place_name || event.geographical_state;
+    if (!locationText) return 'Location TBD';
+
+    if (event.google_maps_link) {
+      return (
+        <a
+          href={event.google_maps_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline"
+          onClick={(e) => e.stopPropagation()} // Prevent card click when clicking link
+        >
+          {locationText}
+        </a>
+      );
+    }
+    return locationText;
+  };
+
   return (
     <Card className="group flex flex-col sm:flex-row shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>
       {event.image_url && (
@@ -94,12 +114,10 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               <Calendar className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />
               {dateDisplay}
             </div>
-            {(event.place_name || event.geographical_state) && (
-              <div className="flex items-center mt-1">
-                <MapPin className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />
-                {event.place_name || event.geographical_state}
-              </div>
-            )}
+            <div className="flex items-center mt-1">
+              <MapPin className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />
+              {renderLocation()}
+            </div>
             {event.price && (
               <div className="flex items-center mt-1">
                 <DollarSign className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />

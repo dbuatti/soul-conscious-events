@@ -19,4 +19,5 @@ export interface Event {
   user_id?: string;
   is_deleted?: boolean;
   discount_code?: string;
+  google_maps_link?: string; // New field for Google Maps link
 }
