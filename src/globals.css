@@ -4,83 +4,83 @@
 
 @layer base {
   :root {
-    /* Light Mode: Warm Earthy Tones */
-    --background: 30 20% 98%; /* Very light beige/cream */
-    --foreground: 30 10% 20%; /* Deep, rich brown/charcoal */
+    /* Light Mode: Calming Greens & Warm Neutrals */
+    --background: 120 20% 98%; /* Very light sage green */
+    --foreground: 180 15% 25%; /* Deep, muted blue-green */
 
     --card: 0 0% 100%; /* Pure white for cards */
-    --card-foreground: 30 10% 20%;
+    --card-foreground: 180 15% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 30 10% 20%;
+    --popover-foreground: 180 15% 25%;
 
-    --primary: 15 70% 50%; /* Warm terracotta/rust */
+    --primary: 160 40% 45%; /* Soft, desaturated teal/sage green */
     --primary-foreground: 0 0% 98%; /* Light text on primary */
 
-    --secondary: 30 20% 90%; /* Light, muted beige */
-    --secondary-foreground: 30 10% 20%;
+    --secondary: 120 10% 90%; /* Light, muted grey-green */
+    --secondary-foreground: 180 15% 25%;
 
-    --muted: 30 15% 95%; /* Even lighter secondary for muted elements */
-    --muted-foreground: 30 10% 40%; /* Medium brown-grey for muted text */
+    --muted: 120 15% 95%; /* Even lighter secondary for muted elements */
+    --muted-foreground: 180 10% 45%; /* Medium grey-green for muted text */
 
-    --accent: 30 20% 85%; /* Slightly darker muted beige for accent */
-    --accent-foreground: 30 10% 20%;
+    --accent: 160 20% 80%; /* Slightly deeper muted green for accent */
+    --accent-foreground: 180 15% 25%;
 
     --destructive: 0 70% 40%; /* Deep red for destructive actions */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 30 10% 80%; /* Light, warm grey for borders */
-    --input: 30 10% 80%;
-    --ring: 15 70% 50%; /* Same as primary */
+    --border: 180 10% 85%; /* Light, cool grey for borders */
+    --input: 180 10% 85%;
+    --ring: 160 40% 45%; /* Same as primary */
 
-    --sidebar-background: 30 20% 95%; /* Lighter beige for sidebar */
-    --sidebar-foreground: 30 10% 20%;
-    --sidebar-primary: 15 70% 50%;
+    --sidebar-background: 120 20% 95%; /* Lighter sage green for sidebar */
+    --sidebar-foreground: 180 15% 25%;
+    --sidebar-primary: 160 40% 45%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 30 20% 85%;
-    --sidebar-accent-foreground: 30 10% 20%;
-    --sidebar-border: 30 10% 80%;
-    --sidebar-ring: 15 70% 50%;
+    --sidebar-accent: 160 20% 80%;
+    --sidebar-accent-foreground: 180 15% 25%;
+    --sidebar-border: 180 10% 85%;
+    --sidebar-ring: 160 40% 45%;
   }
 
   .dark {
-    /* Dark Mode: Sophisticated Dark Blue-Grey */
-    --background: 200 20% 10%; /* Deep dark blue-grey */
-    --foreground: 200 20% 85%; /* Soft, light grey/off-white */
+    /* Dark Mode: Deep Muted Blue-Greens */
+    --background: 180 20% 12%; /* Deep muted blue-green */
+    --foreground: 180 15% 80%; /* Soft, light grey-blue */
 
-    --card: 200 15% 12%; /* Slightly lighter dark blue-grey for cards */
-    --card-foreground: 200 20% 85%;
+    --card: 180 15% 15%; /* Slightly lighter dark blue-green for cards */
+    --card-foreground: 180 15% 80%;
 
-    --popover: 200 15% 12%;
-    --popover-foreground: 200 20% 85%;
+    --popover: 180 15% 15%;
+    --popover-foreground: 180 15% 80%;
 
-    --primary: 15 70% 60%; /* Brighter terracotta/rust for dark mode */
+    --primary: 160 40% 55%; /* Slightly brighter, but still soft, teal/sage green for dark mode */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 200 15% 18%; /* Medium dark blue-grey for secondary */
-    --secondary-foreground: 200 20% 85%;
+    --secondary: 180 15% 20%; /* Medium dark blue-green for secondary */
+    --secondary-foreground: 180 15% 80%;
 
-    --muted: 200 15% 22%;
-    --muted-foreground: 200 10% 60%;
+    --muted: 180 15% 25%;
+    --muted-foreground: 180 10% 60%;
 
-    --accent: 200 15% 25%;
-    --accent-foreground: 200 20% 85%;
+    --accent: 180 15% 30%;
+    --accent-foreground: 180 15% 80%;
 
     --destructive: 0 70% 40%; /* Deep red (consistent) */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 200 10% 30%;
-    --input: 200 10% 25%;
-    --ring: 15 70% 60%;
+    --border: 180 10% 35%;
+    --input: 180 10% 30%;
+    --ring: 160 40% 55%;
 
-    --sidebar-background: 200 15% 15%; /* Darker blue-grey for sidebar */
-    --sidebar-foreground: 200 20% 85%;
-    --sidebar-primary: 15 70% 60%;
+    --sidebar-background: 180 15% 18%; /* Darker blue-green for sidebar */
+    --sidebar-foreground: 180 15% 80%;
+    --sidebar-primary: 160 40% 55%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 200 15% 25%;
-    --sidebar-accent-foreground: 200 20% 85%;
-    --sidebar-border: 200 10% 30%;
-    --sidebar-ring: 15 70% 60%;
+    --sidebar-accent: 180 15% 30%;
+    --sidebar-accent-foreground: 180 15% 80%;
+    --sidebar-border: 180 10% 35%;
+    --sidebar-ring: 160 40% 55%;
   }
 }
 

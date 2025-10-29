@@ -68,7 +68,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   return (
     <Card className="group flex flex-col sm:flex-row shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>
       {event.image_url && (
-        <div className="relative w-full sm:w-48 aspect-video sm:aspect-square overflow-hidden flex-shrink-0"> {/* Increased width for image */}
+        <div className="relative w-full sm:w-48 aspect-video sm:aspect-square overflow-hidden flex-shrink-0">
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           
@@ -105,9 +105,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
       )}
       <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between">
         <CardHeader className="p-0 pb-2">
-          <CardTitle className="text-xl sm:text-2xl font-extrabold text-foreground mb-1 leading-tight">{event.event_name}</CardTitle> {/* Increased font size and weight */}
-          {/* Changed CardDescription to a div to fix nesting warning */}
-          <div className="flex flex-col text-muted-foreground text-sm sm:text-base space-y-1"> {/* Increased font size and spacing */}
+          <CardTitle className="text-xl sm:text-2xl font-extrabold text-foreground mb-1 leading-tight">{event.event_name}</CardTitle>
+          <div className="flex flex-col text-muted-foreground text-sm sm:text-base space-y-1">
             <div className="flex items-center">
               <Clock className="mr-2 h-4 w-4 flex-shrink-0 text-primary" />
               <span className="font-medium">{event.event_time || 'Time TBD'}</span>
@@ -128,10 +127,10 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           </div>
         </CardHeader>
         <CardContent className="p-0 pt-2 flex-grow">
-          {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>} {/* Increased line-clamp */}
+          {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
         </CardContent>
-        <CardFooter className="p-0 pt-3 flex justify-end space-x-2"> {/* Increased spacing */}
-          <BookmarkButton eventId={event.id} size="icon" className="h-8 w-8 sm:h-9 sm:w-9" /> {/* Increased button size */}
+        <CardFooter className="p-0 pt-3 flex justify-end space-x-2">
+          <BookmarkButton eventId={event.id} size="icon" className="h-8 w-8 sm:h-9 sm:w-9" />
           {isCreatorOrAdmin && (
             <>
               <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
