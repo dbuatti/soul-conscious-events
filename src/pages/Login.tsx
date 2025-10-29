@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button'; // Import Button for custom styling
 
 const Login = () => {
   const navigate = useNavigate();
@@ -20,20 +19,19 @@ const Login = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-background dark:to-background">
         <p className="text-lg text-foreground">Loading authentication...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8 bg-background">
-      <div className="w-full max-w-md bg-card p-8 rounded-xl shadow-lg border border-border">
-        <h2 className="text-3xl font-bold text-foreground text-center mb-6">Log In</h2>
-        <p className="text-center text-muted-foreground mb-8">Log In for Access to the Hottest Events in your area</p>
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
+      <div className="w-full max-w-md bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+        <h2 className="text-3xl font-bold text-foreground text-center mb-6">Sign In to SoulFlow</h2>
         <Auth
           supabaseClient={supabase}
-          providers={['google']} // Only Google provider for now as per image
+          providers={['google']}
           appearance={{
             theme: ThemeSupa,
             variables: {
@@ -50,14 +48,12 @@ const Login = () => {
                   defaultButtonBorder: 'hsl(var(--primary))',
                   defaultButtonBackgroundHover: 'hsl(var(--primary)/80%)',
                   defaultButtonText: 'hsl(var(--primary-foreground))',
-                  // Customizing social buttons to match the image
-                  // For Google button, we'll rely on default Auth UI styling or override with CSS if needed
                 },
               },
             },
           }}
-          theme="dark" // Force dark theme for Auth UI as per image
-          redirectTo={window.location.origin}
+          theme="dark" // Set default theme to dark for Auth UI
+          redirectTo={window.location.origin} // Redirect to home after login
           localization={{
             variables: {
               sign_in: {
@@ -65,8 +61,8 @@ const Login = () => {
                 password_label: 'Your Password',
                 email_input_placeholder: 'Your email address',
                 password_input_placeholder: 'Your Password',
-                button_label: 'Log In With Your Email', // Changed button text
-                social_provider_text: 'Sign up with {{provider}}',
+                button_label: 'Sign In',
+                social_provider_text: 'Sign in with {{provider}}',
                 link_text: 'Already have an account? Sign In',
               },
               sign_up: {
@@ -74,9 +70,9 @@ const Login = () => {
                 password_label: 'Create a Password',
                 email_input_placeholder: 'Your email address',
                 password_input_placeholder: 'Create a Password',
-                button_label: 'Sign Up With Your Email', // Changed button text
+                button_label: 'Sign Up',
                 social_provider_text: 'Sign up with {{provider}}',
-                link_text: 'Don\'t have an account? Create an Account',
+                link_text: 'Don\'t have an account? Sign Up',
               },
               forgotten_password: {
                 link_text: 'Forgot your password?',
@@ -84,13 +80,6 @@ const Login = () => {
             },
           }}
         />
-        {/* Custom "Create an Account" link to match image */}
-        <p className="text-center text-muted-foreground mt-4">
-          New to todo.today?{' '}
-          <Button variant="link" className="p-0 h-auto text-primary hover:underline" onClick={() => navigate('/login?action=signup')}>
-            Create an Account
-          </Button>
-        </p>
       </div>
     </div>
   );
