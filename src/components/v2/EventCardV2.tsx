@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { format, parseISO } from 'date-fns';
-import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, Tag } from 'lucide-react'; // Added Tag icon for category
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
@@ -64,8 +64,13 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           
-          {/* Top Left Badges */}
+          {/* Overlay Pills */}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+            {event.event_type && ( // Category as overlay pill
+              <Badge variant="secondary" className="bg-primary/80 text-primary-foreground text-xs px-2 py-0.5 font-semibold">
+                {event.event_type}
+              </Badge>
+            )}
             {isFeaturedToday && (
               <Badge variant="default" className="bg-primary text-primary-foreground text-xs px-2 py-0.5 font-semibold">
                 FEATURED TODAY
@@ -100,29 +105,21 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           <CardTitle className="text-xl font-extrabold text-foreground leading-tight">
             {event.event_name}
           </CardTitle>          
-          <div className="flex flex-wrap items-center text-muted-foreground text-sm space-x-2">
-            <div className="flex items-center">
-              <MapPin className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-              <span className="font-medium">{renderLocation()}</span>
-            </div>
-            {event.price && (
-              <div className="flex items-center">
-                <span className="mx-1">•</span>
-                <DollarSign className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                <span className="font-medium">{event.price}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center text-muted-foreground text-sm space-x-2">
+          <div className="flex flex-col text-muted-foreground text-sm space-y-1">
             <div className="flex items-center">
               <Clock className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
               <span className="font-medium">{event.event_time || 'Time TBD'}</span>
             </div>
             <div className="flex items-center">
-              <span className="mx-1">•</span>
-              <Calendar className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-              <span className="font-medium">{dateDisplay}</span>
+              <MapPin className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+              {renderLocation()}
             </div>
+            {event.price && (
+              <div className="flex items-center">
+                <DollarSign className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                <span className="font-medium">{event.price}</span>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-0 pt-3 flex-grow">
