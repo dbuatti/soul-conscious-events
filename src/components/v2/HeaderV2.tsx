@@ -27,7 +27,7 @@ const HeaderV2 = () => {
   const { user } = useSession();
 
   const getButtonClass = (path: string) => {
-    const isActive = location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
+    const isActive = location.pathname === path || (path === "/" && location.pathname === "/"); // Special handling for root path
     return cn(
       "w-full justify-start text-foreground hover:text-primary transition-colors duration-300 ease-in-out transform hover:scale-105",
       isActive && "font-bold text-primary"
@@ -47,19 +47,19 @@ const HeaderV2 = () => {
   const authenticatedNavItems: NavItem[] = [
     { to: "/submit-event", label: "Create Event", icon: PlusCircle },
     { to: "/my-events", label: "My Events", icon: CalendarCheck },
-    { to: "/v2/account-settings", label: "Account Settings", icon: Settings },
+    { to: "/account-settings", label: "Account Settings", icon: Settings },
     { to: "/about", label: "About", icon: Info },
   ];
 
   const unauthenticatedNavItems: NavItem[] = [
-    { to: "/v2/login", label: "Login / Sign Up", icon: LogIn },
+    { to: "/login", label: "Login / Sign Up", icon: LogIn },
     { to: "/about", label: "About", icon: Info },
   ];
 
   const adminNavItems: NavItem[] = [
-    { to: "/admin/panel", label: "Admin Panel", icon: UserCog },
-    { to: "/dev-space", label: "Dev Space", icon: UserCog },
-    { to: "/map", label: "Map", icon: UserCog },
+    { to: "/old/admin/panel", label: "Admin Panel (Old)", icon: UserCog },
+    { to: "/old/dev-space", label: "Dev Space (Old)", icon: UserCog },
+    { to: "/old/map", label: "Map (Old)", icon: UserCog },
   ];
 
   const isAdminUser = user?.email === 'daniele.buatti@gmail.com';
@@ -67,7 +67,7 @@ const HeaderV2 = () => {
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-3 px-4 md:px-8 flex justify-center dark:bg-background dark:border-gray-800 sticky top-0 z-50">
       <div className="w-full max-w-2xl flex justify-between items-center">
-        <Link to="/v2" className="flex flex-col items-start text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
+        <Link to="/" className="flex flex-col items-start text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
           <span className="text-2xl font-bold leading-none">SoulFlow 2.0</span>
           <span className="text-xs font-medium text-muted-foreground leading-none mt-1">Australia</span>
         </Link>

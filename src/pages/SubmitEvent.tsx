@@ -204,7 +204,7 @@ const SubmitEvent = () => {
         toast.error(`Failed to submit event: ${error.message}. Please try again.`, { id: loadingToastId });
       } else {
         toast.success('Event created successfully!', { id: loadingToastId });
-        navigate('/v2'); // Redirect to V2 main events page
+        navigate('/'); // Redirect to V2 main events page
       }
     } catch (error: any) {
       console.error('Unexpected error during event submission:', error);

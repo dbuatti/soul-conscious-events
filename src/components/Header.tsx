@@ -30,7 +30,7 @@ const Header = () => {
   const { user } = useSession();
 
   const getButtonClass = (path: string) => {
-    const isActive = location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
+    const isActive = location.pathname === path || (path !== "/old" && location.pathname.startsWith(path));
     return cn(
       "text-foreground hover:text-primary transition-all duration-300 ease-in-out transform hover:scale-105",
       isActive && "font-bold text-primary"
@@ -62,7 +62,7 @@ const Header = () => {
 
   // Reordered navigation items
   const navItems: NavItem[] = [
-    { to: "/", label: "Events" },
+    { to: "/old", label: "Events" },
     // { to: "/map", label: "Map", badge: "Beta" }, // Removed Map link
     { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick },
     { to: "/about", label: "About" },
@@ -70,18 +70,18 @@ const Header = () => {
   ];
 
   const adminNavItems: NavItem[] = [
-    { to: "/admin/panel", label: "Admin Panel" },
-    { to: "/dev-space", label: "Dev Space" },
-    { to: "/map", label: "Map" }, // Moved Map to admin section for debugging access
+    { to: "/old/admin/panel", label: "Admin Panel" },
+    { to: "/old/dev-space", label: "Dev Space" },
+    { to: "/old/map", label: "Map" }, // Moved Map to admin section for debugging access
   ];
 
-  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dev-space') || location.pathname.startsWith('/map');
+  const isAdminPage = location.pathname.startsWith('/old/admin') || location.pathname.startsWith('/old/dev-space') || location.pathname.startsWith('/old/map');
 
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
       <div className="w-full max-w-screen-lg flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
-          SoulFlow
+        <Link to="/old" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
+          SoulFlow (Old)
         </Link>
         {isMobile ? (
           <Sheet>
@@ -147,7 +147,7 @@ const Header = () => {
                 ) : (
                   <SheetClose asChild>
                     <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground" asChild>
-                      <Link to="/login">
+                      <Link to="/old/login">
                         Login
                       </Link>
                     </Button>
@@ -208,7 +208,7 @@ const Header = () => {
                 <LogOut className="mr-2 h-4 w-4" /> Logout
               </Button>
             ) : (
-              <Link to="/login">
+              <Link to="/old/login">
                 <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
                   Login
                 </Button>

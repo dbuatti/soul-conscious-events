@@ -52,41 +52,9 @@ const App = () => (
         <ScrollToTop />
         <SessionContextProvider>
           <Routes>
-            {/* Original App Routes */}
-            <Route path="/" element={<Layout><EventsList /></Layout>} />
-            <Route path="/events/:id" element={<Layout><EventDetailPage /></Layout>} />
-            <Route path="/login" element={<Layout><Login /></Layout>} />
-            <Route path="/contact" element={<Layout><Contact /></Layout>} />
-            <Route path="/community-guidelines" element={<Layout><CommunityGuidelines /></Layout>} />
-            <Route
-              path="/admin/panel"
-              element={
-                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
-                  <Layout><AdminPanel /></Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dev-space"
-              element={
-                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
-                  <Layout><DevSpace /></Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/edit-event/:id"
-              element={
-                <ProtectedRoute>
-                  <Layout><EventEditPage /></Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/map" element={<Layout><MapPage /></Layout>} />
-
-            {/* V2 Prototype Routes - now including more pages */}
-            <Route path="/v2" element={<LayoutV2><EventsListV2 /></LayoutV2>} />
-            <Route path="/v2/login" element={<LayoutV2><LoginV2 /></LayoutV2>} />
+            {/* V2 Prototype Routes - now the main routes */}
+            <Route path="/" element={<LayoutV2><EventsListV2 /></LayoutV2>} />
+            <Route path="/login" element={<LayoutV2><LoginV2 /></LayoutV2>} />
             <Route path="/submit-event" element={<LayoutV2><SubmitEvent /></LayoutV2>} />
             <Route path="/about" element={<LayoutV2><About /></LayoutV2>} />
             <Route
@@ -106,14 +74,55 @@ const App = () => (
               }
             />
             <Route
-              path="/v2/account-settings"
+              path="/account-settings"
               element={
                 <ProtectedRoute>
                   <LayoutV2><AccountSettings /></LayoutV2>
                 </ProtectedRoute>
               }
             />
-            {/* Add other V2 specific routes here if needed */}
+            {/* Event Detail and Edit pages for V2 */}
+            <Route path="/events/:id" element={<LayoutV2><EventDetailPage /></LayoutV2>} />
+            <Route
+              path="/edit-event/:id"
+              element={
+                <ProtectedRoute>
+                  <LayoutV2><EventEditPage /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Original App Routes - now under /old */}
+            <Route path="/old" element={<Layout><EventsList /></Layout>} />
+            <Route path="/old/events/:id" element={<Layout><EventDetailPage /></Layout>} />
+            <Route path="/old/login" element={<Layout><Login /></Layout>} />
+            <Route path="/contact" element={<Layout><Contact /></Layout>} /> {/* Contact remains global */}
+            <Route path="/community-guidelines" element={<Layout><CommunityGuidelines /></Layout>} /> {/* Community Guidelines remains global */}
+            <Route
+              path="/old/admin/panel"
+              element={
+                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                  <Layout><AdminPanel /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/old/dev-space"
+              element={
+                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                  <Layout><DevSpace /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/old/edit-event/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout><EventEditPage /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/old/map" element={<Layout><MapPage /></Layout>} />
 
             <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>

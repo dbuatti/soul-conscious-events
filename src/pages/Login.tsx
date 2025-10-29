@@ -12,8 +12,8 @@ const Login = () => {
 
   useEffect(() => {
     if (!isLoading && user) {
-      // If user is already logged in, redirect to home
-      navigate('/');
+      // If user is already logged in, redirect to old home
+      navigate('/old');
     }
   }, [user, isLoading, navigate]);
 
@@ -28,7 +28,7 @@ const Login = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
       <div className="w-full max-w-md bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
-        <h2 className="text-3xl font-bold text-foreground text-center mb-6">Sign In to SoulFlow</h2>
+        <h2 className="text-3xl font-bold text-foreground text-center mb-6">Sign In to SoulFlow (Old)</h2>
         <Auth
           supabaseClient={supabase}
           providers={['google']}
@@ -53,7 +53,7 @@ const Login = () => {
             },
           }}
           theme="dark" // Set default theme to dark for Auth UI
-          redirectTo={window.location.origin} // Redirect to home after login
+          redirectTo={`${window.location.origin}/old`} // Redirect to old home after login
           localization={{
             variables: {
               sign_in: {
