@@ -20,13 +20,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Path Aliases */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "src/types/global.d.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }],
-  "exclude": ["supabase/functions"]
+  "include": ["src", "src/pages/v2", "src/components/v2", "vite.config.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
