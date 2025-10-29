@@ -54,9 +54,9 @@ const HeaderV2 = () => {
   ];
 
   const adminNavItems: NavItem[] = [
-    { to: "/old/admin/panel", label: "Admin Panel (Old)", icon: UserCog },
-    { to: "/old/dev-space", label: "Dev Space (Old)", icon: UserCog },
-    { to: "/old/map", label: "Map (Old)", icon: UserCog },
+    { to: "/admin/panel", label: "Admin Panel", icon: UserCog },
+    { to: "/dev-space", label: "Dev Space", icon: UserCog },
+    { to: "/map", label: "Map", icon: UserCog },
   ];
 
   const isAdminUser = user?.email === 'daniele.buatti@gmail.com';
@@ -65,7 +65,7 @@ const HeaderV2 = () => {
     <header className="w-full bg-primary py-3 px-4 md:px-8 flex justify-center sticky top-0 z-50">
       <div className="w-full max-w-2xl flex justify-between items-center">
         <Link to="/" className="flex flex-col items-start text-primary-foreground hover:text-primary-foreground/80 transition-colors">
-          <span className="text-2xl font-bold leading-none">SoulFlow</span> {/* Removed 2.0 */}
+          <span className="text-2xl font-bold leading-none">SoulFlow</span>
           <span className="text-xs font-medium text-primary-foreground/70 leading-none mt-1">Australia</span>
         </Link>
 
@@ -101,8 +101,9 @@ const HeaderV2 = () => {
                             <item.icon className="mr-2 h-4 w-4" /> {item.label}
                           </Link>
                         </DropdownMenuItem>
-                      );
-                    })}
+                      </DropdownMenuItem>
+                    );
+                })}
                   </>
                 )}
                 <DropdownMenuSeparator />

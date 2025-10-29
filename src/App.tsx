@@ -94,39 +94,35 @@ const App = () => (
               }
             />
 
-            {/* Global pages now using LayoutV2 */}
-            <Route path="/contact" element={<LayoutV2><Contact /></LayoutV2>} />
-            <Route path="/community-guidelines" element={<LayoutV2><CommunityGuidelines /></LayoutV2>} />
+            {/* Admin and Dev Space routes now directly under root and using LayoutV2 */}
             <Route
-              path="/admin/panel" // Changed path to be under V2 layout
+              path="/admin/panel"
               element={
                 <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
                   <LayoutV2><AdminPanel /></LayoutV2>
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/dev-space"
+              element={
+                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                  <LayoutV2><DevSpace /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/map" element={<LayoutV2><MapPage /></LayoutV2>} /> {/* Map also moved to V2 layout */}
 
-            {/* Original App Routes - now under /old */}
+            {/* Global pages now using LayoutV2 */}
+            <Route path="/contact" element={<LayoutV2><Contact /></LayoutV2>} />
+            <Route path="/community-guidelines" element={<LayoutV2><CommunityGuidelines /></LayoutV2>} />
+
+            {/* Original App Routes - now only /old remains for the old events list and login */}
             <Route path="/old" element={<Layout><EventsList /></Layout>} />
             <Route path="/old/events/:id" element={<Layout><EventDetailPage /></Layout>} />
             <Route path="/old/login" element={<Layout><Login /></Layout>} />
-            <Route
-              path="/old/dev-space"
-              element={
-                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
-                  <Layout><DevSpace /></Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/old/edit-event/:id"
-              element={
-                <ProtectedRoute>
-                  <Layout><EventEditPage /></Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/old/map" element={<Layout><MapPage /></Layout>} />
+            {/* Removed old /old/dev-space and /old/edit-event/:id as they are now under root */}
+            {/* Removed old /old/map as it is now under root */}
 
             <Route path="*" element={<LayoutV2><NotFound /></LayoutV2>} /> {/* NotFound also uses V2 layout */}
           </Routes>
