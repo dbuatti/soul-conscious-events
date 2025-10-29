@@ -11,6 +11,5 @@ export const eventTypes = [
 ];
 
 export const australianStates = [
-  'All',
   'ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'
 ];
