@@ -4,44 +4,44 @@
 
 @layer base {
   :root {
-    /* Light Mode: Warm Sunset */
-    --background: 30 20% 98%; /* Very light, creamy beige */
-    --foreground: 10 20% 20%; /* Deep, warm brown */
+    /* Light Mode: Daybreak Minimal */
+    --background: 30 10% 97%; /* soft stone white #F8F7F5 */
+    --foreground: 0 0% 17%; /* deep warm charcoal #2C2C2C */
 
-    --card: 0 0% 100%; /* Pure white for cards */
-    --card-foreground: 10 20% 20%;
+    --card: 0 0% 100%; /* pure white for cards #FFFFFF */
+    --card-foreground: 0 0% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 10 20% 20%;
+    --popover-foreground: 0 0% 17%;
 
-    --primary: 15 70% 55%; /* Soft, inviting coral */
-    --primary-foreground: 0 0% 98%; /* Off-white text on primary */
+    --primary: 39 29% 60%; /* muted antique gold #B79C6D */
+    --primary-foreground: 0 0% 100%; /* white text on primary */
 
-    --secondary: 30 20% 90%; /* Light, sandy beige */
-    --secondary-foreground: 10 20% 20%;
+    --secondary: 39 29% 77%; /* pale sand gold #D7CBB3 */
+    --secondary-foreground: 0 0% 17%;
 
-    --muted: 30 20% 95%; /* Even lighter secondary for muted elements */
-    --muted-foreground: 10 20% 45%; /* Medium warm grey-brown for muted text */
+    --muted: 0 0% 90%; /* slightly lighter for muted background elements */
+    --muted-foreground: 0 0% 45%; /* medium grey for muted text */
 
-    --accent: 35 70% 70%; /* Golden orange for accent */
-    --accent-foreground: 10 20% 20%;
+    --accent: 39 30% 66%; /* brushed gold highlight #C8B589 */
+    --accent-foreground: 0 0% 17%;
 
-    --destructive: 0 70% 40%; /* Deep red for destructive actions */
+    --destructive: 0 70% 40%; /* Deep red (consistent) */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 30 20% 85%; /* Light, warm grey for borders */
-    --input: 30 20% 85%;
-    --ring: 15 70% 55%; /* Same as primary */
+    --border: 0 0% 77%; /* cool neutral grey for subtle structure #C4C4C4 */
+    --input: 0 0% 77%;
+    --ring: 39 29% 60%; /* Same as primary */
 
     /* Sidebar colors (adjusting to new scheme) */
-    --sidebar-background: 30 20% 95%;
-    --sidebar-foreground: 10 20% 20%;
-    --sidebar-primary: 15 70% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 35 70% 70%;
-    --sidebar-accent-foreground: 10 20% 20%;
-    --sidebar-border: 30 20% 85%;
-    --sidebar-ring: 15 70% 55%;
+    --sidebar-background: 30 10% 97%;
+    --sidebar-foreground: 0 0% 17%;
+    --sidebar-primary: 39 29% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 39 30% 66%;
+    --sidebar-accent-foreground: 0 0% 17%;
+    --sidebar-border: 0 0% 77%;
+    --sidebar-ring: 39 29% 60%;
   }
 
   .dark {
