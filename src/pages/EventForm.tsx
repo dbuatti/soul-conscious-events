@@ -380,3 +380,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
         </div>
       </form>
     </Form>
+  );
+};
+
+export default EventForm;
