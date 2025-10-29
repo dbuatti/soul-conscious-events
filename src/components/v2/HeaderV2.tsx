@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings, Info } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings, Info, Home } from 'lucide-react'; // Added Home icon
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -45,6 +45,7 @@ const HeaderV2 = () => {
   };
 
   const authenticatedNavItems: NavItem[] = [
+    { to: "/", label: "Home", icon: Home }, // Added Home link
     { to: "/submit-event", label: "Create Event", icon: PlusCircle },
     { to: "/my-events", label: "My Events", icon: CalendarCheck },
     { to: "/account-settings", label: "Account Settings", icon: Settings },
@@ -52,6 +53,7 @@ const HeaderV2 = () => {
   ];
 
   const unauthenticatedNavItems: NavItem[] = [
+    { to: "/", label: "Home", icon: Home }, // Added Home link
     { to: "/login", label: "Login / Sign Up", icon: LogIn },
     { to: "/about", label: "About", icon: Info },
   ];

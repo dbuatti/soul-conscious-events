@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
+import { format, parseISO, isSameDay } from 'date-fns'; // Import parseISO and isSameDay
 import { Edit, Trash2, PlusCircle, ExternalLink, Image as ImageIcon, Loader2, Frown, RefreshCw } from 'lucide-react';
 import {
   Dialog,
@@ -69,7 +69,7 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  state?: string;
+  approval_status?: string; // Renamed from 'state' to 'approval_status'
   image_url?: string;
   user_id?: string;
   is_deleted: boolean;
@@ -93,7 +93,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  state: z.string().optional().or(z.literal('')),
+  approvalStatus: z.string().optional().or(z.literal('')), // Renamed from 'state' to 'approvalStatus'
   image_url: z.string().optional().or(z.literal('')),
 });
 
@@ -102,7 +102,7 @@ const eventTypes = [
   'Community Gathering', 'Other',
 ];
 
-const eventStates = [
+const eventApprovalStatuses = [ // Renamed from eventStates
   'approved', 'pending', 'rejected'
 ];
 
@@ -129,7 +129,7 @@ const EventManagementTable = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      state: '',
+      approvalStatus: '', // Renamed
       image_url: '',
     },
   });
@@ -200,7 +200,7 @@ const EventManagementTable = () => {
       specialNotes: event.special_notes || '',
       organizerContact: event.organizer_contact || '',
       eventType: event.event_type || '',
-      state: event.state || '',
+      approvalStatus: event.approval_status || '', // Renamed
       image_url: event.image_url || '',
     });
     setIsEditDialogOpen(true);
@@ -227,7 +227,7 @@ const EventManagementTable = () => {
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
         event_type: values.eventType || null,
-        state: values.state || null,
+        approval_status: values.approvalStatus || null, // Renamed
       })
       .eq('id', values.id);
 
@@ -257,6 +257,16 @@ const EventManagementTable = () => {
   const handleViewDetails = (event: Event) => {
     setSelectedEvent(event);
     setIsEventDetailDialogOpen(true);
+  };
+
+  const renderDateDisplay = (event: Event) => {
+    const startDate = parseISO(event.event_date);
+    const endDate = event.end_date ? parseISO(event.end_date) : null;
+
+    if (endDate && !isSameDay(startDate, endDate)) {
+      return `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`;
+    }
+    return format(startDate, 'MMM d, yyyy');
   };
 
   return (
@@ -290,10 +300,11 @@ const EventManagementTable = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[200px] text-foreground">Event Name</TableHead>
-                <TableHead className="text-foreground">Start Date</TableHead>
+                <TableHead className="text-foreground">Date</TableHead> {/* Changed from Start Date */}
                 <TableHead className="text-foreground">Location</TableHead>
+                <TableHead className="text-foreground">Price</TableHead> {/* New Price column */}
                 <TableHead className="text-foreground">Image</TableHead>
-                <TableHead className="text-foreground">Status</TableHead>
+                <TableHead className="text-foreground">Approval Status</TableHead> {/* Renamed */}
                 <TableHead className="text-right text-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -301,8 +312,9 @@ const EventManagementTable = () => {
               {events.map((event) => (
                 <TableRow key={event.id} className={cn(event.is_deleted && "bg-muted/50 text-muted-foreground opacity-70")}>
                   <TableCell className="font-medium text-foreground">{event.event_name}</TableCell>
-                  <TableCell className="text-foreground">{event.event_date ? format(new Date(event.event_date), 'PPP') : 'N/A'}</TableCell>
+                  <TableCell className="text-foreground">{renderDateDisplay(event)}</TableCell> {/* Using new render function */}
                   <TableCell className="text-foreground">{event.place_name || event.full_address || 'N/A'}</TableCell>
+                  <TableCell className="text-foreground">{event.price ? event.price.replace(/\$/g, '') : 'N/A'}</TableCell> {/* Display price without $ */}
                   <TableCell>
                     {event.image_url ? (
                       <img src={event.image_url} alt={`Image for ${event.event_name}`} className="w-12 h-12 object-cover rounded-md" loading="lazy" />
@@ -311,8 +323,8 @@ const EventManagementTable = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadgeVariant(event.state)}>
-                      {event.state || 'N/A'}
+                    <Badge variant={getStatusBadgeVariant(event.approval_status)}> {/* Using approval_status */}
+                      {event.approval_status || 'N/A'}
                     </Badge>
                     {event.is_deleted && (
                       <Badge variant="destructive" className="ml-2">
@@ -330,9 +342,11 @@ const EventManagementTable = () => {
                         <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
                           <ExternalLink className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleEdit(event)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
+                          <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" size="sm" title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -586,10 +600,10 @@ const EventManagementTable = () => {
               />
               <FormField
                 control={form.control}
-                name="state"
+                name="approvalStatus" // Renamed
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>Approval Status</FormLabel> {/* Renamed */}
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="focus-visible:ring-primary">
@@ -597,9 +611,9 @@ const EventManagementTable = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="dark:bg-card dark:border-border">
-                        {eventStates.map((state) => (
-                          <SelectItem key={state} value={state}>
-                            {state.charAt(0).toUpperCase() + state.slice(1)}
+                        {eventApprovalStatuses.map((status) => ( // Using eventApprovalStatuses
+                          <SelectItem key={status} value={status}>
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
                           </SelectItem>
                         ))}
                       </SelectContent>

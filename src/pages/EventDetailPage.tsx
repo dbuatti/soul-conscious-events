@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isSameDay } from 'date-fns'; // Import isSameDay
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2, Copy, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
@@ -145,23 +145,20 @@ const EventDetailPage: React.FC = () => {
     return null; // Should be handled by navigate('/404')
   }
 
-  const googleMapsLink = event.full_address
+  const googleMapsLink = event.google_maps_link || (event.full_address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
-    : '#';
+    : '#');
 
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
-  const formattedStartDate = event.event_date
-    ? format(parseISO(event.event_date), 'PPP')
-    : 'Date TBD';
-  const formattedEndDate = event.end_date
-    ? format(parseISO(event.end_date), 'PPP')
-    : '';
+  const startDate = parseISO(event.event_date);
+  const endDate = event.end_date ? parseISO(event.end_date) : null;
 
-  const dateDisplay =
-    event.end_date && event.event_date !== event.end_date
-      ? `${formattedStartDate} - ${formattedEndDate}`
-      : formattedStartDate;
+  const dateDisplay = endDate && !isSameDay(startDate, endDate)
+    ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`
+    : format(startDate, 'MMM d, yyyy');
+
+  const displayPrice = event.price ? event.price.replace(/\$/g, '') : ''; // Remove dollar signs for display
 
   return (
     <div className="w-full max-w-2xl">
@@ -241,7 +238,7 @@ const EventDetailPage: React.FC = () => {
           {event.price && (
             <p className="flex items-start text-foreground">
               <DollarSign className="mr-2 h-5 w-5 text-primary" />
-              <span className="font-medium">Price: </span> {event.price} {/* Added space */}
+              <span className="font-medium">Price:&nbsp;</span> {displayPrice} {/* Added space */}
               {event.price.toLowerCase() === 'free' && (
                 <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
               )}
@@ -288,13 +285,13 @@ const EventDetailPage: React.FC = () => {
           {event.organizer_contact && (
             <p className="flex items-center text-foreground">
               <User className="mr-2 h-5 w-5 text-primary" />
-              <span className="font-medium">Organizer: </span> {event.organizer_contact} {/* Added space */}
+              <span className="font-medium">Organizer:&nbsp;</span> {event.organizer_contact} {/* Added space */}
             </p>
           )}
           {event.event_type && (
             <p className="flex items-center text-foreground">
               <Tag className="mr-2 h-5 w-5 text-primary" />
-              <span className="font-medium">Event Type: </span> {event.event_type} {/* Added space */}
+              <span className="font-medium">Event Type:&nbsp;</span> {event.event_type} {/* Added space */}
             </p>
           )}
         </CardContent>
