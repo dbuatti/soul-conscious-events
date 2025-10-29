@@ -34,6 +34,7 @@ const MapPage = () => {
         .not('full_address', 'is', null)
         .gte('event_date', todayFormatted)
         .eq('approval_status', 'approved') // Filter by new approval_status
+        .eq('is_deleted', false) // Exclude deleted events
         .order('event_date', { ascending: true });
 
       if (error) {

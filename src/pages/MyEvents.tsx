@@ -25,6 +25,7 @@ const MyEvents: React.FC = () => {
       .from('events')
       .select('*')
       .eq('user_id', user.id)
+      .eq('is_deleted', false) // Exclude deleted events
       .order('event_date', { ascending: true });
 
     if (error) {

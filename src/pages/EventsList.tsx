@@ -66,6 +66,7 @@ const EventsList = () => {
       setLoading(true);
       let query = supabase.from('events').select('*');
       query = query.eq('approval_status', 'approved');
+      query = query.eq('is_deleted', false); // Exclude deleted events
       query = query.order('event_date', { ascending: true });
 
       const { data, error } = await query;
