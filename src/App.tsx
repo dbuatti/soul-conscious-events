@@ -20,7 +20,7 @@ import About from "./pages/About";
 import DevSpace from "./pages/DevSpace";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import MyEvents from "./pages/MyEvents";
-import MyBookmarks from "./pages/MyBookmarks"; // Import the new MyBookmarks page
+import MyBookmarks from "./pages/MyBookmarks";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +41,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/community-guidelines" element={<CommunityGuidelines />} />
               <Route path="/login" element={<Login />} />
+              {/* Keeping protected routes for admin/user functionality, but they are not directly linked in the V2 prototype header */}
               <Route
                 path="/my-events"
                 element={

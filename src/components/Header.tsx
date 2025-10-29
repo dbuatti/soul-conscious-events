@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, User as UserIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,43 +47,79 @@ const Header = () => {
     }
   };
 
-  const handleAddEventClick = async () => {
-    const { error } = await supabase.from('page_visit_logs').insert([
-      {
-        user_id: user?.id || null,
-        page_path: '/submit-event',
-        action_type: 'click_add_event_button',
-      },
-    ]);
-    if (error) {
-      console.error('Error logging add event button click:', error);
-    }
-  };
-
-  // Reordered navigation items
-  const navItems: NavItem[] = [
-    { to: "/", label: "Events" },
-    // { to: "/map", label: "Map", badge: "Beta" }, // Removed Map link
-    { to: "/submit-event", label: "Add Event", onClick: handleAddEventClick },
-    { to: "/about", label: "About" },
-    { to: "/contact", label: "Contact" },
+  // New V2 prototype navigation items (simplified)
+  const v2NavItems = [
+    { label: "Today's Highlights", to: "#", disabled: true },
+    { label: "Venue", to: "#", disabled: true },
+    { label: "Price", to: "#", disabled: true },
+    { label: "Area", to: "#", disabled: true },
   ];
-
-  const adminNavItems: NavItem[] = [
-    { to: "/admin/panel", label: "Admin Panel" },
-    { to: "/dev-space", label: "Dev Space" },
-    { to: "/map", label: "Map" }, // Moved Map to admin section for debugging access
-  ];
-
-  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dev-space') || location.pathname.startsWith('/map');
 
   return (
-    <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
+    <header className="w-full bg-white shadow-lg border-b border-gray-200 py-3 px-4 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
       <div className="w-full max-w-screen-lg flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
-          SoulFlow
+        <Link to="/" className="text-2xl font-bold text-foreground hover:text-primary/80 transition-colors dark:text-foreground dark:hover:text-primary/80">
+          TODO.TODAY
         </Link>
-        {isMobile ? (
+
+        {/* Desktop Navigation & Filters */}
+        <nav className="hidden md:flex items-center space-x-4">
+          {v2NavItems.map((item) => (
+            <Button key={item.label} variant="ghost" disabled={item.disabled} className="text-foreground hover:text-primary transition-all duration-300 ease-in-out transform hover:scale-105">
+              {item.label}
+            </Button>
+          ))}
+          <div className="border-l border-border h-6 mx-2"></div> {/* Separator */}
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                <UserIcon className="h-5 w-5" />
+                <span className="sr-only">User menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="dark:bg-card dark:border-border">
+              {user ? (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to="/my-events">My Events</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/my-bookmarks">My Bookmarks</Link>
+                  </DropdownMenuItem>
+                  {user.email === 'daniele.buatti@gmail.com' && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/panel">Admin Panel</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dev-space">Dev Space</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/map">Map</Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to="/login">Login</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/login">Register</Link> {/* Register also goes to login for now */}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </nav>
+
+        {/* Mobile Navigation */}
+        {isMobile && (
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
@@ -93,65 +129,69 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6 dark:bg-sidebar-background dark:border-sidebar-border">
               <nav className="flex flex-col space-y-4 mt-8">
-                {navItems.map((item) => (
-                  <SheetClose asChild key={item.to}>
-                    <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
-                      <Link to={item.to} onClick={item.onClick}>
-                        {item.label}
-                        {item.badge && (
-                          <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </Link>
+                {v2NavItems.map((item) => (
+                  <SheetClose asChild key={item.label}>
+                    <Button variant="ghost" className="justify-start" disabled={item.disabled}>
+                      {item.label}
                     </Button>
                   </SheetClose>
                 ))}
-                {user && (
+                <div className="border-t border-border my-2"></div>
+                {user ? (
                   <>
                     <SheetClose asChild>
-                      <Button variant="ghost" className={cn(getButtonClass("/my-events"), "justify-start")} asChild>
+                      <Button variant="ghost" className="justify-start" asChild>
                         <Link to="/my-events">
                           <CalendarCheck className="mr-2 h-4 w-4" /> My Events
                         </Link>
                       </Button>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Button variant="ghost" className={cn(getButtonClass("/my-bookmarks"), "justify-start")} asChild>
+                      <Button variant="ghost" className="justify-start" asChild>
                         <Link to="/my-bookmarks">
                           <Bookmark className="mr-2 h-4 w-4" /> My Bookmarks
                         </Link>
                       </Button>
                     </SheetClose>
-                  </>
-                )}
-                {user?.email === 'daniele.buatti@gmail.com' && (
-                  <>
+                    {user.email === 'daniele.buatti@gmail.com' && (
+                      <>
+                        <SheetClose asChild>
+                          <Button variant="ghost" className="justify-start" asChild>
+                            <Link to="/admin/panel">Admin Panel</Link>
+                          </Button>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Button variant="ghost" className="justify-start" asChild>
+                            <Link to="/dev-space">Dev Space</Link>
+                          </Button>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Button variant="ghost" className="justify-start" asChild>
+                            <Link to="/map">Map</Link>
+                          </Button>
+                        </SheetClose>
+                      </>
+                    )}
                     <div className="border-t border-border my-2"></div>
-                    {adminNavItems.map((item) => (
-                      <SheetClose asChild key={item.to}>
-                        <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
-                          <Link to={item.to}>{item.label}</Link>
-                        </Button>
-                      </SheetClose>
-                    ))}
+                    <SheetClose asChild>
+                      <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 justify-start">
+                        <LogOut className="mr-2 h-4 w-4" /> Logout
+                      </Button>
+                    </SheetClose>
                   </>
-                )}
-                <div className="border-t border-border my-2"></div>
-                {user ? (
-                  <SheetClose asChild>
-                    <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 justify-start">
-                      <LogOut className="mr-2 h-4 w-4" /> Logout
-                    </Button>
-                  </SheetClose>
                 ) : (
-                  <SheetClose asChild>
-                    <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground" asChild>
-                      <Link to="/login">
-                        Login
-                      </Link>
-                    </Button>
-                  </SheetClose>
+                  <>
+                    <SheetClose asChild>
+                      <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground" asChild>
+                        <Link to="/login">Login</Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground" asChild>
+                        <Link to="/login">Register</Link>
+                      </Button>
+                    </SheetClose>
+                  </>
                 )}
                 <div className="pt-4">
                   <ThemeToggle />
@@ -159,65 +199,6 @@ const Header = () => {
               </nav>
             </SheetContent>
           </Sheet>
-        ) : (
-          <nav className="hidden md:flex items-center space-x-4">
-            {navItems.map((item) => (
-              <Link to={item.to} key={item.to}>
-                <Button variant="ghost" className={cn(getButtonClass(item.to), item.badge && "flex items-center")} onClick={item.onClick}>
-                  {item.label}
-                  {item.badge && (
-                    <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold">
-                      {item.badge}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
-            ))}
-            {user && (
-              <>
-                <Link to="/my-events">
-                  <Button variant="ghost" className={cn(getButtonClass("/my-events"), "flex items-center")}>
-                    <CalendarCheck className="mr-2 h-4 w-4" /> My Events
-                  </Button>
-                </Link>
-                <Link to="/my-bookmarks">
-                  <Button variant="ghost" className={cn(getButtonClass("/my-bookmarks"), "flex items-center")}>
-                    <Bookmark className="mr-2 h-4 w-4" /> My Bookmarks
-                  </Button>
-                </Link>
-              </>
-            )}
-            {user?.email === 'daniele.buatti@gmail.com' && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={cn("text-foreground hover:text-primary transition-all", isAdminPage && "font-bold text-primary")}>
-                    Admin <UserCog className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="dark:bg-card dark:border-border">
-                  {adminNavItems.map((item) => (
-                    <DropdownMenuItem key={item.to} asChild>
-                      <Link to={item.to} className={cn("w-full", getButtonClass(item.to))}>
-                        {item.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-            {user ? (
-              <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80">
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </Button>
-            ) : (
-              <Link to="/login">
-                <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                  Login
-                </Button>
-              </Link>
-            )}
-            <ThemeToggle />
-          </nav>
         )}
       </div>
     </header>
