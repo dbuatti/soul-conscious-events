@@ -9,22 +9,25 @@ const About = () => {
     <div className="w-full max-w-2xl">
       <h1 className="text-4xl font-bold text-foreground mb-6 text-center">About SoulFlow</h1>
       <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
-        SoulFlow is a new web application designed to be a central hub for discovering and connecting with soul-nourishing events across Australia.
+        Hi, I’m Daniele — and I created SoulFlow as a space to bring together soulful, heart-centred events from across Australia.
+      </p>
+      <p className="text-lg text-foreground mb-8 text-center leading-relaxed">
+        I’ve often found it tricky to keep track of all the incredible workshops, meditations, concerts, and gatherings happening around us — especially the ones that truly nourish the soul. SoulFlow was born out of that desire: to make it easier to find, share, and connect through meaningful experiences.
       </p>
 
       <div className="space-y-8">
         <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-primary flex items-center">
-              <Sparkles className="mr-3 h-6 w-6 text-primary" /> Our Vision
+              <Sparkles className="mr-3 h-6 w-6 text-primary" /> My Vision for SoulFlow
             </CardTitle>
           </CardHeader>
           <CardContent className="text-foreground leading-relaxed">
             <p className="mb-4">
-              The vision for SoulFlow is to create a vibrant, accessible space where individuals can easily find and share events that foster connection, personal growth, and overall well-being. In a world that can often feel disconnected, we believe in the power of shared experiences to uplift and inspire.
+              My hope is for SoulFlow to become a living, breathing hub for connection and inspiration — a space where you can discover events that feel aligned, heartfelt, and authentic.
             </p>
             <p>
-              We aim to simplify the process of discovering meaningful gatherings, from intimate workshops and serene meditation sessions to lively community events and unique artistic performances. SoulFlow is built on the idea that finding your flow, your community, and your next enriching experience should be effortless.
+              In a world that can sometimes feel noisy or disconnected, I believe that shared experiences — singing together, moving together, meditating, learning — have the power to remind us of our humanity and bring us back to what really matters.
             </p>
           </CardContent>
         </Card>
@@ -32,29 +35,25 @@ const About = () => {
         <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-primary flex items-center">
-              <CalendarDays className="mr-3 h-6 w-6 text-primary" /> What You Can Do
+              <CalendarDays className="mr-3 h-6 w-6 text-primary" /> What You Can Do on SoulFlow
             </CardTitle>
           </CardHeader>
           <CardContent className="text-foreground leading-relaxed space-y-4">
             <p className="flex items-start">
-              <span className="font-medium mr-2 min-w-[100px]">Explore Events:</span> Browse a curated list of upcoming soulful events, with options to filter by type, location, and date range.
+              <span className="font-medium mr-2 min-w-[100px]">Find events:</span> Browse a curated list of upcoming soulful gatherings — from sound journeys and yoga sessions to artistic performances and community circles.
             </p>
             <p className="flex items-start">
-              <span className="font-medium mr-2 min-w-[100px]">Calendar View:</span> Visualize events laid out on an interactive calendar, making it easy to plan your week or month at a glance.
+              <span className="font-medium mr-2 min-w-[100px]">Use the calendar view:</span> See what’s coming up this week or month at a glance.
             </p>
             <p className="flex items-start">
-              <span className="font-medium mr-2 min-w-[100px]">Interactive Map:</span> Discover events geographically with our map feature, helping you find what's happening nearby.
+              <span className="font-medium mr-2 min-w-[100px]">Share your own events:</span> If you run or host events, you can easily add them to SoulFlow. I’ve built an AI-powered helper to make filling in event details super simple.
             </p>
             <p className="flex items-start">
-              <span className="font-medium mr-2 min-w-[100px]">Submit Events:</span> If you're an event organizer, you can easily add your own events to the platform. We even have an AI-powered tool to help you fill out the details quickly!
-            </p>
-            <p className="flex items-start">
-              <span className="font-medium mr-2 min-w-[100px]">Manage Events:</span> Create an account to gain the ability to edit or delete the events you've submitted, giving you full control over your listings.
+              <span className="font-medium mr-2 min-w-[100px]">Manage your listings:</span> Once you create an account, you can edit or remove your events anytime.
             </p>
           </CardContent>
         </Card>
 
-        {/* New subtle cross-collaboration section */}
         <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-primary flex items-center">
@@ -68,45 +67,37 @@ const About = () => {
               className="h-24 w-auto mb-4 object-contain rounded-lg"
             />
             <p className="mb-4">
-              SoulFlow is proud to be collaborating with HeartBeats to share soulful events with the community. HeartBeats is a collective that runs events that foster expression, music, growth, and connection.
+              I’m really excited to be collaborating with HeartBeats — a collective that hosts events celebrating expression, music, growth, and connection. If you’re promoting your event on Instagram, tag <span className="font-semibold text-primary">@heartbeatslive</span> — they love resharing community events that align with the same spirit.
             </p>
             <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
               <a href="https://www.instagram.com/heartbeatslive" target="_blank" rel="noopener noreferrer">
                 Follow HeartBeats on Instagram
               </a>
             </Button>
-            <p className="mt-4 text-sm text-muted-foreground">
-              If you're sharing your event on Instagram, feel free to tag <span className="font-semibold text-primary">@heartbeatslive</span> for a reshare!
-            </p>
           </CardContent>
         </Card>
 
         <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-primary flex items-center">
-              <MessageSquare className="mr-3 h-6 w-6 text-primary" /> Prototype & Feedback
+              <MessageSquare className="mr-3 h-6 w-6 text-yellow-500" /> A Work in Progress
             </CardTitle>
           </CardHeader>
           <CardContent className="text-foreground leading-relaxed">
             <p className="mb-4">
-              SoulFlow is currently a prototype, and it's an ongoing learning experience for me as an aspiring app developer. This means you might encounter a few quirks, and some features are still evolving. Your patience and understanding are greatly appreciated!
+              SoulFlow is still a prototype — something I’m building and learning from as I go. You might notice a few quirks here and there, but that’s part of the creative process!
             </p>
-            <p>
-              Your feedback is incredibly valuable in shaping the future of SoulFlow. If you have any suggestions, recommendations, or encounter any issues, please don't hesitate to reach out. You can visit our dedicated{' '}
+            <p className="mb-4">
+              Your feedback honestly means the world to me. It helps shape how this platform grows and evolves. If you have suggestions, ideas, or spot something that could be improved, please reach out through the{' '}
               <Link to="/contact" className="text-primary hover:underline font-medium">
-                Contact Us
-              </Link>{' '}
-              page to share your thoughts.
+                Contact page
+              </Link>.
             </p>
             <p className="mt-4 text-center font-medium">
-              Learn more about how we keep SoulFlow a safe and uplifting space in our{' '}
-              <Link to="/community-guidelines" className="text-primary hover:underline font-medium">
-                Community Guidelines
-              </Link>
-              .
+              Thank you for being here, for exploring, and for supporting this vision. I hope SoulFlow helps you find your people, your practice, and your flow.
             </p>
-            <p className="mt-4 text-center font-medium">
-              Thank you for being a part of the SoulFlow journey!
+            <p className="mt-4 text-center font-semibold text-primary">
+              Warmly,<br />Daniele
             </p>
           </CardContent>
         </Card>
