@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Search } from 'lucide-react';
-import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants'; // Changed v2Areas to v2States
+import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -18,7 +18,7 @@ export interface FilterDropdownsV2Props {
     category: string[];
     venue: string[];
     price: string[];
-    state: string[]; // Changed 'area' to 'state'
+    state: string[];
   };
   onFilterChange: (filters: FilterDropdownsV2Props['currentFilters']) => void;
   isMobile?: boolean;
@@ -28,7 +28,7 @@ export interface FilterDropdownsV2Props {
 const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, onFilterChange, isMobile = false, availableVenues }) => {
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
-  const [stateSearchTerm, setStateSearchTerm] = useState(''); // Changed 'areaSearchTerm' to 'stateSearchTerm'
+  const [stateSearchTerm, setStateSearchTerm] = useState('');
 
   const handleSingleSelectChange = (filterType: 'date', value: string) => {
     onFilterChange({
@@ -37,7 +37,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     });
   };
 
-  const handleMultiSelectChange = (filterType: 'category' | 'venue' | 'price' | 'state', value: string) => { // Changed 'area' to 'state'
+  const handleMultiSelectChange = (filterType: 'category' | 'venue' | 'price' | 'state', value: string) => {
     const currentValues = currentFilters[filterType];
     let newValues: string[];
 
@@ -55,22 +55,22 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
   const getTriggerText = (filterType: keyof FilterDropdownsV2Props['currentFilters'], label: string) => {
     const values = currentFilters[filterType];
     if (filterType === 'date') {
-      return values; // For single select, just show the value
+      return values;
     }
     if (Array.isArray(values)) {
       if (values.length === 0) {
-        return label; // If nothing selected, show default label
+        return label;
       }
       if (values.length === 1) {
-        return values[0]; // If one selected, show that item
+        return values[0];
       }
-      return `${label} (${values.length})`; // If multiple selected, show count
+      return `${label} (${values.length})`;
     }
-    return label; // Fallback
+    return label;
   };
 
   const renderMultiSelectDropdownContent = (
-    filterType: 'category' | 'venue' | 'price' | 'state', // Changed 'area' to 'state'
+    filterType: 'category' | 'venue' | 'price' | 'state',
     options: string[],
     searchTerm: string | null,
     setSearchTerm: ((term: string) => void) | null,
@@ -98,6 +98,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
             key={option}
             checked={currentFilters[filterType].includes(option)}
             onCheckedChange={() => handleMultiSelectChange(filterType, option)}
+            onSelect={(e) => e.preventDefault()} // Prevent closing on selection for multi-select
             className="cursor-pointer"
           >
             {option}
@@ -106,8 +107,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
       </>
     );
 
-    // Conditionally wrap with ScrollArea based on filterType or number of options
-    if (filterType === 'price' || filteredOptions.length <= 5) { // For price or small lists, no scroll area
+    if (filterType === 'price' || filteredOptions.length <= 5) {
       return <DropdownMenuContent className="w-64 p-2 dark:bg-card dark:border-border">{content}</DropdownMenuContent>;
     } else {
       return (
@@ -179,10 +179,10 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
-              {getTriggerText('state', 'State')} <ChevronDown className="ml-2 h-4 w-4" /> {/* Changed 'area' to 'state' */}
+              {getTriggerText('state', 'State')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')} {/* Changed 'area' to 'state' */}
+          {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')}
         </DropdownMenu>
       </div>
     );
@@ -229,10 +229,10 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className={buttonClasses}>
-            {getTriggerText('state', 'State')} <ChevronDown className="ml-1 h-4 w-4" /> {/* Changed 'area' to 'state' */}
+            {getTriggerText('state', 'State')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')} {/* Changed 'area' to 'state' */}
+        {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')}
       </DropdownMenu>
     </div>
   );
