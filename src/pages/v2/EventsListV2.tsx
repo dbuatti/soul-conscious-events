@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isPast, isFuture, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, PlusCircle, Loader2 } from 'lucide-react';
+import { Frown, PlusCircle, Loader2, CalendarDays } from 'lucide-react'; // Import CalendarDays
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
@@ -12,9 +12,9 @@ import { Event } from '@/types/event';
 import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
 import FilterDropdownsV2, { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
 import { useSession } from '@/components/SessionContextProvider';
-import AdvancedEventCalendar from '@/components/AdvancedEventCalendar'; // Import AdvancedEventCalendar
+import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 
-const EVENTS_PER_LOAD = 6; // Number of events to load at a time
+const EVENTS_PER_LOAD = 6;
 
 const EventsListV2 = () => {
   const { user, isLoading: isSessionLoading } = useSession();
@@ -35,9 +35,9 @@ const EventsListV2 = () => {
     state: [],
   });
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list'); // New state for view mode
-  const [currentMonth, setCurrentMonth] = useState(new Date()); // State for calendar's current month
-  const [selectedDay, setSelectedDay] = useState(new Date()); // State for calendar's selected day
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(new Date());
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -231,7 +231,7 @@ const EventsListV2 = () => {
     setIsEventDetailDialogOpen(true);
   };
 
-  const allFilteredEvents = getFilteredEvents(); // Get all filtered events for calendar view
+  const allFilteredEvents = getFilteredEvents();
   const selectedDayEvents = allFilteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
   const currentMonthEvents = allFilteredEvents.filter(event => isSameMonth(parseISO(event.event_date), currentMonth) && !isSameDay(parseISO(event.event_date), selectedDay));
 
@@ -248,6 +248,8 @@ const EventsListV2 = () => {
           favouriteVenues={favouriteVenues}
           onToggleFavouriteVenue={handleToggleFavouriteVenue}
           isUserLoggedIn={!!user}
+          viewMode={viewMode} // Pass viewMode
+          onViewModeChange={setViewMode} // Pass onViewModeChange
         />
         <div className="flex items-center space-x-2 mt-4 sm:mt-0">
           <Button
@@ -351,7 +353,7 @@ const EventsListV2 = () => {
           ) : ( // Calendar View
             <div>
               <AdvancedEventCalendar
-                events={allFilteredEvents} // Pass all filtered events to calendar for dot display
+                events={allFilteredEvents}
                 onEventSelect={handleViewDetails}
                 selectedDay={selectedDay}
                 onDayClick={setSelectedDay}
