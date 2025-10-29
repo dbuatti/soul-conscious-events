@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Search } from 'lucide-react';
-import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas, v2DateOptions } from '@/lib/v2/constants';
+import { v2EventCategories, v2PriceOptions, v2Areas, v2DateOptions } from '@/lib/v2/constants'; // Removed v2Venues import
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -22,9 +22,10 @@ export interface FilterDropdownsV2Props {
   };
   onFilterChange: (filters: FilterDropdownsV2Props['currentFilters']) => void;
   isMobile?: boolean;
+  availableVenues: string[]; // New prop for dynamic venues
 }
 
-const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, onFilterChange, isMobile = false }) => {
+const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, onFilterChange, isMobile = false, availableVenues }) => {
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
   const [areaSearchTerm, setAreaSearchTerm] = useState('');
@@ -79,8 +80,8 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
       ? options.filter(option => option.toLowerCase().includes(searchTerm.toLowerCase()))
       : options;
 
-    return (
-      <DropdownMenuContent className="w-64 p-2 dark:bg-card dark:border-border">
+    const content = (
+      <>
         {searchTerm !== null && setSearchTerm !== null && placeholder !== null && (
           <div className="relative mb-2">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -92,20 +93,31 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
             />
           </div>
         )}
-        <ScrollArea className="h-48">
-          {filteredOptions.map((option) => (
-            <DropdownMenuCheckboxItem
-              key={option}
-              checked={currentFilters[filterType].includes(option)}
-              onCheckedChange={() => handleMultiSelectChange(filterType, option)}
-              className="cursor-pointer"
-            >
-              {option}
-            </DropdownMenuCheckboxItem>
-          ))}
-        </ScrollArea>
-      </DropdownMenuContent>
+        {filteredOptions.map((option) => (
+          <DropdownMenuCheckboxItem
+            key={option}
+            checked={currentFilters[filterType].includes(option)}
+            onCheckedChange={() => handleMultiSelectChange(filterType, option)}
+            className="cursor-pointer"
+          >
+            {option}
+          </DropdownMenuCheckboxItem>
+        ))}
+      </>
     );
+
+    // Conditionally wrap with ScrollArea based on filterType or number of options
+    if (filterType === 'price' || filteredOptions.length <= 5) { // For price or small lists, no scroll area
+      return <DropdownMenuContent className="w-64 p-2 dark:bg-card dark:border-border">{content}</DropdownMenuContent>;
+    } else {
+      return (
+        <DropdownMenuContent className="w-64 p-2 dark:bg-card dark:border-border">
+          <ScrollArea className="h-48">
+            {content}
+          </ScrollArea>
+        </DropdownMenuContent>
+      );
+    }
   };
 
   const renderSingleSelectDropdownContent = (filterType: 'date', options: string[]) => (
@@ -152,7 +164,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
               {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          {renderMultiSelectDropdownContent('venue', v2Venues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
+          {renderMultiSelectDropdownContent('venue', availableVenues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
         </DropdownMenu>
 
         <DropdownMenu>
@@ -202,7 +214,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
             {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        {renderMultiSelectDropdownContent('venue', v2Venues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
+        {renderMultiSelectDropdownContent('venue', availableVenues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
       </DropdownMenu>
 
       <DropdownMenu>

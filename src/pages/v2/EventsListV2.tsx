@@ -21,6 +21,7 @@ const EventsListV2 = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
+  const [availableVenues, setAvailableVenues] = useState<string[]>([]); // State for dynamic venues
 
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
     date: 'All Upcoming', // Default to 'All Upcoming'
@@ -49,8 +50,12 @@ const EventsListV2 = () => {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events.');
       setAllEvents([]);
+      setAvailableVenues([]);
     } else {
       setAllEvents(data || []);
+      // Extract unique place_names for the venue filter
+      const uniqueVenues = Array.from(new Set(data.map(event => event.place_name).filter(Boolean))) as string[];
+      setAvailableVenues(uniqueVenues.sort());
     }
     setLoading(false);
   }, []);
@@ -303,7 +308,7 @@ const EventsListV2 = () => {
     <div className="w-full max-w-2xl"> {/* Changed to max-w-2xl */}
       {/* Filters below the header */}
       <div className="mb-8 flex justify-center">
-        <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} />
+        <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} availableVenues={availableVenues} />
       </div>
 
       {loading ? (
