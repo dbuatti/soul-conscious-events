@@ -35,10 +35,10 @@ const HeaderV2 = () => {
     area: 'All',
   });
 
+  // This function will be passed down to FilterDropdownsV2
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
-    // In a real app, this would trigger a re-fetch of events
-    console.log('Applied filters:', newFilters);
+    // The EventsListV2 component will pick up these changes via its own state/props
   };
 
   const getButtonClass = (path: string) => {

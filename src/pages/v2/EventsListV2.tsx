@@ -6,14 +6,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, PlusCircle, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import EventCardV2 from '@/components/v2/EventCardV2'; // Import the new EventCardV2
+import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import { Event } from '@/types/event'; // Reusing existing Event type
-import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas } from '@/lib/v2/constants'; // Import V2 constants
+import { Event } from '@/types/event';
+import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas } from '@/lib/v2/constants';
+
+const EVENTS_PER_LOAD = 6; // Number of events to load at a time
 
 const EventsListV2 = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [allEvents, setAllEvents] = useState<Event[]>([]); // Store all fetched events
+  const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]); // Events currently displayed after filtering/pagination
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
+
   const [filters, setFilters] = useState({
     category: 'All',
     venue: 'All',
@@ -24,8 +31,12 @@ const EventsListV2 = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const fetchEvents = useCallback(async () => {
+  // Function to fetch events from Supabase
+  const fetchInitialEvents = useCallback(async () => {
     setLoading(true);
+    setOffset(0); // Reset offset for initial fetch
+    setHasMore(true); // Assume there's more data initially
+
     let query = supabase.from('events').select('*');
     query = query.eq('approval_status', 'approved');
     query = query.order('event_date', { ascending: true });
@@ -35,69 +46,141 @@ const EventsListV2 = () => {
     if (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events.');
+      setAllEvents([]);
     } else {
-      setEvents(data || []);
+      setAllEvents(data || []);
     }
     setLoading(false);
   }, []);
 
+  // Effect to fetch initial events on component mount
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    fetchInitialEvents();
+  }, [fetchInitialEvents]);
 
-  const applyFilters = (event: Event) => {
-    const eventDate = parseISO(event.event_date);
+  // Filter and paginate events whenever allEvents or filters change
+  useEffect(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    // Category filter
-    if (filters.category !== 'All' && event.event_type !== filters.category) {
-      return false;
-    }
+    let filtered = allEvents.filter(event => {
+      // Apply category filter
+      if (filters.category !== 'All' && event.event_type !== filters.category) {
+        return false;
+      }
+      // Apply venue filter (using place_name)
+      if (filters.venue !== 'All' && event.place_name !== filters.venue) {
+        return false;
+      }
+      // Apply price filter
+      if (filters.price !== 'All') {
+        const lowerCasePrice = event.price?.toLowerCase() || '';
+        if (filters.price === 'Free' && !lowerCasePrice.includes('free')) return false;
+        if (filters.price === 'Paid' && (lowerCasePrice.includes('free') || lowerCasePrice.includes('donation') || !lowerCasePrice)) return false;
+        if (filters.price === 'Donation' && !lowerCasePrice.includes('donation')) return false;
+      }
+      // Apply area filter (using geographical_state)
+      if (filters.area !== 'All' && event.geographical_state !== filters.area) {
+        return false;
+      }
+      return true;
+    });
 
-    // Venue filter (using place_name)
-    if (filters.venue !== 'All' && event.place_name !== filters.venue) {
-      return false;
-    }
+    // Only show upcoming or today's events for the main list
+    filtered = filtered.filter(event => isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date)));
 
-    // Price filter
-    if (filters.price !== 'All') {
-      const lowerCasePrice = event.price?.toLowerCase() || '';
-      if (filters.price === 'Free' && !lowerCasePrice.includes('free')) return false;
-      if (filters.price === 'Paid' && (lowerCasePrice.includes('free') || lowerCasePrice.includes('donation') || !lowerCasePrice)) return false;
-      if (filters.price === 'Donation' && !lowerCasePrice.includes('donation')) return false;
-    }
+    setDisplayedEvents(filtered.slice(0, EVENTS_PER_LOAD));
+    setOffset(EVENTS_PER_LOAD);
+    setHasMore(filtered.length > EVENTS_PER_LOAD);
+  }, [allEvents, filters]);
 
-    // Area filter (using geographical_state)
-    if (filters.area !== 'All' && event.geographical_state !== filters.area) {
-      return false;
-    }
+  const handleLoadMore = () => {
+    setLoadingMore(true);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
 
-    return true;
+    let filtered = allEvents.filter(event => {
+      // Apply category filter
+      if (filters.category !== 'All' && event.event_type !== filters.category) {
+        return false;
+      }
+      // Apply venue filter (using place_name)
+      if (filters.venue !== 'All' && event.place_name !== filters.venue) {
+        return false;
+      }
+      // Apply price filter
+      if (filters.price !== 'All') {
+        const lowerCasePrice = event.price?.toLowerCase() || '';
+        if (filters.price === 'Free' && !lowerCasePrice.includes('free')) return false;
+        if (filters.price === 'Paid' && (lowerCasePrice.includes('free') || lowerCasePrice.includes('donation') || !lowerCasePrice)) return false;
+        if (filters.price === 'Donation' && !lowerCasePrice.includes('donation')) return false;
+      }
+      // Apply area filter (using geographical_state)
+      if (filters.area !== 'All' && event.geographical_state !== filters.area) {
+        return false;
+      }
+      return true;
+    });
+
+    // Only show upcoming or today's events for the main list
+    filtered = filtered.filter(event => isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date)));
+
+    const nextEvents = filtered.slice(offset, offset + EVENTS_PER_LOAD);
+    setDisplayedEvents(prevEvents => [...prevEvents, ...nextEvents]);
+    setOffset(prevOffset => prevOffset + nextEvents.length);
+    setHasMore(filtered.length > offset + nextEvents.length);
+    setLoadingMore(false);
   };
 
-  const getSectionEvents = (sectionType: 'highlights' | 'upcoming' | 'past') => {
+  const handleFilterChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    // When filters change, reset pagination and re-apply filters
+    setOffset(0);
+    setHasMore(true);
+  };
+
+  const getSectionEvents = (sectionType: 'highlights' | 'upcoming') => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    let sectionFilteredEvents = events.filter(applyFilters);
+    let sectionFilteredEvents = allEvents.filter(event => {
+      // Apply category filter
+      if (filters.category !== 'All' && event.event_type !== filters.category) {
+        return false;
+      }
+      // Apply venue filter (using place_name)
+      if (filters.venue !== 'All' && event.place_name !== filters.venue) {
+        return false;
+      }
+      // Apply price filter
+      if (filters.price !== 'All') {
+        const lowerCasePrice = event.price?.toLowerCase() || '';
+        if (filters.price === 'Free' && !lowerCasePrice.includes('free')) return false;
+        if (filters.price === 'Paid' && (lowerCasePrice.includes('free') || lowerCasePrice.includes('donation') || !lowerCasePrice)) return false;
+        if (filters.price === 'Donation' && !lowerCasePrice.includes('donation')) return false;
+      }
+      // Apply area filter (using geographical_state)
+      if (filters.area !== 'All' && event.geographical_state !== filters.area) {
+        return false;
+      }
+      return true;
+    });
 
     if (sectionType === 'highlights') {
-      // For highlights, show today's events first, then upcoming
       const todayEvents = sectionFilteredEvents.filter(event => isToday(parseISO(event.event_date)));
-      const upcomingEvents = sectionFilteredEvents.filter(event => isFuture(parseISO(event.event_date)));
-      return [...todayEvents, ...upcomingEvents].slice(0, 5); // Limit highlights
+      return todayEvents.slice(0, 3); // Limit highlights to 3 for a concise view
     } else if (sectionType === 'upcoming') {
-      return sectionFilteredEvents.filter(event => isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date)));
-    } else if (sectionType === 'past') {
-      return sectionFilteredEvents.filter(event => isPast(parseISO(event.event_date)) && !isToday(parseISO(event.event_date)));
+      // Exclude today's highlights from upcoming to avoid duplication
+      const highlightIds = getSectionEvents('highlights').map(e => e.id);
+      return sectionFilteredEvents
+        .filter(event => (isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) && !highlightIds.includes(event.id));
     }
     return [];
   };
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
     e.stopPropagation();
-    const eventUrl = `${window.location.origin}/v2/events/${event.id}`; // Adjust URL for V2
+    const eventUrl = `${window.location.origin}/v2/events/${event.id}`;
     navigator.clipboard.writeText(eventUrl)
       .then(() => toast.success('Event link copied to clipboard!'))
       .catch(() => toast.error('Failed to copy link. Please try again.'));
@@ -111,7 +194,7 @@ const EventsListV2 = () => {
         toast.error('Failed to delete event.');
       } else {
         toast.success('Event moved to trash.');
-        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+        fetchInitialEvents(); // Re-fetch all events to update the list
       }
     }
   };
@@ -123,7 +206,6 @@ const EventsListV2 = () => {
 
   const highlights = getSectionEvents('highlights');
   const upcomingEvents = getSectionEvents('upcoming');
-  const pastEvents = getSectionEvents('past');
 
   return (
     <div className="w-full max-w-screen-lg">
@@ -146,7 +228,7 @@ const EventsListV2 = () => {
           {highlights.length > 0 && (
             <section className="mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Today's Highlights</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6"> {/* Single column for highlights */}
                 {highlights.map(event => (
                   <EventCardV2
                     key={event.id}
@@ -163,7 +245,7 @@ const EventsListV2 = () => {
           {upcomingEvents.length > 0 && (
             <section className="mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Upcoming Events</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Grid for upcoming events */}
                 {upcomingEvents.map(event => (
                   <EventCardV2
                     key={event.id}
@@ -174,27 +256,27 @@ const EventsListV2 = () => {
                   />
                 ))}
               </div>
+              {hasMore && (
+                <div className="flex justify-center mt-8">
+                  <Button
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading More...
+                      </>
+                    ) : (
+                      'Load More Events'
+                    )}
+                  </Button>
+                </div>
+              )}
             </section>
           )}
 
-          {pastEvents.length > 0 && (
-            <section className="mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Past Events</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {pastEvents.map(event => (
-                  <EventCardV2
-                    key={event.id}
-                    event={event}
-                    onShare={handleShare}
-                    onDelete={handleDelete}
-                    onViewDetails={handleViewDetails}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {events.length === 0 && (
+          {highlights.length === 0 && upcomingEvents.length === 0 && (
             <div className="p-8 bg-secondary rounded-lg border border-border text-center">
               <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-semibold text-foreground mb-4">No events found matching your criteria.</p>
