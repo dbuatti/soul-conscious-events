@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings, Info } from 'lucide-react'; // Added Info icon
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings, Info } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -47,15 +47,13 @@ const HeaderV2 = () => {
   const authenticatedNavItems: NavItem[] = [
     { to: "/submit-event", label: "Create Event", icon: PlusCircle },
     { to: "/my-events", label: "My Events", icon: CalendarCheck },
-    { to: "/my-bookmarks", label: "My Bookmarks", icon: Bookmark }, // Added My Bookmarks
     { to: "/v2/account-settings", label: "Account Settings", icon: Settings },
-    { to: "/about", label: "About", icon: Info }, // Added About page
-    { to: "#", label: "Logout", icon: LogOut, onClick: handleLogout },
+    { to: "/about", label: "About", icon: Info },
   ];
 
   const unauthenticatedNavItems: NavItem[] = [
     { to: "/v2/login", label: "Login / Sign Up", icon: LogIn },
-    { to: "/about", label: "About", icon: Info }, // Added About page for unauthenticated users too
+    { to: "/about", label: "About", icon: Info },
   ];
 
   const adminNavItems: NavItem[] = [
@@ -69,8 +67,9 @@ const HeaderV2 = () => {
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-3 px-4 md:px-8 flex justify-center dark:bg-background dark:border-gray-800 sticky top-0 z-50">
       <div className="w-full max-w-2xl flex justify-between items-center">
-        <Link to="/v2" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
-          SoulFlow V2
+        <Link to="/v2" className="flex flex-col items-start text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
+          <span className="text-2xl font-bold leading-none">SoulFlow 2.0</span>
+          <span className="text-xs font-medium text-muted-foreground leading-none mt-1">Australia</span>
         </Link>
 
         <DropdownMenu>

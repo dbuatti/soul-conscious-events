@@ -1,3 +1,5 @@
+import { australianStates } from '@/lib/constants'; // Import australianStates
+
 export const v2EventCategories = [
   'Wellness',
   'Dance & Movement',
@@ -34,19 +36,8 @@ export const v2Venues = [
   'Other Venue',
 ];
 
-// Placeholder for areas - these would typically be dynamically loaded or derived from geographical_state
-// For now, we'll use a generic list, potentially mapping to existing states.
-export const v2Areas = [
-  'Inner City',
-  'Northern Suburbs',
-  'Eastern Suburbs',
-  'Southern Suburbs',
-  'Western Suburbs',
-  'Regional NSW',
-  'Regional VIC',
-  'Regional QLD',
-  'Other Area',
-];
+// Using imported australianStates for the state filter
+export const v2States = australianStates;
 
 export const v2DateOptions = [
   'Today',

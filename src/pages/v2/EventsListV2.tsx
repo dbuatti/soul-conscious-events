@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
-import { v2EventCategories, v2PriceOptions, v2Venues, v2Areas, v2DateOptions } from '@/lib/v2/constants';
+import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants'; // Changed v2Areas to v2States
 import FilterDropdownsV2, { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2'; // Import FilterDropdownsV2Props
 
 const EVENTS_PER_LOAD = 6; // Number of events to load at a time
@@ -28,7 +28,7 @@ const EventsListV2 = () => {
     category: [], // Default to empty array for multi-select
     venue: [],     // Default to empty array for multi-select
     price: [],     // Default to empty array for multi-select
-    area: [],      // Default to empty array for multi-select
+    state: [],      // Changed 'area' to 'state'
   });
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -121,8 +121,8 @@ const EventsListV2 = () => {
         if (filters.price.includes('Donation') && isDonation) priceMatch = true;
         if (!priceMatch) return false;
       }
-      // Apply area filter (multi-select, using geographical_state)
-      if (filters.area.length > 0 && !filters.area.includes(event.geographical_state || '')) {
+      // Apply state filter (multi-select, using geographical_state)
+      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) { // Changed 'area' to 'state'
         return false;
       }
       return true;
@@ -189,8 +189,8 @@ const EventsListV2 = () => {
         if (filters.price.includes('Donation') && isDonation) priceMatch = true;
         if (!priceMatch) return false;
       }
-      // Apply area filter (multi-select, using geographical_state)
-      if (filters.area.length > 0 && !filters.area.includes(event.geographical_state || '')) {
+      // Apply state filter (multi-select, using geographical_state)
+      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) { // Changed 'area' to 'state'
         return false;
       }
       return true;
@@ -259,7 +259,7 @@ const EventsListV2 = () => {
         if (filters.price.includes('Donation') && isDonation) priceMatch = true;
         if (!priceMatch) return false;
       }
-      if (filters.area.length > 0 && !filters.area.includes(event.geographical_state || '')) return false;
+      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) return false; // Changed 'area' to 'state'
       return true;
     });
 

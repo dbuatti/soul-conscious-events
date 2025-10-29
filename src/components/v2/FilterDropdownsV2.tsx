@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Search } from 'lucide-react';
-import { v2EventCategories, v2PriceOptions, v2Areas, v2DateOptions } from '@/lib/v2/constants'; // Removed v2Venues import
+import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants'; // Changed v2Areas to v2States
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -18,17 +18,17 @@ export interface FilterDropdownsV2Props {
     category: string[];
     venue: string[];
     price: string[];
-    area: string[];
+    state: string[]; // Changed 'area' to 'state'
   };
   onFilterChange: (filters: FilterDropdownsV2Props['currentFilters']) => void;
   isMobile?: boolean;
-  availableVenues: string[]; // New prop for dynamic venues
+  availableVenues: string[];
 }
 
 const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, onFilterChange, isMobile = false, availableVenues }) => {
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
-  const [areaSearchTerm, setAreaSearchTerm] = useState('');
+  const [stateSearchTerm, setStateSearchTerm] = useState(''); // Changed 'areaSearchTerm' to 'stateSearchTerm'
 
   const handleSingleSelectChange = (filterType: 'date', value: string) => {
     onFilterChange({
@@ -37,7 +37,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     });
   };
 
-  const handleMultiSelectChange = (filterType: 'category' | 'venue' | 'price' | 'area', value: string) => {
+  const handleMultiSelectChange = (filterType: 'category' | 'venue' | 'price' | 'state', value: string) => { // Changed 'area' to 'state'
     const currentValues = currentFilters[filterType];
     let newValues: string[];
 
@@ -70,7 +70,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
   };
 
   const renderMultiSelectDropdownContent = (
-    filterType: 'category' | 'venue' | 'price' | 'area',
+    filterType: 'category' | 'venue' | 'price' | 'state', // Changed 'area' to 'state'
     options: string[],
     searchTerm: string | null,
     setSearchTerm: ((term: string) => void) | null,
@@ -135,7 +135,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     </DropdownMenuContent>
   );
 
-  const buttonClasses = "flex items-center gap-1 max-w-[140px] truncate rounded-xl px-4 py-2 h-9"; // Increased max-w to 140px
+  const buttonClasses = "flex items-center gap-1 max-w-[140px] truncate rounded-xl px-4 py-2 h-9";
 
   if (isMobile) {
     return (
@@ -179,10 +179,10 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
-              {getTriggerText('area', 'Area')} <ChevronDown className="ml-2 h-4 w-4" />
+              {getTriggerText('state', 'State')} <ChevronDown className="ml-2 h-4 w-4" /> {/* Changed 'area' to 'state' */}
             </Button>
           </DropdownMenuTrigger>
-          {renderMultiSelectDropdownContent('area', v2Areas, areaSearchTerm, setAreaSearchTerm, 'Search area')}
+          {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')} {/* Changed 'area' to 'state' */}
         </DropdownMenu>
       </div>
     );
@@ -229,10 +229,10 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className={buttonClasses}>
-            {getTriggerText('area', 'Area')} <ChevronDown className="ml-1 h-4 w-4" />
+            {getTriggerText('state', 'State')} <ChevronDown className="ml-1 h-4 w-4" /> {/* Changed 'area' to 'state' */}
           </Button>
         </DropdownMenuTrigger>
-        {renderMultiSelectDropdownContent('area', v2Areas, areaSearchTerm, setAreaSearchTerm, 'Search area')}
+        {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')} {/* Changed 'area' to 'state' */}
       </DropdownMenu>
     </div>
   );
