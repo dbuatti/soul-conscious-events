@@ -69,7 +69,7 @@ const EventForm = () => {
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-6">Create New Event</h1>
-      <Form {...form}> {/* Ensure this opening tag is correctly formed */}
+      <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
