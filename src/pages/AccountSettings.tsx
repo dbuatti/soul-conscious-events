@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Loader2, User as UserIcon, Mail, Globe } from 'lucide-react';
+import { Settings, Loader2, User as UserIcon, Mail, Globe, SunMoon } from 'lucide-react'; // Added SunMoon icon
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,7 +19,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { countries } from '@/lib/countries'; // Import the countries list
+import { countries } from '@/lib/countries';
+import { ThemeToggle } from '@/components/ThemeToggle'; // Import ThemeToggle
 
 const formSchema = z.object({
   firstName: z.string().optional().or(z.literal('')),
@@ -144,7 +145,7 @@ const AccountSettings = () => {
         Manage your profile and preferences here.
       </p>
 
-      <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+      <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border mb-8">
         <CardHeader>
           <CardTitle className="text-2xl font-semibold text-primary flex items-center">
             <Settings className="mr-3 h-6 w-6 text-primary" /> General Information
@@ -247,6 +248,19 @@ const AccountSettings = () => {
               </div>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+
+      {/* New Card for Theme Settings */}
+      <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <CardHeader>
+          <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <SunMoon className="mr-3 h-6 w-6 text-primary" /> Theme Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-foreground leading-relaxed flex items-center justify-between">
+          <p>Toggle between light and dark mode:</p>
+          <ThemeToggle />
         </CardContent>
       </Card>
     </div>
