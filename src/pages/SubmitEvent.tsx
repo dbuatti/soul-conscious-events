@@ -204,6 +204,8 @@ const SubmitEvent = () => {
         toast.error(`Failed to submit event: ${error.message}. Please try again.`, { id: loadingToastId });
       } else {
         toast.success('Event created successfully!', { id: loadingToastId });
+        form.reset(); // Clear the form fields
+        setImagePreviewUrl(null); // Clear image preview
         navigate('/'); // Redirect to V2 main events page
       }
     } catch (error: any) {

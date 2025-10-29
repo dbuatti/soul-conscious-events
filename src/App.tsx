@@ -26,6 +26,8 @@ import EventsListV2 from "./pages/v2/EventsListV2";
 import LoginV2 from "./pages/v2/LoginV2";
 import HeaderV2 from "./components/v2/HeaderV2"; // Import HeaderV2
 import AccountSettings from "./pages/AccountSettings"; // Import new AccountSettings page
+import Footer from "./components/Footer"; // Import Footer
+import ScrollToTopButton from "./components/ScrollToTopButton"; // Import ScrollToTopButton
 
 const queryClient = new QueryClient();
 
@@ -37,8 +39,8 @@ const LayoutV2: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <main className="flex-grow w-full px-2 flex flex-col items-center py-8">
         {children}
       </main>
-      {/* You can reuse the existing Footer or create a new one for V2 */}
-      {/* <Footer /> */}
+      <Footer /> {/* Reusing existing Footer */}
+      <ScrollToTopButton /> {/* Add the new button here */}
     </div>
   );
 };

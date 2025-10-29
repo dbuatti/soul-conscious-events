@@ -105,6 +105,13 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           </CardTitle>          
           <div className="flex flex-col text-muted-foreground text-sm space-y-1">
             <div className="flex items-center">
+              <Calendar className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+              <span className="font-medium">{format(parseISO(event.event_date), 'MMM d')}</span>
+              {event.end_date && event.event_date !== event.end_date && (
+                <span className="font-medium"> - {format(parseISO(event.end_date), 'MMM d')}</span>
+              )}
+            </div>
+            <div className="flex items-center">
               <Clock className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
               <span className="font-medium">{event.event_time || 'Time TBD'}</span>
             </div>

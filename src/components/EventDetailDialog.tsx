@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isSameDay } from 'date-fns'; // Import isSameDay
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2, Copy, Sparkles } from 'lucide-react'; // Added Sparkles for event type
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
@@ -131,17 +131,12 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
-  const formattedStartDate = event.event_date
-    ? format(parseISO(event.event_date), 'MMM d, yyyy')
-    : 'Date TBD';
-  const formattedEndDate = event.end_date && event.event_date !== event.event_date
-    ? format(parseISO(event.end_date), 'MMM d, yyyy')
-    : '';
+  const startDate = parseISO(event.event_date);
+  const endDate = event.end_date ? parseISO(event.end_date) : null;
 
-  const dateDisplay =
-    event.end_date && event.event_date !== event.event_date
-      ? `${formattedStartDate} - ${formattedEndDate}`
-      : formattedStartDate;
+  const dateDisplay = endDate && !isSameDay(startDate, endDate)
+    ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`
+    : format(startDate, 'MMM d, yyyy');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
