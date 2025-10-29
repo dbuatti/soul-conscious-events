@@ -58,6 +58,9 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
   const getTriggerText = (filterType: keyof FilterDropdownsV2Props['currentFilters'], label: string) => {
     const values = currentFilters[filterType];
+    if (filterType === 'date') { // Special handling for the 'date' filter
+      return `${currentFilters.date}`;
+    }
     if (Array.isArray(values)) {
       if (values.includes('All') || values.length === 0) {
         return `${label}: All`;
@@ -67,7 +70,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
       }
       return `${label} (${values.length})`;
     }
-    return `${label}: ${values}`; // For single-select like 'date'
+    return `${label}: ${values}`; // Fallback for other single-selects if any
   };
 
   const renderMultiSelectDropdownContent = (
