@@ -235,7 +235,7 @@ const EventEditPage: React.FC = () => {
       toast.error('Failed to update event.');
     } else {
       toast.success('Event updated successfully!');
-      navigate(location.state?.from || '/');
+      navigate('/v2'); // Redirect to V2 main events page
     }
   };
 

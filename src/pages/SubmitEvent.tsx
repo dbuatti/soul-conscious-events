@@ -203,8 +203,8 @@ const SubmitEvent = () => {
         console.error('Supabase insert error:', error);
         toast.error(`Failed to submit event: ${error.message}. Please try again.`, { id: loadingToastId });
       } else {
-        toast.success('Event submitted successfully! It is now live!', { id: loadingToastId });
-        navigate('/');
+        toast.success('Event created successfully!', { id: loadingToastId });
+        navigate('/v2'); // Redirect to V2 main events page
       }
     } catch (error: any) {
       console.error('Unexpected error during event submission:', error);
