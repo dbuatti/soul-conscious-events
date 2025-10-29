@@ -19,7 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "sans-serif"], // Set Inter as the default sans-serif font
+        sans: ["Inter", "sans-serif"], // Explicitly set Inter as the default sans-serif font
+        heading: ["Cormorant Garamond", "serif"], // New font for headings
       },
       colors: {
         border: "hsl(var(--border))",
@@ -55,7 +56,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        link: { // Added link colors
+        link: {
           DEFAULT: "hsl(var(--link))",
           hover: "hsl(var(--link-hover))",
         },
