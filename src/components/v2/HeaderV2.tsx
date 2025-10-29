@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, ChevronDown } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, ChevronDown, LogIn, UserPlus } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import FilterDropdownsV2 from './FilterDropdownsV2'; // Import the new filter dropdowns
+import FilterDropdownsV2 from './FilterDropdownsV2';
 
 interface NavItem {
   to: string;
@@ -35,10 +35,10 @@ const HeaderV2 = () => {
     area: 'All',
   });
 
-  // This function will be passed down to FilterDropdownsV2
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
-    // The EventsListV2 component will pick up these changes via its own state/props
+    // In a real app, this would trigger a re-fetch of events in EventsListV2
+    console.log('Applied filters:', newFilters);
   };
 
   const getButtonClass = (path: string) => {
@@ -59,11 +59,6 @@ const HeaderV2 = () => {
     }
   };
 
-  const navItems: NavItem[] = [
-    { to: "/v2", label: "Today's Highlights" },
-    // Add other main navigation items here if needed for V2
-  ];
-
   const adminNavItems: NavItem[] = [
     { to: "/admin/panel", label: "Admin Panel" },
     { to: "/dev-space", label: "Dev Space" },
@@ -75,95 +70,30 @@ const HeaderV2 = () => {
   return (
     <header className="w-full bg-white shadow-lg border-b border-gray-200 py-3 px-4 md:px-8 flex justify-center dark:bg-background dark:border-gray-800 sticky top-0 z-50">
       <div className="w-full max-w-screen-lg flex justify-between items-center">
-        <Link to="/v2" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
-          SoulFlow V2
-        </Link>
+        {/* Logo and Location Placeholder */}
+        <div className="flex items-center space-x-2">
+          <Link to="/v2" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
+            SoulFlow V2
+          </Link>
+          {/* Placeholder for Location Selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
+                Select Location <ChevronDown className="ml-1 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="dark:bg-card dark:border-border">
+              <DropdownMenuItem disabled>
+                <span className="text-muted-foreground">Location selection coming soon!</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-        {!isMobile && (
+        {/* Desktop Filters and User Menu */}
+        {!isMobile ? (
           <div className="flex items-center space-x-4">
             <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} />
-          </div>
-        )}
-
-        {isMobile ? (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle navigation menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6 dark:bg-sidebar-background dark:border-sidebar-border">
-              <nav className="flex flex-col space-y-4 mt-8">
-                {navItems.map((item) => (
-                  <SheetClose asChild key={item.to}>
-                    <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
-                      <Link to={item.to} onClick={item.onClick}>
-                        {item.label}
-                      </Link>
-                    </Button>
-                  </SheetClose>
-                ))}
-                {/* Mobile filter dropdowns */}
-                <div className="border-t border-border my-2"></div>
-                <h3 className="text-sm font-semibold text-muted-foreground mb-2">Filters</h3>
-                <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} isMobile={true} />
-
-                {user && (
-                  <>
-                    <div className="border-t border-border my-2"></div>
-                    <SheetClose asChild>
-                      <Button variant="ghost" className={cn(getButtonClass("/my-events"), "justify-start")} asChild>
-                        <Link to="/my-events">
-                          <CalendarCheck className="mr-2 h-4 w-4" /> My Events
-                        </Link>
-                      </Button>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Button variant="ghost" className={cn(getButtonClass("/my-bookmarks"), "justify-start")} asChild>
-                        <Link to="/my-bookmarks">
-                          <Bookmark className="mr-2 h-4 w-4" /> My Bookmarks
-                        </Link>
-                      </Button>
-                    </SheetClose>
-                  </>
-                )}
-                {user?.email === 'daniele.buatti@gmail.com' && (
-                  <>
-                    <div className="border-t border-border my-2"></div>
-                    {adminNavItems.map((item) => (
-                      <SheetClose asChild key={item.to}>
-                        <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
-                          <Link to={item.to}>{item.label}</Link>
-                        </Button>
-                      </SheetClose>
-                    ))}
-                  </>
-                )}
-                <div className="border-t border-border my-2"></div>
-                {user ? (
-                  <SheetClose asChild>
-                    <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 justify-start">
-                      <LogOut className="mr-2 h-4 w-4" /> Logout
-                    </Button>
-                  </SheetClose>
-                ) : (
-                  <SheetClose asChild>
-                    <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground" asChild>
-                      <Link to="/v2/login">
-                        Login
-                      </Link>
-                    </Button>
-                  </SheetClose>
-                )}
-                <div className="pt-4">
-                  <ThemeToggle />
-                </div>
-              </nav>
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <nav className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
                 <Link to="/my-events">
@@ -201,12 +131,83 @@ const HeaderV2 = () => {
             ) : (
               <Link to="/v2/login">
                 <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                  Login
+                  Login / Sign Up
                 </Button>
               </Link>
             )}
             <ThemeToggle />
-          </nav>
+          </div>
+        ) : (
+          <React.Fragment> {/* Wrap mobile menu content in a Fragment */}
+            {/* Mobile Hamburger Menu */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Toggle navigation menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6 dark:bg-sidebar-background dark:border-sidebar-border">
+                <nav className="flex flex-col space-y-4 mt-8">
+                  {/* Mobile filter dropdowns */}
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">Filters</h3>
+                  <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} isMobile={true} />
+
+                  <div className="border-t border-border my-2"></div>
+
+                  {user ? (
+                    <>
+                      <SheetClose asChild>
+                        <Button variant="ghost" className={cn(getButtonClass("/my-events"), "justify-start")} asChild>
+                          <Link to="/my-events">
+                            <CalendarCheck className="mr-2 h-4 w-4" /> My Events
+                          </Link>
+                        </Button>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Button variant="ghost" className={cn(getButtonClass("/my-bookmarks"), "justify-start")} asChild>
+                          <Link to="/my-bookmarks">
+                            <Bookmark className="mr-2 h-4 w-4" /> My Bookmarks
+                          </Link>
+                        </Button>
+                      </SheetClose>
+                      {user?.email === 'daniele.buatti@gmail.com' && (
+                        <>
+                          <div className="border-t border-border my-2"></div>
+                          {adminNavItems.map((item) => (
+                            <SheetClose asChild key={item.to}>
+                              <Button variant="ghost" className={cn(getButtonClass(item.to), "justify-start")} asChild>
+                                <Link to={item.to}>{item.label}</Link>
+                              </Button>
+                            </SheetClose>
+                          ))}
+                        </>
+                      )}
+                      <div className="border-t border-border my-2"></div>
+                      <SheetClose asChild>
+                        <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive/80 justify-start">
+                          <LogOut className="mr-2 h-4 w-4" /> Logout
+                        </Button>
+                      </SheetClose>
+                    </>
+                  ) : (
+                    <>
+                      <SheetClose asChild>
+                        <Button variant="ghost" className={cn(getButtonClass("/v2/login"), "justify-start")} asChild>
+                          <Link to="/v2/login">
+                            <LogIn className="mr-2 h-4 w-4" /> Login / Sign Up
+                          </Link>
+                        </Button>
+                      </SheetClose>
+                    </>
+                  )}
+                  <div className="pt-4">
+                    <ThemeToggle />
+                  </div>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </React.Fragment>
         )}
       </div>
     </header>
