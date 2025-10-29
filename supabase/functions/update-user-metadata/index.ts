@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, firstName, lastName, email } = await req.json();
+    const { userId, firstName, lastName, email, username, country } = await req.json();
 
     if (!userId) {
       return new Response(JSON.stringify({ error: 'User ID is required.' }), {
@@ -49,13 +49,15 @@ serve(async (req) => {
       });
     }
 
-    // Update public.profiles table (for first_name, last_name, email)
+    // Update public.profiles table (for first_name, last_name, email, username, country)
     const { data: profileUpdateData, error: profileUpdateError } = await supabaseAdmin
       .from('profiles')
       .update({
         first_name: firstName,
         last_name: lastName,
         email: email,
+        username: username,
+        country: country,
       })
       .eq('id', userId);
 
