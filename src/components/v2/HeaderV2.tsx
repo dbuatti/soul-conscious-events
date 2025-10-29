@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -8,8 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ThemeToggle } from '@/components/ThemeToggle';
-// Removed FilterDropdownsV2 import as it's no longer needed in the header
+// Removed ThemeToggle import
 
 interface NavItem {
   to: string;
@@ -126,9 +125,7 @@ const HeaderV2 = () => {
                   </SheetClose>
                 ))
               )}
-              <div className="pt-4">
-                <ThemeToggle />
-              </div>
+              {/* Removed ThemeToggle */}
             </nav>
           </SheetContent>
         </Sheet>

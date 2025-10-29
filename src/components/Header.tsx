@@ -9,7 +9,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ThemeToggle } from './ThemeToggle';
+// Removed ThemeToggle import
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -153,9 +153,7 @@ const Header = () => {
                     </Button>
                   </SheetClose>
                 )}
-                <div className="pt-4">
-                  <ThemeToggle />
-                </div>
+                {/* Removed ThemeToggle */}
               </nav>
             </SheetContent>
           </Sheet>
@@ -216,7 +214,7 @@ const Header = () => {
                 </Button>
               </Link>
             )}
-            <ThemeToggle />
+            {/* Removed ThemeToggle */}
           </nav>
         )}
       </div>
