@@ -6,10 +6,10 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-gray-800 text-gray-300 py-8 px-2 shadow-inner dark:bg-background dark:text-muted-foreground">
-      <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 border-b border-gray-700 pb-8 mb-8 dark:border-border">
+    <footer className="w-full bg-card text-muted-foreground py-8 px-2 shadow-inner border-t border-border">
+      <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 border-b border-border pb-8 mb-8">
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white dark:text-foreground">SoulFlow</h3>
+          <h3 className="text-xl font-bold text-foreground font-heading">SoulFlow</h3>
           <p className="text-sm leading-relaxed">
             Discover and connect with soul-nourishing events across Australia.
             Your hub for personal growth and community connection.
@@ -17,20 +17,18 @@ const Footer = () => {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white dark:text-foreground">Quick Links</h3>
+          <h3 className="text-lg font-semibold text-foreground">Quick Links</h3>
           <nav className="flex flex-col space-y-2">
             <Link to="/" className="hover:text-primary transition-colors text-sm">Events</Link>
             <Link to="/submit-event" className="hover:text-primary transition-colors text-sm">Add Event</Link>
-            {/* <Link to="/map" className="hover:text-primary transition-colors text-sm">Map</Link> Removed Map link */}
             <Link to="/contact" className="hover:text-primary transition-colors text-sm">Contact</Link>
             <Link to="/about" className="hover:text-primary transition-colors text-sm">About</Link>
             <Link to="/community-guidelines" className="hover:text-primary transition-colors text-sm">Community Guidelines</Link>
-            <Link to="/admin/panel" className="hover:text-primary transition-colors text-sm">Admin Panel</Link>
           </nav>
         </div>
 
         <div className="space-y-4 flex flex-col items-center">
-          <h3 className="text-lg font-semibold text-white dark:text-foreground">Support Us</h3>
+          <h3 className="text-lg font-semibold text-foreground">Support Us</h3>
           <a
             href="https://buymeacoffee.com/danielebuatti"
             target="_blank"
@@ -42,7 +40,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 dark:text-muted-foreground">
+      <div className="max-w-2xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
         <p>&copy; {currentYear} SoulFlow. All rights reserved.</p>
         <a
           href="https://www.dyad.sh/"

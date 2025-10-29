@@ -7,15 +7,15 @@ import { Button } from '@/components/ui/button'; // Import Button
 const CommunityGuidelines = () => {
   return (
     <div className="w-full max-w-2xl">
-      <h1 className="text-4xl font-bold text-foreground mb-6 text-center">SoulFlow Community Guidelines</h1>
+      <h1 className="text-4xl font-bold text-foreground mb-6 text-center font-heading">SoulFlow Community Guidelines</h1>
       <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
         SoulFlow is a space dedicated to fostering personal growth, community connection, creativity, and well-being. To ensure a positive and respectful environment for everyone, we've established these guidelines.
       </p>
 
       <div className="space-y-8">
-        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <Card className="shadow-lg rounded-lg bg-card border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
               <Ban className="mr-3 h-6 w-6 text-destructive" /> We Don't Allow Events That:
             </CardTitle>
           </CardHeader>
@@ -29,9 +29,9 @@ const CommunityGuidelines = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <Card className="shadow-lg rounded-lg bg-card border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
               <Handshake className="mr-3 h-6 w-6 text-green-500" /> We Welcome Events That:
             </CardTitle>
           </CardHeader>
@@ -44,9 +44,9 @@ const CommunityGuidelines = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <Card className="shadow-lg rounded-lg bg-card border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
               <ListChecks className="mr-3 h-6 w-6 text-blue-500" /> Moderation
             </CardTitle>
           </CardHeader>
@@ -58,9 +58,9 @@ const CommunityGuidelines = () => {
         </Card>
 
         {/* New section for reporting issues */}
-        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <Card className="shadow-lg rounded-lg bg-card border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
               <MessageCircleWarning className="mr-3 h-6 w-6 text-yellow-500" /> Report an Issue
             </CardTitle>
           </CardHeader>

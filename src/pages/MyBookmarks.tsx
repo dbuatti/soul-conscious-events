@@ -152,7 +152,7 @@ const MyBookmarks: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="w-full max-w-2xl text-center p-8 bg-secondary rounded-lg border border-border">
+      <div className="w-full max-w-2xl text-center p-8 bg-card rounded-lg border border-border shadow-md">
         <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-lg font-semibold text-foreground mb-4">
           Sign up or log in to save your favorite events!
@@ -171,13 +171,13 @@ const MyBookmarks: React.FC = () => {
 
   return (
     <div className="w-full max-w-2xl">
-      <h1 className="text-4xl font-bold text-foreground mb-6 text-center">My Bookmarks</h1>
+      <h1 className="text-4xl font-bold text-foreground mb-6 text-center font-heading">My Bookmarks</h1>
       <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
         Here are all the events you've saved.
       </p>
 
       {bookmarkedEvents.length === 0 ? (
-        <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+        <div className="p-8 bg-card rounded-lg border border-border text-center shadow-md">
           <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-lg font-semibold text-foreground mb-4">You haven't bookmarked any events yet.</p>
           <Link to="/">

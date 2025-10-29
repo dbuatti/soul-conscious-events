@@ -159,17 +159,17 @@ const AdminPanel = () => {
 
   return (
     <div className="w-full max-w-2xl">
-      <h2 className="text-3xl font-bold text-foreground text-center mb-6">Admin Panel</h2>
-      <p className="text-center text-muted-foreground mb-8">
+      <h2 className="text-3xl font-bold text-foreground text-center mb-6 font-heading">Admin Panel</h2>
+      <p className="text-center text-muted-foreground mb-8 leading-relaxed">
         Manage contact submissions, events, analytics, and users from here.
       </p>
 
       <Tabs defaultValue="events" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 dark:bg-secondary">
-          <TabsTrigger value="events">Manage Events</TabsTrigger>
-          <TabsTrigger value="submissions">Contact Submissions</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 bg-secondary text-foreground rounded-lg shadow-sm border border-border">
+          <TabsTrigger value="events" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200">Manage Events</TabsTrigger>
+          <TabsTrigger value="submissions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200">Contact Submissions</TabsTrigger>
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200">Analytics</TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200">Users</TabsTrigger>
         </TabsList>
         <TabsContent value="events" className="mt-6">
           <EventManagementTable />
@@ -178,7 +178,7 @@ const AdminPanel = () => {
           {loadingSubmissions ? (
             <div className="grid grid-cols-1 gap-6">
               {[...Array(3)].map((_, i) => (
-                <Card key={i} className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+                <Card key={i} className="shadow-lg rounded-lg bg-card border border-border">
                   <CardHeader>
                     <Skeleton className="h-6 w-3/4 mb-2" />
                     <Skeleton className="h-4 w-1/2" />
@@ -192,11 +192,11 @@ const AdminPanel = () => {
               ))}
             </div>
           ) : submissions.length === 0 ? (
-            <p className="text-center text-muted-foreground">No contact submissions found.</p>
+            <p className="text-center text-muted-foreground p-6 bg-card rounded-lg border border-border">No contact submissions found.</p>
           ) : (
             <div className="grid grid-cols-1 gap-6">
               {submissions.map((submission) => (
-                <Card key={submission.id} className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+                <Card key={submission.id} className="shadow-lg rounded-lg bg-card border border-border">
                   <CardHeader>
                     <CardTitle className="text-xl font-semibold text-primary">{submission.subject}</CardTitle>
                     <p className="text-sm text-muted-foreground">
@@ -236,7 +236,7 @@ const AdminPanel = () => {
               <p className="text-xl font-semibold text-foreground">Loading users...</p>
             </div>
           ) : userProfiles.length === 0 ? (
-            <p className="text-center text-muted-foreground">No user profiles found.</p>
+            <p className="text-center text-muted-foreground p-6 bg-card rounded-lg border border-border">No user profiles found.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table className="min-w-full bg-card border border-border rounded-lg shadow-lg">

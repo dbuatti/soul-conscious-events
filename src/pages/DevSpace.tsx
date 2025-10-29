@@ -89,8 +89,8 @@ const DevSpace = () => {
   };
 
   const renderColumn = (title: string, tasks: DevTask[], icon: React.ReactNode) => (
-    <div className="flex-1 p-4 bg-secondary/50 rounded-lg min-w-[300px]">
-      <h2 className="text-xl font-bold text-foreground mb-4 flex items-center">
+    <div className="flex-1 p-4 bg-card rounded-lg min-w-[300px] shadow-md border border-border">
+      <h2 className="text-xl font-bold text-foreground mb-4 flex items-center font-heading">
         {icon}
         <span className="ml-2">{title} ({tasks.length})</span>
       </h2>
@@ -112,7 +112,7 @@ const DevSpace = () => {
   return (
     <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-4xl font-bold text-foreground">Dev Space</h1>
+        <h1 className="text-4xl font-bold text-foreground font-heading">Dev Space</h1>
         <div className="flex flex-col sm:flex-row gap-2">
           <Button onClick={handleCreateTestUser} disabled={isCreatingUser} className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
             {isCreatingUser ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}

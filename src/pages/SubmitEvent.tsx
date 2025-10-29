@@ -216,21 +216,23 @@ const SubmitEvent = () => {
 
   return (
     <div className="w-full max-w-2xl">
-      <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Submit Your Event</h2>
-      <p className="text-xl text-muted-foreground mb-8 text-center">
+      <h2 className="text-3xl font-bold text-foreground mb-6 text-center font-heading">Submit Your Event</h2>
+      <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
         Share your soulful event with the community.
       </p>
 
       <AiParsingSection onAiParseComplete={handleAiParseComplete} />
 
-      <EventForm
-        form={form}
-        onSubmit={onSubmit}
-        isSubmitting={form.formState.isSubmitting}
-        onBack={() => navigate('/')}
-        onPreview={handlePreview}
-        currentImageUrl={imagePreviewUrl} // Pass current image URL to EventForm
-      />
+      <div className="bg-card p-6 rounded-xl shadow-lg border border-border"> {/* Added card styling */}
+        <EventForm
+          form={form}
+          onSubmit={onSubmit}
+          isSubmitting={form.formState.isSubmitting}
+          onBack={() => navigate('/')}
+          onPreview={handlePreview}
+          currentImageUrl={imagePreviewUrl} // Pass current image URL to EventForm
+        />
+      </div>
 
       <EventPreviewDialog
         isOpen={isPreviewOpen}

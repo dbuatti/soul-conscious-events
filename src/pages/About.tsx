@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 const About = () => {
   return (
     <div className="w-full max-w-2xl">
-      <h1 className="text-4xl font-bold text-foreground mb-6 text-center">About SoulFlow</h1>
+      <h1 className="text-4xl font-bold text-foreground mb-6 text-center font-heading">About SoulFlow</h1>
       <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
         Hi, I’m Daniele — and I created SoulFlow as a space to bring together soulful, heart-centred events from across Australia.
       </p>
@@ -16,14 +16,14 @@ const About = () => {
       </p>
 
       <div className="space-y-8">
-        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <Card className="shadow-lg rounded-lg bg-card border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
               <Sparkles className="mr-3 h-6 w-6 text-primary" /> My Vision for SoulFlow
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-foreground leading-relaxed">
-            <p className="mb-4">
+          <CardContent className="text-foreground leading-relaxed space-y-4">
+            <p>
               My hope is for SoulFlow to become a living, breathing hub for connection and inspiration — a space where you can discover events that feel aligned, heartfelt, and authentic.
             </p>
             <p>
@@ -32,9 +32,9 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <Card className="shadow-lg rounded-lg bg-card border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
               <CalendarDays className="mr-3 h-6 w-6 text-primary" /> What You Can Do on SoulFlow
             </CardTitle>
           </CardHeader>
@@ -54,9 +54,9 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <Card className="shadow-lg rounded-lg bg-card border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
               <Heart className="mr-3 h-6 w-6 text-primary" /> SoulFlow x HeartBeats
             </CardTitle>
           </CardHeader>
@@ -77,17 +77,17 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg rounded-lg dark:bg-secondary dark:border-border">
+        <Card className="shadow-lg rounded-lg bg-card border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-primary flex items-center">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
               <MessageSquare className="mr-3 h-6 w-6 text-yellow-500" /> A Work in Progress
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-foreground leading-relaxed">
-            <p className="mb-4">
+          <CardContent className="text-foreground leading-relaxed space-y-4">
+            <p>
               SoulFlow is still a prototype — something I’m building and learning from as I go. You might notice a few quirks here and there, but that’s part of the creative process!
             </p>
-            <p className="mb-4">
+            <p>
               Your feedback honestly means the world to me. It helps shape how this platform grows and evolves. If you have suggestions, ideas, or spot something that could be improved, please reach out through the{' '}
               <Link to="/contact" className="text-primary hover:underline font-medium">
                 Contact page
