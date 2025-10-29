@@ -29,8 +29,8 @@ const HeaderV2 = () => {
   const getButtonClass = (path: string) => {
     const isActive = location.pathname === path || (path === "/" && location.pathname === "/"); // Special handling for root path
     return cn(
-      "w-full justify-start text-foreground hover:text-primary transition-colors duration-300 ease-in-out transform hover:scale-105",
-      isActive && "font-bold text-primary"
+      "w-full justify-start text-primary-foreground/90 hover:text-primary-foreground transition-colors duration-300 ease-in-out transform hover:scale-105",
+      isActive && "font-bold text-primary-foreground"
     );
   };
 
@@ -67,16 +67,16 @@ const HeaderV2 = () => {
   const isAdminUser = user?.email === 'daniele.buatti@gmail.com';
 
   return (
-    <header className="w-full bg-white shadow-lg border-b border-gray-200 py-3 px-4 md:px-8 flex justify-center dark:bg-background dark:border-gray-800 sticky top-0 z-50">
+    <header className="w-full bg-primary py-3 px-4 md:px-8 flex justify-center sticky top-0 z-50">
       <div className="w-full max-w-2xl flex justify-between items-center">
-        <Link to="/" className="flex flex-col items-start text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
+        <Link to="/" className="flex flex-col items-start text-primary-foreground hover:text-primary-foreground/80 transition-colors">
           <span className="text-2xl font-bold leading-none">SoulFlow 2.0</span>
-          <span className="text-xs font-medium text-muted-foreground leading-none mt-1">Australia</span>
+          <span className="text-xs font-medium text-primary-foreground/70 leading-none mt-1">Australia</span>
         </Link>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
               <Menu className="h-6 w-6" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
