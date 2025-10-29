@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parseISO, isSameDay } from 'date-fns'; // Import parseISO and isSameDay
+import { format, parseISO, isSameDay } from 'date-fns';
 import { Edit, Trash2, PlusCircle, ExternalLink, Image as ImageIcon, Loader2, Frown, RefreshCw } from 'lucide-react';
 import {
   Dialog,
@@ -69,7 +69,7 @@ interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  approval_status?: string; // Renamed from 'state' to 'approval_status'
+  approval_status?: string;
   image_url?: string;
   user_id?: string;
   is_deleted: boolean;
@@ -93,7 +93,7 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  approvalStatus: z.string().optional().or(z.literal('')), // Renamed from 'state' to 'approvalStatus'
+  approvalStatus: z.string().optional().or(z.literal('')),
   image_url: z.string().optional().or(z.literal('')),
 });
 
@@ -102,7 +102,7 @@ const eventTypes = [
   'Community Gathering', 'Other',
 ];
 
-const eventApprovalStatuses = [ // Renamed from eventStates
+const eventApprovalStatuses = [
   'approved', 'pending', 'rejected'
 ];
 
@@ -141,7 +141,7 @@ const EventManagementTable = () => {
       specialNotes: '',
       organizerContact: '',
       eventType: '',
-      approvalStatus: '', // Renamed
+      approvalStatus: '',
       image_url: '',
     },
   });
@@ -212,7 +212,7 @@ const EventManagementTable = () => {
       specialNotes: event.special_notes || '',
       organizerContact: event.organizer_contact || '',
       eventType: event.event_type || '',
-      approvalStatus: event.approval_status || '', // Renamed
+      approvalStatus: event.approval_status || '',
       image_url: event.image_url || '',
     });
     setIsEditDialogOpen(true);
@@ -239,7 +239,7 @@ const EventManagementTable = () => {
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
         event_type: values.eventType || null,
-        approval_status: values.approvalStatus || null, // Renamed
+        approval_status: values.approvalStatus || null,
       })
       .eq('id', values.id);
 
@@ -312,11 +312,11 @@ const EventManagementTable = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[200px] text-foreground">Event Name</TableHead>
-                <TableHead className="text-foreground">Date</TableHead> {/* Changed from Start Date */}
+                <TableHead className="text-foreground">Date</TableHead>
                 <TableHead className="text-foreground">Location</TableHead>
-                <TableHead className="text-foreground">Price</TableHead> {/* New Price column */}
+                <TableHead className="text-foreground">Price</TableHead>
                 <TableHead className="text-foreground">Image</TableHead>
-                <TableHead className="text-foreground">Approval Status</TableHead> {/* Renamed */}
+                <TableHead className="text-foreground">Approval Status</TableHead>
                 <TableHead className="text-right text-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -324,9 +324,9 @@ const EventManagementTable = () => {
               {events.map((event) => (
                 <TableRow key={event.id} className={cn(event.is_deleted && "bg-muted/50 text-muted-foreground opacity-70")}>
                   <TableCell className="font-medium text-foreground">{event.event_name}</TableCell>
-                  <TableCell className="text-foreground">{renderDateDisplay(event)}</TableCell> {/* Using new render function */}
+                  <TableCell className="text-foreground">{renderDateDisplay(event)}</TableCell>
                   <TableCell className="text-foreground">{event.place_name || event.full_address || 'N/A'}</TableCell>
-                  <TableCell className="text-foreground">{formatPrice(event.price)}</TableCell> {/* Display price using formatPrice */}
+                  <TableCell className="text-foreground">{formatPrice(event.price)}</TableCell>
                   <TableCell>
                     {event.image_url ? (
                       <img src={event.image_url} alt={`Image for ${event.event_name}`} className="w-12 h-12 object-cover rounded-md" loading="lazy" />
@@ -335,7 +335,7 @@ const EventManagementTable = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadgeVariant(event.approval_status)}> {/* Using approval_status */}
+                    <Badge variant={getStatusBadgeVariant(event.approval_status)}>
                       {event.approval_status || 'N/A'}
                     </Badge>
                     {event.is_deleted && (
@@ -612,10 +612,10 @@ const EventManagementTable = () => {
               />
               <FormField
                 control={form.control}
-                name="approvalStatus" // Renamed
+                name="approvalStatus"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Approval Status</FormLabel> {/* Renamed */}
+                    <FormLabel>Approval Status</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="focus-visible:ring-primary">
@@ -623,7 +623,7 @@ const EventManagementTable = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="dark:bg-card dark:border-border">
-                        {eventApprovalStatuses.map((status) => ( // Using eventApprovalStatuses
+                        {eventApprovalStatuses.map((status) => (
                           <SelectItem key={status} value={status}>
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                           </SelectItem>
