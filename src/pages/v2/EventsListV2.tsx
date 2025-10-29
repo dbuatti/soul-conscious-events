@@ -9,36 +9,59 @@ import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
-import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants'; // Changed v2Areas to v2States
-import FilterDropdownsV2, { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2'; // Import FilterDropdownsV2Props
+import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
+import FilterDropdownsV2, { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
+import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 
 const EVENTS_PER_LOAD = 6; // Number of events to load at a time
 
 const EventsListV2 = () => {
-  const [allEvents, setAllEvents] = useState<Event[]>([]); // Store all fetched events
-  const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]); // Events currently displayed after filtering/pagination
+  const { user, isLoading: isSessionLoading } = useSession(); // Get user and loading state from session
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
-  const [availableVenues, setAvailableVenues] = useState<string[]>([]); // State for dynamic venues
+  const [availableVenues, setAvailableVenues] = useState<string[]>([]);
+  const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]); // New state for favourite venues
 
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
-    date: 'All Upcoming', // Default to 'All Upcoming'
-    category: [], // Default to empty array for multi-select
-    venue: [],     // Default to empty array for multi-select
-    price: [],     // Default to empty array for multi-select
-    state: [],      // Changed 'area' to 'state'
+    date: 'All Upcoming',
+    category: [],
+    venue: [],
+    price: [],
+    state: [],
   });
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
+  // Function to fetch user's favourited venues
+  const fetchFavouriteVenues = useCallback(async () => {
+    if (!user) {
+      setFavouriteVenues([]);
+      return;
+    }
+    const { data, error } = await supabase
+      .from('user_favourite_venues')
+      .select('place_name')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error fetching favourite venues:', error);
+      // toast.error('Failed to load favourite venues.'); // Suppress toast for a smoother UX
+      setFavouriteVenues([]);
+    } else {
+      setFavouriteVenues(data.map(item => item.place_name));
+    }
+  }, [user]);
+
   // Function to fetch events from Supabase
   const fetchInitialEvents = useCallback(async () => {
     setLoading(true);
-    setOffset(0); // Reset offset for initial fetch
-    setHasMore(true); // Assume there's more data initially
+    setOffset(0);
+    setHasMore(true);
 
     let query = supabase.from('events').select('*');
     query = query.eq('approval_status', 'approved');
@@ -53,17 +76,19 @@ const EventsListV2 = () => {
       setAvailableVenues([]);
     } else {
       setAllEvents(data || []);
-      // Extract unique place_names for the venue filter
       const uniqueVenues = Array.from(new Set(data.map(event => event.place_name).filter(Boolean))) as string[];
       setAvailableVenues(uniqueVenues.sort());
     }
     setLoading(false);
   }, []);
 
-  // Effect to fetch initial events on component mount
+  // Effect to fetch initial events and favourite venues on component mount or user change
   useEffect(() => {
     fetchInitialEvents();
-  }, [fetchInitialEvents]);
+    if (!isSessionLoading) {
+      fetchFavouriteVenues();
+    }
+  }, [fetchInitialEvents, fetchFavouriteVenues, isSessionLoading]);
 
   // Filter and paginate events whenever allEvents or filters change
   useEffect(() => {
@@ -94,7 +119,7 @@ const EventsListV2 = () => {
           if (!(eventDate >= startM && eventDate <= endM)) return false;
           break;
         case 'All Upcoming':
-          if (isPast(eventDate) && !isToday(eventDate)) return false; // Only show future or today
+          if (isPast(eventDate) && !isToday(eventDate)) return false;
           break;
         default:
           break;
@@ -122,7 +147,7 @@ const EventsListV2 = () => {
         if (!priceMatch) return false;
       }
       // Apply state filter (multi-select, using geographical_state)
-      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) { // Changed 'area' to 'state'
+      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) {
         return false;
       }
       return true;
@@ -162,7 +187,7 @@ const EventsListV2 = () => {
           if (!(eventDate >= startM && eventDate <= endM)) return false;
           break;
         case 'All Upcoming':
-          if (isPast(eventDate) && !isToday(eventDate)) return false; // Only show future or today
+          if (isPast(eventDate) && !isToday(eventDate)) return false;
           break;
         default:
           break;
@@ -190,7 +215,7 @@ const EventsListV2 = () => {
         if (!priceMatch) return false;
       }
       // Apply state filter (multi-select, using geographical_state)
-      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) { // Changed 'area' to 'state'
+      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) {
         return false;
       }
       return true;
@@ -205,9 +230,41 @@ const EventsListV2 = () => {
 
   const handleFilterChange = (newFilters: FilterDropdownsV2Props['currentFilters']) => {
     setFilters(newFilters);
-    // When filters change, reset pagination and re-apply filters
     setOffset(0);
     setHasMore(true);
+  };
+
+  const handleToggleFavouriteVenue = async (placeName: string, isFavourited: boolean) => {
+    if (!user) {
+      toast.info('Please log in to favourite venues.');
+      return;
+    }
+
+    if (isFavourited) {
+      const { error } = await supabase
+        .from('user_favourite_venues')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('place_name', placeName);
+      if (error) {
+        console.error('Error unfavouriting venue:', error);
+        toast.error('Failed to unfavourite venue.');
+      } else {
+        toast.success(`${placeName} removed from favourites.`);
+        fetchFavouriteVenues(); // Re-fetch favourites to update UI
+      }
+    } else {
+      const { error } = await supabase
+        .from('user_favourite_venues')
+        .insert([{ user_id: user.id, place_name: placeName }]);
+      if (error) {
+        console.error('Error favouriting venue:', error);
+        toast.error('Failed to favourite venue.');
+      } else {
+        toast.success(`${placeName} added to favourites!`);
+        fetchFavouriteVenues(); // Re-fetch favourites to update UI
+      }
+    }
   };
 
   const getSectionEvents = (sectionType: 'highlights' | 'upcoming') => {
@@ -238,7 +295,7 @@ const EventsListV2 = () => {
           if (!(eventDate >= startM && eventDate <= endM)) return false;
           break;
         case 'All Upcoming':
-          if (isPast(eventDate) && !isToday(eventDate)) return false; // Only show future or today
+          if (isPast(eventDate) && !isToday(eventDate)) return false;
           break;
         default:
           break;
@@ -259,15 +316,14 @@ const EventsListV2 = () => {
         if (filters.price.includes('Donation') && isDonation) priceMatch = true;
         if (!priceMatch) return false;
       }
-      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) return false; // Changed 'area' to 'state'
+      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) return false;
       return true;
     });
 
     if (sectionType === 'highlights') {
       const todayEvents = sectionFilteredEvents.filter(event => isToday(parseISO(event.event_date)));
-      return todayEvents.slice(0, 3); // Limit highlights to 3 for a concise view
+      return todayEvents.slice(0, 3);
     } else if (sectionType === 'upcoming') {
-      // Exclude today's highlights from upcoming to avoid duplication
       const highlightIds = getSectionEvents('highlights').map(e => e.id);
       return sectionFilteredEvents
         .filter(event => (isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) && !highlightIds.includes(event.id));
@@ -291,7 +347,7 @@ const EventsListV2 = () => {
         toast.error('Failed to delete event.');
       } else {
         toast.success('Event moved to trash.');
-        fetchInitialEvents(); // Re-fetch all events to update the list
+        fetchInitialEvents();
       }
     }
   };
@@ -305,14 +361,20 @@ const EventsListV2 = () => {
   const upcomingEvents = getSectionEvents('upcoming');
 
   return (
-    <div className="w-full max-w-2xl"> {/* Changed to max-w-2xl */}
-      {/* Filters below the header */}
+    <div className="w-full max-w-2xl">
       <div className="mb-8 flex justify-center">
-        <FilterDropdownsV2 currentFilters={filters} onFilterChange={handleFilterChange} availableVenues={availableVenues} />
+        <FilterDropdownsV2
+          currentFilters={filters}
+          onFilterChange={handleFilterChange}
+          availableVenues={availableVenues}
+          favouriteVenues={favouriteVenues} // Pass favourite venues
+          onToggleFavouriteVenue={handleToggleFavouriteVenue} // Pass toggle function
+          isUserLoggedIn={!!user} // Pass login status
+        />
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-6"> {/* Changed to grid-cols-1 */}
+        <div className="grid grid-cols-1 gap-6">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex flex-col space-y-3">
               <Skeleton className="h-[200px] w-full rounded-lg" />
@@ -328,7 +390,7 @@ const EventsListV2 = () => {
           {highlights.length > 0 && (
             <section className="mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Today's Highlights</h2>
-              <div className="grid grid-cols-1 gap-6"> {/* Ensured grid-cols-1 */}
+              <div className="grid grid-cols-1 gap-6">
                 {highlights.map(event => (
                   <EventCardV2
                     key={event.id}
@@ -336,7 +398,7 @@ const EventsListV2 = () => {
                     onShare={handleShare}
                     onDelete={handleDelete}
                     onViewDetails={handleViewDetails}
-                    isFeaturedToday={isToday(parseISO(event.event_date))} // Pass prop for badge
+                    isFeaturedToday={isToday(parseISO(event.event_date))}
                   />
                 ))}
               </div>
@@ -346,7 +408,7 @@ const EventsListV2 = () => {
           {upcomingEvents.length > 0 && (
             <section className="mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Upcoming Events</h2>
-              <div className="grid grid-cols-1 gap-6"> {/* Changed to grid-cols-1 */}
+              <div className="grid grid-cols-1 gap-6">
                 {upcomingEvents.map(event => (
                   <EventCardV2
                     key={event.id}
@@ -354,7 +416,7 @@ const EventsListV2 = () => {
                     onShare={handleShare}
                     onDelete={handleDelete}
                     onViewDetails={handleViewDetails}
-                    isFeaturedToday={isToday(parseISO(event.event_date))} // Pass prop for badge
+                    isFeaturedToday={isToday(parseISO(event.event_date))}
                   />
                 ))}
               </div>
