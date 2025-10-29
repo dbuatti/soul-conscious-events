@@ -123,7 +123,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     </DropdownMenuContent>
   );
 
-  const buttonClasses = "flex items-center gap-1 max-w-[120px] truncate rounded-xl px-4 py-2 h-9"; // Added rounded-xl and explicit padding/height
+  const buttonClasses = "flex items-center gap-1 max-w-[140px] truncate rounded-xl px-4 py-2 h-9"; // Increased max-w to 140px
 
   if (isMobile) {
     return (
