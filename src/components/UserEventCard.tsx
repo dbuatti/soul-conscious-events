@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Share2, ExternalLink, Calendar, Clock, MapPin } from 'lucide-react'; // Added MapPin
+import { Edit, Trash2, Share2, ExternalLink, Calendar, Clock, MapPin, DollarSign, Sparkles } from 'lucide-react'; // Added Sparkles
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +25,18 @@ interface UserEventCardProps {
   event: Event;
   onEventDeleted: () => void; // Callback to refresh the list after deletion
 }
+
+const formatPrice = (price?: string | null) => {
+  if (!price) return 'N/A';
+  const lowerCasePrice = price.toLowerCase();
+  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
+    return price;
+  }
+  if (/\d/.test(price) && !price.startsWith('$')) {
+    return `$${price}`;
+  }
+  return price;
+};
 
 const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) => {
   const location = useLocation();
@@ -96,6 +108,18 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
               </>
             )}
           </CardDescription>
+          {event.price && (
+            <CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base mt-1">
+              <DollarSign className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+              {formatPrice(event.price)}
+            </CardDescription>
+          )}
+          {event.event_type && (
+            <CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base mt-1">
+              <Sparkles className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+              {event.event_type}
+            </CardDescription>
+          )}
           {event.approval_status && ( // Display approval_status
             <div className="mt-2">
               <Badge variant={getStatusBadgeVariant(event.approval_status)}>

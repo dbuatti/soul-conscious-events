@@ -106,6 +106,18 @@ const eventApprovalStatuses = [ // Renamed from eventStates
   'approved', 'pending', 'rejected'
 ];
 
+const formatPrice = (price?: string | null) => {
+  if (!price) return 'N/A';
+  const lowerCasePrice = price.toLowerCase();
+  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
+    return price;
+  }
+  if (/\d/.test(price) && !price.startsWith('$')) {
+    return `$${price}`;
+  }
+  return price;
+};
+
 const EventManagementTable = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -314,12 +326,12 @@ const EventManagementTable = () => {
                   <TableCell className="font-medium text-foreground">{event.event_name}</TableCell>
                   <TableCell className="text-foreground">{renderDateDisplay(event)}</TableCell> {/* Using new render function */}
                   <TableCell className="text-foreground">{event.place_name || event.full_address || 'N/A'}</TableCell>
-                  <TableCell className="text-foreground">{event.price ? event.price.replace(/\$/g, '') : 'N/A'}</TableCell> {/* Display price without $ */}
+                  <TableCell className="text-foreground">{formatPrice(event.price)}</TableCell> {/* Display price using formatPrice */}
                   <TableCell>
                     {event.image_url ? (
                       <img src={event.image_url} alt={`Image for ${event.event_name}`} className="w-12 h-12 object-cover rounded-md" loading="lazy" />
                     ) : (
-                      <ImageIcon className="h-8 w-8 text-muted-foreground" aria-label="No image available" />
+                      <span className="text-muted-foreground text-sm">No Image</span>
                     )}
                   </TableCell>
                   <TableCell>

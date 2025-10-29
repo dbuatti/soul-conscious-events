@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { format, parseISO } from 'date-fns';
-import { Calendar, Clock, Share2, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Clock, Share2, Edit, Trash2, Sparkles, DollarSign } from 'lucide-react'; // Changed Tag to Sparkles, Added DollarSign
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
@@ -19,6 +19,18 @@ interface EventCardListProps {
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
 }
+
+const formatPrice = (price?: string | null) => {
+  if (!price) return 'N/A';
+  const lowerCasePrice = price.toLowerCase();
+  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
+    return price;
+  }
+  if (/\d/.test(price) && !price.startsWith('$')) {
+    return `$${price}`;
+  }
+  return price;
+};
 
 const EventCardList: React.FC<EventCardListProps> = ({
   events,
@@ -103,6 +115,18 @@ const EventCardList: React.FC<EventCardListProps> = ({
               </>
             )}
           </CardDescription>
+          {event.price && (
+            <CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base mt-1">
+              <DollarSign className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+              {formatPrice(event.price)}
+            </CardDescription>
+          )}
+          {event.event_type && (
+            <CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base mt-1">
+              <Sparkles className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+              {event.event_type}
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
           {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}

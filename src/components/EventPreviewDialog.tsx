@@ -10,7 +10,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, DollarSign, LinkIcon, Info, User, Tag, Ticket } from 'lucide-react';
+import { Calendar, Clock, MapPin, DollarSign, LinkIcon, Info, User, Sparkles, Ticket } from 'lucide-react'; // Changed Tag to Sparkles
 
 interface EventPreviewDialogProps {
   isOpen: boolean;
@@ -18,6 +18,18 @@ interface EventPreviewDialogProps {
   previewData: any; // Using 'any' for simplicity, but you could define a more specific type
   imagePreviewUrl: string | null;
 }
+
+const formatPrice = (price?: string | null) => {
+  if (!price) return 'N/A';
+  const lowerCasePrice = price.toLowerCase();
+  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
+    return price;
+  }
+  if (/\d/.test(price) && !price.startsWith('$')) {
+    return `$${price}`;
+  }
+  return price;
+};
 
 const EventPreviewDialog: React.FC<EventPreviewDialogProps> = ({ isOpen, onClose, previewData, imagePreviewUrl }) => {
   if (!previewData) return null;
@@ -89,7 +101,7 @@ const EventPreviewDialog: React.FC<EventPreviewDialogProps> = ({ isOpen, onClose
           {previewData.price && (
             <div className="grid grid-cols-4 items-center gap-4">
               <p className="text-right font-medium text-foreground">Price:</p>
-              <p className="col-span-3 text-foreground">{previewData.price}</p>
+              <p className="col-span-3 text-foreground">{formatPrice(previewData.price)}</p>
             </div>
           )}
           {previewData.specialNotes && (
