@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings, Info } from 'lucide-react'; // Added Info icon
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -47,11 +47,15 @@ const HeaderV2 = () => {
   const authenticatedNavItems: NavItem[] = [
     { to: "/submit-event", label: "Create Event", icon: PlusCircle },
     { to: "/my-events", label: "My Events", icon: CalendarCheck },
+    { to: "/my-bookmarks", label: "My Bookmarks", icon: Bookmark }, // Added My Bookmarks
     { to: "/v2/account-settings", label: "Account Settings", icon: Settings },
+    { to: "/about", label: "About", icon: Info }, // Added About page
+    { to: "#", label: "Logout", icon: LogOut, onClick: handleLogout },
   ];
 
   const unauthenticatedNavItems: NavItem[] = [
     { to: "/v2/login", label: "Login / Sign Up", icon: LogIn },
+    { to: "/about", label: "About", icon: Info }, // Added About page for unauthenticated users too
   ];
 
   const adminNavItems: NavItem[] = [
