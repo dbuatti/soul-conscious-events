@@ -68,6 +68,7 @@ const EventsListV2 = () => {
     let query = supabase.from('events').select('*');
     query = query.eq('approval_status', 'approved');
     query = query.eq('is_deleted', false); // Exclude deleted events
+    query = query.eq('is_deleted', false); // Exclude deleted events
     query = query.order('event_date', { ascending: true });
 
     const { data, error } = await query;
@@ -272,7 +273,7 @@ const EventsListV2 = () => {
             <>
               {highlights.length > 0 && (
                 <section className="mb-12">
-                  <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Today's Highlights</h2>
+                  <h2 className="text-3xl font-heading font-bold text-foreground mb-6 border-b pb-2 border-border">Today's Highlights</h2> {/* Applied font-heading */}
                   <div className="grid grid-cols-1 gap-6">
                     {highlights.map(event => (
                       <EventCardV2
@@ -290,7 +291,7 @@ const EventsListV2 = () => {
 
               {upcomingEvents.length > 0 && (
                 <section className="mb-12">
-                  <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Upcoming Events</h2>
+                  <h2 className="text-3xl font-heading font-bold text-foreground mb-6 border-b pb-2 border-border">Upcoming Events</h2> {/* Applied font-heading */}
                   <div className="grid grid-cols-1 gap-6">
                     {upcomingEvents.map(event => (
                       <EventCardV2
@@ -346,7 +347,7 @@ const EventsListV2 = () => {
                 onMonthChange={setCurrentMonth}
               />
               <div className="mt-8">
-                <h3 className="text-2xl font-bold text-foreground mb-4 border-b pb-2 border-border">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
+                <h3 className="text-2xl font-heading font-bold text-foreground mb-4 border-b pb-2 border-border">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3> {/* Styled heading */}
                 {selectedDayEvents.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6">
                     {selectedDayEvents.map(event => (
@@ -367,7 +368,7 @@ const EventsListV2 = () => {
                 )}
               </div>
               <div className="mt-12">
-                <h3 className="text-2xl font-bold text-foreground mb-4 border-b pb-2 border-border">More events in {format(currentMonth, 'MMMM')}</h3>
+                <h3 className="text-2xl font-heading font-bold text-foreground mb-4 border-b pb-2 border-border">More events in {format(currentMonth, 'MMMM')}</h3> {/* Styled heading */}
                 {currentMonthEvents.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6">
                     {currentMonthEvents.map(event => (

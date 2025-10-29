@@ -105,6 +105,22 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/dev-space" // Changed path to be under V2 layout
+              element={
+                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                  <LayoutV2><DevSpace /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/map" // Changed path to be under V2 layout
+              element={
+                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                  <LayoutV2><MapPage /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
 
             {/* Original App Routes - now under /old */}
             <Route path="/old" element={<Layout><EventsList /></Layout>} />
