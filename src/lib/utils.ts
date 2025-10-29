@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { australianStates } from '@/lib/constants';
+import { Capacitor } from '@capacitor/core'; // Import Capacitor
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,4 +23,14 @@ export const extractAustralianState = (address: string): string | null => {
   }
 
   return null;
+};
+
+export const getRedirectUrl = (): string => {
+  if (Capacitor.isNativePlatform()) {
+    // For Capacitor, use the custom URL scheme defined in capacitor.config.ts
+    // The appId is 'com.example.soulconsciousevents'
+    return 'com.example.soulconsciousevents://';
+  }
+  // For web, use the current origin
+  return window.location.origin;
 };

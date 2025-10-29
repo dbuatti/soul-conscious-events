@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
 import { toast } from 'sonner';
+import { getRedirectUrl } from '@/lib/utils'; // Import getRedirectUrl
 
 const Login = () => {
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ const Login = () => {
             },
           }}
           theme="dark" // Set default theme to dark for Auth UI
-          redirectTo={`${window.location.origin}/old`} // Redirect to old home after login
+          redirectTo={`${getRedirectUrl()}old`} // Use the dynamic redirect URL, append /old for this specific route
           localization={{
             variables: {
               sign_in: {
