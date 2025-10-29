@@ -4,86 +4,83 @@
 
 @layer base {
   :root {
-    --background: 270 10% 99%; /* Very light, almost white, with a hint of purple */
-    --foreground: 270 15% 15%; /* Deep dark purple for text */
+    /* Light Mode: Warm Earthy Tones */
+    --background: 30 20% 98%; /* Very light beige/cream */
+    --foreground: 30 10% 20%; /* Deep, rich brown/charcoal */
 
     --card: 0 0% 100%; /* Pure white for cards */
-    --card-foreground: 270 15% 15%;
+    --card-foreground: 30 10% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 270 15% 15%;
+    --popover-foreground: 30 10% 20%;
 
-    --primary: 270 70% 50%; /* Vibrant Purple */
+    --primary: 15 70% 50%; /* Warm terracotta/rust */
     --primary-foreground: 0 0% 98%; /* Light text on primary */
 
-    --secondary: 270 20% 95%; /* Very light, desaturated purple for secondary */
-    --secondary-foreground: 270 15% 15%;
+    --secondary: 30 20% 90%; /* Light, muted beige */
+    --secondary-foreground: 30 10% 20%;
 
-    --muted: 270 15% 97%; /* Even lighter secondary for muted elements */
-    --muted-foreground: 270 10% 40%; /* Medium gray-purple for muted text */
+    --muted: 30 15% 95%; /* Even lighter secondary for muted elements */
+    --muted-foreground: 30 10% 40%; /* Medium brown-grey for muted text */
 
-    --accent: 270 20% 90%; /* Slightly darker secondary for accent */
-    --accent-foreground: 270 15% 15%;
+    --accent: 30 20% 85%; /* Slightly darker muted beige for accent */
+    --accent-foreground: 30 10% 20%;
 
-    --destructive: 2 50% 38%; /* 93322F - Dark Red (kept for destructive actions) */
+    --destructive: 0 70% 40%; /* Deep red for destructive actions */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 270 10% 85%; /* Light desaturated purple for borders */
-    --input: 270 10% 85%;
-    --ring: 270 70% 50%; /* Same as primary */
+    --border: 30 10% 80%; /* Light, warm grey for borders */
+    --input: 30 10% 80%;
+    --ring: 15 70% 50%; /* Same as primary */
 
-    --radius: 0.5rem;
-
-    --sidebar-background: 270 15% 95%; /* Lighter purple-grey for sidebar */
-    --sidebar-foreground: 270 15% 15%;
-
-    --sidebar-primary: 270 70% 50%;
+    --sidebar-background: 30 20% 95%; /* Lighter beige for sidebar */
+    --sidebar-foreground: 30 10% 20%;
+    --sidebar-primary: 15 70% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 270 20% 90%;
-    --sidebar-accent-foreground: 270 15% 15%;
-
-    --sidebar-border: 270 10% 85%;
-    --sidebar-ring: 270 70% 50%;
+    --sidebar-accent: 30 20% 85%;
+    --sidebar-accent-foreground: 30 10% 20%;
+    --sidebar-border: 30 10% 80%;
+    --sidebar-ring: 15 70% 50%;
   }
 
   .dark {
-    --background: 270 15% 5%; /* Very dark purple-black */
-    --foreground: 270 20% 90%; /* Light, desaturated purple for readability */
+    /* Dark Mode: Sophisticated Dark Blue-Grey */
+    --background: 200 20% 10%; /* Deep dark blue-grey */
+    --foreground: 200 20% 85%; /* Soft, light grey/off-white */
 
-    --card: 270 15% 8%; /* Darker purple-black for cards */
-    --card-foreground: 270 20% 90%;
+    --card: 200 15% 12%; /* Slightly lighter dark blue-grey for cards */
+    --card-foreground: 200 20% 85%;
 
-    --popover: 270 15% 8%;
-    --popover-foreground: 270 20% 90%;
+    --popover: 200 15% 12%;
+    --popover-foreground: 200 20% 85%;
 
-    --primary: 270 70% 60%; /* Slightly lighter and more saturated purple for dark mode */
-    --primary-foreground: 0 0% 98%; /* Very light text on primary */
+    --primary: 15 70% 60%; /* Brighter terracotta/rust for dark mode */
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 270 15% 15%; /* Darker, desaturated purple for secondary in dark mode */
-    --secondary-foreground: 270 20% 90%;
+    --secondary: 200 15% 18%; /* Medium dark blue-grey for secondary */
+    --secondary-foreground: 200 20% 85%;
 
-    --muted: 270 15% 20%;
-    --muted-foreground: 270 10% 60%;
+    --muted: 200 15% 22%;
+    --muted-foreground: 200 10% 60%;
 
-    --accent: 270 15% 25%;
-    --accent-foreground: 270 20% 90%;
+    --accent: 200 15% 25%;
+    --accent-foreground: 200 20% 85%;
 
-    --destructive: 2 50% 38%; /* 93322F - Dark Red (consistent) */
+    --destructive: 0 70% 40%; /* Deep red (consistent) */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 270 15% 30%;
-    --input: 270 15% 25%;
-    --ring: 270 70% 60%;
+    --border: 200 10% 30%;
+    --input: 200 10% 25%;
+    --ring: 15 70% 60%;
 
-    --sidebar-background: 270 15% 10%; /* Even darker for sidebar */
-    --sidebar-foreground: 270 20% 90%;
-    --sidebar-primary: 270 70% 60%;
+    --sidebar-background: 200 15% 15%; /* Darker blue-grey for sidebar */
+    --sidebar-foreground: 200 20% 85%;
+    --sidebar-primary: 15 70% 60%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 270 15% 25%;
-    --sidebar-accent-foreground: 270 20% 90%;
-    --sidebar-border: 270 15% 30%;
-    --sidebar-ring: 270 70% 60%;
+    --sidebar-accent: 200 15% 25%;
+    --sidebar-accent-foreground: 200 20% 85%;
+    --sidebar-border: 200 10% 30%;
+    --sidebar-ring: 15 70% 60%;
   }
 }
 

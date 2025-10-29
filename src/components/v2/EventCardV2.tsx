@@ -55,37 +55,37 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           href={event.google_maps_link}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline"
+          className="text-primary hover:underline font-medium"
           onClick={(e) => e.stopPropagation()} // Prevent card click when clicking link
         >
           {locationText}
         </a>
       );
     }
-    return locationText;
+    return <span className="font-medium">{locationText}</span>;
   };
 
   return (
     <Card className="group flex flex-col sm:flex-row shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>
       {event.image_url && (
-        <div className="relative w-full sm:w-40 aspect-video sm:aspect-square overflow-hidden flex-shrink-0"> {/* Changed sm:w-1/3 to sm:w-40 */}
+        <div className="relative w-full sm:w-48 aspect-video sm:aspect-square overflow-hidden flex-shrink-0"> {/* Increased width for image */}
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           
           {/* Top Left Badges */}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
             {isFeaturedToday && (
-              <Badge variant="default" className="bg-primary text-primary-foreground text-xs px-2 py-0.5">
+              <Badge variant="default" className="bg-primary text-primary-foreground text-xs px-2 py-0.5 font-semibold">
                 FEATURED TODAY
               </Badge>
             )}
             {isWalkIn && ( // Placeholder for Walk-in
-              <Badge variant="secondary" className="bg-blue-500 text-white text-xs px-2 py-0.5">
+              <Badge variant="secondary" className="bg-blue-500 text-white text-xs px-2 py-0.5 font-semibold">
                 Walk-in
               </Badge>
             )}
             {isRSVPRecommended && ( // Placeholder for RSVP
-              <Badge variant="secondary" className="bg-purple-500 text-white text-xs px-2 py-0.5">
+              <Badge variant="secondary" className="bg-purple-500 text-white text-xs px-2 py-0.5 font-semibold">
                 RSVP recommended
               </Badge>
             )}
@@ -105,42 +105,42 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
       )}
       <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between">
         <CardHeader className="p-0 pb-2">
-          <CardTitle className="text-lg sm:text-xl font-bold text-foreground mb-1">{event.event_name}</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl font-extrabold text-foreground mb-1 leading-tight">{event.event_name}</CardTitle> {/* Increased font size and weight */}
           {/* Changed CardDescription to a div to fix nesting warning */}
-          <div className="flex flex-col text-muted-foreground text-xs sm:text-sm">
-            <div className="flex items-center mb-1">
-              <Clock className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />
-              {event.event_time || 'Time TBD'}
-              <span className="mx-1">•</span>
-              <Calendar className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />
-              {dateDisplay}
+          <div className="flex flex-col text-muted-foreground text-sm sm:text-base space-y-1"> {/* Increased font size and spacing */}
+            <div className="flex items-center">
+              <Clock className="mr-2 h-4 w-4 flex-shrink-0 text-primary" />
+              <span className="font-medium">{event.event_time || 'Time TBD'}</span>
+              <span className="mx-2">•</span>
+              <Calendar className="mr-2 h-4 w-4 flex-shrink-0 text-primary" />
+              <span className="font-medium">{dateDisplay}</span>
             </div>
-            <div className="flex items-center mt-1">
-              <MapPin className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />
+            <div className="flex items-center">
+              <MapPin className="mr-2 h-4 w-4 flex-shrink-0 text-primary" />
               {renderLocation()}
             </div>
             {event.price && (
-              <div className="flex items-center mt-1">
-                <DollarSign className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary" />
-                {event.price}
+              <div className="flex items-center">
+                <DollarSign className="mr-2 h-4 w-4 flex-shrink-0 text-primary" />
+                <span className="font-medium">{event.price}</span>
               </div>
             )}
           </div>
         </CardHeader>
         <CardContent className="p-0 pt-2 flex-grow">
-          {event.description && <p className="text-foreground leading-relaxed text-xs sm:text-sm line-clamp-2">{event.description}</p>}
+          {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>} {/* Increased line-clamp */}
         </CardContent>
-        <CardFooter className="p-0 pt-3 flex justify-end space-x-1">
-          <BookmarkButton eventId={event.id} size="icon" className="h-7 w-7 sm:h-8 sm:w-8" />
+        <CardFooter className="p-0 pt-3 flex justify-end space-x-2"> {/* Increased spacing */}
+          <BookmarkButton eventId={event.id} size="icon" className="h-8 w-8 sm:h-9 sm:w-9" /> {/* Increased button size */}
           {isCreatorOrAdmin && (
             <>
               <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
-                <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-8 sm:w-8 transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <Edit className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
+                <Button variant="outline" size="icon" title="Edit Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Edit className="h-4 w-4" />
                 </Button>
               </Link>
-              <Button variant="destructive" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-8 sm:w-8 transition-all duration-300 ease-in-out transform hover:scale-105">
-                <Trash2 className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
+              <Button variant="destructive" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Trash2 className="h-4 w-4" />
               </Button>
             </>
           )}
