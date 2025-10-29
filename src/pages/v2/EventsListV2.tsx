@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO, isToday, isPast, isFuture, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay } from 'date-fns';
+import { format, parseISO, isToday, isPast, isFuture, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, PlusCircle, Loader2 } from 'lucide-react';
@@ -11,12 +11,13 @@ import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
 import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
 import FilterDropdownsV2, { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
-import { useSession } from '@/components/SessionContextProvider'; // Import useSession
+import { useSession } from '@/components/SessionContextProvider';
+import AdvancedEventCalendar from '@/components/AdvancedEventCalendar'; // Import AdvancedEventCalendar
 
 const EVENTS_PER_LOAD = 6; // Number of events to load at a time
 
 const EventsListV2 = () => {
-  const { user, isLoading: isSessionLoading } = useSession(); // Get user and loading state from session
+  const { user, isLoading: isSessionLoading } = useSession();
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,7 @@ const EventsListV2 = () => {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
   const [availableVenues, setAvailableVenues] = useState<string[]>([]);
-  const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]); // New state for favourite venues
+  const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]);
 
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
     date: 'All Upcoming',
@@ -34,10 +35,13 @@ const EventsListV2 = () => {
     state: [],
   });
 
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list'); // New state for view mode
+  const [currentMonth, setCurrentMonth] = useState(new Date()); // State for calendar's current month
+  const [selectedDay, setSelectedDay] = useState(new Date()); // State for calendar's selected day
+
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  // Function to fetch user's favourited venues
   const fetchFavouriteVenues = useCallback(async () => {
     if (!user) {
       setFavouriteVenues([]);
@@ -50,14 +54,12 @@ const EventsListV2 = () => {
 
     if (error) {
       console.error('Error fetching favourite venues:', error);
-      // toast.error('Failed to load favourite venues.'); // Suppress toast for a smoother UX
       setFavouriteVenues([]);
     } else {
       setFavouriteVenues(data.map(item => item.place_name));
     }
   }, [user]);
 
-  // Function to fetch events from Supabase
   const fetchInitialEvents = useCallback(async () => {
     setLoading(true);
     setOffset(0);
@@ -82,7 +84,6 @@ const EventsListV2 = () => {
     setLoading(false);
   }, []);
 
-  // Effect to fetch initial events and favourite venues on component mount or user change
   useEffect(() => {
     fetchInitialEvents();
     if (!isSessionLoading) {
@@ -90,17 +91,15 @@ const EventsListV2 = () => {
     }
   }, [fetchInitialEvents, fetchFavouriteVenues, isSessionLoading]);
 
-  // Filter and paginate events whenever allEvents or filters change
-  useEffect(() => {
+  const getFilteredEvents = useCallback(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     const tomorrow = addDays(now, 1);
     tomorrow.setHours(0, 0, 0, 0);
 
-    let filtered = allEvents.filter(event => {
+    return allEvents.filter(event => {
       const eventDate = parseISO(event.event_date);
 
-      // Apply date filter
       switch (filters.date) {
         case 'Today':
           if (!isToday(eventDate)) return false;
@@ -125,15 +124,12 @@ const EventsListV2 = () => {
           break;
       }
 
-      // Apply category filter (multi-select)
       if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) {
         return false;
       }
-      // Apply venue filter (multi-select, using place_name)
       if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) {
         return false;
       }
-      // Apply price filter (multi-select)
       if (filters.price.length > 0) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
         const isFree = lowerCasePrice.includes('free');
@@ -146,81 +142,23 @@ const EventsListV2 = () => {
         if (filters.price.includes('Donation') && isDonation) priceMatch = true;
         if (!priceMatch) return false;
       }
-      // Apply state filter (multi-select, using geographical_state)
       if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) {
         return false;
       }
       return true;
     });
+  }, [allEvents, filters]);
 
+  useEffect(() => {
+    const filtered = getFilteredEvents();
     setDisplayedEvents(filtered.slice(0, EVENTS_PER_LOAD));
     setOffset(EVENTS_PER_LOAD);
     setHasMore(filtered.length > EVENTS_PER_LOAD);
-  }, [allEvents, filters]);
+  }, [getFilteredEvents]);
 
   const handleLoadMore = () => {
     setLoadingMore(true);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const tomorrow = addDays(now, 1);
-    tomorrow.setHours(0, 0, 0, 0);
-
-    let filtered = allEvents.filter(event => {
-      const eventDate = parseISO(event.event_date);
-
-      // Apply date filter
-      switch (filters.date) {
-        case 'Today':
-          if (!isToday(eventDate)) return false;
-          break;
-        case 'Tomorrow':
-          if (!isSameDay(eventDate, tomorrow)) return false;
-          break;
-        case 'This Week':
-          const startW = startOfWeek(now, { weekStartsOn: 1 });
-          const endW = endOfWeek(now, { weekStartsOn: 1 });
-          if (!(eventDate >= startW && eventDate <= endW)) return false;
-          break;
-        case 'This Month':
-          const startM = startOfMonth(now);
-          const endM = endOfMonth(now);
-          if (!(eventDate >= startM && eventDate <= endM)) return false;
-          break;
-        case 'All Upcoming':
-          if (isPast(eventDate) && !isToday(eventDate)) return false;
-          break;
-        default:
-          break;
-      }
-
-      // Apply category filter (multi-select)
-      if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) {
-        return false;
-      }
-      // Apply venue filter (multi-select, using place_name)
-      if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) {
-        return false;
-      }
-      // Apply price filter (multi-select)
-      if (filters.price.length > 0) {
-        const lowerCasePrice = event.price?.toLowerCase() || '';
-        const isFree = lowerCasePrice.includes('free');
-        const isDonation = lowerCasePrice.includes('donation');
-        const isPaid = !isFree && !isDonation && !!lowerCasePrice;
-
-        let priceMatch = false;
-        if (filters.price.includes('Free') && isFree) priceMatch = true;
-        if (filters.price.includes('Paid') && isPaid) priceMatch = true;
-        if (filters.price.includes('Donation') && isDonation) priceMatch = true;
-        if (!priceMatch) return false;
-      }
-      // Apply state filter (multi-select, using geographical_state)
-      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) {
-        return false;
-      }
-      return true;
-    });
-
+    const filtered = getFilteredEvents();
     const nextEvents = filtered.slice(offset, offset + EVENTS_PER_LOAD);
     setDisplayedEvents(prevEvents => [...prevEvents, ...nextEvents]);
     setOffset(prevOffset => prevOffset + nextEvents.length);
@@ -251,7 +189,7 @@ const EventsListV2 = () => {
         toast.error('Failed to unfavourite venue.');
       } else {
         toast.success(`${placeName} removed from favourites.`);
-        fetchFavouriteVenues(); // Re-fetch favourites to update UI
+        fetchFavouriteVenues();
       }
     } else {
       const { error } = await supabase
@@ -262,73 +200,9 @@ const EventsListV2 = () => {
         toast.error('Failed to favourite venue.');
       } else {
         toast.success(`${placeName} added to favourites!`);
-        fetchFavouriteVenues(); // Re-fetch favourites to update UI
+        fetchFavouriteVenues();
       }
     }
-  };
-
-  const getSectionEvents = (sectionType: 'highlights' | 'upcoming') => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const tomorrow = addDays(now, 1);
-    tomorrow.setHours(0, 0, 0, 0);
-
-    let sectionFilteredEvents = allEvents.filter(event => {
-      const eventDate = parseISO(event.event_date);
-
-      // Apply date filter from main filters state
-      switch (filters.date) {
-        case 'Today':
-          if (!isToday(eventDate)) return false;
-          break;
-        case 'Tomorrow':
-          if (!isSameDay(eventDate, tomorrow)) return false;
-          break;
-        case 'This Week':
-          const startW = startOfWeek(now, { weekStartsOn: 1 });
-          const endW = endOfWeek(now, { weekStartsOn: 1 });
-          if (!(eventDate >= startW && eventDate <= endW)) return false;
-          break;
-        case 'This Month':
-          const startM = startOfMonth(now);
-          const endM = endOfMonth(now);
-          if (!(eventDate >= startM && eventDate <= endM)) return false;
-          break;
-        case 'All Upcoming':
-          if (isPast(eventDate) && !isToday(eventDate)) return false;
-          break;
-        default:
-          break;
-      }
-
-      // Apply other filters (multi-select)
-      if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) return false;
-      if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) return false;
-      if (filters.price.length > 0) {
-        const lowerCasePrice = event.price?.toLowerCase() || '';
-        const isFree = lowerCasePrice.includes('free');
-        const isDonation = lowerCasePrice.includes('donation');
-        const isPaid = !isFree && !isDonation && !!lowerCasePrice;
-
-        let priceMatch = false;
-        if (filters.price.includes('Free') && isFree) priceMatch = true;
-        if (filters.price.includes('Paid') && isPaid) priceMatch = true;
-        if (filters.price.includes('Donation') && isDonation) priceMatch = true;
-        if (!priceMatch) return false;
-      }
-      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) return false;
-      return true;
-    });
-
-    if (sectionType === 'highlights') {
-      const todayEvents = sectionFilteredEvents.filter(event => isToday(parseISO(event.event_date)));
-      return todayEvents.slice(0, 3);
-    } else if (sectionType === 'upcoming') {
-      const highlightIds = getSectionEvents('highlights').map(e => e.id);
-      return sectionFilteredEvents
-        .filter(event => (isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) && !highlightIds.includes(event.id));
-    }
-    return [];
   };
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
@@ -357,20 +231,40 @@ const EventsListV2 = () => {
     setIsEventDetailDialogOpen(true);
   };
 
-  const highlights = getSectionEvents('highlights');
-  const upcomingEvents = getSectionEvents('upcoming');
+  const allFilteredEvents = getFilteredEvents(); // Get all filtered events for calendar view
+  const selectedDayEvents = allFilteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
+  const currentMonthEvents = allFilteredEvents.filter(event => isSameMonth(parseISO(event.event_date), currentMonth) && !isSameDay(parseISO(event.event_date), selectedDay));
+
+  const highlights = allFilteredEvents.filter(event => isToday(parseISO(event.event_date))).slice(0, 3);
+  const upcomingEvents = allFilteredEvents.filter(event => (isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) && !highlights.map(h => h.id).includes(event.id));
 
   return (
     <div className="w-full max-w-2xl">
-      <div className="mb-8 flex justify-center">
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
         <FilterDropdownsV2
           currentFilters={filters}
           onFilterChange={handleFilterChange}
           availableVenues={availableVenues}
-          favouriteVenues={favouriteVenues} // Pass favourite venues
-          onToggleFavouriteVenue={handleToggleFavouriteVenue} // Pass toggle function
-          isUserLoggedIn={!!user} // Pass login status
+          favouriteVenues={favouriteVenues}
+          onToggleFavouriteVenue={handleToggleFavouriteVenue}
+          isUserLoggedIn={!!user}
         />
+        <div className="flex items-center space-x-2 mt-4 sm:mt-0">
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            onClick={() => setViewMode('list')}
+            className="rounded-xl px-4 py-2 h-9"
+          >
+            <Loader2 className="mr-2 h-4 w-4" /> List
+          </Button>
+          <Button
+            variant={viewMode === 'calendar' ? 'default' : 'outline'}
+            onClick={() => setViewMode('calendar')}
+            className="rounded-xl px-4 py-2 h-9"
+          >
+            <CalendarDays className="mr-2 h-4 w-4" /> Calendar
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -387,68 +281,125 @@ const EventsListV2 = () => {
         </div>
       ) : (
         <>
-          {highlights.length > 0 && (
-            <section className="mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Today's Highlights</h2>
-              <div className="grid grid-cols-1 gap-6">
-                {highlights.map(event => (
-                  <EventCardV2
-                    key={event.id}
-                    event={event}
-                    onShare={handleShare}
-                    onDelete={handleDelete}
-                    onViewDetails={handleViewDetails}
-                    isFeaturedToday={isToday(parseISO(event.event_date))}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+          {viewMode === 'list' ? (
+            <>
+              {highlights.length > 0 && (
+                <section className="mb-12">
+                  <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Today's Highlights</h2>
+                  <div className="grid grid-cols-1 gap-6">
+                    {highlights.map(event => (
+                      <EventCardV2
+                        key={event.id}
+                        event={event}
+                        onShare={handleShare}
+                        onDelete={handleDelete}
+                        onViewDetails={handleViewDetails}
+                        isFeaturedToday={isToday(parseISO(event.event_date))}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-          {upcomingEvents.length > 0 && (
-            <section className="mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Upcoming Events</h2>
-              <div className="grid grid-cols-1 gap-6">
-                {upcomingEvents.map(event => (
-                  <EventCardV2
-                    key={event.id}
-                    event={event}
-                    onShare={handleShare}
-                    onDelete={handleDelete}
-                    onViewDetails={handleViewDetails}
-                    isFeaturedToday={isToday(parseISO(event.event_date))}
-                  />
-                ))}
-              </div>
-              {hasMore && (
-                <div className="flex justify-center mt-8">
-                  <Button
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
-                    className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
-                  >
-                    {loadingMore ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading More...
-                      </>
-                    ) : (
-                      'Load More Events'
-                    )}
-                  </Button>
+              {upcomingEvents.length > 0 && (
+                <section className="mb-12">
+                  <h2 className="text-3xl font-bold text-foreground mb-6 border-b pb-2 border-border">Upcoming Events</h2>
+                  <div className="grid grid-cols-1 gap-6">
+                    {upcomingEvents.map(event => (
+                      <EventCardV2
+                        key={event.id}
+                        event={event}
+                        onShare={handleShare}
+                        onDelete={handleDelete}
+                        onViewDetails={handleViewDetails}
+                        isFeaturedToday={isToday(parseISO(event.event_date))}
+                      />
+                    ))}
+                  </div>
+                  {hasMore && (
+                    <div className="flex justify-center mt-8">
+                      <Button
+                        onClick={handleLoadMore}
+                        disabled={loadingMore}
+                        className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105"
+                      >
+                        {loadingMore ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading More...
+                          </>
+                        ) : (
+                          'Load More Events'
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {highlights.length === 0 && upcomingEvents.length === 0 && (
+                <div className="p-8 bg-secondary rounded-lg border border-border text-center">
+                  <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-semibold text-foreground mb-4">No events found matching your criteria.</p>
+                  <Link to="/submit-event">
+                    <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add an Event
+                    </Button>
+                  </Link>
                 </div>
               )}
-            </section>
-          )}
-
-          {highlights.length === 0 && upcomingEvents.length === 0 && (
-            <div className="p-8 bg-secondary rounded-lg border border-border text-center">
-              <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg font-semibold text-foreground mb-4">No events found matching your criteria.</p>
-              <Link to="/submit-event">
-                <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add an Event
-                </Button>
-              </Link>
+            </>
+          ) : ( // Calendar View
+            <div>
+              <AdvancedEventCalendar
+                events={allFilteredEvents} // Pass all filtered events to calendar for dot display
+                onEventSelect={handleViewDetails}
+                selectedDay={selectedDay}
+                onDayClick={setSelectedDay}
+                currentMonth={currentMonth}
+                onMonthChange={setCurrentMonth}
+              />
+              <div className="mt-8">
+                <h3 className="text-2xl font-bold text-foreground mb-4 border-b pb-2 border-border">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
+                {selectedDayEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-6">
+                    {selectedDayEvents.map(event => (
+                      <EventCardV2
+                        key={event.id}
+                        event={event}
+                        onShare={handleShare}
+                        onDelete={handleDelete}
+                        onViewDetails={handleViewDetails}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
+                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-foreground mb-4">No events scheduled for this day.</p>
+                  </div>
+                )}
+              </div>
+              <div className="mt-12">
+                <h3 className="text-2xl font-bold text-foreground mb-4 border-b pb-2 border-border">More events in {format(currentMonth, 'MMMM')}</h3>
+                {currentMonthEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-6">
+                    {currentMonthEvents.map(event => (
+                      <EventCardV2
+                        key={event.id}
+                        event={event}
+                        onShare={handleShare}
+                        onDelete={handleDelete}
+                        onViewDetails={handleViewDetails}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 bg-secondary rounded-xl border border-border text-center shadow-md">
+                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-foreground mb-4">No upcoming events found for this month.</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </>

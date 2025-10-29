@@ -9,10 +9,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Search, Star } from 'lucide-react';
-import { v2EventCategories, v2PriceOptions, v2States, v2DateOptions } from '@/lib/v2/constants';
+import { ChevronDown, Search, Star, List, CalendarDays } from 'lucide-react'; // Import List and CalendarDays icons
+import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'; // Import ToggleGroup components
 
 export interface FilterDropdownsV2Props {
   currentFilters: {
@@ -28,6 +29,8 @@ export interface FilterDropdownsV2Props {
   favouriteVenues: string[];
   onToggleFavouriteVenue: (placeName: string, isFavourited: boolean) => void;
   isUserLoggedIn: boolean;
+  viewMode: 'list' | 'calendar'; // New prop for view mode
+  onViewModeChange: (mode: 'list' | 'calendar') => void; // New prop for changing view mode
 }
 
 const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
@@ -38,6 +41,8 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
   favouriteVenues,
   onToggleFavouriteVenue,
   isUserLoggedIn,
+  viewMode, // Destructure new prop
+  onViewModeChange, // Destructure new prop
 }) => {
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
@@ -93,7 +98,6 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
       ? options.filter(option => option.toLowerCase().includes(searchTerm.toLowerCase()))
       : options;
 
-    // Special handling for venue filter to sort favourites
     let favouriteOptions: string[] = [];
     let otherOptions: string[] = [];
 
@@ -101,7 +105,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
       favouriteOptions = filteredOptions.filter(venue => favouriteVenues.includes(venue));
       otherOptions = filteredOptions.filter(venue => !favouriteVenues.includes(venue));
     } else {
-      otherOptions = filteredOptions; // If not venue filter or not logged in, all are 'other'
+      otherOptions = filteredOptions;
     }
 
     const renderOptionItem = (option: string, isFavourited: boolean) => (
@@ -118,10 +122,10 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 p-0 mr-2 text-muted-foreground hover:text-yellow-500 transition-colors duration-200" // Always visible, grey by default
+            className="h-7 w-7 p-0 mr-2 text-muted-foreground hover:text-yellow-500 transition-colors duration-200"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent dropdown item from being checked
-              e.preventDefault(); // Prevent dropdown from closing
+              e.stopPropagation();
+              e.preventDefault();
               onToggleFavouriteVenue(option, isFavourited);
             }}
             title={isFavourited ? "Unfavourite Venue" : "Favourite Venue"}
@@ -199,13 +203,13 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
   const buttonClasses = "flex items-center gap-1 max-w-[140px] truncate rounded-xl px-4 py-2 h-9";
 
-  if (isMobile) {
-    return (
-      <div className="flex flex-col space-y-4">
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto"> {/* Adjusted for responsiveness */}
+      <div className="flex space-x-2 w-full sm:w-auto justify-center"> {/* Wrap dropdowns in a div */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
-              {getTriggerText('date', 'Date')} <ChevronDown className="ml-2 h-4 w-4" />
+            <Button variant="outline" className={buttonClasses}>
+              {getTriggerText('date', 'Date')} <ChevronDown className="ml-1 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           {renderSingleSelectDropdownContent('date', v2DateOptions)}
@@ -213,8 +217,8 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
-              {getTriggerText('category', 'Category')} <ChevronDown className="ml-2 h-4 w-4" />
+            <Button variant="outline" className={buttonClasses}>
+              {getTriggerText('category', 'Category')} <ChevronDown className="ml-1 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           {renderMultiSelectDropdownContent('category', v2EventCategories, categorySearchTerm, setCategorySearchTerm, 'Search category')}
@@ -222,8 +226,8 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
-              {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-2 h-4 w-4" />
+            <Button variant="outline" className={buttonClasses}>
+              {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-1 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           {renderMultiSelectDropdownContent('venue', availableVenues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
@@ -231,8 +235,8 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
-              {getTriggerText('price', 'Price')} <ChevronDown className="ml-2 h-4 w-4" />
+            <Button variant="outline" className={buttonClasses}>
+              {getTriggerText('price', 'Price')} <ChevronDown className="ml-1 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           {renderMultiSelectDropdownContent('price', v2PriceOptions, null, null, null)}
@@ -240,62 +244,24 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className={cn("w-full justify-between", buttonClasses)}>
-              {getTriggerText('state', 'State')} <ChevronDown className="ml-2 h-4 w-4" />
+            <Button variant="outline" className={buttonClasses}>
+              {getTriggerText('state', 'State')} <ChevronDown className="ml-1 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')}
         </DropdownMenu>
       </div>
-    );
-  }
-
-  return (
-    <div className="flex space-x-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className={buttonClasses}>
-            {getTriggerText('date', 'Date')} <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        {renderSingleSelectDropdownContent('date', v2DateOptions)}
-      </DropdownMenu>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className={buttonClasses}>
-            {getTriggerText('category', 'Category')} <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        {renderMultiSelectDropdownContent('category', v2EventCategories, categorySearchTerm, setCategorySearchTerm, 'Search category')}
-      </DropdownMenu>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className={buttonClasses}>
-            {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        {renderMultiSelectDropdownContent('venue', availableVenues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
-      </DropdownMenu>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className={buttonClasses}>
-            {getTriggerText('price', 'Price')} <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        {renderMultiSelectDropdownContent('price', v2PriceOptions, null, null, null)}
-      </DropdownMenu>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className={buttonClasses}>
-            {getTriggerText('state', 'State')} <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')}
-      </DropdownMenu>
+      {/* View Mode Toggle Buttons */}
+      <div className="flex items-center space-x-2 mt-4 sm:mt-0">
+        <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && onViewModeChange(value)} className="w-full sm:w-auto justify-center">
+          <ToggleGroupItem value="list" aria-label="List View" className="rounded-xl px-4 py-2 h-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            <List className="mr-2 h-4 w-4" /> List
+          </ToggleGroupItem>
+          <ToggleGroupItem value="calendar" aria-label="Calendar View" className="rounded-xl px-4 py-2 h-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            <CalendarDays className="mr-2 h-4 w-4" /> Calendar
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
     </div>
   );
 };
