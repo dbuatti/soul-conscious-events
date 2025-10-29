@@ -187,34 +187,61 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="fullAddress"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="fullAddress">Full Address (Optional)</FormLabel>
-              <FormControl>
-                <Input
-                  id="fullAddress"
-                  placeholder="e.g., 123 Main St, Suburb, State, Postcode"
-                  {...field}
-                  onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
-                  onChange={(e) => {
-                    field.onChange(e);
-                    const extractedState = extractAustralianState(e.target.value);
-                    if (extractedState) {
-                      form.setValue('geographicalState', extractedState, { shouldValidate: true });
-                    } else {
-                      form.setValue('geographicalState', '', { shouldValidate: true });
-                    }
-                  }}
-                  className="focus-visible:ring-primary"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* New wrapper for Address and State */}
+          <FormField
+            control={form.control}
+            name="fullAddress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="fullAddress">Address</FormLabel> {/* Changed label */}
+                <FormControl>
+                  <Input
+                    id="fullAddress"
+                    placeholder="e.g., 123 Main St, Suburb, State, Postcode"
+                    {...field}
+                    onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      const extractedState = extractAustralianState(e.target.value);
+                      if (extractedState) {
+                        form.setValue('geographicalState', extractedState, { shouldValidate: true });
+                      } else {
+                        form.setValue('geographicalState', '', { shouldValidate: true });
+                      }
+                    }}
+                    className="focus-visible:ring-primary"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="geographicalState"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="geographicalState">State</FormLabel> {/* Changed label */}
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
+                      <SelectValue placeholder="Select a state" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="dark:bg-card dark:border-border">
+                    {australianStates.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -316,31 +343,6 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                   {eventTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="geographicalState"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="geographicalState">Australian State (Optional)</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
-                    <SelectValue placeholder="Select a state" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="dark:bg-card dark:border-border">
-                  {australianStates.map((state) => (
-                    <SelectItem key={state} value={state}>
-                      {state}
                     </SelectItem>
                   ))}
                 </SelectContent>
