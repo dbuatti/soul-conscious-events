@@ -29,14 +29,14 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { Event } from '@/types/event'; // Import the shared Event type
-import BookmarkButton from '@/components/BookmarkButton'; // Import BookmarkButton
+import { Event } from '@/types/event';
+import BookmarkButton from '@/components/BookmarkButton';
 
 interface EventDetailDialogProps {
   event: Event | null;
   isOpen: boolean;
   onClose: () => void;
-  cameFromCalendar?: boolean; // Prop to indicate if opened from calendar
+  cameFromCalendar?: boolean;
 }
 
 const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose, cameFromCalendar = false }) => {
@@ -52,8 +52,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       toast.error('Failed to delete event.');
     } else {
       toast.success('Event deleted successfully!');
-      onClose(); // Close the dialog after deletion
-      navigate('/'); // Redirect to home page after deletion
+      onClose();
+      navigate('/');
     }
   };
 
@@ -62,11 +62,10 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       await navigator.clipboard.writeText(code);
       toast.success('Discount code copied to clipboard!');
 
-      // Log the copy action
       const { error: logError } = await supabase.from('discount_code_usage_logs').insert([
         {
           event_id: event?.id,
-          user_id: user?.id || null, // Log user ID if available
+          user_id: user?.id || null,
           copied_at: new Date().toISOString(),
         },
       ]);
@@ -83,7 +82,6 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const handleTicketLinkClick = async () => {
     if (!event?.ticket_link) return;
 
-    // Log the ticket link click
     const { error: logError } = await supabase.from('event_analytics_logs').insert([
       {
         event_id: event.id,
@@ -161,7 +159,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 src={event.image_url}
                 alt={`Image for ${event.event_name}`}
                 className="w-full h-64 object-cover rounded-lg shadow-lg"
-                loading="lazy" // Lazy load image
+                loading="lazy"
               />
             </a>
           </div>
@@ -300,33 +298,33 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
         <DialogFooter className="flex flex-wrap justify-end gap-2 mt-4">
           <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" />
-          <Button variant="ghost" onClick={onClose} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+          <Button variant="outline" onClick={onClose} className="transition-all duration-300 ease-in-out transform hover:scale-105">
             {cameFromCalendar ? 'Back to Calendar' : 'Close'}
           </Button>
           {event.full_address && (
             <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" className="text-primary hover:bg-accent transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
                 <Globe className="mr-2 h-4 w-4" /> View on Map
               </Button>
             </a>
           )}
-          <Button variant="ghost" onClick={() => {
+          <Button onClick={() => {
             const eventUrl = `${window.location.origin}/events/${event.id}`;
             navigator.clipboard.writeText(eventUrl)
               .then(() => toast.success('Event link copied to clipboard!'))
               .catch(() => toast.error('Failed to copy link. Please try again.'));
-          }} className="text-primary hover:bg-accent transition-all duration-300 ease-in-out transform hover:scale-105">
+          }} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
             <Share2 className="mr-2 h-4 w-4" /> Share Event
           </Button>
           {isCreatorOrAdmin && (
             <>
-              <Button variant="ghost" onClick={() => { onClose(); navigate(`/edit-event/${event.id}`); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button variant="outline" onClick={() => { onClose(); navigate(`/edit-event/${event.id}`); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                 <Edit className="mr-2 h-4 w-4" /> Edit
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                    <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Delete
+                  <Button variant="destructive" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="dark:bg-card dark:border-border">
