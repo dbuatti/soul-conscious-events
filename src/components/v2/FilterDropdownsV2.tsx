@@ -254,11 +254,11 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
       {/* View Mode Toggle Buttons */}
       <div className="flex items-center space-x-2 mt-4 sm:mt-0">
         <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && onViewModeChange(value)} className="w-full sm:w-auto justify-center">
-          <ToggleGroupItem value="list" aria-label="List View" className="rounded-xl px-4 py-2 h-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-            <List className="mr-2 h-4 w-4" /> List
+          <ToggleGroupItem value="list" aria-label="List View" className="rounded-xl px-3 py-2 h-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            <List className="h-4 w-4" />
           </ToggleGroupItem>
-          <ToggleGroupItem value="calendar" aria-label="Calendar View" className="rounded-xl px-4 py-2 h-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-            <CalendarDays className="mr-2 h-4 w-4" /> Calendar
+          <ToggleGroupItem value="calendar" aria-label="Calendar View" className="rounded-xl px-3 py-2 h-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            <CalendarDays className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

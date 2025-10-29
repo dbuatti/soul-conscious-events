@@ -251,22 +251,6 @@ const EventsListV2 = () => {
           viewMode={viewMode} // Pass viewMode
           onViewModeChange={setViewMode} // Pass onViewModeChange
         />
-        <div className="flex items-center space-x-2 mt-4 sm:mt-0">
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            onClick={() => setViewMode('list')}
-            className="rounded-xl px-4 py-2 h-9"
-          >
-            <Loader2 className="mr-2 h-4 w-4" /> List
-          </Button>
-          <Button
-            variant={viewMode === 'calendar' ? 'default' : 'outline'}
-            onClick={() => setViewMode('calendar')}
-            className="rounded-xl px-4 py-2 h-9"
-          >
-            <CalendarDays className="mr-2 h-4 w-4" /> Calendar
-          </Button>
-        </div>
       </div>
 
       {loading ? (
