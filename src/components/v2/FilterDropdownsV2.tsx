@@ -4,13 +4,13 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator, // Import DropdownMenuSeparator
-  DropdownMenuLabel, // Import DropdownMenuLabel
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Search, Star } from 'lucide-react'; // Import Star icon
-import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
+import { ChevronDown, Search, Star } from 'lucide-react';
+import { v2EventCategories, v2PriceOptions, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -25,9 +25,9 @@ export interface FilterDropdownsV2Props {
   onFilterChange: (filters: FilterDropdownsV2Props['currentFilters']) => void;
   isMobile?: boolean;
   availableVenues: string[];
-  favouriteVenues: string[]; // New prop for favourited venues
-  onToggleFavouriteVenue: (placeName: string, isFavourited: boolean) => void; // New prop for toggling favourite
-  isUserLoggedIn: boolean; // New prop to check if user is logged in
+  favouriteVenues: string[];
+  onToggleFavouriteVenue: (placeName: string, isFavourited: boolean) => void;
+  isUserLoggedIn: boolean;
 }
 
 const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
@@ -94,15 +94,43 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
       : options;
 
     // Special handling for venue filter to sort favourites
-    let sortedOptions = filteredOptions;
     let favouriteOptions: string[] = [];
     let otherOptions: string[] = [];
 
     if (filterType === 'venue' && isUserLoggedIn) {
       favouriteOptions = filteredOptions.filter(venue => favouriteVenues.includes(venue));
       otherOptions = filteredOptions.filter(venue => !favouriteVenues.includes(venue));
-      sortedOptions = [...favouriteOptions, ...otherOptions]; // Favourites first
+    } else {
+      otherOptions = filteredOptions; // If not venue filter or not logged in, all are 'other'
     }
+
+    const renderOptionItem = (option: string, isFavourited: boolean) => (
+      <div key={option} className="flex items-center justify-between group">
+        <DropdownMenuCheckboxItem
+          checked={currentFilters[filterType].includes(option)}
+          onCheckedChange={() => handleMultiSelectChange(filterType, option)}
+          onSelect={(e) => e.preventDefault()}
+          className="cursor-pointer flex-grow"
+        >
+          {option}
+        </DropdownMenuCheckboxItem>
+        {filterType === 'venue' && isUserLoggedIn && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 p-0 mr-2 text-muted-foreground hover:text-yellow-500 transition-colors duration-200" // Always visible, grey by default
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent dropdown item from being checked
+              e.preventDefault(); // Prevent dropdown from closing
+              onToggleFavouriteVenue(option, isFavourited);
+            }}
+            title={isFavourited ? "Unfavourite Venue" : "Favourite Venue"}
+          >
+            <Star className={cn("h-4 w-4", isFavourited && "fill-current text-yellow-500")} />
+          </Button>
+        )}
+      </div>
+    );
 
     const content = (
       <>
@@ -117,47 +145,26 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
             />
           </div>
         )}
+
         {filterType === 'venue' && isUserLoggedIn && favouriteOptions.length > 0 && (
           <>
             <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 py-1">Your Favourites</DropdownMenuLabel>
             <DropdownMenuSeparator className="my-1" />
+            {favouriteOptions.map(option => renderOptionItem(option, true))}
+            {otherOptions.length > 0 && <DropdownMenuSeparator className="my-1" />}
           </>
         )}
-        {sortedOptions.map((option) => {
-          const isFavourited = filterType === 'venue' && favouriteVenues.includes(option);
-          return (
-            <div key={option} className="flex items-center justify-between group">
-              <DropdownMenuCheckboxItem
-                checked={currentFilters[filterType].includes(option)}
-                onCheckedChange={() => handleMultiSelectChange(filterType, option)}
-                onSelect={(e) => e.preventDefault()}
-                className="cursor-pointer flex-grow"
-              >
-                {option}
-              </DropdownMenuCheckboxItem>
-              {filterType === 'venue' && isUserLoggedIn && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 p-0 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent dropdown item from being checked
-                    e.preventDefault(); // Prevent dropdown from closing
-                    onToggleFavouriteVenue(option, isFavourited);
-                  }}
-                  title={isFavourited ? "Unfavourite Venue" : "Favourite Venue"}
-                >
-                  <Star className={cn("h-4 w-4", isFavourited && "fill-current text-yellow-500")} />
-                </Button>
-              )}
-            </div>
-          );
-        })}
-        {filterType === 'venue' && isUserLoggedIn && favouriteOptions.length > 0 && otherOptions.length > 0 && (
+
+        {otherOptions.length > 0 && (filterType !== 'venue' || !isUserLoggedIn || favouriteOptions.length > 0) && (
           <>
-            <DropdownMenuSeparator className="my-1" />
-            <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 py-1">Other Venues</DropdownMenuLabel>
+            {filterType === 'venue' && isUserLoggedIn && favouriteOptions.length > 0 && (
+              <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 py-1">Other Venues</DropdownMenuLabel>
+            )}
+            {otherOptions.map(option => renderOptionItem(option, false))}
           </>
+        )}
+        {filteredOptions.length === 0 && (
+          <p className="text-sm text-muted-foreground px-2 py-1">No options found.</p>
         )}
       </>
     );
