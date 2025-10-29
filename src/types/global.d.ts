@@ -25,6 +25,7 @@ declare namespace google {
       equals(other: LatLngBounds | LatLngBoundsLiteral): boolean;
       toString(): string;
       toLiteral(): LatLngBoundsLiteral;
+      toJSON(): LatLngBoundsLiteral; // Added toJSON method
     }
 
     interface LatLngLiteral {

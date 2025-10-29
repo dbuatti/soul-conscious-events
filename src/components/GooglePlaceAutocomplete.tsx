@@ -1,5 +1,4 @@
-import React, { useRef, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import React, { useRef, useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { extractAustralianState } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -21,89 +20,95 @@ const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
   placeholder,
   className,
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null); // Ref for the container div
+  const autocompleteElementRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
+  const [isApiLoaded, setIsApiLoaded] = useState(false);
 
   useEffect(() => {
-    const initializeAutocomplete = () => {
-      if (inputRef.current && window.google && window.google.maps && window.google.maps.places) {
-        // Create the PlaceAutocompleteElement
-        const autocompleteElement = document.createElement('google-maps-place-autocomplete') as google.maps.places.PlaceAutocompleteElement;
-        autocompleteElement.setAttribute('placeholder', placeholder || '');
-        autocompleteElement.setAttribute('class', inputRef.current.className); // Copy classes for styling
-
-        // Replace the original input with the custom element
-        inputRef.current.parentNode?.replaceChild(autocompleteElement, inputRef.current);
-        autocompleteRef.current = autocompleteElement;
-
-        const melbourneBounds = new window.google.maps.LatLngBounds(
-          new window.google.maps.LatLng(-38.2, 144.5),
-          new window.google.maps.LatLng(-37.5, 145.5)
-        );
-
-        autocompleteElement.addEventListener('gmp-placeselect', async (event: CustomEvent<{ place: google.maps.places.PlaceResult }>) => {
-          const place = event.detail.place; // Corrected access to 'place'
-          if (place) {
-            const geocoder = new window.google.maps.Geocoder();
-            geocoder.geocode({ placeId: place.id }, (results, status) => {
-              if (status === 'OK' && results && results[0]) {
-                const fullAddress = results[0].formatted_address || '';
-                form.setValue(name, place.displayName || results[0].address_components.find(comp => comp.types.includes('establishment') || comp.types.includes('point_of_interest'))?.long_name || '', { shouldValidate: true });
-                form.setValue(addressName, fullAddress, { shouldValidate: true });
-
-                const extractedState = extractAustralianState(fullAddress);
-                if (extractedState) {
-                  form.setValue(stateName, extractedState, { shouldValidate: true });
-                } else {
-                  form.setValue(stateName, '', { shouldValidate: true });
-                }
-              } else {
-                console.error('Geocoding failed:', status);
-                toast.error('Failed to get full address details for the selected place.');
-              }
-            });
-          }
-        });
-
-        // Set initial value if available
-        const initialValue = form.getValues(name);
-        if (initialValue) {
-          autocompleteElement.value = initialValue;
-        }
-      }
-    };
-
-    // Listen for the Google Maps API to be ready
     const handleGoogleMapsApiReady = () => {
-      initializeAutocomplete();
+      setIsApiLoaded(true);
     };
 
     if (window.google && window.google.maps && window.google.maps.places) {
-      initializeAutocomplete();
+      setIsApiLoaded(true);
     } else {
       window.addEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
     }
 
     return () => {
       window.removeEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
-      // Clean up the custom element if it was created
-      if (autocompleteRef.current && inputRef.current?.parentNode) {
-        autocompleteRef.current.parentNode.replaceChild(inputRef.current, autocompleteRef.current);
-      }
     };
-  }, [form, name, addressName, stateName, placeholder, className]);
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current && isApiLoaded && window.google && window.google.maps && window.google.maps.places) {
+      // Clear any existing autocomplete element to prevent duplicates on re-render
+      while (containerRef.current.firstChild) {
+        containerRef.current.removeChild(containerRef.current.firstChild);
+      }
+
+      const autocompleteElement = document.createElement('google-maps-place-autocomplete') as google.maps.places.PlaceAutocompleteElement;
+      autocompleteElement.setAttribute('placeholder', placeholder || '');
+      autocompleteElement.setAttribute('class', className || ''); // Apply classes to the custom element
+      autocompleteElement.setAttribute('id', name); // Ensure ID is set for accessibility/labels
+
+      containerRef.current.appendChild(autocompleteElement);
+      autocompleteElementRef.current = autocompleteElement;
+
+      const melbourneBounds = new window.google.maps.LatLngBounds(
+        new window.google.maps.LatLng(-38.2, 144.5),
+        new window.google.maps.LatLng(-37.5, 145.5)
+      );
+      // Set bounds and component restrictions
+      autocompleteElement.setAttribute('bounds', JSON.stringify(melbourneBounds.toJSON()));
+      autocompleteElement.setAttribute('component-restrictions', JSON.stringify({ country: 'au' }));
+      autocompleteElement.setAttribute('fields', 'formatted_address,name,id,displayName'); // Request necessary fields
+
+      const handlePlaceSelect = async (event: CustomEvent<{ place: google.maps.places.PlaceResult }>) => {
+        const place = event.detail.place;
+        if (place) {
+          const geocoder = new window.google.maps.Geocoder();
+          geocoder.geocode({ placeId: place.id }, (results, status) => {
+            if (status === 'OK' && results && results[0]) {
+              const fullAddress = results[0].formatted_address || '';
+              form.setValue(name, place.displayName || results[0].address_components.find(comp => comp.types.includes('establishment') || comp.types.includes('point_of_interest'))?.long_name || '', { shouldValidate: true });
+              form.setValue(addressName, fullAddress, { shouldValidate: true });
+
+              const extractedState = extractAustralianState(fullAddress);
+              if (extractedState) {
+                form.setValue(stateName, extractedState, { shouldValidate: true });
+              } else {
+                form.setValue(stateName, '', { shouldValidate: true });
+              }
+            } else {
+              console.error('Geocoding failed:', status);
+              toast.error('Failed to get full address details for the selected place.');
+            }
+          });
+        }
+      };
+
+      autocompleteElement.addEventListener('gmp-placeselect', handlePlaceSelect);
+
+      // Set initial value from form state
+      const initialValue = form.getValues(name);
+      if (initialValue) {
+        autocompleteElement.value = initialValue;
+      }
+
+      return () => {
+        autocompleteElement.removeEventListener('gmp-placeselect', handlePlaceSelect);
+        if (containerRef.current && autocompleteElementRef.current) {
+          containerRef.current.removeChild(autocompleteElementRef.current);
+        }
+      };
+    }
+  }, [containerRef, isApiLoaded, form, name, addressName, stateName, placeholder, className]);
 
   return (
-    <Input
-      ref={inputRef}
-      id={name}
-      placeholder={placeholder}
-      className={className}
-      // The actual input will be replaced by the custom element, but we need a ref for initial setup
-      // and to potentially put it back if the component unmounts.
-      // We also need to ensure react-hook-form can still manage its value.
-      {...form.register(name)} // Register with react-hook-form
-    />
+    <div ref={containerRef} className="w-full">
+      {/* The custom element will be appended here */}
+    </div>
   );
 };
 
