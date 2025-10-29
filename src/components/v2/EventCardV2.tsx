@@ -56,29 +56,29 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   return (
     <Card className="group flex flex-row shadow-lg rounded-xl border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border">
       {event.image_url && (
-        <div className="relative w-[120px] h-[120px] flex-shrink-0 overflow-hidden rounded-l-xl"> {/* Fixed size and rounded-l-xl */}
+        <div className="relative w-2/5 flex-shrink-0 aspect-square sm:aspect-video overflow-hidden"> {/* Adjusted width and aspect ratio */}
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           
           {/* Overlay Pills */}
-          <div className="absolute top-1 left-1 flex flex-wrap gap-0.5"> {/* Adjusted top/left and gap */}
+          <div className="absolute top-2 left-2 flex flex-wrap gap-1">
             {event.event_type && ( // Category as overlay pill
-              <Badge variant="secondary" className="bg-primary/80 text-primary-foreground text-[10px] px-1.5 py-0 font-semibold"> {/* Smaller text */}
+              <Badge variant="secondary" className="bg-primary/80 text-primary-foreground text-xs px-2 py-0.5 font-semibold">
                 {event.event_type}
               </Badge>
             )}
             {isFeaturedToday && (
-              <Badge variant="default" className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0 font-semibold">
+              <Badge variant="default" className="bg-primary text-primary-foreground text-xs px-2 py-0.5 font-semibold">
                 FEATURED TODAY
               </Badge>
             )}
             {isWalkIn && (
-              <Badge variant="secondary" className="bg-blue-500 text-white text-[10px] px-1.5 py-0 font-semibold">
+              <Badge variant="secondary" className="bg-blue-500 text-white text-xs px-2 py-0.5 font-semibold">
                 Walk-in
               </Badge>
             )}
             {isRSVPRecommended && (
-              <Badge variant="secondary" className="bg-purple-500 text-white text-[10px] px-1.5 py-0 font-semibold">
+              <Badge variant="secondary" className="bg-purple-500 text-white text-xs px-2 py-0.5 font-semibold">
                 RSVP recommended
               </Badge>
             )}
@@ -90,46 +90,46 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             size="icon"
             onClick={(e) => onShare(event, e)}
             title="Share Event"
-            className="absolute top-1 right-1 h-7 w-7 rounded-full bg-white/80 text-foreground hover:bg-white transition-all duration-300 ease-in-out transform hover:scale-110"
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/80 text-foreground hover:bg-white transition-all duration-300 ease-in-out transform hover:scale-110"
           >
-            <Share2 className="h-3.5 w-3.5" /> {/* Smaller icon */}
+            <Share2 className="h-4 w-4" />
           </Button>
         </div>
       )}
-      <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between" onClick={() => onViewDetails(event)}> {/* Adjusted padding */}
-        <CardHeader className="p-0 pb-2 space-y-1"> {/* Adjusted padding and space-y */}
-          <CardTitle className="text-lg font-extrabold text-foreground leading-tight line-clamp-2"> {/* Smaller title, line-clamp */}
+      <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between" onClick={() => onViewDetails(event)}> {/* Added onClick here */}
+        <CardHeader className="p-0 pb-3 space-y-2">
+          <CardTitle className="text-xl font-extrabold text-foreground leading-tight">
             {event.event_name}
           </CardTitle>          
-          <div className="flex flex-col text-muted-foreground text-xs space-y-0.5"> {/* Smaller text and space-y */}
+          <div className="flex flex-col text-muted-foreground text-sm space-y-1">
             <div className="flex items-center">
-              <Clock className="mr-1 h-3 w-3 flex-shrink-0 text-muted-foreground" /> {/* Smaller icon */}
+              <Clock className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
               <span className="font-medium">{event.event_time || 'Time TBD'}</span>
             </div>
             <div className="flex items-center">
-              <MapPin className="mr-1 h-3 w-3 flex-shrink-0 text-muted-foreground" /> {/* Smaller icon */}
+              <MapPin className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
               {renderLocation()}
             </div>
             {event.price && (
               <div className="flex items-center">
-                <DollarSign className="mr-1 h-3 w-3 flex-shrink-0 text-muted-foreground" /> {/* Smaller icon */}
+                <DollarSign className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                 <span className="font-medium">{event.price}</span>
               </div>
             )}
           </div>
         </CardHeader>
         {/* Removed CardContent with description */}
-        <CardFooter className="p-0 pt-3 flex justify-end space-x-1"> {/* Adjusted padding and space-x */}
-          <BookmarkButton eventId={event.id} size="icon" className="h-7 w-7" /> {/* Smaller buttons */}
+        <CardFooter className="p-0 pt-4 flex justify-end space-x-2">
+          <BookmarkButton eventId={event.id} size="icon" className="h-8 w-8" />
           {isCreatorOrAdmin && (
             <>
               <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="icon" title="Edit Event" className="h-7 w-7 transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <Edit className="h-3.5 w-3.5 text-muted-foreground" /> {/* Smaller icon */}
+                <Button variant="ghost" size="icon" title="Edit Event" className="h-8 w-8 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Edit className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </Link>
-              <Button variant="ghost" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-7 w-7 transition-all duration-300 ease-in-out transform hover:scale-105">
-                <Trash2 className="h-3.5 w-3.5 text-destructive" /> {/* Smaller icon */}
+              <Button variant="ghost" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-8 w-8 transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </>
           )}
