@@ -15,10 +15,10 @@ import { cn } from '@/lib/utils';
 export interface FilterDropdownsV2Props {
   currentFilters: {
     date: string;
-    category: string[]; // Changed to string[] for multi-select
-    venue: string[];     // Changed to string[] for multi-select
-    price: string[];     // Changed to string[] for multi-select
-    area: string[];      // Changed to string[] for multi-select
+    category: string[];
+    venue: string[];
+    price: string[];
+    area: string[];
   };
   onFilterChange: (filters: FilterDropdownsV2Props['currentFilters']) => void;
   isMobile?: boolean;
@@ -40,13 +40,8 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
     const currentValues = currentFilters[filterType];
     let newValues: string[];
 
-    if (value === 'All') {
-      newValues = ['All']; // Selecting 'All' deselects others
-    } else if (currentValues.includes('All')) {
-      newValues = [value]; // If 'All' was selected, deselect it and select current
-    } else if (currentValues.includes(value)) {
+    if (currentValues.includes(value)) {
       newValues = currentValues.filter(item => item !== value);
-      if (newValues.length === 0) newValues = ['All']; // If all deselected, default to 'All'
     } else {
       newValues = [...currentValues, value];
     }
@@ -58,19 +53,19 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
 
   const getTriggerText = (filterType: keyof FilterDropdownsV2Props['currentFilters'], label: string) => {
     const values = currentFilters[filterType];
-    if (filterType === 'date') { // Special handling for the 'date' filter
-      return `${currentFilters.date}`;
+    if (filterType === 'date') {
+      return values; // For single select, just show the value
     }
     if (Array.isArray(values)) {
-      if (values.includes('All') || values.length === 0) {
-        return `${label}: All`;
+      if (values.length === 0) {
+        return label; // If nothing selected, show default label
       }
       if (values.length === 1) {
-        return `${label}: ${values[0]}`;
+        return values[0]; // If one selected, show that item
       }
-      return `${label} (${values.length})`;
+      return `${label} (${values.length})`; // If multiple selected, show count
     }
-    return `${label}: ${values}`; // Fallback for other single-selects if any
+    return label; // Fallback
   };
 
   const renderMultiSelectDropdownContent = (
@@ -134,7 +129,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-full justify-between">
-              {getTriggerText('date', 'Today')} <ChevronDown className="ml-2 h-4 w-4" />
+              {getTriggerText('date', 'Date')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           {renderSingleSelectDropdownContent('date', v2DateOptions)}
@@ -184,7 +179,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({ currentFilters, o
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-1">
-            {getTriggerText('date', 'Today')} <ChevronDown className="ml-1 h-4 w-4" />
+            {getTriggerText('date', 'Date')} <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         {renderSingleSelectDropdownContent('date', v2DateOptions)}

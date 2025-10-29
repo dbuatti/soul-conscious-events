@@ -23,11 +23,11 @@ const EventsListV2 = () => {
   const [offset, setOffset] = useState(0);
 
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
-    date: 'Today', // Default to 'Today'
-    category: ['All'],
-    venue: ['All'],
-    price: ['All'],
-    area: ['All'],
+    date: 'All Upcoming', // Default to 'All Upcoming'
+    category: [], // Default to empty array for multi-select
+    venue: [],     // Default to empty array for multi-select
+    price: [],     // Default to empty array for multi-select
+    area: [],      // Default to empty array for multi-select
   });
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -96,15 +96,15 @@ const EventsListV2 = () => {
       }
 
       // Apply category filter (multi-select)
-      if (!filters.category.includes('All') && !filters.category.includes(event.event_type || '')) {
+      if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) {
         return false;
       }
       // Apply venue filter (multi-select, using place_name)
-      if (!filters.venue.includes('All') && !filters.venue.includes(event.place_name || '')) {
+      if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) {
         return false;
       }
       // Apply price filter (multi-select)
-      if (!filters.price.includes('All')) {
+      if (filters.price.length > 0) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
         const isFree = lowerCasePrice.includes('free');
         const isDonation = lowerCasePrice.includes('donation');
@@ -117,7 +117,7 @@ const EventsListV2 = () => {
         if (!priceMatch) return false;
       }
       // Apply area filter (multi-select, using geographical_state)
-      if (!filters.area.includes('All') && !filters.area.includes(event.geographical_state || '')) {
+      if (filters.area.length > 0 && !filters.area.includes(event.geographical_state || '')) {
         return false;
       }
       return true;
@@ -164,15 +164,15 @@ const EventsListV2 = () => {
       }
 
       // Apply category filter (multi-select)
-      if (!filters.category.includes('All') && !filters.category.includes(event.event_type || '')) {
+      if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) {
         return false;
       }
       // Apply venue filter (multi-select, using place_name)
-      if (!filters.venue.includes('All') && !filters.venue.includes(event.place_name || '')) {
+      if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) {
         return false;
       }
       // Apply price filter (multi-select)
-      if (!filters.price.includes('All')) {
+      if (filters.price.length > 0) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
         const isFree = lowerCasePrice.includes('free');
         const isDonation = lowerCasePrice.includes('donation');
@@ -185,7 +185,7 @@ const EventsListV2 = () => {
         if (!priceMatch) return false;
       }
       // Apply area filter (multi-select, using geographical_state)
-      if (!filters.area.includes('All') && !filters.area.includes(event.geographical_state || '')) {
+      if (filters.area.length > 0 && !filters.area.includes(event.geographical_state || '')) {
         return false;
       }
       return true;
@@ -240,9 +240,9 @@ const EventsListV2 = () => {
       }
 
       // Apply other filters (multi-select)
-      if (!filters.category.includes('All') && !filters.category.includes(event.event_type || '')) return false;
-      if (!filters.venue.includes('All') && !filters.venue.includes(event.place_name || '')) return false;
-      if (!filters.price.includes('All')) {
+      if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) return false;
+      if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) return false;
+      if (filters.price.length > 0) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
         const isFree = lowerCasePrice.includes('free');
         const isDonation = lowerCasePrice.includes('donation');
@@ -254,7 +254,7 @@ const EventsListV2 = () => {
         if (filters.price.includes('Donation') && isDonation) priceMatch = true;
         if (!priceMatch) return false;
       }
-      if (!filters.area.includes('All') && !filters.area.includes(event.geographical_state || '')) return false;
+      if (filters.area.length > 0 && !filters.area.includes(event.geographical_state || '')) return false;
       return true;
     });
 
