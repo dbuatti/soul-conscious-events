@@ -21,10 +21,10 @@ const Footer = () => {
           <nav className="flex flex-col space-y-2">
             <Link to="/" className="hover:text-primary transition-colors text-sm">Events</Link>
             <Link to="/submit-event" className="hover:text-primary transition-colors text-sm">Add Event</Link>
-            <Link to="/map" className="hover:text-primary transition-colors text-sm">Map</Link>
+            {/* <Link to="/map" className="hover:text-primary transition-colors text-sm">Map</Link> Removed Map link */}
             <Link to="/contact" className="hover:text-primary transition-colors text-sm">Contact</Link>
             <Link to="/about" className="hover:text-primary transition-colors text-sm">About</Link>
-            <Link to="/community-guidelines" className="hover:text-primary transition-colors text-sm">Community Guidelines</Link> {/* New link */}
+            <Link to="/community-guidelines" className="hover:text-primary transition-colors text-sm">Community Guidelines</Link>
             <Link to="/admin/panel" className="hover:text-primary transition-colors text-sm">Admin Panel</Link>
           </nav>
         </div>

@@ -94,20 +94,22 @@ const App = () => (
               }
             />
 
+            {/* Global pages now using LayoutV2 */}
+            <Route path="/contact" element={<LayoutV2><Contact /></LayoutV2>} />
+            <Route path="/community-guidelines" element={<LayoutV2><CommunityGuidelines /></LayoutV2>} />
+            <Route
+              path="/admin/panel" // Changed path to be under V2 layout
+              element={
+                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                  <LayoutV2><AdminPanel /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
+
             {/* Original App Routes - now under /old */}
             <Route path="/old" element={<Layout><EventsList /></Layout>} />
             <Route path="/old/events/:id" element={<Layout><EventDetailPage /></Layout>} />
             <Route path="/old/login" element={<Layout><Login /></Layout>} />
-            <Route path="/contact" element={<Layout><Contact /></Layout>} /> {/* Contact remains global */}
-            <Route path="/community-guidelines" element={<Layout><CommunityGuidelines /></Layout>} /> {/* Community Guidelines remains global */}
-            <Route
-              path="/old/admin/panel"
-              element={
-                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
-                  <Layout><AdminPanel /></Layout>
-                </ProtectedRoute>
-              }
-            />
             <Route
               path="/old/dev-space"
               element={
@@ -126,7 +128,7 @@ const App = () => (
             />
             <Route path="/old/map" element={<Layout><MapPage /></Layout>} />
 
-            <Route path="*" element={<Layout><NotFound /></Layout>} />
+            <Route path="*" element={<LayoutV2><NotFound /></LayoutV2>} /> {/* NotFound also uses V2 layout */}
           </Routes>
         </SessionContextProvider>
       </BrowserRouter>
