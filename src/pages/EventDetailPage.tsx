@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns'; // Import isSameDay
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2, Copy, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Globe, Share2, Edit, Trash2, Copy, ArrowLeft } from 'lucide-react'; // Changed Tag to Sparkles
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -22,6 +22,19 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Event } from '@/types/event'; // Import the shared Event type
 import BookmarkButton from '@/components/BookmarkButton'; // Import BookmarkButton
+
+const formatPrice = (price?: string | null) => {
+  if (!price) return 'N/A';
+  const lowerCasePrice = price.toLowerCase();
+  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
+    return price;
+  }
+  // Check if it looks like a number or contains numbers, and doesn't already start with '$'
+  if (/\d/.test(price) && !price.startsWith('$')) {
+    return `$${price}`;
+  }
+  return price;
+};
 
 const EventDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -158,8 +171,6 @@ const EventDetailPage: React.FC = () => {
     ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`
     : format(startDate, 'MMM d, yyyy');
 
-  const displayPrice = event.price ? event.price.replace(/\$/g, '') : ''; // Remove dollar signs for display
-
   return (
     <div className="w-full max-w-2xl">
       <div className="flex justify-start mb-6">
@@ -238,7 +249,7 @@ const EventDetailPage: React.FC = () => {
           {event.price && (
             <p className="flex items-start text-foreground">
               <DollarSign className="mr-2 h-5 w-5 text-primary" />
-              <span className="font-medium">Price:&nbsp;</span> {displayPrice} {/* Added space */}
+              <span className="font-medium">Price:&nbsp;</span> {formatPrice(event.price)}
               {event.price.toLowerCase() === 'free' && (
                 <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
               )}
@@ -260,8 +271,9 @@ const EventDetailPage: React.FC = () => {
           )}
           {event.discount_code && (
             <div className="flex items-center text-foreground">
+              <h4 className="text-sm font-semibold text-muted-foreground mr-2">DISCOUNT CODE:</h4>
               <Badge variant="secondary" className="bg-primary/10 text-primary text-base py-1 px-2 mr-2">
-                Discount Code: {event.discount_code}
+                {event.discount_code}
               </Badge>
               <Button
                 variant="outline"
@@ -290,7 +302,7 @@ const EventDetailPage: React.FC = () => {
           )}
           {event.event_type && (
             <p className="flex items-center text-foreground">
-              <Tag className="mr-2 h-5 w-5 text-primary" />
+              <Sparkles className="mr-2 h-5 w-5 text-primary" /> {/* Changed Tag to Sparkles */}
               <span className="font-medium">Event Type:&nbsp;</span> {event.event_type} {/* Added space */}
             </p>
           )}
@@ -305,7 +317,7 @@ const EventDetailPage: React.FC = () => {
         {event.full_address && (
           <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
             <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-              <Globe className="mr-2 h-4 w-4" /> View on Map
+              <MapPin className="mr-2 h-4 w-4" /> View on Map {/* Changed Globe to MapPin */}
             </Button>
           </a>
         )}

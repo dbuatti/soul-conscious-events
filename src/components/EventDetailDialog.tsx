@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns'; // Import isSameDay
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, Edit, Trash2, Copy, Sparkles } from 'lucide-react'; // Added Sparkles for event type
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Globe, Share2, Edit, Trash2, Copy } from 'lucide-react'; // Changed Tag to Sparkles
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -39,6 +39,19 @@ interface EventDetailDialogProps {
   onClose: () => void;
   cameFromCalendar?: boolean;
 }
+
+const formatPrice = (price?: string | null) => {
+  if (!price) return 'N/A';
+  const lowerCasePrice = price.toLowerCase();
+  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
+    return price;
+  }
+  // Check if it looks like a number or contains numbers, and doesn't already start with '$'
+  if (/\d/.test(price) && !price.startsWith('$')) {
+    return `$${price}`;
+  }
+  return price;
+};
 
 const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose, cameFromCalendar = false }) => {
   const navigate = useNavigate();
@@ -195,7 +208,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               <p className="flex items-start text-foreground text-base leading-relaxed">
                 <DollarSign className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <span className="font-medium">Price:&nbsp;</span>
-                <span className="break-words">{event.price}</span>
+                <span className="break-words">{formatPrice(event.price)}</span>
                 {event.price.toLowerCase() === 'free' && (
                   <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
                 )}
@@ -247,7 +260,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">LOCATION</h4>
                     <div className="flex items-center text-foreground text-base">
-                      <Globe className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                      <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0" /> {/* Changed Globe to MapPin */}
                       <a
                         href={event.google_maps_link}
                         target="_blank"
