@@ -36,10 +36,7 @@ const eventFormSchema = z.object({
   fullAddress: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
   ticketLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  price: z.string().optional().or(z.literal(''))
-    .refine(price => !price?.includes('$'), {
-      message: "Please do not include '$' in the price field.",
-    }),
+  price: z.string().optional().or(z.literal('')), // Removed the refine rule
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),

@@ -53,6 +53,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
     return <span className="font-medium">{locationText}</span>;
   };
 
+  const displayPrice = event.price ? event.price.replace(/\$/g, '') : ''; // Remove dollar signs for display
+
   return (
     <Card className="group flex flex-row shadow-lg rounded-xl border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border">
       {event.image_url && (
@@ -113,7 +115,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             {event.price && (
               <div className="flex items-center">
                 <DollarSign className="mr-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                <span className="font-medium">{event.price}</span>
+                <span className="font-medium">{displayPrice}</span>
               </div>
             )}
           </div>
