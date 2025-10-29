@@ -26,13 +26,8 @@ const HeaderV2 = () => {
   const location = useLocation();
   const { user } = useSession();
 
-  const getButtonClass = (path: string) => {
-    const isActive = location.pathname === path || (path === "/" && location.pathname === "/"); // Special handling for root path
-    return cn(
-      "w-full justify-start text-primary-foreground/90 hover:text-primary-foreground transition-colors duration-300 ease-in-out transform hover:scale-105",
-      isActive && "font-bold text-primary-foreground"
-    );
-  };
+  // Removed getButtonClass as it was causing issues with dropdown menu item text color.
+  // Active state styling will be applied directly to the Link components.
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -45,7 +40,7 @@ const HeaderV2 = () => {
   };
 
   const authenticatedNavItems: NavItem[] = [
-    { to: "/", label: "Home", icon: Home }, // Added Home link
+    { to: "/", label: "Home", icon: Home },
     { to: "/submit-event", label: "Create Event", icon: PlusCircle },
     { to: "/my-events", label: "My Events", icon: CalendarCheck },
     { to: "/account-settings", label: "Account Settings", icon: Settings },
@@ -53,7 +48,7 @@ const HeaderV2 = () => {
   ];
 
   const unauthenticatedNavItems: NavItem[] = [
-    { to: "/", label: "Home", icon: Home }, // Added Home link
+    { to: "/", label: "Home", icon: Home },
     { to: "/login", label: "Login / Sign Up", icon: LogIn },
     { to: "/about", label: "About", icon: Info },
   ];
@@ -84,39 +79,48 @@ const HeaderV2 = () => {
           <DropdownMenuContent align="end" className="w-[200px] p-2 dark:bg-card dark:border-border">
             {user ? (
               <>
-                {authenticatedNavItems.map((item) => (
-                  <DropdownMenuItem key={item.to} asChild>
-                    <Link to={item.to} className={cn(getButtonClass(item.to), "flex items-center")}>
-                      <item.icon className="mr-2 h-4 w-4" /> {item.label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
+                {authenticatedNavItems.map((item) => {
+                  const isActive = location.pathname === item.to || (item.to === "/" && location.pathname === "/");
+                  return (
+                    <DropdownMenuItem key={item.to} asChild>
+                      <Link to={item.to} className={cn("flex items-center", isActive && "font-bold text-primary")}>
+                        <item.icon className="mr-2 h-4 w-4" /> {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
                 {isAdminUser && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="text-sm font-semibold text-muted-foreground">Admin</DropdownMenuLabel>
-                    {adminNavItems.map((item) => (
-                      <DropdownMenuItem key={item.to} asChild>
-                        <Link to={item.to} className={cn(getButtonClass(item.to), "flex items-center")}>
-                          <item.icon className="mr-2 h-4 w-4" /> {item.label}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
+                    <DropdownMenuLabel className="text-sm font-semibold text-foreground dark:text-muted-foreground">Admin</DropdownMenuLabel>
+                    {adminNavItems.map((item) => {
+                      const isActive = location.pathname === item.to;
+                      return (
+                        <DropdownMenuItem key={item.to} asChild>
+                          <Link to={item.to} className={cn("flex items-center", isActive && "font-bold text-primary")}>
+                            <item.icon className="mr-2 h-4 w-4" /> {item.label}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
                   </>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className={cn(getButtonClass("#"), "flex items-center text-destructive hover:text-destructive/80")}>
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center text-destructive hover:text-destructive/80">
                   <LogOut className="mr-2 h-4 w-4" /> Logout
                 </DropdownMenuItem>
               </>
             ) : (
-              unauthenticatedNavItems.map((item) => (
-                <DropdownMenuItem key={item.to} asChild>
-                  <Link to={item.to} className={cn(getButtonClass(item.to), "flex items-center")}>
-                    <item.icon className="mr-2 h-4 w-4" /> {item.label}
-                  </Link>
-                </DropdownMenuItem>
-              ))
+              unauthenticatedNavItems.map((item) => {
+                const isActive = location.pathname === item.to || (item.to === "/" && location.pathname === "/");
+                return (
+                  <DropdownMenuItem key={item.to} asChild>
+                    <Link to={item.to} className={cn("flex items-center", isActive && "font-bold text-primary")}>
+                      <item.icon className="mr-2 h-4 w-4" /> {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })
             )}
           </DropdownMenuContent>
         </DropdownMenu>
