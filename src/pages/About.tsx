@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 
 const About = () => {
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl">
       <h1 className="text-4xl font-bold text-foreground mb-6 text-center">About SoulFlow</h1>
       <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
         SoulFlow is a new web application designed to be a central hub for discovering and connecting with soul-nourishing events across Australia.

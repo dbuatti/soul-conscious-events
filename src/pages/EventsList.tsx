@@ -199,7 +199,7 @@ const EventsList = () => {
   };
 
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl">
       <div 
         className="relative text-center mb-12 px-4 py-8 sm:px-6 sm:py-12 rounded-xl shadow-xl text-white overflow-hidden bg-center bg-cover" // Added bg-center bg-cover
         style={{ backgroundImage: `url(${heroBackground})` }} // Set background image

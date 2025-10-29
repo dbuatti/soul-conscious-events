@@ -44,7 +44,7 @@ const MyEvents: React.FC = () => {
 
   if (isSessionLoading || loadingEvents) {
     return (
-      <div className="w-full max-w-screen-lg">
+      <div className="w-full max-w-2xl">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -64,7 +64,7 @@ const MyEvents: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="w-full max-w-screen-lg text-center p-8 bg-secondary rounded-lg border border-border">
+      <div className="w-full max-w-2xl text-center p-8 bg-secondary rounded-lg border border-border">
         <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-lg font-semibold text-foreground mb-4">
           Sign up or log in to create and manage your events!
@@ -82,7 +82,7 @@ const MyEvents: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl">
       <h1 className="text-4xl font-bold text-foreground mb-6 text-center">My Events</h1>
       <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
         Here are all the events you've submitted to SoulFlow.

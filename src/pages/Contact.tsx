@@ -56,7 +56,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Contact Us</h2>
       <p className="text-center text-muted-foreground mb-8">
         We'd love to hear from you! Please use the form below to send us your suggestions, recommendations, or feedback.

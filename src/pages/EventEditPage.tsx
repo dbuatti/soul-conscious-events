@@ -283,7 +283,7 @@ const EventEditPage: React.FC = () => {
 
   if (isSessionLoading || loadingEvent) {
     return (
-      <div className="w-full max-w-screen-lg">
+      <div className="w-full max-w-2xl">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
         <div className="space-y-4">
@@ -304,7 +304,7 @@ const EventEditPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Edit Event</h2>
 
       <Form {...form}>

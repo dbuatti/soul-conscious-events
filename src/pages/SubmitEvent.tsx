@@ -213,7 +213,7 @@ const SubmitEvent = () => {
   };
 
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl">
       <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Submit Your Event</h2>
       <p className="text-xl text-muted-foreground mb-8 text-center">
         Share your soulful event with the community.

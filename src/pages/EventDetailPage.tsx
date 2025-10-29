@@ -126,7 +126,7 @@ const EventDetailPage: React.FC = () => {
 
   if (loading || isSessionLoading) {
     return (
-      <div className="w-full max-w-screen-lg">
+      <div className="w-full max-w-2xl">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
         <Skeleton className="w-full h-64 rounded-lg mb-4" />
@@ -164,7 +164,7 @@ const EventDetailPage: React.FC = () => {
       : formattedStartDate;
 
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl">
       <div className="flex justify-start mb-6">
         <Button variant="outline" onClick={() => navigate(-1)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -239,7 +239,7 @@ const EventDetailPage: React.FC = () => {
             </div>
           )}
           {event.price && (
-            <p className="flex items-center text-foreground">
+            <p className="flex items-start text-foreground">
               <DollarSign className="mr-2 h-5 w-5 text-primary" />
               <span className="font-medium">Price: </span> {event.price} {/* Added space */}
               {event.price.toLowerCase() === 'free' && (

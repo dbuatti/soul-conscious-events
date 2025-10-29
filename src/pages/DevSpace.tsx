@@ -110,7 +110,7 @@ const DevSpace = () => {
   );
 
   return (
-    <div className="w-full max-w-screen-2xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-4xl font-bold text-foreground">Dev Space</h1>
         <div className="flex flex-col sm:flex-row gap-2">

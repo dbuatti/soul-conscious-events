@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'; // Import Button
 
 const CommunityGuidelines = () => {
   return (
-    <div className="w-full max-w-screen-lg">
+    <div className="w-full max-w-2xl">
       <h1 className="text-4xl font-bold text-foreground mb-6 text-center">SoulFlow Community Guidelines</h1>
       <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
         SoulFlow is a space dedicated to fostering personal growth, community connection, creativity, and well-being. To ensure a positive and respectful environment for everyone, we've established these guidelines.
