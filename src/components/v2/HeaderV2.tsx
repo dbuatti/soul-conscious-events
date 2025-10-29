@@ -65,7 +65,7 @@ const HeaderV2 = () => {
     <header className="w-full bg-primary py-3 px-4 md:px-8 flex justify-center sticky top-0 z-50">
       <div className="w-full max-w-2xl flex justify-between items-center">
         <Link to="/" className="flex flex-col items-start text-primary-foreground hover:text-primary-foreground/80 transition-colors">
-          <span className="text-2xl font-bold leading-none">SoulFlow 2.0</span>
+          <span className="text-2xl font-bold leading-none">SoulFlow</span> {/* Removed 2.0 */}
           <span className="text-xs font-medium text-primary-foreground/70 leading-none mt-1">Australia</span>
         </Link>
 
