@@ -59,7 +59,11 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   const handleDelete = async () => {
     if (!event) return;
-    const { error } = await supabase.from('events').delete().eq('id', event.id);
+    
+    // Ensure we use the base UUID for deletion
+    const baseId = event.id.split('-')[0];
+
+    const { error } = await supabase.from('events').delete().eq('id', baseId);
 
     if (error) {
       console.error('Error deleting event:', error);
