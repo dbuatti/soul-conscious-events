@@ -26,6 +26,7 @@ import { eventTypes, australianStates } from '@/lib/constants';
 import { Event } from '@/types/event';
 import ImageUploadInput from '@/components/ImageUploadInput'; // Import the new component
 import GooglePlaceAutocomplete from '@/components/GooglePlaceAutocomplete'; // Import new component
+import EventPreviewDialog from '@/components/EventPreviewDialog'; // Import EventPreviewDialog
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
@@ -56,7 +57,6 @@ const EventEditPage: React.FC = () => {
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
-  // Removed placeNameInputRef as it's now handled by GooglePlaceAutocomplete
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); // State for preview URL
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
@@ -132,8 +132,6 @@ const EventEditPage: React.FC = () => {
     fetchEvent();
   }, [id, navigate, form]);
 
-  // Removed useEffect for Autocomplete, now handled by GooglePlaceAutocomplete component
-
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
 
@@ -203,10 +201,16 @@ const EventEditPage: React.FC = () => {
       finalImageUrl = currentEvent.image_url;
     }
 
-    let formattedTicketLink = values.ticketLink;
-    if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
-      formattedTicketLink = `https://${formattedTicketLink}`;
-    }
+    // Helper function to format URL or return null if empty
+    const formatUrl = (url: string | undefined): string | null => {
+      if (!url) return null;
+      let formattedUrl = url.trim();
+      if (formattedUrl === '') return null;
+      if (!/^https?:\/\//i.test(formattedUrl)) {
+        formattedUrl = `https://${formattedUrl}`;
+      }
+      return formattedUrl;
+    };
 
     const dateToSave = format(values.eventDate, 'yyyy-MM-dd');
     const endDateToSave = values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null;
@@ -219,15 +223,15 @@ const EventEditPage: React.FC = () => {
       place_name: values.placeName || null,
       full_address: values.fullAddress || null,
       description: values.description || null,
-      ticket_link: formattedTicketLink || null,
+      ticket_link: formatUrl(values.ticketLink),
       price: values.price || null,
       special_notes: values.specialNotes || null,
       organizer_contact: values.organizerContact || null,
       event_type: values.eventType || null,
-      geographicalState: values.geographicalState || null,
+      geographical_state: values.geographicalState || null,
       image_url: finalImageUrl,
       discount_code: values.discountCode || null,
-      google_maps_link: values.googleMapsLink || null, // Include new field
+      google_maps_link: formatUrl(values.googleMapsLink),
     }).eq('id', id);
 
     if (error) {
@@ -279,7 +283,7 @@ const EventEditPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-2xl">
-      <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Edit Event</h2>
+      <h2 className="text-3xl font-bold text-foreground mb-6 text-center font-heading">Edit Event</h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -605,123 +609,12 @@ const EventEditPage: React.FC = () => {
       </form>
     </Form>
 
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">
-          <DialogHeader>
-            <DialogTitle>Event Preview</DialogTitle>
-            <DialogDescription>
-              Review your event details before submitting.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {imagePreviewUrl && (
-              <div className="col-span-full flex justify-center mb-4">
-                <a href={imagePreviewUrl} target="_blank" rel="noopener noreferrer">
-                  <img
-                    src={imagePreviewUrl}
-                    alt="Event Preview"
-                    className="max-w-full h-auto rounded-lg shadow-lg"
-                  />
-                </a>
-              </div>
-            )}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <p className="text-right font-medium text-foreground">Event Name:</p>
-              <p className="col-span-3 text-foreground">{previewData?.eventName}</p>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <p className="text-right font-medium text-foreground">Date:</p>
-              <p className="col-span-3 text-foreground">
-                {previewData?.eventDate ? format(new Date(previewData.eventDate), 'PPP') : 'N/A'}
-                {previewData?.endDate && ` - ${format(new Date(previewData.endDate), 'PPP')}`}
-              </p>
-            </div>
-            {previewData?.eventTime && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Time:</p>
-                <p className="col-span-3 text-foreground">{previewData.eventTime}</p>
-              </div>
-            )}
-            {previewData?.placeName && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Place Name:</p>
-                <p className="col-span-3 text-foreground">{previewData.placeName}</p>
-              </div>
-            )}
-            {previewData?.fullAddress && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Address:</p>
-                <p className="col-span-3 text-foreground">{previewData.fullAddress}</p>
-              </div>
-            )}
-            {previewData?.googleMapsLink && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Google Maps Link:</p>
-                <a href={previewData.googleMapsLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
-                  {previewData.googleMapsLink}
-                </a>
-              </div>
-            )}
-            {previewData?.description && (
-              <div className="grid grid-cols-4 items-start gap-4">
-                <p className="text-right font-medium text-foreground">Description:</p>
-                <p className="col-span-3 whitespace-pre-wrap text-foreground">{previewData.description}</p>
-              </div>
-            )}
-            {previewData?.ticketLink && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Ticket Link:</p>
-                <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
-                  {previewData.ticketLink}
-                </a>
-              </div>
-            )}
-            {previewData?.price && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Price:</p>
-                <p className="col-span-3 text-foreground">{previewData.price}</p>
-              </div>
-            )}
-            {previewData?.specialNotes && (
-              <div className="grid grid-cols-4 items-start gap-4">
-                <p className="text-right font-medium text-foreground">Special Notes:</p>
-                <p className="col-span-3 whitespace-pre-wrap text-foreground">{previewData.specialNotes}</p>
-              </div>
-            )}
-            {previewData?.organizerContact && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Organizer:</p>
-                <p className="col-span-3 text-foreground">{previewData.organizerContact}</p>
-              </div>
-            )}
-            {previewData?.eventType && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Event Type:</p>
-                <p className="col-span-3 text-foreground">{previewData.eventType}</p>
-              </div>
-            )}
-            {previewData?.geographicalState && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">State:</p>
-                <p className="col-span-3 text-foreground">{previewData.geographicalState}</p>
-              </div>
-            )}
-            {previewData?.discountCode && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-right font-medium text-foreground">Discount Code:</p>
-                <p className="col-span-3 text-foreground">{previewData.discountCode}</p>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                Close
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EventPreviewDialog
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        previewData={previewData}
+        imagePreviewUrl={imagePreviewUrl}
+      />
     </div>
   );
 };
