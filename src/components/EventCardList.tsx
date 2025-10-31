@@ -95,6 +95,9 @@ const EventCardList: React.FC<EventCardListProps> = ({
       ? `${format(parseISO(event.event_date), 'PPP')} - ${format(parseISO(event.end_date), 'PPP')}`
       : format(parseISO(event.event_date), 'PPP');
 
+    // Determine the ID to use for deletion (always the base UUID)
+    const baseId = event.id.split('-')[0];
+
     return (
       <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>
         {event.image_url && (
@@ -139,12 +142,12 @@ const EventCardList: React.FC<EventCardListProps> = ({
             </Button>
             {isCreatorOrAdmin && (
               <>
-                <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
+                <Link to={`/edit-event/${baseId}`} onClick={(e) => e.stopPropagation()}>
                   <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                     <Edit className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
                   </Button>
                 </Link>
-                <Button variant="destructive" size="icon" onClick={(e) => onDelete(event.id, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button variant="destructive" size="icon" onClick={(e) => onDelete(baseId, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                   <Trash2 className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
                 </Button>
               </>
