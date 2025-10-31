@@ -167,10 +167,16 @@ const EventManagementTable = () => {
   }, []);
 
   const handleRestore = async (id: string) => {
+    const baseId = id.split('-')[0];
+    if (baseId.length < 30) {
+      toast.error('Cannot restore: Invalid event ID.');
+      return;
+    }
+
     const { error } = await supabase
       .from('events')
       .update({ is_deleted: false })
-      .eq('id', id);
+      .eq('id', baseId);
 
     if (error) {
       console.error('Error restoring event:', error);
@@ -182,10 +188,16 @@ const EventManagementTable = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const baseId = id.split('-')[0];
+    if (baseId.length < 30) {
+      toast.error('Cannot delete: Invalid event ID.');
+      return;
+    }
+
     const { error } = await supabase
       .from('events')
       .update({ is_deleted: true })
-      .eq('id', id);
+      .eq('id', baseId);
 
     if (error) {
       console.error('Error deleting event:', error);
@@ -219,6 +231,12 @@ const EventManagementTable = () => {
   };
 
   const onEditSubmit = async (values: z.infer<typeof eventFormSchema>) => {
+    const baseId = values.id.split('-')[0];
+    if (baseId.length < 30) {
+      toast.error('Cannot save changes: Invalid event ID.');
+      return;
+    }
+
     let formattedTicketLink = values.ticketLink;
     if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
       formattedTicketLink = `https://${formattedTicketLink}`;
@@ -241,7 +259,7 @@ const EventManagementTable = () => {
         event_type: values.eventType || null,
         approval_status: values.approvalStatus || null,
       })
-      .eq('id', values.id);
+      .eq('id', baseId); // Use baseId here
 
     if (error) {
       console.error('Error updating event:', error);
