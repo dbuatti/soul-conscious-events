@@ -137,14 +137,20 @@ const EventsListV2 = () => {
       setAllEvents([]);
       setAvailableVenues([]);
     } else {
-      const fetchedEvents = data || [];
-      setBaseEvents(fetchedEvents);
+      // Filter out corrupted IDs (IDs that are too short to be UUIDs)
+      const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
+      
+      if (data && data.length !== validEvents.length) {
+        console.warn(`Filtered out ${data.length - validEvents.length} events with corrupted IDs.`);
+      }
+
+      setBaseEvents(validEvents);
       
       // Generate recurring instances
       let combinedEvents: Event[] = [];
       const recurringEvents: Event[] = [];
 
-      fetchedEvents.forEach(event => {
+      validEvents.forEach(event => {
         // Only include the original event if it's not in the past
         if (!isPast(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) {
           combinedEvents.push(event);
@@ -165,7 +171,7 @@ const EventsListV2 = () => {
       combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
 
       setAllEvents(combinedEvents);
-      const uniqueVenues = Array.from(new Set(fetchedEvents.map(event => event.place_name).filter(Boolean))) as string[];
+      const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
       setAvailableVenues(uniqueVenues.sort());
     }
     setLoading(false);
@@ -317,6 +323,13 @@ const EventsListV2 = () => {
     e.stopPropagation();
     // If it's a recurring instance, we need the base ID
     const baseId = eventId.split('-')[0];
+
+    // CRITICAL CHECK: If the base ID is still the corrupted short string, we stop here.
+    if (baseId.length < 30) {
+      console.error('Deletion blocked: Corrupted base ID detected:', baseId);
+      toast.error('Cannot delete: Event ID is corrupted. Please contact support.');
+      return;
+    }
 
     console.log('Attempting to delete event with base ID:', baseId); // <-- DIAGNOSTIC LOG
 
