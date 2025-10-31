@@ -318,9 +318,12 @@ const EventsListV2 = () => {
     // If it's a recurring instance, we need the base ID
     const baseId = eventId.split('-')[0];
 
+    console.log('Attempting to delete event with base ID:', baseId); // <-- DIAGNOSTIC LOG
+
     if (window.confirm('Are you sure you want to delete this event? It will be hidden from public view but can be restored from the Admin Panel.')) {
       const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
       if (error) {
+        console.error('Supabase deletion error:', error); // <-- DIAGNOSTIC LOG
         toast.error('Failed to delete event.');
       } else {
         toast.success('Event moved to trash.');
