@@ -139,9 +139,12 @@ const EventsListV2 = () => {
     } else {
       // Filter out corrupted IDs (IDs that are too short to be UUIDs)
       const validEvents = (data || []).filter(event => {
-        if (event.id && event.id.length < 30) {
-          console.error(`Corrupted event ID detected during fetch: ${event.id} (Length: ${event.id.length}). Filtering out.`);
-          return false;
+        if (event.id) {
+          console.log(`[Fetch Check] Event ID: ${event.id} (Length: ${event.id.length})`);
+          if (event.id.length < 30) {
+            console.error(`[Fetch Check] Corrupted event ID detected: ${event.id}. Filtering out.`);
+            return false;
+          }
         }
         return true;
       });
