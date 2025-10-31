@@ -183,8 +183,11 @@ const EventsList = () => {
 
   const handleDelete = async (eventId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    // Ensure we use the base UUID for deletion, in case a recurring instance ID was passed
+    const baseId = eventId.split('-')[0]; 
+
     if (window.confirm('Are you sure you want to delete this event? It will be hidden from public view but can be restored from the Admin Panel.')) {
-      const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', eventId);
+      const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
       if (error) {
         toast.error('Failed to delete event.');
       } else {
