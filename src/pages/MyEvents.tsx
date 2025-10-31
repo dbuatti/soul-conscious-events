@@ -32,7 +32,14 @@ const MyEvents: React.FC = () => {
       console.error('Error fetching user events:', error);
       toast.error('Failed to load your events.');
     } else {
-      setEvents(data || []);
+      // Filter out corrupted IDs (IDs that are too short to be UUIDs)
+      const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
+      
+      if (data && data.length !== validEvents.length) {
+        console.warn(`Filtered out ${data.length - validEvents.length} user events with corrupted IDs.`);
+      }
+      
+      setEvents(validEvents as Event[]);
     }
     setLoadingEvents(false);
   }, [user]);
