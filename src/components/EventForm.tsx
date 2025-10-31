@@ -42,7 +42,7 @@ const eventFormSchema = z.object({
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
   googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
-  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY']).optional().or(z.literal('')), // New field
+  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'NONE']).optional().or(z.literal('')), // New field
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;

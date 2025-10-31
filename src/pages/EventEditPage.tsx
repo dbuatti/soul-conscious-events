@@ -47,7 +47,7 @@ const eventFormSchema = z.object({
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
   googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
-  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY']).optional().or(z.literal('')), // New field
+  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'NONE']).optional().or(z.literal('')), // Added 'NONE'
 });
 
 const EventEditPage: React.FC = () => {
@@ -82,7 +82,7 @@ const EventEditPage: React.FC = () => {
       imageUrl: '',
       discountCode: '',
       googleMapsLink: '', // Initialize new field
-      recurringPattern: '', // Initialize new field
+      recurringPattern: 'NONE', // Set default to 'NONE'
     },
   });
 
@@ -128,7 +128,7 @@ const EventEditPage: React.FC = () => {
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
           googleMapsLink: data.google_maps_link || '', // Set new field from fetched data
-          recurringPattern: data.recurring_pattern || '', // Set new field from fetched data
+          recurringPattern: data.recurring_pattern || 'NONE', // Map null/undefined to 'NONE'
         });
         setImagePreviewUrl(data.image_url || null); // Set initial preview URL
       } else {
@@ -218,6 +218,7 @@ const EventEditPage: React.FC = () => {
 
       const dateToSave = format(values.eventDate, 'yyyy-MM-dd');
       const endDateToSave = values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null;
+      const recurringPattern = values.recurringPattern === 'NONE' ? null : values.recurringPattern;
 
       const eventData = {
         event_name: values.eventName,
@@ -236,7 +237,7 @@ const EventEditPage: React.FC = () => {
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
         google_maps_link: formatUrl(values.googleMapsLink),
-        recurring_pattern: values.recurringPattern || null, // Include new field
+        recurring_pattern: recurringPattern, // Use mapped value
         user_id: user?.id || null, // Ensure user_id is set for new/duplicated events
         approval_status: 'approved', // Set to approved
         is_deleted: false,

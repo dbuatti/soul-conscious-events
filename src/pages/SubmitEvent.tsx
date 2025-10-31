@@ -30,7 +30,7 @@ const eventFormSchema = z.object({
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
   googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
-  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY']).optional().or(z.literal('')), // New field
+  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'NONE']).optional().or(z.literal('')), // Added 'NONE'
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -59,7 +59,7 @@ const SubmitEvent = () => {
       imageUrl: '',
       discountCode: '',
       googleMapsLink: '', // Initialize new field
-      recurringPattern: '', // Initialize new field
+      recurringPattern: 'NONE', // Set default to 'NONE'
     },
   });
 
@@ -119,7 +119,7 @@ const SubmitEvent = () => {
       imageUrl: parsedData.imageUrl || '',
       discountCode: parsedData.discountCode || '',
       googleMapsLink: parsedData.googleMapsLink || '', // Set new field from AI parse
-      recurringPattern: parsedData.recurringPattern || '', // Set new field from AI parse
+      recurringPattern: parsedData.recurringPattern || 'NONE', // Set new field from AI parse, default to 'NONE'
     });
     
     if (parsedData.imageUrl) {
@@ -179,6 +179,8 @@ const SubmitEvent = () => {
         formattedTicketLink = `https://${formattedTicketLink}`;
       }
 
+      const recurringPattern = values.recurringPattern === 'NONE' ? null : values.recurringPattern;
+
       const eventDataToInsert = {
         event_name: values.eventName,
         event_date: format(values.eventDate, 'yyyy-MM-dd'),
@@ -196,7 +198,7 @@ const SubmitEvent = () => {
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
         google_maps_link: values.googleMapsLink || null, // Include new field
-        recurring_pattern: values.recurringPattern || null, // Include new field
+        recurring_pattern: recurringPattern, // Use mapped value
         user_id: user?.id || null,
         approval_status: 'approved', // Set to approved
       };
