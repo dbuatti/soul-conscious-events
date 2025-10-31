@@ -55,7 +55,10 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
   };
 
   const handleDelete = async () => {
-    const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', event.id);
+    // Ensure we use the base UUID for deletion, even if the event object is a recurring instance
+    const baseId = event.id.split('-')[0];
+
+    const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
     if (error) {
       console.error('Error deleting event:', error);
       toast.error('Failed to move event to trash.');
