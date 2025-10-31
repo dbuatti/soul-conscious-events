@@ -25,7 +25,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription as DialogDescriptionUI,
+  DialogDescription,
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
@@ -163,8 +163,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
         <DialogHeader className="text-center pt-6 pb-4"> {/* Increased padding */}
           <DialogTitle className="text-3xl font-bold text-foreground mb-2">{event.event_name}</DialogTitle>
-          {/* Top Section Simplification */}
-          <div className="flex flex-wrap justify-center items-center text-sm text-muted-foreground gap-x-3 gap-y-1">
+          {/* Top Section Simplification - Wrapped in DialogDescription */}
+          <DialogDescription className="flex flex-wrap justify-center items-center text-sm text-muted-foreground gap-x-3 gap-y-1">
             <span className="flex items-center">
               <Calendar className="mr-1 h-3.5 w-3.5 text-primary" /> {dateDisplay}
             </span>
@@ -178,7 +178,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 <MapPin className="mr-1 h-3.5 w-3.5 text-primary" /> {event.place_name || event.geographical_state}
               </span>
             )}
-          </div>
+          </DialogDescription>
         </DialogHeader>
 
         {event.image_url && (
