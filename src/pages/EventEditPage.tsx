@@ -254,7 +254,12 @@ const EventEditPage: React.FC = () => {
       }
 
       toast.success(isDuplicating ? 'Event duplicated and approved!' : 'Event updated successfully!', { id: loadingToastId });
-      navigate('/my-events'); // Redirect to My Events page
+      
+      // --- New Redirection Logic ---
+      const redirectTo = (location.state as { from?: string })?.from || '/';
+      navigate(redirectTo);
+      // --- End New Redirection Logic ---
+
     } catch (error: any) {
       console.error('Unexpected error during event submission:', error);
       toast.error(`An unexpected error occurred: ${error.message}`, { id: loadingToastId });
