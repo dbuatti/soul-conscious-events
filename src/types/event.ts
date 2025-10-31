@@ -20,4 +20,6 @@ export interface Event {
   is_deleted?: boolean;
   discount_code?: string;
   google_maps_link?: string; // New field for Google Maps link
+  recurring_pattern?: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY'; // New field for recurrence
+  is_recurring_instance?: boolean; // Added for generated recurring event instances
 }

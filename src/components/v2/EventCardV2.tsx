@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { format, parseISO } from 'date-fns';
-import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, Tag } from 'lucide-react'; // Added Tag icon for category
+import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, Tag, Repeat } from 'lucide-react'; // Added Repeat icon
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
@@ -67,6 +67,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             {event.event_type && ( // Category as overlay pill
               <Badge variant="secondary" className="bg-primary/80 text-primary-foreground text-xs px-2 py-0.5 font-semibold">
                 {event.event_type}
+              </Badge>
+            )}
+            {event.recurring_pattern && ( // Recurrence as overlay pill
+              <Badge variant="secondary" className="bg-blue-500 text-white text-xs px-2 py-0.5 font-semibold">
+                {event.recurring_pattern.charAt(0) + event.recurring_pattern.slice(1).toLowerCase()}
               </Badge>
             )}
             {isFeaturedToday && (

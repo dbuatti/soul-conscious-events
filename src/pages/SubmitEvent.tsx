@@ -30,6 +30,7 @@ const eventFormSchema = z.object({
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
   googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
+  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY']).optional().or(z.literal('')), // New field
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -58,6 +59,7 @@ const SubmitEvent = () => {
       imageUrl: '',
       discountCode: '',
       googleMapsLink: '', // Initialize new field
+      recurringPattern: '', // Initialize new field
     },
   });
 
@@ -117,6 +119,7 @@ const SubmitEvent = () => {
       imageUrl: parsedData.imageUrl || '',
       discountCode: parsedData.discountCode || '',
       googleMapsLink: parsedData.googleMapsLink || '', // Set new field from AI parse
+      recurringPattern: parsedData.recurringPattern || '', // Set new field from AI parse
     });
     
     if (parsedData.imageUrl) {
@@ -193,6 +196,7 @@ const SubmitEvent = () => {
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
         google_maps_link: values.googleMapsLink || null, // Include new field
+        recurring_pattern: values.recurringPattern || null, // Include new field
         user_id: user?.id || null,
         approval_status: 'approved', // Set to approved
       };

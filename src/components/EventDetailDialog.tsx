@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns'; // Import isSameDay
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Globe, Share2, Edit, Trash2, Copy } from 'lucide-react'; // Changed Tag to Sparkles
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Globe, Share2, Edit, Trash2, Copy, Repeat } from 'lucide-react'; // Added Repeat icon
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -225,6 +225,12 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               <div className="flex items-start text-foreground text-base leading-relaxed">
                 <Sparkles className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <span className="font-medium">Type:&nbsp;</span> {event.event_type}
+              </div>
+            )}
+            {event.recurring_pattern && (
+              <div className="flex items-start text-foreground text-base leading-relaxed">
+                <Repeat className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <span className="font-medium">Repeats:&nbsp;</span> {event.recurring_pattern.charAt(0) + event.recurring_pattern.slice(1).toLowerCase()}
               </div>
             )}
           </section>

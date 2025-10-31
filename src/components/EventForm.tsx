@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { eventTypes, australianStates } from '@/lib/constants';
 import ImageUploadInput from '@/components/ImageUploadInput'; // Import the new component
 import GooglePlaceAutocomplete from '@/components/GooglePlaceAutocomplete'; // Import new component
+import RecurringEventFields from './RecurringEventFields'; // Import RecurringEventFields
 
 // Define the schema locally to avoid import issues
 const eventFormSchema = z.object({
@@ -36,11 +37,12 @@ const eventFormSchema = z.object({
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')), // New field
+  geographicalState: z.string().optional().or(z.literal('')),
   imageFile: z.any().optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
   googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
+  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY']).optional().or(z.literal('')), // New field
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -151,6 +153,8 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             )}
           />
         </div>
+
+        <RecurringEventFields form={form} /> {/* New Recurrence Field */}
 
         <FormField
           control={form.control}
@@ -346,7 +350,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                     </SelectItem>
                   ))}
                 </SelectContent>
-                </Select>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

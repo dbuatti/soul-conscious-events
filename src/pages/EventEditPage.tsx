@@ -27,6 +27,7 @@ import { Event } from '@/types/event';
 import ImageUploadInput from '@/components/ImageUploadInput'; // Import the new component
 import GooglePlaceAutocomplete from '@/components/GooglePlaceAutocomplete'; // Import new component
 import EventPreviewDialog from '@/components/EventPreviewDialog'; // Import EventPreviewDialog
+import RecurringEventFields from '@/components/RecurringEventFields'; // Import RecurringEventFields
 
 const eventFormSchema = z.object({
   eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
@@ -46,6 +47,7 @@ const eventFormSchema = z.object({
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
   googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
+  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY']).optional().or(z.literal('')), // New field
 });
 
 const EventEditPage: React.FC = () => {
@@ -80,6 +82,7 @@ const EventEditPage: React.FC = () => {
       imageUrl: '',
       discountCode: '',
       googleMapsLink: '', // Initialize new field
+      recurringPattern: '', // Initialize new field
     },
   });
 
@@ -125,6 +128,7 @@ const EventEditPage: React.FC = () => {
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
           googleMapsLink: data.google_maps_link || '', // Set new field from fetched data
+          recurringPattern: data.recurring_pattern || '', // Set new field from fetched data
         });
         setImagePreviewUrl(data.image_url || null); // Set initial preview URL
       } else {
@@ -232,6 +236,7 @@ const EventEditPage: React.FC = () => {
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
         google_maps_link: formatUrl(values.googleMapsLink),
+        recurring_pattern: values.recurringPattern || null, // Include new field
         user_id: user?.id || null, // Ensure user_id is set for new/duplicated events
         approval_status: 'approved', // Set to approved
         is_deleted: false,
@@ -402,6 +407,8 @@ const EventEditPage: React.FC = () => {
             )}
           />
         </div>
+
+        <RecurringEventFields form={form} /> {/* New Recurrence Field */}
 
         <FormField
           control={form.control}

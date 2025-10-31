@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO, isToday, isPast, isFuture, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay, isSameMonth } from 'date-fns';
+import { format, parseISO, isToday, isPast, isFuture, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay, isSameMonth, addWeeks, addMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, PlusCircle, Loader2, CalendarDays } from 'lucide-react'; // Import CalendarDays
@@ -15,10 +15,68 @@ import { useSession } from '@/components/SessionContextProvider';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 
 const EVENTS_PER_LOAD = 6;
+const MAX_RECURRENCE_INSTANCES = 10; // Limit generated instances for performance
+
+// Helper function to generate recurring event instances
+const generateRecurringInstances = (event: Event, maxInstances: number): Event[] => {
+  if (!event.recurring_pattern) return [];
+
+  const originalStartDate = parseISO(event.event_date);
+  const originalEndDate = event.end_date ? parseISO(event.end_date) : originalStartDate;
+  const duration = originalEndDate.getTime() - originalStartDate.getTime();
+  
+  const instances: Event[] = [];
+  let currentDate = originalStartDate;
+  let count = 0;
+
+  while (count < maxInstances) {
+    let nextDate: Date;
+
+    switch (event.recurring_pattern) {
+      case 'DAILY':
+        nextDate = addDays(currentDate, 1);
+        break;
+      case 'WEEKLY':
+        nextDate = addWeeks(currentDate, 1);
+        break;
+      case 'FORTNIGHTLY':
+        nextDate = addWeeks(currentDate, 2);
+        break;
+      case 'MONTHLY':
+        nextDate = addMonths(currentDate, 1);
+        break;
+      default:
+        return instances;
+    }
+
+    // Stop generating if the next date is too far in the future (e.g., 3 months from now)
+    if (nextDate > addMonths(new Date(), 3)) {
+      break;
+    }
+
+    // Only generate instances that are in the future or today
+    if (isFuture(nextDate) || isToday(nextDate)) {
+      const newEvent: Event = {
+        ...event,
+        id: `${event.id}-${format(nextDate, 'yyyyMMdd')}`, // Unique ID for instance
+        event_date: format(nextDate, 'yyyy-MM-dd'),
+        end_date: event.end_date ? format(new Date(nextDate.getTime() + duration), 'yyyy-MM-dd') : undefined,
+        // Mark as recurring instance
+        is_recurring_instance: true,
+      };
+      instances.push(newEvent);
+    }
+    
+    currentDate = nextDate;
+    count++;
+  }
+  return instances;
+};
 
 const EventsListV2 = () => {
   const { user, isLoading: isSessionLoading } = useSession();
-  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [baseEvents, setBaseEvents] = useState<Event[]>([]); // Stores non-recurring and original recurring events
+  const [allEvents, setAllEvents] = useState<Event[]>([]); // Stores base events + generated recurring instances
   const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -67,8 +125,7 @@ const EventsListV2 = () => {
 
     let query = supabase.from('events').select('*');
     query = query.eq('approval_status', 'approved');
-    query = query.eq('is_deleted', false); // Exclude deleted events
-    query = query.eq('is_deleted', false); // Exclude deleted events
+    query = query.eq('is_deleted', false);
     query = query.order('event_date', { ascending: true });
 
     const { data, error } = await query;
@@ -76,11 +133,39 @@ const EventsListV2 = () => {
     if (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events.');
+      setBaseEvents([]);
       setAllEvents([]);
       setAvailableVenues([]);
     } else {
-      setAllEvents(data || []);
-      const uniqueVenues = Array.from(new Set(data.map(event => event.place_name).filter(Boolean))) as string[];
+      const fetchedEvents = data || [];
+      setBaseEvents(fetchedEvents);
+      
+      // Generate recurring instances
+      let combinedEvents: Event[] = [];
+      const recurringEvents: Event[] = [];
+
+      fetchedEvents.forEach(event => {
+        // Only include the original event if it's not in the past
+        if (!isPast(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) {
+          combinedEvents.push(event);
+        }
+
+        if (event.recurring_pattern) {
+          recurringEvents.push(event);
+        }
+      });
+
+      // Generate instances for recurring events
+      recurringEvents.forEach(event => {
+        const instances = generateRecurringInstances(event, MAX_RECURRENCE_INSTANCES);
+        combinedEvents = combinedEvents.concat(instances);
+      });
+
+      // Sort combined events by date
+      combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
+
+      setAllEvents(combinedEvents);
+      const uniqueVenues = Array.from(new Set(fetchedEvents.map(event => event.place_name).filter(Boolean))) as string[];
       setAvailableVenues(uniqueVenues.sort());
     }
     setLoading(false);
@@ -102,6 +187,7 @@ const EventsListV2 = () => {
     return allEvents.filter(event => {
       const eventDate = parseISO(event.event_date);
 
+      // 1. Date Filter
       switch (filters.date) {
         case 'Today':
           if (!isToday(eventDate)) return false;
@@ -120,18 +206,25 @@ const EventsListV2 = () => {
           if (!(eventDate >= startM && eventDate <= endM)) return false;
           break;
         case 'All Upcoming':
+          // Filter out past events unless they are the original event and we are in list view (handled by fetchInitialEvents)
+          // Since allEvents already filters out past base events, we just ensure we don't show instances that somehow slipped through
           if (isPast(eventDate) && !isToday(eventDate)) return false;
           break;
         default:
           break;
       }
 
+      // 2. Category Filter
       if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) {
         return false;
       }
+      
+      // 3. Venue Filter
       if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) {
         return false;
       }
+      
+      // 4. Price Filter
       if (filters.price.length > 0) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
         const isFree = lowerCasePrice.includes('free');
@@ -144,9 +237,12 @@ const EventsListV2 = () => {
         if (filters.price.includes('Donation') && isDonation) priceMatch = true;
         if (!priceMatch) return false;
       }
+      
+      // 5. State Filter
       if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) {
         return false;
       }
+      
       return true;
     });
   }, [allEvents, filters]);
@@ -209,7 +305,9 @@ const EventsListV2 = () => {
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
     e.stopPropagation();
-    const eventUrl = `${window.location.origin}/v2/events/${event.id}`;
+    // Use the base event ID for sharing, even if it's a recurring instance
+    const baseId = event.id.split('-')[0];
+    const eventUrl = `${window.location.origin}/events/${baseId}`;
     navigator.clipboard.writeText(eventUrl)
       .then(() => toast.success('Event link copied to clipboard!'))
       .catch(() => toast.error('Failed to copy link. Please try again.'));
@@ -217,8 +315,11 @@ const EventsListV2 = () => {
 
   const handleDelete = async (eventId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    // If it's a recurring instance, we need the base ID
+    const baseId = eventId.split('-')[0];
+
     if (window.confirm('Are you sure you want to delete this event? It will be hidden from public view but can be restored from the Admin Panel.')) {
-      const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', eventId);
+      const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
       if (error) {
         toast.error('Failed to delete event.');
       } else {
@@ -234,11 +335,13 @@ const EventsListV2 = () => {
   };
 
   const allFilteredEvents = getFilteredEvents();
+  
+  // For calendar view, we need all filtered events, not just the paginated ones
   const selectedDayEvents = allFilteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
   const currentMonthEvents = allFilteredEvents.filter(event => isSameMonth(parseISO(event.event_date), currentMonth) && !isSameDay(parseISO(event.event_date), selectedDay));
 
-  const highlights = allFilteredEvents.filter(event => isToday(parseISO(event.event_date))).slice(0, 3);
-  const upcomingEvents = allFilteredEvents.filter(event => (isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) && !highlights.map(h => h.id).includes(event.id));
+  const highlights = displayedEvents.filter(event => isToday(parseISO(event.event_date))).slice(0, 3);
+  const upcomingEvents = displayedEvents.filter(event => (isFuture(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) && !highlights.map(h => h.id).includes(event.id));
 
   return (
     <div className="w-full max-w-2xl">
