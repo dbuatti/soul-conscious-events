@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Share2, ExternalLink, Calendar, Clock, MapPin, DollarSign, Sparkles } from 'lucide-react'; // Added Sparkles
+import { Edit, Trash2, Share2, ExternalLink, Calendar, Clock, MapPin, DollarSign, Sparkles, Copy } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -148,6 +148,12 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
             <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }}>
               <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9">
                 <Edit className="h-3.5 w-3.5 sm:h-4 w-4" />
+              </Button>
+            </Link>
+            {/* New Duplicate Button */}
+            <Link to={`/duplicate-event/${event.id}`} state={{ from: location.pathname }}>
+              <Button variant="outline" size="icon" title="Duplicate Event" className="h-7 w-7 sm:h-9 sm:w-9">
+                <Copy className="h-3.5 w-3.5 sm:h-4 w-4" />
               </Button>
             </Link>
             <AlertDialog>

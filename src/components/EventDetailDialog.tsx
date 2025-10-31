@@ -109,6 +109,13 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     window.open(event.ticket_link, '_blank');
   };
 
+  const handleDuplicate = () => {
+    if (event) {
+      onClose();
+      navigate(`/duplicate-event/${event.id}`);
+    }
+  };
+
   if (!isOpen) {
     return null;
   }
@@ -329,6 +336,9 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               <>
                 <Button variant="outline" onClick={() => { onClose(); navigate(`/edit-event/${event.id}`); }} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                   <Edit className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <Button variant="outline" onClick={handleDuplicate} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Copy className="mr-2 h-4 w-4" /> Duplicate
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>

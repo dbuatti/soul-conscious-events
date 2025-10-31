@@ -59,6 +59,10 @@ const EventEditPage: React.FC = () => {
   const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); // State for preview URL
 
+  // Determine if we are in duplication mode based on the route path
+  const isDuplicating = location.pathname.startsWith('/duplicate-event');
+  const eventId = isDuplicating ? id : id; // Use id from params for fetching
+
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -81,7 +85,7 @@ const EventEditPage: React.FC = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
-      if (!id) {
+      if (!eventId) {
         toast.error('Event ID is missing.');
         navigate('/404');
         return;
@@ -91,7 +95,7 @@ const EventEditPage: React.FC = () => {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .eq('id', id)
+        .eq('id', eventId)
         .single();
 
       if (error) {
@@ -105,7 +109,7 @@ const EventEditPage: React.FC = () => {
         const endDate = data.end_date ? new Date(`${data.end_date}T00:00:00`) : undefined;
 
         form.reset({
-          eventName: data.event_name,
+          eventName: isDuplicating ? `COPY of ${data.event_name}` : data.event_name,
           eventDate: eventDate,
           endDate: endDate,
           eventTime: data.event_time || '',
@@ -130,77 +134,13 @@ const EventEditPage: React.FC = () => {
     };
 
     fetchEvent();
-  }, [id, navigate, form]);
+  }, [eventId, navigate, form, isDuplicating]);
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
 
     let finalImageUrl: string | null = null;
     
-    // Handle image upload/URL logic
-    const imageFile = form.getValues('imageFile');
-    const imageUrlField = form.getValues('imageUrl');
-
-    if (imageFile) { // If a new file was selected, upload it
-      // Delete old image if it exists and is a Supabase storage URL
-      if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
-        const oldFileName = currentEvent.image_url.split('/').pop();
-        if (oldFileName) {
-          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
-          if (deleteError) {
-            console.error('Error deleting old image:', deleteError);
-          }
-        }
-      }
-
-      const fileExtension = imageFile.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('event-images')
-        .upload(fileName, imageFile, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (uploadError) {
-        console.error('Error uploading new image:', uploadError);
-        toast.error(`Failed to upload new image: ${uploadError.message}. Please try again.`);
-        return;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('event-images')
-        .getPublicUrl(fileName);
-
-      finalImageUrl = publicUrlData.publicUrl;
-    } else if (imageUrlField) { // If a URL was provided
-      // If the old image was a file and a new URL is provided, delete the old file
-      if (currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
-        const oldFileName = currentEvent.image_url.split('/').pop();
-        if (oldFileName) {
-          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
-          if (deleteError) {
-            console.error('Error deleting old image:', deleteError);
-          }
-        }
-      }
-      finalImageUrl = imageUrlField;
-    } else if (currentEvent.image_url && !imageFile && !imageUrlField) { // If no new image and no URL, but there was an old image
-      // This means the user explicitly removed the image or it was never set
-      if (currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images')) {
-        const oldFileName = currentEvent.image_url.split('/').pop();
-        if (oldFileName) {
-          const { error: deleteError } = await supabase.storage.from('event-images').remove([oldFileName]);
-          if (deleteError) {
-            console.error('Error deleting old image:', deleteError);
-          }
-        }
-      }
-      finalImageUrl = null;
-    } else { // Keep existing image if no changes
-      finalImageUrl = currentEvent.image_url;
-    }
-
     // Helper function to format URL or return null if empty
     const formatUrl = (url: string | undefined): string | null => {
       if (!url) return null;
@@ -212,34 +152,112 @@ const EventEditPage: React.FC = () => {
       return formattedUrl;
     };
 
-    const dateToSave = format(values.eventDate, 'yyyy-MM-dd');
-    const endDateToSave = values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null;
+    const loadingToastId = toast.loading(isDuplicating ? 'Creating duplicate event...' : 'Saving changes...');
 
-    const { error } = await supabase.from('events').update({
-      event_name: values.eventName,
-      event_date: dateToSave,
-      end_date: endDateToSave,
-      event_time: values.eventTime || null,
-      place_name: values.placeName || null,
-      full_address: values.fullAddress || null,
-      description: values.description || null,
-      ticket_link: formatUrl(values.ticketLink),
-      price: values.price || null,
-      special_notes: values.specialNotes || null,
-      organizer_contact: values.organizerContact || null,
-      event_type: values.eventType || null,
-      geographical_state: values.geographicalState || null,
-      image_url: finalImageUrl,
-      discount_code: values.discountCode || null,
-      google_maps_link: formatUrl(values.googleMapsLink),
-    }).eq('id', id);
+    try {
+      // --- Image Handling Logic ---
+      const imageFile = form.getValues('imageFile');
+      const imageUrlField = form.getValues('imageUrl');
+      const isExistingSupabaseImage = currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images');
 
-    if (error) {
-      console.error('Error updating event:', error);
-      toast.error('Failed to update event.');
-    } else {
-      toast.success('Event updated successfully!');
-      navigate('/'); // Redirect to V2 main events page
+      if (imageFile) { // Case 1: New file selected (Upload required)
+        // If editing, delete old image if it was a Supabase file
+        if (!isDuplicating && isExistingSupabaseImage) {
+          const oldFileName = currentEvent.image_url!.split('/').pop();
+          if (oldFileName) {
+            await supabase.storage.from('event-images').remove([oldFileName]);
+          }
+        }
+        
+        const fileExtension = imageFile.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExtension}`;
+        const { error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(fileName, imageFile, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) throw new Error(`Failed to upload new image: ${uploadError.message}`);
+
+        const { data: publicUrlData } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(fileName);
+
+        finalImageUrl = publicUrlData.publicUrl;
+
+      } else if (imageUrlField) { // Case 2: URL provided (External or existing)
+        // If editing, delete old image if it was a Supabase file
+        if (!isDuplicating && isExistingSupabaseImage) {
+          const oldFileName = currentEvent.image_url!.split('/').pop();
+          if (oldFileName) {
+            await supabase.storage.from('event-images').remove([oldFileName]);
+          }
+        }
+        finalImageUrl = imageUrlField;
+
+      } else if (isDuplicating) { // Case 3: Duplicating, no new file/URL provided, keep original URL (if external) or set null (if internal file)
+        // If duplicating, we only keep the URL if it's external. If it was a file, we don't copy the file, so we set it to null.
+        finalImageUrl = isExistingSupabaseImage ? null : currentEvent.image_url;
+        
+      } else if (!isDuplicating && !imageFile && !imageUrlField && isExistingSupabaseImage) { // Case 4: Editing, image removed
+        // Delete old image if it was a Supabase file
+        const oldFileName = currentEvent.image_url!.split('/').pop();
+        if (oldFileName) {
+          await supabase.storage.from('event-images').remove([oldFileName]);
+        }
+        finalImageUrl = null;
+      } else { // Case 5: Editing, no change to image, keep existing URL
+        finalImageUrl = currentEvent.image_url;
+      }
+      // --- End Image Handling Logic ---
+
+      const dateToSave = format(values.eventDate, 'yyyy-MM-dd');
+      const endDateToSave = values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null;
+
+      const eventData = {
+        event_name: values.eventName,
+        event_date: dateToSave,
+        end_date: endDateToSave,
+        event_time: values.eventTime || null,
+        place_name: values.placeName || null,
+        full_address: values.fullAddress || null,
+        description: values.description || null,
+        ticket_link: formatUrl(values.ticketLink),
+        price: values.price || null,
+        special_notes: values.specialNotes || null,
+        organizer_contact: values.organizerContact || null,
+        event_type: values.eventType || null,
+        geographical_state: values.geographicalState || null,
+        image_url: finalImageUrl,
+        discount_code: values.discountCode || null,
+        google_maps_link: formatUrl(values.googleMapsLink),
+        user_id: user?.id || null, // Ensure user_id is set for new/duplicated events
+        approval_status: 'pending', // Duplicated/Edited events require re-approval
+        is_deleted: false,
+      };
+
+      let error;
+      if (isDuplicating) {
+        // Insert as a new event
+        const { error: insertError } = await supabase.from('events').insert([eventData]);
+        error = insertError;
+      } else {
+        // Update existing event
+        const { error: updateError } = await supabase.from('events').update(eventData).eq('id', eventId);
+        error = updateError;
+      }
+
+      if (error) {
+        console.error('Supabase operation error:', error);
+        throw new Error(error.message);
+      }
+
+      toast.success(isDuplicating ? 'Event duplicated and submitted for approval!' : 'Event updated successfully!', { id: loadingToastId });
+      navigate('/my-events'); // Redirect to My Events page
+    } catch (error: any) {
+      console.error('Unexpected error during event submission:', error);
+      toast.error(`An unexpected error occurred: ${error.message}`, { id: loadingToastId });
     }
   };
 
@@ -275,7 +293,7 @@ const EventEditPage: React.FC = () => {
 
   const isCreatorOrAdmin = user?.id === currentEvent?.user_id || user?.email === 'daniele.buatti@gmail.com';
 
-  if (!isCreatorOrAdmin) {
+  if (!isCreatorOrAdmin && !isDuplicating) {
     toast.error('You do not have permission to edit this event.');
     navigate('/');
     return null;
@@ -283,7 +301,9 @@ const EventEditPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-2xl">
-      <h2 className="text-3xl font-bold text-foreground mb-6 text-center font-heading">Edit Event</h2>
+      <h2 className="text-3xl font-bold text-foreground mb-6 text-center font-heading">
+        {isDuplicating ? 'Duplicate Event' : 'Edit Event'}
+      </h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -603,7 +623,7 @@ const EventEditPage: React.FC = () => {
           </Button>
           <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
             {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+            {isDuplicating ? 'Submit Duplicate' : 'Save Changes'}
           </Button>
         </div>
       </form>

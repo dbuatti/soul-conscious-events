@@ -93,6 +93,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/duplicate-event/:id"
+              element={
+                <ProtectedRoute>
+                  <LayoutV2><EventEditPage /></LayoutV2>
+                </ProtectedRoute>
+              }
+            />
 
             {/* Global pages now using LayoutV2 */}
             <Route path="/contact" element={<LayoutV2><Contact /></LayoutV2>} />
