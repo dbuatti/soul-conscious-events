@@ -20,8 +20,8 @@ declare global {
     interface IntrinsicElements {
       'gmp-place-autocomplete': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         placeholder?: string;
-        'component-restrictions'?: string;
-        'fields'?: string;
+        'component-restrictions'?: string; // Use kebab-case for attributes
+        'fields'?: string; // Use kebab-case for attributes
         'onGmpPlaceselect'?: (event: CustomEvent<{ place: google.maps.places.PlaceResult }>) => void;
         // Add other properties if needed
       };
@@ -77,11 +77,8 @@ const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
     const element = autocompleteRef.current;
     if (element && mapApiLoaded && window.google && window.google.maps && window.google.maps.places) {
       
-      // Set properties on the custom element
-      element.componentRestrictions = { country: 'au' };
-      element.fields = ['formatted_address', 'name', 'displayName'];
-      element.placeholder = placeholder || 'Enter a location';
-
+      // The properties are now set via JSX attributes. We only need to attach the event listener here.
+      
       // Attach event listener
       element.addEventListener('gmp-placeselect', handlePlaceSelect as EventListener);
 
@@ -98,7 +95,8 @@ const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
   // Manually update the custom element's value when the form state changes (e.g., on form reset or AI parse)
   useEffect(() => {
     if (autocompleteRef.current) {
-      autocompleteRef.current.value = fieldValue || '';
+      // Ensure the value is set correctly for the custom element input
+      (autocompleteRef.current as any).value = fieldValue || '';
     }
   }, [fieldValue]);
 
@@ -110,8 +108,10 @@ const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
         "w-full", // Ensure it takes full width
         className
       )}
-      // Note: We cannot use React's onChange directly on the custom element for input changes, 
-      // but we can use the gmp-placeselect event for selection.
+      // Set configuration properties directly as kebab-case attributes in JSX
+      component-restrictions="AU" // Restrict to Australia
+      fields="formatted_address,name,displayName" // Fields to retrieve
+      placeholder={placeholder || 'Enter a location'}
     />
   );
 };
