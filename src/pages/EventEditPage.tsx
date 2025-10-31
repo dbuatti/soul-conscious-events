@@ -63,7 +63,7 @@ const EventEditPage: React.FC = () => {
 
   // Determine if we are in duplication mode based on the route path
   const isDuplicating = location.pathname.startsWith('/duplicate-event');
-  const eventId = isDuplicating ? id : id; // Use id from params for fetching
+  const eventId = id; // Use id from params for fetching/updating
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -88,8 +88,8 @@ const EventEditPage: React.FC = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
-      if (!eventId) {
-        toast.error('Event ID is missing.');
+      if (!eventId || eventId.length < 30) { // Check for minimum UUID length (36 chars standard)
+        toast.error('Invalid event ID format.');
         navigate('/404');
         return;
       }
@@ -142,6 +142,12 @@ const EventEditPage: React.FC = () => {
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
+
+    // Critical check before update/insert
+    if (!isDuplicating && (!eventId || eventId.length < 30)) {
+      toast.error('Cannot save changes: Invalid event ID.');
+      return;
+    }
 
     let finalImageUrl: string | null = null;
     
