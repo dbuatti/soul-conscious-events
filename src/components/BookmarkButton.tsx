@@ -18,6 +18,9 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
   const [isBookmarked, setIsBookmarked] = useState(initialIsBookmarked);
   const [loading, setLoading] = useState(false);
 
+  // Determine the actual ID to use for database operations (base UUID)
+  const baseEventId = eventId.split('-')[0];
+
   useEffect(() => {
     if (!isSessionLoading && user) {
       const checkBookmarkStatus = async () => {
@@ -26,7 +29,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
           .from('user_bookmarks')
           .select('*') // Changed to select all
           .eq('user_id', user.id)
-          .eq('event_id', eventId)
+          .eq('event_id', baseEventId) // Use baseEventId here
           .maybeSingle(); // Changed to maybeSingle()
 
         if (error) { // maybeSingle() will only return error for server issues, not for no rows found
@@ -41,7 +44,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
     } else if (!user) {
       setIsBookmarked(false); // Not logged in, so not bookmarked
     }
-  }, [user, eventId, isSessionLoading]);
+  }, [user, baseEventId, isSessionLoading]); // Depend on baseEventId
 
   const handleBookmarkToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click if button is inside a card
@@ -59,7 +62,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
         .from('user_bookmarks')
         .delete()
         .eq('user_id', user.id)
-        .eq('event_id', eventId);
+        .eq('event_id', baseEventId); // Use baseEventId here
 
       if (error) {
         console.error('Error removing bookmark:', error);
@@ -72,7 +75,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
       // Add bookmark
       const { error } = await supabase
         .from('user_bookmarks')
-        .insert([{ user_id: user.id, event_id: eventId }]);
+        .insert([{ user_id: user.id, event_id: baseEventId }]); // Use baseEventId here
 
       if (error) {
         console.error('Error adding bookmark:', error);
