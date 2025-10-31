@@ -193,6 +193,13 @@ declare namespace google {
         addEventListener(type: 'gmp-placeselect', listener: (event: CustomEvent<{ place: PlaceResult }>) => void): void;
         removeEventListener(type: 'gmp-placeselect', listener: (event: CustomEvent<{ place: PlaceResult }>) => void): void;
         // Add other properties/methods if needed
+        // Properties for configuration (equivalent to AutocompleteOptions)
+        bounds?: LatLngBounds | LatLngBoundsLiteral;
+        componentRestrictions?: ComponentRestrictions;
+        fields?: string[];
+        strictBounds?: boolean;
+        types?: string[];
+        placeholder?: string; // Added placeholder property
       }
 
       class Autocomplete {

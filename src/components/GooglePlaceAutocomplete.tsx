@@ -3,6 +3,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { extractAustralianState } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface GooglePlaceAutocompleteProps {
   form: UseFormReturn<any>;
@@ -13,6 +14,21 @@ interface GooglePlaceAutocompleteProps {
   className?: string;
 }
 
+// Extend JSX.IntrinsicElements to allow the custom tag without TS errors
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'gmp-place-autocomplete': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        placeholder?: string;
+        'component-restrictions'?: string;
+        'fields'?: string;
+        'onGmpPlaceselect'?: (event: CustomEvent<{ place: google.maps.places.PlaceResult }>) => void;
+        // Add other properties if needed
+      };
+    }
+  }
+}
+
 const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
   form,
   name,
@@ -21,7 +37,7 @@ const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
   placeholder,
   className,
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
   const [mapApiLoaded, setMapApiLoaded] = useState(false);
 
   useEffect(() => {
@@ -29,7 +45,6 @@ const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
       setMapApiLoaded(true);
     };
 
-    // Check immediately if Google Maps API is already loaded
     if (window.google && window.google.maps) {
       setMapApiLoaded(true);
     } else {
@@ -41,45 +56,62 @@ const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (inputRef.current && mapApiLoaded && window.google && window.google.maps && window.google.maps.places) {
-      const melbourneBounds = new window.google.maps.LatLngBounds(
-        new window.google.maps.LatLng(-38.2, 144.5),
-        new window.google.maps.LatLng(-37.5, 145.5)
-      );
+  const handlePlaceSelect = (event: CustomEvent<{ place: google.maps.places.PlaceResult }>) => {
+    const place = event.detail.place;
+    
+    // Use name or displayName for place name
+    const placeName = place.name || place.displayName || '';
+    
+    form.setValue(name, placeName, { shouldValidate: true });
+    form.setValue(addressName, place.formatted_address || '', { shouldValidate: true });
 
-      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-        bounds: melbourneBounds,
-        componentRestrictions: { country: 'au' },
-        fields: ['formatted_address', 'name'],
-      });
-
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        form.setValue(name, place.name || '', { shouldValidate: true });
-        form.setValue(addressName, place.formatted_address || '', { shouldValidate: true });
-
-        const extractedState = extractAustralianState(place.formatted_address || '');
-        if (extractedState) {
-          form.setValue(stateName, extractedState, { shouldValidate: true });
-        } else {
-          form.setValue(stateName, '', { shouldValidate: true });
-        }
-      });
+    const extractedState = extractAustralianState(place.formatted_address || '');
+    if (extractedState) {
+      form.setValue(stateName, extractedState, { shouldValidate: true });
+    } else {
+      form.setValue(stateName, '', { shouldValidate: true });
     }
-  }, [mapApiLoaded, form, name, addressName, stateName]);
+  };
 
-  // Watch the form field value to keep the input element in sync
+  useEffect(() => {
+    const element = autocompleteRef.current;
+    if (element && mapApiLoaded && window.google && window.google.maps && window.google.maps.places) {
+      
+      // Set properties on the custom element
+      element.componentRestrictions = { country: 'au' };
+      element.fields = ['formatted_address', 'name', 'displayName'];
+      element.placeholder = placeholder || 'Enter a location';
+
+      // Attach event listener
+      element.addEventListener('gmp-placeselect', handlePlaceSelect as EventListener);
+
+      return () => {
+        // Clean up event listener
+        element.removeEventListener('gmp-placeselect', handlePlaceSelect as EventListener);
+      };
+    }
+  }, [mapApiLoaded, form, name, addressName, stateName, placeholder]);
+
+  // Watch the form field value to keep the custom element's value in sync
   const fieldValue = form.watch(name);
+  
+  // Manually update the custom element's value when the form state changes (e.g., on form reset or AI parse)
+  useEffect(() => {
+    if (autocompleteRef.current) {
+      autocompleteRef.current.value = fieldValue || '';
+    }
+  }, [fieldValue]);
 
+  // We render the custom element and apply styling via className
   return (
-    <Input
-      id={name}
-      placeholder={placeholder}
-      className={className}
-      ref={inputRef}
-      value={fieldValue || ''}
-      onChange={(e) => form.setValue(name, e.target.value, { shouldValidate: true })}
+    <gmp-place-autocomplete
+      ref={autocompleteRef as React.RefObject<HTMLElement>}
+      className={cn(
+        "w-full", // Ensure it takes full width
+        className
+      )}
+      // Note: We cannot use React's onChange directly on the custom element for input changes, 
+      // but we can use the gmp-placeselect event for selection.
     />
   );
 };
