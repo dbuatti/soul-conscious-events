@@ -65,6 +65,9 @@ const EventEditPage: React.FC = () => {
   const isDuplicating = location.pathname.startsWith('/duplicate-event');
   const eventId = id; // Use id from params for fetching/updating
 
+  // Immediate validation check for the ID format
+  const isIdValid = eventId && eventId.length >= 30;
+
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -88,7 +91,8 @@ const EventEditPage: React.FC = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
-      if (!eventId || eventId.length < 30) { // Check for minimum UUID length (36 chars standard)
+      if (!isIdValid) {
+        // This case should be caught by the early return below, but included for safety
         toast.error('Invalid event ID format.');
         navigate('/404');
         return;
@@ -137,8 +141,12 @@ const EventEditPage: React.FC = () => {
       setLoadingEvent(false);
     };
 
-    fetchEvent();
-  }, [eventId, navigate, form, isDuplicating]);
+    if (isIdValid) {
+      fetchEvent();
+    } else {
+      setLoadingEvent(false);
+    }
+  }, [eventId, navigate, form, isDuplicating, isIdValid]);
 
   const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
     if (!currentEvent) return;
@@ -277,6 +285,17 @@ const EventEditPage: React.FC = () => {
       toast.error(`An unexpected error occurred: ${error.message}`, { id: loadingToastId });
     }
   };
+
+  // If the ID is invalid, show an error message immediately and stop rendering the form
+  if (!isIdValid) {
+    return (
+      <div className="w-full max-w-2xl text-center p-8 bg-card rounded-lg border border-border shadow-md">
+        <h2 className="text-3xl font-bold text-destructive mb-4 font-heading">Error: Invalid Event ID</h2>
+        <p className="text-muted-foreground mb-6">The event link you followed contains an invalid identifier. Please check the URL or return to the events list.</p>
+        <Button onClick={() => navigate('/')}>Go to Home</Button>
+      </div>
+    );
+  }
 
   const handlePreview = () => {
     const data = form.getValues();
