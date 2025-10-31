@@ -75,7 +75,14 @@ const EventsList = () => {
         console.error('Error fetching events:', error);
         toast.error('Failed to load events.');
       } else {
-        setEvents(data || []);
+        // Filter out corrupted IDs (IDs that are too short to be UUIDs)
+        const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
+        
+        if (data && data.length !== validEvents.length) {
+          console.warn(`Filtered out ${data.length - validEvents.length} events with corrupted IDs.`);
+        }
+        
+        setEvents(validEvents as Event[] || []);
       }
       setLoading(false);
     };
@@ -185,6 +192,13 @@ const EventsList = () => {
     e.stopPropagation();
     // Ensure we use the base UUID for deletion, in case a recurring instance ID was passed
     const baseId = eventId.split('-')[0]; 
+
+    // CRITICAL CHECK: If the base ID is still the corrupted short string, we stop here.
+    if (baseId.length < 30) {
+      console.error('Deletion blocked: Corrupted base ID detected:', baseId);
+      toast.error('Cannot delete: Event ID is corrupted. Please contact support.');
+      return;
+    }
 
     if (window.confirm('Are you sure you want to delete this event? It will be hidden from public view but can be restored from the Admin Panel.')) {
       const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
