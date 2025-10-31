@@ -233,7 +233,7 @@ const EventEditPage: React.FC = () => {
         discount_code: values.discountCode || null,
         google_maps_link: formatUrl(values.googleMapsLink),
         user_id: user?.id || null, // Ensure user_id is set for new/duplicated events
-        approval_status: 'pending', // Duplicated/Edited events require re-approval
+        approval_status: 'approved', // Set to approved
         is_deleted: false,
       };
 
@@ -253,7 +253,7 @@ const EventEditPage: React.FC = () => {
         throw new Error(error.message);
       }
 
-      toast.success(isDuplicating ? 'Event duplicated and submitted for approval!' : 'Event updated successfully!', { id: loadingToastId });
+      toast.success(isDuplicating ? 'Event duplicated and approved!' : 'Event updated successfully!', { id: loadingToastId });
       navigate('/my-events'); // Redirect to My Events page
     } catch (error: any) {
       console.error('Unexpected error during event submission:', error);

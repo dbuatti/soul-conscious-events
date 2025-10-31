@@ -194,7 +194,7 @@ const SubmitEvent = () => {
         discount_code: values.discountCode || null,
         google_maps_link: values.googleMapsLink || null, // Include new field
         user_id: user?.id || null,
-        approval_status: 'approved',
+        approval_status: 'approved', // Set to approved
       };
 
       const { data: insertData, error } = await supabase.from('events').insert([eventDataToInsert]);
