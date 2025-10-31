@@ -199,7 +199,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
           <section className="space-y-2">
             <h3 className="text-xs uppercase font-semibold text-muted-foreground mb-2">Event Overview</h3>
             {event.full_address && (
-              <p className="flex items-start text-foreground text-base leading-relaxed">
+              <div className="flex items-start text-foreground text-base leading-relaxed">
                 <MapPin className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <a
                   href={googleMapsLink}
@@ -209,23 +209,23 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 >
                   {event.full_address}
                 </a>
-              </p>
+              </div>
             )}
             {event.price && (
-              <p className="flex items-start text-foreground text-base leading-relaxed">
+              <div className="flex items-start text-foreground text-base leading-relaxed">
                 <DollarSign className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <span className="font-medium">Price:&nbsp;</span>
                 <span className="break-words">{formatPrice(event.price)}</span>
                 {event.price.toLowerCase() === 'free' && (
                   <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
                 )}
-              </p>
+              </div>
             )}
             {event.event_type && (
-              <p className="flex items-start text-foreground text-base leading-relaxed">
+              <div className="flex items-start text-foreground text-base leading-relaxed">
                 <Sparkles className="mr-3 h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <span className="font-medium">Type:&nbsp;</span> {event.event_type}
-              </p>
+              </div>
             )}
           </section>
 
@@ -306,9 +306,9 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 {event.organizer_contact && (
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">ORGANIZER</h4>
-                    <p className="flex items-center text-foreground text-base leading-relaxed">
+                    <div className="flex items-center text-foreground text-base leading-relaxed">
                       <User className="mr-2 h-4 w-4 text-muted-foreground flex-shrink-0" /> {event.organizer_contact}
-                    </p>
+                    </div>
                   </div>
                 )}
               </section>
