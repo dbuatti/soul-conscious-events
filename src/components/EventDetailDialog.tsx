@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X, CalendarPlus, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -28,9 +28,15 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
-import { formatPrice } from '@/utils/event-utils';
+import { formatPrice, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
 
 interface EventDetailDialogProps {
   event: Event | null;
@@ -199,6 +205,21 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                   <span className="font-medium capitalize">Repeats {event.recurring_pattern.toLowerCase()}</span>
                 </div>
               )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="rounded-lg h-9 px-3 text-xs font-bold">
+                    <CalendarPlus className="mr-2 h-4 w-4" /> Add to Calendar <ChevronDown className="ml-2 h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="rounded-xl">
+                  <DropdownMenuItem onClick={() => window.open(getGoogleCalendarUrl(event), '_blank')} className="cursor-pointer">
+                    Google Calendar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadIcalFile(event)} className="cursor-pointer">
+                    Download iCal File
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </section>
 

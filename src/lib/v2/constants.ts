@@ -1,4 +1,4 @@
-import { australianStates } from '@/lib/constants'; // Import australianStates
+import { australianStates } from '@/lib/constants';
 
 export const v2EventCategories = [
   'Wellness',
@@ -21,8 +21,6 @@ export const v2PriceOptions = [
   'Donation',
 ];
 
-// Placeholder for venues - these would typically be dynamically loaded from your database
-// For now, we'll use a generic list.
 export const v2Venues = [
   'Community Hall',
   'Yoga Studio',
@@ -36,12 +34,12 @@ export const v2Venues = [
   'Other Venue',
 ];
 
-// Using imported australianStates for the state filter
 export const v2States = australianStates;
 
 export const v2DateOptions = [
   'Today',
   'Tomorrow',
+  'This Weekend',
   'This Week',
   'This Month',
   'All Upcoming',

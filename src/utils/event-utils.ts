@@ -73,6 +73,51 @@ export const getBaseEventId = (id: string): string => {
 
 export const isValidEventId = (id: string): boolean => {
   const baseId = getBaseEventId(id);
-  // Heuristic: UUIDs are 36 chars. We allow some flexibility but block obviously corrupted short IDs.
   return baseId.length >= 30 && baseId.includes('-');
+};
+
+// Calendar Export Utilities
+export const getGoogleCalendarUrl = (event: Event) => {
+  const start = format(parseISO(event.event_date), "yyyyMMdd'T'HHmm00'Z'");
+  const end = event.end_date 
+    ? format(parseISO(event.end_date), "yyyyMMdd'T'HHmm00'Z'")
+    : format(addDays(parseISO(event.event_date), 1), "yyyyMMdd'T'HHmm00'Z'");
+  
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.event_name,
+    details: event.description || '',
+    location: event.full_address || event.place_name || '',
+    dates: `${start}/${end}`,
+  });
+
+  return `https://www.google.com/calendar/render?${params.toString()}`;
+};
+
+export const downloadIcalFile = (event: Event) => {
+  const start = format(parseISO(event.event_date), "yyyyMMdd'T'HHmm00'Z'");
+  const end = event.end_date 
+    ? format(parseISO(event.end_date), "yyyyMMdd'T'HHmm00'Z'")
+    : format(addDays(parseISO(event.event_date), 1), "yyyyMMdd'T'HHmm00'Z'");
+
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'BEGIN:VEVENT',
+    `SUMMARY:${event.event_name}`,
+    `DTSTART:${start}`,
+    `DTEND:${end}`,
+    `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
+    `LOCATION:${event.full_address || event.place_name || ''}`,
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\n');
+
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = window.URL.createObjectURL(blob);
+  link.setAttribute('download', `${event.event_name.replace(/\s+/g, '_')}.ics`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
