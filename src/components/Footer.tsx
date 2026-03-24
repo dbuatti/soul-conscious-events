@@ -42,14 +42,6 @@ const Footer = () => {
 
       <div className="max-w-2xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
         <p>&copy; {currentYear} SoulFlow. All rights reserved.</p>
-        <a
-          href="https://www.dyad.sh/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-primary transition-colors mt-2 md:mt-0"
-        >
-          Made with Dyad
-        </a>
       </div>
     </footer>
   );
