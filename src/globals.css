@@ -4,67 +4,67 @@
 
 @layer base {
   :root {
-    /* Light Mode: Warm Linen & Sage */
-    --background: 30 20% 98%; /* Warm White #FDFCFB */
-    --foreground: 240 10% 12%; /* Deep Onyx */
+    /* Light Mode: Golden Hour */
+    --background: 35 30% 98%; /* Warm Sand #FDFBF7 */
+    --foreground: 20 20% 12%; /* Deep Earth */
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 12%;
+    --card-foreground: 20 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 12%;
+    --popover-foreground: 20 20% 12%;
 
-    --primary: 158 25% 32%; /* Deep Sage */
-    --primary-foreground: 30 20% 98%;
+    --primary: 15 60% 45%; /* Terracotta #B34629 */
+    --primary-foreground: 35 30% 98%;
 
-    --secondary: 30 10% 94%; /* Soft Linen */
-    --secondary-foreground: 240 10% 12%;
+    --secondary: 35 25% 92%; /* Soft Clay */
+    --secondary-foreground: 20 20% 12%;
 
-    --muted: 30 10% 90%;
-    --muted-foreground: 240 5% 40%;
+    --muted: 35 15% 90%;
+    --muted-foreground: 20 10% 45%;
 
-    --accent: 28 45% 55%; /* Warm Clay */
-    --accent-foreground: 30 20% 98%;
+    --accent: 40 70% 60%; /* Golden Ochre */
+    --accent-foreground: 35 30% 98%;
 
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 30 10% 88%;
-    --input: 30 10% 88%;
-    --ring: 158 25% 32%;
+    --border: 35 20% 88%;
+    --input: 35 20% 88%;
+    --ring: 15 60% 45%;
 
-    --radius: 1.25rem;
+    --radius: 1.5rem;
   }
 
   .dark {
-    /* Dark Mode: Midnight Forest */
-    --background: 220 20% 4%; /* Deepest Midnight */
-    --foreground: 30 15% 90%;
+    /* Dark Mode: Desert Night */
+    --background: 20 20% 4%;
+    --foreground: 35 20% 90%;
 
-    --card: 220 20% 7%;
-    --card-foreground: 30 15% 90%;
+    --card: 20 20% 7%;
+    --card-foreground: 35 20% 90%;
 
-    --popover: 220 20% 7%;
-    --popover-foreground: 30 15% 90%;
+    --popover: 20 20% 7%;
+    --popover-foreground: 35 20% 90%;
 
-    --primary: 158 35% 48%; /* Vibrant Sage */
-    --primary-foreground: 220 20% 4%;
+    --primary: 15 50% 55%;
+    --primary-foreground: 20 20% 4%;
 
-    --secondary: 220 15% 12%;
-    --secondary-foreground: 30 15% 90%;
+    --secondary: 20 15% 12%;
+    --secondary-foreground: 35 20% 90%;
 
-    --muted: 220 15% 10%;
-    --muted-foreground: 220 5% 55%;
+    --muted: 20 15% 10%;
+    --muted-foreground: 20 5% 60%;
 
-    --accent: 28 50% 52%; /* Glowing Clay */
-    --accent-foreground: 30 15% 90%;
+    --accent: 40 60% 50%;
+    --accent-foreground: 35 20% 90%;
 
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 15% 16%;
-    --input: 220 15% 16%;
-    --ring: 158 35% 48%;
+    --border: 20 15% 16%;
+    --input: 20 15% 16%;
+    --ring: 15 50% 55%;
   }
 }
 
@@ -76,8 +76,8 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     background-image: 
-      radial-gradient(at 0% 0%, hsla(158, 35%, 48%, 0.08) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(28, 50%, 52%, 0.08) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, hsla(15, 60%, 45%, 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(40, 70%, 60%, 0.03) 0px, transparent 50%);
     background-attachment: fixed;
   }
 
@@ -86,10 +86,10 @@
   }
 }
 
-.glass {
-  @apply bg-white/80 dark:bg-black/40 backdrop-blur-2xl border border-white/20 dark:border-white/10;
+.organic-card {
+  @apply bg-white dark:bg-white/5 border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500;
 }
 
-.glass-card {
-  @apply bg-white/50 dark:bg-white/5 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-2xl;
+.floating-nav {
+  @apply bg-white/90 dark:bg-black/60 backdrop-blur-lg border border-white/50 dark:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.1)];
 }

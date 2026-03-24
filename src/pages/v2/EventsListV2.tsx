@@ -152,28 +152,28 @@ const EventsListV2 = () => {
   const hasActiveFilters = searchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
 
   return (
-    <div className="w-full max-w-5xl px-4">
-      <div className="mb-16 text-center space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase mb-2">
-          <Sparkles className="h-3 w-3 mr-2" /> Discover Your Flow
+    <div className="w-full max-w-6xl px-4">
+      <div className="mb-20 text-center space-y-6 animate-in fade-in slide-in-from-top-4 duration-1000">
+        <div className="inline-flex items-center px-5 py-2 rounded-full bg-primary/10 text-primary text-[11px] font-black tracking-[0.3em] uppercase mb-2">
+          <Sparkles className="h-3.5 w-3.5 mr-2.5" /> Discover Your Flow
         </div>
-        <h1 className="text-5xl sm:text-7xl font-black font-heading tracking-tight text-foreground leading-[1.1]">
+        <h1 className="text-6xl sm:text-8xl font-black font-heading tracking-tight text-foreground leading-[1.05]">
           Soulful Gatherings <br />
           <span className="text-primary italic font-normal">Across Australia</span>
         </h1>
-        <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
           Find workshops, meditations, and community events that nourish your spirit and connect you with like-minded souls.
         </p>
       </div>
 
-      <div className="mb-12 space-y-6 glass-card p-6 sm:p-10 rounded-[2.5rem] shadow-2xl">
+      <div className="mb-16 space-y-8 organic-card p-8 sm:p-12 rounded-[3rem]">
         <div className="relative group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Search events, venues, or locations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-16 h-16 rounded-2xl border-none bg-secondary/50 focus-visible:ring-primary text-xl placeholder:text-muted-foreground/40"
+            className="pl-20 h-20 rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-2xl placeholder:text-muted-foreground/40 font-medium"
           />
         </div>
         <FilterDropdownsV2
@@ -189,30 +189,30 @@ const EventsListV2 = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex flex-col space-y-6">
-              <Skeleton className="h-[350px] w-full rounded-[2.5rem]" />
-              <Skeleton className="h-10 w-3/4" />
-              <Skeleton className="h-6 w-1/2" />
+            <div key={i} className="flex flex-col space-y-8">
+              <Skeleton className="h-[400px] w-full rounded-[3rem]" />
+              <Skeleton className="h-12 w-3/4" />
+              <Skeleton className="h-8 w-1/2" />
             </div>
           ))}
         </div>
       ) : (
         <>
           {viewMode === 'list' ? (
-            <section className="mb-24">
-              <div className="flex items-center justify-between mb-10 border-b pb-6 border-border/40">
-                <h2 className="text-4xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
+            <section className="mb-32">
+              <div className="flex items-center justify-between mb-12 border-b pb-8 border-border/40">
+                <h2 className="text-5xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
                 {hasActiveFilters && (
-                  <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground hover:text-primary font-bold rounded-full">
-                    <FilterX className="mr-2 h-4 w-4" /> Clear All
+                  <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground hover:text-primary font-black rounded-full px-6">
+                    <FilterX className="mr-2 h-5 w-5" /> Clear All
                   </Button>
                 )}
               </div>
               
               {displayedEvents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   {displayedEvents.map(event => (
                     <EventCardV2
                       key={event.id}
@@ -225,19 +225,19 @@ const EventsListV2 = () => {
                   ))}
                 </div>
               ) : (
-                <div className="p-20 glass-card rounded-[3rem] text-center border-dashed border-primary/20">
-                  <Frown className="h-20 w-20 text-primary/20 mx-auto mb-8" />
-                  <h3 className="text-3xl font-heading font-bold text-foreground mb-4">No events found</h3>
-                  <p className="text-muted-foreground mb-10 text-lg max-w-xs mx-auto">Try adjusting your filters or share your own soulful event.</p>
-                  <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20">
+                  <Frown className="h-24 w-24 text-primary/20 mx-auto mb-10" />
+                  <h3 className="text-4xl font-heading font-bold text-foreground mb-6">No events found</h3>
+                  <p className="text-muted-foreground mb-12 text-xl max-w-sm mx-auto font-medium">Try adjusting your filters or share your own soulful event.</p>
+                  <div className="flex flex-col sm:flex-row justify-center gap-6">
                     {hasActiveFilters && (
-                      <Button variant="outline" onClick={handleClearFilters} className="rounded-2xl px-8 py-7 text-lg font-bold">
+                      <Button variant="outline" onClick={handleClearFilters} className="rounded-2xl px-10 py-8 text-xl font-black">
                         Clear Filters
                       </Button>
                     )}
                     <Link to="/submit-event">
-                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-10 py-7 text-lg font-bold shadow-2xl transition-transform hover:scale-105">
-                        <PlusCircle className="mr-2 h-6 w-6" /> Add Your Event
+                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+                        <PlusCircle className="mr-3 h-7 w-7" /> Add Your Event
                       </Button>
                     </Link>
                   </div>
@@ -245,9 +245,9 @@ const EventsListV2 = () => {
               )}
 
               {hasMore && displayedEvents.length > 0 && (
-                <div className="flex justify-center mt-20">
-                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="min-w-[300px] h-16 rounded-2xl transition-all hover:bg-primary hover:text-primary-foreground font-bold text-xl shadow-xl">
-                    {loadingMore ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Load More Events'}
+                <div className="flex justify-center mt-24">
+                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="min-w-[340px] h-20 rounded-[2rem] transition-all hover:bg-primary hover:text-primary-foreground font-black text-2xl shadow-2xl">
+                    {loadingMore ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : 'Load More Events'}
                   </Button>
                 </div>
               )}
@@ -262,10 +262,10 @@ const EventsListV2 = () => {
                 currentMonth={currentMonth}
                 onMonthChange={setCurrentMonth}
               />
-              <div className="mt-20">
-                <h3 className="text-4xl font-heading font-bold text-foreground mb-10 border-b pb-6 border-border/40 tracking-tight">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
+              <div className="mt-24">
+                <h3 className="text-5xl font-heading font-bold text-foreground mb-12 border-b pb-8 border-border/40 tracking-tight">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
                 {selectedDayEvents.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     {selectedDayEvents.map(event => (
                       <EventCardV2 
                         key={event.id} 
@@ -278,9 +278,9 @@ const EventsListV2 = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-20 glass-card rounded-[3rem] text-center border-dashed border-primary/20">
-                    <Frown className="h-16 w-16 text-primary/20 mx-auto mb-6" />
-                    <p className="text-xl font-medium text-muted-foreground">No events scheduled for this day.</p>
+                  <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20">
+                    <Frown className="h-20 w-20 text-primary/20 mx-auto mb-8" />
+                    <p className="text-2xl font-bold text-muted-foreground">No events scheduled for this day.</p>
                   </div>
                 )}
               </div>
@@ -290,34 +290,34 @@ const EventsListV2 = () => {
       )}
 
       {!user && !loading && (
-        <section className="mt-32 mb-20 glass-card p-10 sm:p-16 rounded-[3rem] text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
-          <h2 className="text-4xl font-heading font-bold text-foreground mb-8">Join the SoulFlow Community</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 mb-12">
-            <div className="space-y-4">
-              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-                <Bookmark className="h-7 w-7 text-primary" />
+        <section className="mt-40 mb-24 organic-card p-12 sm:p-20 rounded-[4rem] text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
+          <h2 className="text-5xl font-heading font-bold text-foreground mb-12">Join the SoulFlow Community</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-12 mb-16">
+            <div className="space-y-6">
+              <div className="h-16 w-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto">
+                <Bookmark className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-bold text-xl">Save Favourites</h3>
-              <p className="text-muted-foreground text-sm">Bookmark events you love and never miss a soulful gathering.</p>
+              <h3 className="font-black text-2xl">Save Favourites</h3>
+              <p className="text-muted-foreground text-base font-medium">Bookmark events you love and never miss a soulful gathering.</p>
             </div>
-            <div className="space-y-4">
-              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-                <CalendarCheck className="h-7 w-7 text-primary" />
+            <div className="space-y-6">
+              <div className="h-16 w-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto">
+                <CalendarCheck className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-bold text-xl">Share Events</h3>
-              <p className="text-muted-foreground text-sm">Submit your own workshops or circles to our growing community.</p>
+              <h3 className="font-black text-2xl">Share Events</h3>
+              <p className="text-muted-foreground text-base font-medium">Submit your own workshops or circles to our growing community.</p>
             </div>
-            <div className="space-y-4">
-              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-                <Share2 className="h-7 w-7 text-primary" />
+            <div className="space-y-6">
+              <div className="h-16 w-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto">
+                <Share2 className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-bold text-xl">Manage Listings</h3>
-              <p className="text-muted-foreground text-sm">Easily edit or update your event details at any time.</p>
+              <h3 className="font-black text-2xl">Manage Listings</h3>
+              <p className="text-muted-foreground text-base font-medium">Easily edit or update your event details at any time.</p>
             </div>
           </div>
           <Link to="/login">
-            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-bold shadow-2xl transition-transform hover:scale-105">
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-[2rem] px-16 py-10 text-2xl font-black shadow-2xl transition-transform hover:scale-105">
               Sign Up for Free
             </Button>
           </Link>
