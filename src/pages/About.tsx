@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, CalendarDays, Heart, MessageSquare, Compass, Users, Search, Map } from 'lucide-react';
+import { Sparkles, CalendarDays, Heart, MessageSquare, Compass, Users, Search, Map, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const About = () => {
@@ -17,70 +17,45 @@ const About = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        <Card className="organic-card rounded-[2.5rem] p-6">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
-              <Compass className="mr-3 h-8 w-8 text-primary" /> The Vision
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-foreground leading-relaxed space-y-4 text-lg">
-            <p>
-              I created SoulFlow as a sanctuary for heart-centred events across Australia. My hope is for this to become a living, breathing hub for intentional connection—a space where you can discover gatherings that feel aligned, heartfelt, and authentic.
-            </p>
-            <p>
-              In a world that can often feel noisy or disconnected, I believe that shared experiences—singing together, moving together, meditating, and learning—have the power to remind us of our shared humanity.
-            </p>
-          </CardContent>
+      <div className="space-y-12 mb-16">
+        <Card className="organic-card rounded-[3rem] p-8 sm:p-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="inline-flex items-center justify-center h-16 w-16 rounded-3xl bg-primary/10 mb-2">
+                <Compass className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-4xl font-bold text-foreground font-heading">The Vision</h2>
+              <div className="text-foreground leading-relaxed space-y-4 text-lg">
+                <p>
+                  I created SoulFlow as a sanctuary for heart-centred events across Australia. My hope is for this to become a living, breathing hub for intentional connection—a space where you can discover gatherings that feel aligned, heartfelt, and authentic.
+                </p>
+                <p>
+                  In a world that can often feel noisy or disconnected, I believe that shared experiences—singing together, moving together, meditating, and learning—have the power to remind us of our shared humanity.
+                </p>
+              </div>
+            </div>
+            <div className="bg-secondary/30 rounded-[2.5rem] p-8 border border-border/50">
+              <h3 className="text-2xl font-bold mb-8 font-heading text-center">Your Journey Starts Here</h3>
+              <div className="grid grid-cols-1 gap-8">
+                <div className="flex gap-4">
+                  <Search className="h-6 w-6 text-primary flex-shrink-0" />
+                  <p className="text-muted-foreground"><span className="font-black text-foreground">Discover the Unseen.</span> Browse a curated collection of soulful gatherings, from deep sound journeys to intimate community circles.</p>
+                </div>
+                <div className="flex gap-4">
+                  <CalendarDays className="h-6 w-6 text-primary flex-shrink-0" />
+                  <p className="text-muted-foreground"><span className="font-black text-foreground">Plan with Intention.</span> Use our calendar and map views to see what’s vibrating in your area this week or month.</p>
+                </div>
+                <div className="flex gap-4">
+                  <PlusCircle className="h-6 w-6 text-primary flex-shrink-0" />
+                  <p className="text-muted-foreground"><span className="font-black text-foreground">Share Your Magic.</span> Easily contribute your own events to the community using our AI-powered submission helper.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-6">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
-              <Users className="mr-3 h-8 w-8 text-primary" /> Your Journey
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-8 pt-4">
-            <div className="flex gap-5 group">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                <Search className="h-6 w-6 text-primary" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-black text-xl text-foreground">Discover the Unseen</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Browse a curated collection of soulful gatherings, from deep sound journeys to intimate community circles.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-5 group">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                <CalendarDays className="h-6 w-6 text-primary" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-black text-xl text-foreground">Plan with Intention</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Use our calendar and map views to see what’s vibrating in your area this week or month.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-5 group">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-black text-xl text-foreground">Share Your Magic</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Easily contribute your own events to the community using our AI-powered submission helper.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="organic-card rounded-[2.5rem] p-8 md:col-span-2">
-          <CardHeader className="text-center">
+        <Card className="organic-card rounded-[3rem] p-8 sm:p-12">
+          <CardHeader className="text-center mb-8">
             <CardTitle className="text-4xl font-bold text-primary flex items-center justify-center font-heading">
               <Heart className="mr-3 h-10 w-10 text-primary" /> SoulFlow x HeartBeats
             </CardTitle>
@@ -102,7 +77,7 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-8 md:col-span-2 bg-secondary/30 border-dashed">
+        <Card className="organic-card rounded-[3rem] p-8 sm:p-12 bg-secondary/30 border-dashed">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-foreground flex items-center font-heading">
               <MessageSquare className="mr-3 h-8 w-8 text-accent" /> A Co-Created Space

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ListChecks, Ban, Handshake, MessageCircleWarning, ShieldCheck } from 'lucide-react';
+import { ListChecks, Ban, Handshake, MessageCircleWarning, ShieldCheck, AlertTriangle, Heart, Users, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const CommunityGuidelines = () => {
@@ -18,55 +18,51 @@ const CommunityGuidelines = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        <Card className="organic-card rounded-[2.5rem] p-4 border-destructive/20">
+        <Card className="organic-card rounded-[2.5rem] p-6 border-destructive/20">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-destructive flex items-center font-heading">
               <Ban className="mr-3 h-8 w-8" /> Not Allowed
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-foreground leading-relaxed text-lg">
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <span className="font-black text-destructive mt-1">•</span>
-                <span><span className="font-black">Hate speech</span>, discrimination, or violence toward any person or group.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="font-black text-destructive mt-1">•</span>
-                <span>Intent to <span className="font-black">incite conflict</span>, aggression, or harm.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="font-black text-destructive mt-1">•</span>
-                <span>Primary <span className="font-black">political rallies</span>, protests, or campaigns.</span>
-              </li>
-            </ul>
+          <CardContent className="space-y-8">
+            <div className="flex gap-4">
+              <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-1" />
+              <p className="text-lg"><span className="font-black">Hate speech</span>, discrimination, or violence toward any person or group is strictly prohibited.</p>
+            </div>
+            <div className="flex gap-4">
+              <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-1" />
+              <p className="text-lg">Any intent to <span className="font-black">incite conflict</span>, aggression, or harm will result in immediate removal.</p>
+            </div>
+            <div className="flex gap-4">
+              <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-1" />
+              <p className="text-lg">Primary <span className="font-black">political rallies</span>, protests, or campaigns are not the focus of this platform.</p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-4 border-green-500/20">
+        <Card className="organic-card rounded-[2.5rem] p-6 border-green-500/20">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-green-600 flex items-center font-heading">
               <Handshake className="mr-3 h-8 w-8" /> We Welcome
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-foreground leading-relaxed text-lg">
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <span className="font-black text-green-600 mt-1">•</span>
-                <span>Events that bring people together in <span className="font-black">mutual respect</span>.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="font-black text-green-600 mt-1">•</span>
-                <span>Encouraging <span className="font-black">self-expression</span>, creativity, and healing.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="font-black text-green-600 mt-1">•</span>
-                <span>Promoting <span className="font-black">harmony</span>, compassion, and unity.</span>
-              </li>
-            </ul>
+          <CardContent className="space-y-8">
+            <div className="flex gap-4">
+              <Heart className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+              <p className="text-lg">Events that bring people together in <span className="font-black">mutual respect</span> and shared understanding.</p>
+            </div>
+            <div className="flex gap-4">
+              <Sparkles className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+              <p className="text-lg">Gatherings encouraging <span className="font-black">self-expression</span>, creativity, and personal healing.</p>
+            </div>
+            <div className="flex gap-4">
+              <Users className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+              <p className="text-lg">Initiatives promoting <span className="font-black">harmony</span>, compassion, and community unity.</p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-4 md:col-span-2">
+        <Card className="organic-card rounded-[2.5rem] p-8 md:col-span-2">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
               <ListChecks className="mr-3 h-8 w-8 text-primary" /> Moderation
@@ -89,7 +85,7 @@ const CommunityGuidelines = () => {
             <p className="text-lg">
               If you encounter any content or events that violate these guidelines, please let us know. Your help keeps SoulFlow a safe and positive community.
             </p>
-            <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-10 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+            <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-10 py-8 text-xl font-black shadow-xl transition-transform hover:scale-105">
               <Link to="/contact">
                 Contact Us to Report
               </Link>
