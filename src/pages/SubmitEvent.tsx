@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -9,31 +8,8 @@ import { useSession } from '@/components/SessionContextProvider';
 import EventForm from '@/components/EventForm';
 import AiParsingSection from '@/components/AiParsingSection';
 import EventPreviewDialog from '@/components/EventPreviewDialog';
-import { format } from 'date-fns'; // Import format
-
-// Define the schema locally to avoid import issues
-const eventFormSchema = z.object({
-  eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
-  eventDate: z.date({ required_error: 'A date is required.' }),
-  endDate: z.date().optional(),
-  eventTime: z.string().optional().or(z.literal('')),
-  placeName: z.string().optional().or(z.literal('')),
-  fullAddress: z.string().optional().or(z.literal('')),
-  description: z.string().optional().or(z.literal('')),
-  ticketLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  price: z.string().optional().or(z.literal('')), // Removed the refine rule
-  specialNotes: z.string().optional().or(z.literal('')),
-  organizerContact: z.string().optional().or(z.literal('')),
-  eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')),
-  imageFile: z.any().optional(),
-  imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  discountCode: z.string().optional().or(z.literal('')),
-  googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
-  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'NONE']).optional().or(z.literal('')), // Added 'NONE'
-});
-
-type EventFormValues = z.infer<typeof eventFormSchema>;
+import { format } from 'date-fns';
+import { eventFormSchema, EventFormValues } from '@/lib/schemas';
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
@@ -58,23 +34,20 @@ const SubmitEvent = () => {
       geographicalState: '',
       imageUrl: '',
       discountCode: '',
-      googleMapsLink: '', // Initialize new field
-      recurringPattern: 'NONE', // Set default to 'NONE'
+      googleMapsLink: '',
+      recurringPattern: 'NONE',
     },
   });
 
   useEffect(() => {
     const logPageVisit = async () => {
-      const { error } = await supabase.from('page_visit_logs').insert([
+      await supabase.from('page_visit_logs').insert([
         {
           user_id: user?.id || null,
           page_path: '/submit-event',
           action_type: 'page_view',
         },
       ]);
-      if (error) {
-        console.error('Error logging page visit:', error);
-      }
     };
     logPageVisit();
   }, [user?.id]);
@@ -118,8 +91,8 @@ const SubmitEvent = () => {
       geographicalState: parsedData.geographicalState || '',
       imageUrl: parsedData.imageUrl || '',
       discountCode: parsedData.discountCode || '',
-      googleMapsLink: parsedData.googleMapsLink || '', // Set new field from AI parse
-      recurringPattern: parsedData.recurringPattern || 'NONE', // Set new field from AI parse, default to 'NONE'
+      googleMapsLink: parsedData.googleMapsLink || '',
+      recurringPattern: parsedData.recurringPattern || 'NONE',
     });
     
     if (parsedData.imageUrl) {
@@ -130,7 +103,6 @@ const SubmitEvent = () => {
   const handlePreview = () => {
     const data = form.getValues();
     setPreviewData(data);
-    // Update imagePreviewUrl from form values for the dialog
     const currentImageFile = form.getValues('imageFile');
     const currentImageUrlField = form.getValues('imageUrl');
     if (currentImageFile) {
@@ -159,11 +131,7 @@ const SubmitEvent = () => {
             upsert: false,
           });
 
-        if (uploadError) {
-          console.error('Error uploading image:', uploadError);
-          toast.error(`Failed to upload image: ${uploadError.message}. Please try again.`, { id: loadingToastId });
-          return;
-        }
+        if (uploadError) throw uploadError;
 
         const { data: publicUrlData } = supabase.storage
           .from('event-images')
@@ -181,7 +149,7 @@ const SubmitEvent = () => {
 
       const recurringPattern = values.recurringPattern === 'NONE' ? null : values.recurringPattern;
 
-      const eventDataToInsert = {
+      const { error } = await supabase.from('events').insert([{
         event_name: values.eventName,
         event_date: format(values.eventDate, 'yyyy-MM-dd'),
         end_date: values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null,
@@ -197,25 +165,18 @@ const SubmitEvent = () => {
         geographical_state: values.geographicalState || null,
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
-        google_maps_link: values.googleMapsLink || null, // Include new field
-        recurring_pattern: recurringPattern, // Use mapped value
+        google_maps_link: values.googleMapsLink || null,
+        recurring_pattern: recurringPattern,
         user_id: user?.id || null,
-        approval_status: 'approved', // Set to approved
-      };
+        approval_status: 'approved',
+      }]);
 
-      const { data: insertData, error } = await supabase.from('events').insert([eventDataToInsert]);
+      if (error) throw error;
 
-      if (error) {
-        console.error('Supabase insert error:', error);
-        toast.error(`Failed to submit event: ${error.message}. Please try again.`, { id: loadingToastId });
-      } else {
-        toast.success('Event created successfully!', { id: loadingToastId });
-        form.reset(); // Clear the form fields
-        setImagePreviewUrl(null); // Clear image preview
-        navigate('/'); // Redirect to V2 main events page
-      }
+      toast.success('Event created successfully!', { id: loadingToastId });
+      navigate('/');
     } catch (error: any) {
-      console.error('Unexpected error during event submission:', error);
+      console.error('Error during event submission:', error);
       toast.error(`An unexpected error occurred: ${error.message}`, { id: loadingToastId });
     }
   };
@@ -229,14 +190,14 @@ const SubmitEvent = () => {
 
       <AiParsingSection onAiParseComplete={handleAiParseComplete} />
 
-      <div className="bg-card p-6 rounded-xl shadow-lg border border-border"> {/* Added card styling */}
+      <div className="bg-card p-6 rounded-xl shadow-lg border border-border">
         <EventForm
           form={form}
           onSubmit={onSubmit}
           isSubmitting={form.formState.isSubmitting}
           onBack={() => navigate('/')}
           onPreview={handlePreview}
-          currentImageUrl={imagePreviewUrl} // Pass current image URL to EventForm
+          currentImageUrl={imagePreviewUrl}
         />
       </div>
 
