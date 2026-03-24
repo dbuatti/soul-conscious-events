@@ -40,6 +40,7 @@ const HeaderV2 = () => {
     { to: "/", label: "Home", icon: Home },
     { to: "/submit-event", label: "Create Event", icon: PlusCircle },
     { to: "/my-events", label: "My Events", icon: CalendarCheck },
+    { to: "/my-bookmarks", label: "My Bookmarks", icon: Bookmark },
     { to: "/account-settings", label: "Account Settings", icon: Settings },
     { to: "/about", label: "About", icon: Info },
   ];
@@ -60,7 +61,7 @@ const HeaderV2 = () => {
 
   return (
     <header className="w-full py-6 px-4 md:px-8 flex justify-center sticky top-0 z-50">
-      <div className="w-full max-w-2xl flex justify-between items-center glass px-6 py-3 rounded-full shadow-2xl border border-white/30 dark:border-white/10">
+      <div className="w-full max-w-5xl flex justify-between items-center glass px-6 py-3 rounded-full shadow-2xl border border-white/30 dark:border-white/10">
         <Link to="/" className="flex flex-col items-start group">
           <span className="text-2xl font-bold leading-none font-heading tracking-tight text-primary group-hover:text-primary/80 transition-colors">SoulFlow</span>
           <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground leading-none mt-1">Australia</span>

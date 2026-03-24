@@ -4,8 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
-import { toast } from 'sonner';
-import { getRedirectUrl } from '@/lib/utils'; // Import getRedirectUrl
+import { getRedirectUrl } from '@/lib/utils';
+import { Bookmark, CalendarCheck, PlusCircle, Sparkles } from 'lucide-react';
 
 const LoginV2 = () => {
   const navigate = useNavigate();
@@ -13,23 +13,67 @@ const LoginV2 = () => {
 
   useEffect(() => {
     if (!isLoading && user) {
-      // If user is already logged in, redirect to V2 home
       navigate('/');
     }
   }, [user, isLoading, navigate]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-background dark:to-background">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg text-foreground">Loading authentication...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
-      <div className="w-full max-w-md bg-card p-6 rounded-xl shadow-lg border border-border">
-        <h2 className="text-3xl font-bold text-foreground text-center mb-6 font-heading">Sign In to SoulFlow</h2>
+    <div className="flex flex-col lg:flex-row items-center justify-center min-h-[calc(100vh-120px)] px-4 py-12 gap-16 max-w-6xl mx-auto">
+      <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
+        <div className="space-y-4">
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
+            <Sparkles className="h-3 w-3 mr-2" /> Join the Flow
+          </div>
+          <h1 className="text-5xl font-black font-heading tracking-tight text-foreground leading-tight">
+            Your Soulful <br />
+            <span className="text-primary italic font-normal">Journey Awaits</span>
+          </h1>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Create an account to unlock the full SoulFlow experience and connect with the community.
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Bookmark className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg">Personalized Bookmarks</h3>
+              <p className="text-muted-foreground text-sm">Save events you're interested in and build your own soulful calendar.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <PlusCircle className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg">Share Your Magic</h3>
+              <p className="text-muted-foreground text-sm">Submit your own workshops, circles, or gatherings to reach a wider audience.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <CalendarCheck className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg">Manage with Ease</h3>
+              <p className="text-muted-foreground text-sm">Keep your event listings up to date with our simple management tools.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full max-w-md glass-card p-8 sm:p-10 rounded-[2.5rem] shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000">
+        <h2 className="text-3xl font-bold text-foreground text-center mb-8 font-heading">Sign In</h2>
         <Auth
           supabaseClient={supabase}
           providers={['google']}
@@ -40,7 +84,7 @@ const LoginV2 = () => {
                 colors: {
                   brand: 'hsl(var(--primary))',
                   brandAccent: 'hsl(var(--primary-foreground))',
-                  inputBackground: 'hsl(var(--input))',
+                  inputBackground: 'transparent',
                   inputBorder: 'hsl(var(--border))',
                   inputPlaceholder: 'hsl(var(--muted-foreground))',
                   messageText: 'hsl(var(--foreground))',
@@ -50,11 +94,15 @@ const LoginV2 = () => {
                   defaultButtonBackgroundHover: 'hsl(var(--primary)/80%)',
                   defaultButtonText: 'hsl(var(--primary-foreground))',
                 },
+                radii: {
+                  borderRadiusButton: '1rem',
+                  inputBorderRadius: '1rem',
+                },
               },
             },
           }}
-          theme="dark" // Set default theme to dark for Auth UI
-          redirectTo={getRedirectUrl()} // Use the dynamic redirect URL
+          theme="dark"
+          redirectTo={getRedirectUrl()}
           localization={{
             variables: {
               sign_in: {

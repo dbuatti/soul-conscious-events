@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,11 +9,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Search, Star, List, CalendarDays } from 'lucide-react'; // Import List and CalendarDays icons
+import { ChevronDown, Search, Star, List, CalendarDays } from 'lucide-react';
 import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'; // Import ToggleGroup components
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export interface FilterDropdownsV2Props {
   currentFilters: {
@@ -24,64 +24,46 @@ export interface FilterDropdownsV2Props {
     state: string[];
   };
   onFilterChange: (filters: FilterDropdownsV2Props['currentFilters']) => void;
-  isMobile?: boolean;
   availableVenues: string[];
   favouriteVenues: string[];
   onToggleFavouriteVenue: (placeName: string, isFavourited: boolean) => void;
   isUserLoggedIn: boolean;
-  viewMode: 'list' | 'calendar'; // New prop for view mode
-  onViewModeChange: (mode: 'list' | 'calendar') => void; // New prop for changing view mode
+  viewMode: 'list' | 'calendar';
+  onViewModeChange: (mode: 'list' | 'calendar') => void;
 }
 
 const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
   currentFilters,
   onFilterChange,
-  isMobile = false,
   availableVenues,
   favouriteVenues,
   onToggleFavouriteVenue,
   isUserLoggedIn,
-  viewMode, // Destructure new prop
-  onViewModeChange, // Destructure new prop
+  viewMode,
+  onViewModeChange,
 }) => {
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
   const [stateSearchTerm, setStateSearchTerm] = useState('');
 
   const handleSingleSelectChange = (filterType: 'date', value: string) => {
-    onFilterChange({
-      ...currentFilters,
-      [filterType]: value,
-    });
+    onFilterChange({ ...currentFilters, [filterType]: value });
   };
 
   const handleMultiSelectChange = (filterType: 'category' | 'venue' | 'price' | 'state', value: string) => {
     const currentValues = currentFilters[filterType];
-    let newValues: string[];
-
-    if (currentValues.includes(value)) {
-      newValues = currentValues.filter(item => item !== value);
-    } else {
-      newValues = [...currentValues, value];
-    }
-    onFilterChange({
-      ...currentFilters,
-      [filterType]: newValues,
-    });
+    const newValues = currentValues.includes(value)
+      ? currentValues.filter(item => item !== value)
+      : [...currentValues, value];
+    onFilterChange({ ...currentFilters, [filterType]: newValues });
   };
 
   const getTriggerText = (filterType: keyof FilterDropdownsV2Props['currentFilters'], label: string) => {
     const values = currentFilters[filterType];
-    if (filterType === 'date') {
-      return values;
-    }
+    if (filterType === 'date') return values;
     if (Array.isArray(values)) {
-      if (values.length === 0) {
-        return label;
-      }
-      if (values.length === 1) {
-        return values[0];
-      }
+      if (values.length === 0) return label;
+      if (values.length === 1) return values[0];
       return `${label} (${values.length})`;
     }
     return label;
@@ -128,7 +110,6 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
               e.preventDefault();
               onToggleFavouriteVenue(option, isFavourited);
             }}
-            title={isFavourited ? "Unfavourite Venue" : "Favourite Venue"}
           >
             <Star className={cn("h-4 w-4", isFavourited && "fill-current text-yellow-500")} />
           </Button>
@@ -139,104 +120,88 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
     const content = (
       <>
         {searchTerm !== null && setSearchTerm !== null && placeholder !== null && (
-          <div className="relative mb-2">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="relative mb-2 px-2">
+            <Search className="absolute left-4 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={placeholder}
-              className="pl-8 focus-visible:ring-primary"
+              className="pl-8 h-9 rounded-lg bg-secondary/50 border-none focus-visible:ring-primary"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         )}
-
         {filterType === 'venue' && isUserLoggedIn && favouriteOptions.length > 0 && (
           <>
-            <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 py-1">Your Favourites</DropdownMenuLabel>
-            <DropdownMenuSeparator className="my-1" />
+            <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground/60 px-3 py-1 uppercase tracking-widest">Favourites</DropdownMenuLabel>
             {favouriteOptions.map(option => renderOptionItem(option, true))}
-            {otherOptions.length > 0 && <DropdownMenuSeparator className="my-1" />}
+            <DropdownMenuSeparator className="my-1 opacity-20" />
           </>
         )}
-
-        {otherOptions.length > 0 && (filterType !== 'venue' || !isUserLoggedIn || favouriteOptions.length > 0) && (
+        {otherOptions.length > 0 && (
           <>
             {filterType === 'venue' && isUserLoggedIn && favouriteOptions.length > 0 && (
-              <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 py-1">Other Venues</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground/60 px-3 py-1 uppercase tracking-widest">All Venues</DropdownMenuLabel>
             )}
             {otherOptions.map(option => renderOptionItem(option, false))}
           </>
         )}
-        {filteredOptions.length === 0 && (
-          <p className="text-sm text-muted-foreground px-2 py-1">No options found.</p>
-        )}
       </>
     );
 
-    if (filterType === 'price' || filteredOptions.length <= 5) {
-      return <DropdownMenuContent className="w-64 p-2 dark:bg-card dark:border-border">{content}</DropdownMenuContent>;
-    } else {
-      return (
-        <DropdownMenuContent className="w-64 p-2 dark:bg-card dark:border-border">
-          <ScrollArea className="h-48">
-            {content}
-          </ScrollArea>
-        </DropdownMenuContent>
-      );
-    }
+    return (
+      <DropdownMenuContent className="w-64 p-2 glass rounded-2xl shadow-2xl border-white/20">
+        {options.length > 6 ? <ScrollArea className="h-64">{content}</ScrollArea> : content}
+      </DropdownMenuContent>
+    );
   };
 
-  const renderSingleSelectDropdownContent = (filterType: 'date', options: string[]) => (
-    <DropdownMenuContent className="w-48 p-2 dark:bg-card dark:border-border">
-      {options.map((option) => (
-        <DropdownMenuCheckboxItem
-          key={option}
-          checked={currentFilters[filterType] === option}
-          onCheckedChange={() => handleSingleSelectChange(filterType, option)}
-          className="cursor-pointer"
-        >
-          {option}
-        </DropdownMenuCheckboxItem>
-      ))}
-    </DropdownMenuContent>
-  );
-
-  const buttonClasses = "flex items-center gap-1 max-w-[140px] truncate rounded-xl px-4 py-2 h-9";
+  const buttonClasses = "flex items-center gap-2 rounded-xl px-4 py-2 h-10 bg-secondary/50 border-none hover:bg-secondary transition-all text-sm font-medium";
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto"> {/* Adjusted for responsiveness */}
-      <div className="flex space-x-2 w-full sm:w-auto justify-center"> {/* Wrap dropdowns in a div */}
+    <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
+      <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-center lg:justify-start">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
-              {getTriggerText('date', 'Date')} <ChevronDown className="ml-1 h-4 w-4" />
+              {getTriggerText('date', 'Date')} <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          {renderSingleSelectDropdownContent('date', v2DateOptions)}
+          <DropdownMenuContent className="w-48 p-2 glass rounded-2xl shadow-2xl border-white/20">
+            {v2DateOptions.map((option) => (
+              <DropdownMenuCheckboxItem
+                key={option}
+                checked={currentFilters.date === option}
+                onCheckedChange={() => handleSingleSelectChange('date', option)}
+                className="rounded-lg"
+              >
+                {option}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
         </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
-              {getTriggerText('category', 'Category')} <ChevronDown className="ml-1 h-4 w-4" />
+              {getTriggerText('category', 'Category')} <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          {renderMultiSelectDropdownContent('category', v2EventCategories, categorySearchTerm, setCategorySearchTerm, 'Search category')}
+          {renderMultiSelectDropdownContent('category', v2EventCategories, categorySearchTerm, setCategorySearchTerm, 'Search categories')}
         </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
-              {getTriggerText('venue', 'Venue')} <ChevronDown className="ml-1 h-4 w-4" />
+              {getTriggerText('venue', 'Venue')} <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          {renderMultiSelectDropdownContent('venue', availableVenues, venueSearchTerm, setVenueSearchTerm, 'Search venue')}
+          {renderMultiSelectDropdownContent('venue', availableVenues, venueSearchTerm, setVenueSearchTerm, 'Search venues')}
         </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
-              {getTriggerText('price', 'Price')} <ChevronDown className="ml-1 h-4 w-4" />
+              {getTriggerText('price', 'Price')} <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           {renderMultiSelectDropdownContent('price', v2PriceOptions, null, null, null)}
@@ -245,19 +210,19 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
-              {getTriggerText('state', 'State')} <ChevronDown className="ml-1 h-4 w-4" />
+              {getTriggerText('state', 'State')} <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search state')}
+          {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search states')}
         </DropdownMenu>
       </div>
-      {/* View Mode Toggle Buttons */}
-      <div className="flex items-center space-x-2 mt-4 sm:mt-0">
-        <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && onViewModeChange(value)} className="w-full sm:w-auto justify-center">
-          <ToggleGroupItem value="list" aria-label="List View" className="rounded-xl px-3 py-2 h-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+
+      <div className="flex items-center bg-secondary/50 p-1 rounded-xl ml-auto">
+        <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && onViewModeChange(value)}>
+          <ToggleGroupItem value="list" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
             <List className="h-4 w-4" />
           </ToggleGroupItem>
-          <ToggleGroupItem value="calendar" aria-label="Calendar View" className="rounded-xl px-3 py-2 h-9 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+          <ToggleGroupItem value="calendar" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
             <CalendarDays className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>

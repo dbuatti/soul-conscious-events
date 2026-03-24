@@ -4,87 +4,67 @@
 
 @layer base {
   :root {
-    /* Light Mode: Ethereal Earth */
-    --background: 40 20% 98%; /* Soft Cream #F9F8F6 */
-    --foreground: 240 10% 15%; /* Deep Charcoal */
+    /* Light Mode: Warm Linen & Sage */
+    --background: 30 20% 98%; /* Warm White #FDFCFB */
+    --foreground: 240 10% 12%; /* Deep Onyx */
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
+    --card-foreground: 240 10% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
+    --popover-foreground: 240 10% 12%;
 
-    --primary: 160 25% 35%; /* Sage Green */
-    --primary-foreground: 40 20% 98%;
+    --primary: 158 25% 32%; /* Deep Sage */
+    --primary-foreground: 30 20% 98%;
 
-    --secondary: 40 15% 92%; /* Stone */
-    --secondary-foreground: 240 10% 15%;
+    --secondary: 30 10% 94%; /* Soft Linen */
+    --secondary-foreground: 240 10% 12%;
 
-    --muted: 40 10% 90%;
-    --muted-foreground: 240 5% 45%;
+    --muted: 30 10% 90%;
+    --muted-foreground: 240 5% 40%;
 
-    --accent: 25 40% 60%; /* Soft Terracotta */
-    --accent-foreground: 40 20% 98%;
+    --accent: 28 45% 55%; /* Warm Clay */
+    --accent-foreground: 30 20% 98%;
 
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 40 10% 85%;
-    --input: 40 10% 85%;
-    --ring: 160 25% 35%;
+    --border: 30 10% 88%;
+    --input: 30 10% 88%;
+    --ring: 158 25% 32%;
 
-    --radius: 1rem;
-
-    /* Sidebar colors */
-    --sidebar-background: 40 20% 98%;
-    --sidebar-foreground: 240 10% 15%;
-    --sidebar-primary: 160 25% 35%;
-    --sidebar-primary-foreground: 40 20% 98%;
-    --sidebar-accent: 40 15% 92%;
-    --sidebar-accent-foreground: 240 10% 15%;
-    --sidebar-border: 40 10% 85%;
-    --sidebar-ring: 160 25% 35%;
+    --radius: 1.25rem;
   }
 
   .dark {
     /* Dark Mode: Midnight Forest */
-    --background: 240 10% 4%; /* Deep Midnight */
-    --foreground: 40 10% 90%;
+    --background: 220 20% 4%; /* Deepest Midnight */
+    --foreground: 30 15% 90%;
 
-    --card: 240 10% 7%;
-    --card-foreground: 40 10% 90%;
+    --card: 220 20% 7%;
+    --card-foreground: 30 15% 90%;
 
-    --popover: 240 10% 7%;
-    --popover-foreground: 40 10% 90%;
+    --popover: 220 20% 7%;
+    --popover-foreground: 30 15% 90%;
 
-    --primary: 160 30% 45%; /* Lighter Sage */
-    --primary-foreground: 240 10% 4%;
+    --primary: 158 35% 48%; /* Vibrant Sage */
+    --primary-foreground: 220 20% 4%;
 
-    --secondary: 240 10% 12%;
-    --secondary-foreground: 40 10% 90%;
+    --secondary: 220 15% 12%;
+    --secondary-foreground: 30 15% 90%;
 
-    --muted: 240 10% 10%;
-    --muted-foreground: 240 5% 60%;
+    --muted: 220 15% 10%;
+    --muted-foreground: 220 5% 55%;
 
-    --accent: 25 40% 50%;
-    --accent-foreground: 40 10% 90%;
+    --accent: 28 50% 52%; /* Glowing Clay */
+    --accent-foreground: 30 15% 90%;
 
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 10% 15%;
-    --input: 240 10% 15%;
-    --ring: 160 30% 45%;
-
-    /* Sidebar colors */
-    --sidebar-background: 240 10% 4%;
-    --sidebar-foreground: 40 10% 90%;
-    --sidebar-primary: 160 30% 45%;
-    --sidebar-primary-foreground: 240 10% 4%;
-    --sidebar-accent: 240 10% 12%;
-    --sidebar-accent-foreground: 40 10% 90%;
-    --sidebar-border: 240 10% 15%;
-    --sidebar-ring: 160 30% 45%;
+    --border: 220 15% 16%;
+    --input: 220 15% 16%;
+    --ring: 158 35% 48%;
   }
 }
 
@@ -96,8 +76,8 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     background-image: 
-      radial-gradient(at 0% 0%, hsla(160, 25%, 35%, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(25, 40%, 60%, 0.05) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, hsla(158, 35%, 48%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(28, 50%, 52%, 0.08) 0px, transparent 50%);
     background-attachment: fixed;
   }
 
@@ -106,11 +86,10 @@
   }
 }
 
-/* Custom Glassmorphism Utility */
 .glass {
-  @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+  @apply bg-white/80 dark:bg-black/40 backdrop-blur-2xl border border-white/20 dark:border-white/10;
 }
 
 .glass-card {
-  @apply bg-white/40 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-xl;
+  @apply bg-white/50 dark:bg-white/5 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-2xl;
 }
