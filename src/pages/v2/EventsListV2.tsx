@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO, isToday, isPast, isSameDay } from 'date-fns';
+import { format, parseISO, isToday, isPast, isSameDay, subDays } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, FilterX, Search, Sparkles, Bookmark, CalendarCheck, Share2 } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, FilterX, Search, Sparkles, Bookmark, CalendarCheck, Share2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -15,6 +15,7 @@ import { useSession } from '@/components/SessionContextProvider';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import { generateRecurringInstances } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
+import { Badge } from '@/components/ui/badge';
 
 const EVENTS_PER_LOAD = 8;
 
@@ -148,6 +149,17 @@ const EventsListV2 = () => {
     setFilters({ date: 'All Upcoming', category: [], venue: [], price: [], state: [] });
   };
 
+  const removeFilter = (type: keyof typeof filters, value?: string) => {
+    if (type === 'date') {
+      setFilters({ ...filters, date: 'All Upcoming' });
+    } else if (Array.isArray(filters[type])) {
+      setFilters({
+        ...filters,
+        [type]: (filters[type] as string[]).filter(v => v !== value)
+      });
+    }
+  };
+
   const selectedDayEvents = filteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
   const hasActiveFilters = searchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
 
@@ -173,19 +185,71 @@ const EventsListV2 = () => {
             placeholder="Search events, venues, or locations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-20 h-20 rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-2xl placeholder:text-muted-foreground/40 font-medium"
+            className="pl-20 pr-16 h-20 rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-2xl placeholder:text-muted-foreground/40 font-medium"
           />
+          {searchTerm && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setSearchTerm('')}
+              className="absolute right-6 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          )}
         </div>
-        <FilterDropdownsV2
-          currentFilters={filters}
-          onFilterChange={setFilters}
-          availableVenues={availableVenues}
-          favouriteVenues={favouriteVenues}
-          onToggleFavouriteVenue={handleToggleFavouriteVenue}
-          isUserLoggedIn={!!user}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
+        
+        <div className="space-y-6">
+          <FilterDropdownsV2
+            currentFilters={filters}
+            onFilterChange={setFilters}
+            availableVenues={availableVenues}
+            favouriteVenues={favouriteVenues}
+            onToggleFavouriteVenue={handleToggleFavouriteVenue}
+            isUserLoggedIn={!!user}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/40 animate-in fade-in slide-in-from-bottom-2">
+              <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest mr-2">Active Filters:</span>
+              {filters.date !== 'All Upcoming' && (
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1 rounded-full flex items-center gap-1">
+                  {filters.date}
+                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('date')} />
+                </Badge>
+              )}
+              {filters.category.map(cat => (
+                <Badge key={cat} variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1 rounded-full flex items-center gap-1">
+                  {cat}
+                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('category', cat)} />
+                </Badge>
+              ))}
+              {filters.venue.map(v => (
+                <Badge key={v} variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1 rounded-full flex items-center gap-1">
+                  {v}
+                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('venue', v)} />
+                </Badge>
+              ))}
+              {filters.price.map(p => (
+                <Badge key={p} variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1 rounded-full flex items-center gap-1">
+                  {p}
+                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('price', p)} />
+                </Badge>
+              ))}
+              {filters.state.map(s => (
+                <Badge key={s} variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1 rounded-full flex items-center gap-1">
+                  {s}
+                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('state', s)} />
+                </Badge>
+              ))}
+              <Button variant="link" size="sm" onClick={handleClearFilters} className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest p-0 h-auto ml-2">
+                Clear All
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -204,11 +268,9 @@ const EventsListV2 = () => {
             <section className="mb-32">
               <div className="flex items-center justify-between mb-12 border-b pb-8 border-border/40">
                 <h2 className="text-5xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
-                {hasActiveFilters && (
-                  <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground hover:text-primary font-black rounded-full px-6">
-                    <FilterX className="mr-2 h-5 w-5" /> Clear All
-                  </Button>
-                )}
+                <div className="text-sm font-medium text-muted-foreground">
+                  Showing {filteredEvents.length} events
+                </div>
               </div>
               
               {displayedEvents.length > 0 ? (

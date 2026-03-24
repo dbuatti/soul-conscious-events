@@ -2,8 +2,8 @@ import React from 'react';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { format, parseISO } from 'date-fns';
-import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight } from 'lucide-react';
+import { format, parseISO, differenceInHours } from 'date-fns';
+import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight, Sparkles } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
@@ -29,6 +29,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
 
   const displayPrice = event.price ? event.price.replace(/\$/g, '') : '';
+  
+  // Check if event was added in the last 48 hours (heuristic for "new")
+  // Note: We don't have created_at in the Event type yet, but if we did, we'd use it.
+  // For now, let's assume any event with a future date is "fresh" or just skip this if data is missing.
+  const isNew = false; // Placeholder until created_at is available in the type
 
   return (
     <Card 
@@ -55,6 +60,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               TODAY
             </Badge>
           )}
+          {isNew && (
+            <Badge className="bg-green-500 text-white text-[10px] px-4 py-1.5 font-black tracking-widest border-none shadow-lg rounded-full">
+              NEW
+            </Badge>
+          )}
         </div>
 
         <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 transition-all duration-500">
@@ -62,11 +72,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             variant="secondary"
             size="icon"
             onClick={(e) => onShare(event, e)}
-            className="h-10 w-10 rounded-full shadow-xl"
+            className="h-10 w-10 rounded-full shadow-xl bg-white/90 hover:bg-white"
           >
             <Share2 className="h-4 w-4 text-primary" />
           </Button>
-          <BookmarkButton eventId={event.id} size="icon" className="h-10 w-10 rounded-full shadow-xl bg-white dark:bg-black" />
+          <BookmarkButton eventId={event.id} size="icon" className="h-10 w-10 rounded-full shadow-xl bg-white/90 dark:bg-black/60" />
         </div>
       </div>
 
@@ -76,7 +86,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             {event.event_name}
           </CardTitle>
           {event.price && (
-            <div className="flex items-center bg-primary text-white px-4 py-1.5 rounded-full shadow-md">
+            <div className="flex items-center bg-primary text-white px-4 py-1.5 rounded-full shadow-md flex-shrink-0 ml-4">
               <DollarSign className="h-3.5 w-3.5 mr-0.5" />
               <span className="font-black text-sm">{displayPrice}</span>
             </div>
@@ -113,7 +123,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               </>
             )}
           </div>
-          <Button variant="link" className="text-primary font-black p-0 group/btn text-base">
+          <Button variant="link" className="text-primary font-black p-0 group/btn text-base hover:no-underline">
             Explore <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover/btn:translate-x-2" />
           </Button>
         </div>
