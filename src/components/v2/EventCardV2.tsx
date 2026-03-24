@@ -2,12 +2,13 @@ import React from 'react';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { format, parseISO, differenceInHours } from 'date-fns';
-import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight, Sparkles } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
 interface EventCardV2Props {
   event: Event;
@@ -28,12 +29,31 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
   const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
 
+  const isFree = event.price?.toLowerCase().includes('free');
+  const isDonation = event.price?.toLowerCase().includes('donation');
   const displayPrice = event.price ? event.price.replace(/\$/g, '') : '';
-  
-  // Check if event was added in the last 48 hours (heuristic for "new")
-  // Note: We don't have created_at in the Event type yet, but if we did, we'd use it.
-  // For now, let's assume any event with a future date is "fresh" or just skip this if data is missing.
-  const isNew = false; // Placeholder until created_at is available in the type
+
+  const handleNativeShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const baseId = event.id.split('-')[0];
+    const shareData = {
+      title: event.event_name,
+      text: `Check out this soulful event: ${event.event_name}`,
+      url: `${window.location.origin}/events/${baseId}`,
+    };
+
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          toast.error('Failed to share.');
+        }
+      }
+    } else {
+      onShare(event, e); // Fallback to the parent's clipboard share
+    }
+  };
 
   return (
     <Card 
@@ -44,8 +64,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         {event.image_url ? (
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy" />
         ) : (
-          <div className="w-full h-full bg-secondary flex items-center justify-center">
-            <span className="text-primary/20 font-heading text-4xl italic">SoulFlow</span>
+          <div className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-secondary flex items-center justify-center">
+            <span className="text-primary/30 font-heading text-4xl italic font-bold tracking-tighter">SoulFlow</span>
           </div>
         )}
         
@@ -60,18 +80,13 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               TODAY
             </Badge>
           )}
-          {isNew && (
-            <Badge className="bg-green-500 text-white text-[10px] px-4 py-1.5 font-black tracking-widest border-none shadow-lg rounded-full">
-              NEW
-            </Badge>
-          )}
         </div>
 
         <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 transition-all duration-500">
           <Button
             variant="secondary"
             size="icon"
-            onClick={(e) => onShare(event, e)}
+            onClick={handleNativeShare}
             className="h-10 w-10 rounded-full shadow-xl bg-white/90 hover:bg-white"
           >
             <Share2 className="h-4 w-4 text-primary" />
@@ -87,7 +102,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           </CardTitle>
           {event.price && (
             <div className="flex items-center bg-primary text-white px-4 py-1.5 rounded-full shadow-md flex-shrink-0 ml-4">
-              <DollarSign className="h-3.5 w-3.5 mr-0.5" />
+              {!isFree && !isDonation && <DollarSign className="h-3.5 w-3.5 mr-0.5" />}
               <span className="font-black text-sm">{displayPrice}</span>
             </div>
           )}
@@ -112,7 +127,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           <div className="flex gap-1">
             {isCreatorOrAdmin && (
               <>
-                <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
+                <Link to={`/edit-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
                   <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full">
                     <Edit className="h-4 w-4 text-muted-foreground hover:text-primary" />
                   </Button>

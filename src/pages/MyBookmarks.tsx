@@ -3,31 +3,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Bookmark, Loader2, UserPlus } from 'lucide-react'; // Added UserPlus
+import { Frown, Bookmark, UserPlus, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { format, parseISO } from 'date-fns';
-import { Calendar, Clock, Share2, Edit, Trash2 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import BookmarkButton from '@/components/BookmarkButton';
 import { Event } from '@/types/event';
 
-// Define the expected structure of the data returned by the Supabase query
 interface BookmarkedEventData {
   event_id: string;
-  events: Event[]; // Changed to array based on error message
+  events: Event[];
 }
 
 const MyBookmarks: React.FC = () => {
@@ -73,16 +58,13 @@ const MyBookmarks: React.FC = () => {
         )
       `)
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false }); // Order by when they were bookmarked
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching bookmarked events:', error);
       toast.error('Failed to load your bookmarked events.');
     } else {
-      // Explicitly cast data to the expected type before mapping
-      const typedData = data as BookmarkedEventData[];
-      // Extract event data from the nested structure and filter out nulls
-      // Access the first element of the 'events' array, as it should contain the single joined event
+      const typedData = data as unknown as BookmarkedEventData[];
       const eventsData = typedData.map(item => item.events?.[0]).filter(Boolean) as Event[];
       setBookmarkedEvents(eventsData);
     }
@@ -97,10 +79,11 @@ const MyBookmarks: React.FC = () => {
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
     e.stopPropagation();
-    const eventUrl = `${window.location.origin}/events/${event.id}`;
+    const baseId = event.id.split('-')[0];
+    const eventUrl = `${window.location.origin}/events/${baseId}`;
     navigator.clipboard.writeText(eventUrl)
-      .then(() => toast.success('Event link copied to clipboard!'))
-      .catch(() => toast.error('Failed to copy link. Please try again.'));
+      .then(() => toast.success('Event link copied!'))
+      .catch(() => toast.error('Failed to copy link.'));
   };
 
   const handleViewDetails = (event: Event) => {
@@ -108,41 +91,15 @@ const MyBookmarks: React.FC = () => {
     setIsEventDetailDialogOpen(true);
   };
 
-  const renderEventCard = (event: Event) => {
-    const dateDisplay = event.end_date && event.event_date !== event.end_date
-      ? `${format(parseISO(event.event_date), 'PPP')} - ${format(parseISO(event.end_date), 'PPP')}`
-      : format(parseISO(event.event_date), 'PPP');
-
-    return (
-      <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden" onClick={() => handleViewDetails(event)}>
-        {event.image_url && <div className="relative w-full aspect-video overflow-hidden"><img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" /><div className="absolute inset-0 bg-black/30"></div></div>}
-        <CardHeader className="p-3 pb-1 sm:p-4 sm:pb-2"><CardTitle className="text-xl sm:text-2xl font-bold text-primary mb-1 sm:mb-2">{event.event_name}</CardTitle><CardDescription className="flex items-center text-muted-foreground text-sm sm:text-base"><Calendar className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{dateDisplay}{event.event_time && <><Clock className="ml-2 sm:ml-4 mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />{event.event_time}</>}</CardDescription></CardHeader>
-        <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
-          {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
-        </CardContent>
-        <CardFooter className="flex flex-col items-start pt-2 sm:pt-4">
-          <div className="flex justify-end w-full space-x-1 sm:space-x-2">
-            <BookmarkButton eventId={event.id} initialIsBookmarked={true} size="icon" className="h-7 w-7 sm:h-9 sm:w-9" />
-            <Button variant="outline" size="icon" onClick={(e) => handleShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9"><Share2 className="h-3.5 w-3.5 sm:h-4 w-4" /></Button>
-          </div>
-        </CardFooter>
-      </Card>
-    );
-  };
-
   if (isSessionLoading || loadingBookmarks) {
     return (
-      <div className="w-full max-w-2xl">
-        <Skeleton className="h-10 w-3/4 mb-4" />
-        <Skeleton className="h-6 w-1/2 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="w-full max-w-6xl px-4">
+        <Skeleton className="h-16 w-1/3 mb-12" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex flex-col space-y-3">
-              <Skeleton className="h-[200px] w-full rounded-lg" />
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-10 w-full" />
+            <div key={i} className="flex flex-col space-y-8">
+              <Skeleton className="h-[400px] w-full rounded-[3rem]" />
+              <Skeleton className="h-12 w-3/4" />
             </div>
           ))}
         </div>
@@ -152,17 +109,15 @@ const MyBookmarks: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="w-full max-w-2xl text-center p-8 bg-card rounded-lg border border-border shadow-md">
-        <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-lg font-semibold text-foreground mb-4">
-          Sign up or log in to save your favorite events!
-        </p>
-        <p className="text-muted-foreground mb-6">
-          As a registered user, you can bookmark events to easily find them later and keep track of your interests.
+      <div className="w-full max-w-2xl text-center p-12 organic-card rounded-[3rem] shadow-2xl">
+        <UserPlus className="h-20 w-20 text-primary/20 mx-auto mb-8" />
+        <h2 className="text-4xl font-heading font-bold mb-6">Join the Flow</h2>
+        <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
+          Sign up or log in to save your favorite events and build your own soulful calendar.
         </p>
         <Link to="/login">
-          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
-            <Bookmark className="mr-2 h-4 w-4" /> Sign Up / Log In
+          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+            Sign Up / Log In
           </Button>
         </Link>
       </div>
@@ -170,28 +125,38 @@ const MyBookmarks: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-2xl">
-      <h1 className="text-4xl font-bold text-foreground mb-6 text-center font-heading">My Bookmarks</h1>
-      <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
-        Here are all the events you've saved.
-      </p>
+    <div className="w-full max-w-6xl px-4">
+      <div className="mb-16 text-center space-y-4">
+        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
+          <Bookmark className="h-3 w-3 mr-2 fill-current" /> Your Collection
+        </div>
+        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">My Bookmarks</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
+          A curated space for the events that nourish your soul.
+        </p>
+      </div>
 
       {bookmarkedEvents.length === 0 ? (
-        <div className="p-8 bg-card rounded-lg border border-border text-center shadow-md">
-          <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg font-semibold text-foreground mb-4">You haven't bookmarked any events yet.</p>
+        <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20">
+          <Sparkles className="h-24 w-24 text-primary/20 mx-auto mb-10" />
+          <h3 className="text-4xl font-heading font-bold text-foreground mb-6">Your collection is empty</h3>
+          <p className="text-muted-foreground mb-12 text-xl max-w-sm mx-auto font-medium">Start exploring and bookmark events you'd love to attend.</p>
           <Link to="/">
-            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
-              <Bookmark className="mr-2 h-4 w-4" /> Discover Events to Bookmark
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+              Discover Events
             </Button>
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {bookmarkedEvents.map((event) => (
-            <React.Fragment key={event.id}>
-              {renderEventCard(event)}
-            </React.Fragment>
+            <EventCardV2
+              key={event.id}
+              event={event}
+              onShare={handleShare}
+              onDelete={() => {}} // Bookmarks don't delete the event
+              onViewDetails={handleViewDetails}
+            />
           ))}
         </div>
       )}

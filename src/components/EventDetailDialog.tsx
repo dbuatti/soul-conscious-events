@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Share2, Edit, Trash2, Copy, Repeat, X } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -28,7 +28,6 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { formatPrice } from '@/utils/event-utils';
@@ -72,6 +71,33 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     }
   };
 
+  const handleShare = async () => {
+    if (!event) return;
+    const baseId = event.id.split('-')[0];
+    const shareData = {
+      title: event.event_name,
+      text: `Check out this soulful event: ${event.event_name}`,
+      url: `${window.location.origin}/events/${baseId}`,
+    };
+
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          toast.error('Failed to share.');
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        toast.success('Link copied to clipboard!');
+      } catch (err) {
+        toast.error('Failed to copy link.');
+      }
+    }
+  };
+
   const handleTicketLinkClick = async () => {
     if (!event?.ticket_link) return;
     await supabase.from('event_analytics_logs').insert([{
@@ -112,7 +138,9 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
             </div>
           ) : (
-            <div className="w-full h-24 bg-primary/10"></div>
+            <div className="w-full h-48 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary flex items-center justify-center">
+              <span className="text-primary/30 font-heading text-5xl italic font-bold tracking-tighter">SoulFlow</span>
+            </div>
           )}
           
           <DialogClose className="absolute top-4 right-4 rounded-full bg-black/20 hover:bg-black/40 p-2 text-white backdrop-blur-md transition-all z-50">
@@ -221,10 +249,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         <DialogFooter className="flex flex-wrap justify-between items-center p-6 sm:p-8 border-t bg-secondary/20 gap-4">
           <div className="flex gap-2">
             <BookmarkButton eventId={event.id} size="default" className="rounded-xl px-4" />
-            <Button variant="ghost" className="rounded-xl px-4" onClick={() => {
-              navigator.clipboard.writeText(`${window.location.origin}/events/${event.id.split('-')[0]}`);
-              toast.success('Link copied!');
-            }}>
+            <Button variant="ghost" className="rounded-xl px-4" onClick={handleShare}>
               <Share2 className="mr-2 h-4 w-4" /> Share
             </Button>
           </div>
