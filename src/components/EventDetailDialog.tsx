@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Share2, Edit, Trash2, Copy, Repeat } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Share2, Edit, Trash2, Copy, Repeat, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -26,6 +26,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Event } from '@/types/event';
@@ -103,114 +104,151 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border p-0">
+      <DialogContent className="sm:max-w-[650px] max-h-[92vh] overflow-y-auto dark:bg-card dark:border-border p-0 border-none shadow-2xl">
         <div className="relative">
-          {event.image_url && (
-            <div className="w-full h-64 overflow-hidden">
+          {event.image_url ? (
+            <div className="w-full h-[300px] sm:h-[350px] overflow-hidden">
               <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
             </div>
+          ) : (
+            <div className="w-full h-24 bg-primary/10"></div>
           )}
-          <div className={event.image_url ? "absolute bottom-0 left-0 p-6 w-full" : "p-6 pt-8"}>
-            <DialogTitle className={`text-3xl font-bold mb-2 ${event.image_url ? "text-white" : "text-foreground"}`}>{event.event_name}</DialogTitle>
-            <DialogDescription className={`flex flex-wrap items-center text-sm gap-x-3 gap-y-1 ${event.image_url ? "text-white/90" : "text-muted-foreground"}`}>
-              <span className="flex items-center"><Calendar className="mr-1 h-3.5 w-3.5" /> {dateDisplay}</span>
-              {event.event_time && <span className="flex items-center"><Clock className="mr-1 h-3.5 w-3.5" /> {event.event_time}</span>}
+          
+          <DialogClose className="absolute top-4 right-4 rounded-full bg-black/20 hover:bg-black/40 p-2 text-white backdrop-blur-md transition-all z-50">
+            <X className="h-5 w-5" />
+          </DialogClose>
+
+          <div className={event.image_url ? "absolute bottom-0 left-0 p-6 sm:p-8 w-full" : "p-8 pt-10"}>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {event.event_type && (
+                <Badge variant="secondary" className="bg-primary/20 text-primary border-none font-bold px-3 py-1">
+                  {event.event_type.toUpperCase()}
+                </Badge>
+              )}
+            </div>
+            <DialogTitle className="text-3xl sm:text-4xl font-bold mb-3 font-heading tracking-tight text-foreground leading-tight">
+              {event.event_name}
+            </DialogTitle>
+            <DialogDescription className="flex flex-wrap items-center text-base gap-x-4 gap-y-2 text-muted-foreground font-medium">
+              <span className="flex items-center"><Calendar className="mr-2 h-4 w-4 text-primary" /> {dateDisplay}</span>
+              {event.event_time && <span className="flex items-center"><Clock className="mr-2 h-4 w-4 text-primary" /> {event.event_time}</span>}
             </DialogDescription>
           </div>
         </div>
 
-        <div className="px-6 py-6 space-y-6">
-          <section className="space-y-3">
-            <h3 className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Overview</h3>
-            {event.full_address && (
-              <div className="flex items-start text-foreground">
-                <MapPin className="mr-3 h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="hover:underline">{event.full_address}</a>
-              </div>
-            )}
-            {event.price && (
-              <div className="flex items-center text-foreground">
-                <DollarSign className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
-                <span className="font-medium">Price:</span> <span className="ml-1">{formatPrice(event.price)}</span>
-              </div>
-            )}
-            {event.event_type && (
-              <div className="flex items-center text-foreground">
-                <Sparkles className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
-                <span className="font-medium">Type:</span> <span className="ml-1">{event.event_type}</span>
-              </div>
-            )}
-            {event.recurring_pattern && (
-              <div className="flex items-center text-foreground">
-                <Repeat className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
-                <span className="font-medium">Repeats:</span> <span className="ml-1 capitalize">{event.recurring_pattern.toLowerCase()}</span>
-              </div>
-            )}
+        <div className="px-6 sm:px-8 py-6 space-y-8">
+          <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h3 className="text-xs uppercase font-bold tracking-[0.2em] text-muted-foreground/70">Location & Price</h3>
+              {event.full_address && (
+                <div className="flex items-start text-foreground group">
+                  <MapPin className="mr-3 h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors leading-snug">
+                    {event.place_name && <span className="block font-bold mb-0.5">{event.place_name}</span>}
+                    <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">{event.full_address}</span>
+                  </a>
+                </div>
+              )}
+              {event.price && (
+                <div className="flex items-center text-foreground">
+                  <DollarSign className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-bold">{formatPrice(event.price)}</span>
+                </div>
+              )}
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-xs uppercase font-bold tracking-[0.2em] text-muted-foreground/70">Organizer & Details</h3>
+              {event.organizer_contact && (
+                <div className="flex items-center text-foreground">
+                  <User className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium">{event.organizer_contact}</span>
+                </div>
+              )}
+              {event.recurring_pattern && (
+                <div className="flex items-center text-foreground">
+                  <Repeat className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-medium capitalize">Repeats {event.recurring_pattern.toLowerCase()}</span>
+                </div>
+              )}
+            </div>
           </section>
 
           {event.description && (
-            <>
-              <Separator />
-              <section className="space-y-3">
-                <h3 className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Description</h3>
-                <p className="text-foreground leading-relaxed whitespace-pre-wrap">{event.description}</p>
-              </section>
-            </>
+            <section className="space-y-3">
+              <h3 className="text-xs uppercase font-bold tracking-[0.2em] text-muted-foreground/70">About this event</h3>
+              <p className="text-foreground leading-relaxed whitespace-pre-wrap text-lg">
+                {event.description}
+              </p>
+            </section>
           )}
 
-          {(event.ticket_link || event.special_notes || event.organizer_contact || event.discount_code) && (
-            <>
-              <Separator />
-              <section className="space-y-4">
-                <h3 className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Details</h3>
-                {event.ticket_link && (
-                  <div className="flex items-center">
-                    <LinkIcon className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
-                    <Button variant="link" className="p-0 h-auto text-primary font-semibold" onClick={handleTicketLinkClick}>Get Tickets</Button>
+          {(event.ticket_link || event.special_notes || event.discount_code) && (
+            <section className="bg-secondary/30 rounded-2xl p-6 space-y-5 border border-border/50">
+              <h3 className="text-xs uppercase font-bold tracking-[0.2em] text-muted-foreground/70">Booking Information</h3>
+              
+              {event.ticket_link && (
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-6 rounded-xl shadow-lg transition-all transform hover:scale-[1.02]" 
+                  onClick={handleTicketLinkClick}
+                >
+                  <LinkIcon className="mr-2 h-5 w-5" /> Get Your Tickets
+                </Button>
+              )}
+
+              {event.discount_code && (
+                <div className="flex flex-col sm:flex-row items-center gap-3 p-4 bg-background rounded-xl border border-dashed border-primary/30">
+                  <div className="flex-1 text-center sm:text-left">
+                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Discount Code</p>
+                    <code className="text-xl font-black text-primary tracking-wider">{event.discount_code}</code>
                   </div>
-                )}
-                {event.discount_code && (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-primary/10 text-primary px-3 py-1">{event.discount_code}</Badge>
-                    <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)}><Copy className="mr-2 h-3.5 w-3.5" /> Copy Code</Button>
-                  </div>
-                )}
-                {event.special_notes && (
-                  <div className="flex items-start">
-                    <Info className="mr-3 h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-muted-foreground italic">{event.special_notes}</p>
-                  </div>
-                )}
-                {event.organizer_contact && (
-                  <div className="flex items-center">
-                    <User className="mr-3 h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="text-sm font-medium">{event.organizer_contact}</span>
-                  </div>
-                )}
-              </section>
-            </>
+                  <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)} className="rounded-lg">
+                    <Copy className="mr-2 h-4 w-4" /> Copy Code
+                  </Button>
+                </div>
+              )}
+
+              {event.special_notes && (
+                <div className="flex items-start bg-yellow-500/5 p-4 rounded-xl border border-yellow-500/20">
+                  <Info className="mr-3 h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-foreground/80 italic leading-relaxed">{event.special_notes}</p>
+                </div>
+              )}
+            </section>
           )}
         </div>
 
-        <DialogFooter className="flex flex-wrap justify-between items-center p-6 border-t bg-secondary/30">
+        <DialogFooter className="flex flex-wrap justify-between items-center p-6 sm:p-8 border-t bg-secondary/20 gap-4">
           <div className="flex gap-2">
-            <BookmarkButton eventId={event.id} size="default" />
-            <Button variant="ghost" onClick={() => {
+            <BookmarkButton eventId={event.id} size="default" className="rounded-xl px-4" />
+            <Button variant="ghost" className="rounded-xl px-4" onClick={() => {
               navigator.clipboard.writeText(`${window.location.origin}/events/${event.id.split('-')[0]}`);
               toast.success('Link copied!');
-            }}><Share2 className="mr-2 h-4 w-4" /> Share</Button>
+            }}>
+              <Share2 className="mr-2 h-4 w-4" /> Share
+            </Button>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>{cameFromCalendar ? 'Back' : 'Close'}</Button>
             {isCreatorOrAdmin && (
               <>
-                <Button variant="outline" onClick={() => { onClose(); navigate(`/edit-event/${event.id.split('-')[0]}`); }}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => { onClose(); navigate(`/edit-event/${event.id.split('-')[0]}`); }}>
+                  <Edit className="mr-2 h-4 w-4" /> Edit
+                </Button>
                 <AlertDialog>
-                  <AlertDialogTrigger asChild><Button variant="destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button></AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader><AlertDialogTitle>Delete Event?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
-                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDelete} className="bg-destructive">Delete</AlertDialogAction></AlertDialogFooter>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="rounded-xl">
+                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-2xl">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="font-heading text-2xl">Delete Event?</AlertDialogTitle>
+                      <AlertDialogDescription>This action cannot be undone. This event will be permanently removed.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive rounded-xl">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
               </>
