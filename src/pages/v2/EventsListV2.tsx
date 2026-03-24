@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isPast, isSameDay, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, FilterX, Search } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, FilterX, Search, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -168,15 +168,28 @@ const EventsListV2 = () => {
   const hasActiveFilters = searchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
 
   return (
-    <div className="w-full max-w-2xl">
-      <div className="mb-10 space-y-6 bg-card p-6 rounded-2xl border border-border shadow-sm">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/60" />
+    <div className="w-full max-w-2xl px-4">
+      <div className="mb-16 text-center space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
+        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-2">
+          <Sparkles className="h-3 w-3 mr-2" /> Discover Your Flow
+        </div>
+        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground leading-[1.1]">
+          Soulful Gatherings <br />
+          <span className="text-primary italic font-normal">Across Australia</span>
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
+          Find workshops, meditations, and community events that nourish your spirit.
+        </p>
+      </div>
+
+      <div className="mb-12 space-y-6 glass-card p-8 rounded-[2.5rem] shadow-2xl border-white/40 dark:border-white/5">
+        <div className="relative group">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Search events, venues, or locations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 h-12 rounded-xl border-border bg-secondary/30 focus-visible:ring-primary text-lg"
+            className="pl-14 h-14 rounded-2xl border-none bg-secondary/50 focus-visible:ring-primary text-lg placeholder:text-muted-foreground/40"
           />
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -194,30 +207,30 @@ const EventsListV2 = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-8">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex flex-col space-y-4">
-              <Skeleton className="h-[240px] w-full rounded-2xl" />
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-5 w-1/2" />
+        <div className="grid grid-cols-1 gap-12">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex flex-col space-y-6">
+              <Skeleton className="h-[300px] w-full rounded-[2rem]" />
+              <Skeleton className="h-10 w-3/4" />
+              <Skeleton className="h-6 w-1/2" />
             </div>
           ))}
         </div>
       ) : (
         <>
           {viewMode === 'list' ? (
-            <section className="mb-16">
-              <div className="flex items-center justify-between mb-8 border-b pb-3 border-border">
+            <section className="mb-24">
+              <div className="flex items-center justify-between mb-10 border-b pb-4 border-border/40">
                 <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
                 {hasActiveFilters && (
-                  <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground hover:text-primary font-bold">
+                  <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground hover:text-primary font-bold rounded-full">
                     <FilterX className="mr-2 h-4 w-4" /> Clear All
                   </Button>
                 )}
               </div>
               
               {displayedEvents.length > 0 ? (
-                <div className="grid grid-cols-1 gap-8">
+                <div className="grid grid-cols-1 gap-12">
                   {displayedEvents.map(event => (
                     <EventCardV2
                       key={event.id}
@@ -230,19 +243,19 @@ const EventsListV2 = () => {
                   ))}
                 </div>
               ) : (
-                <div className="p-16 bg-secondary/30 rounded-3xl border border-dashed border-border text-center">
-                  <Frown className="h-16 w-16 text-muted-foreground mx-auto mb-6 opacity-30" />
-                  <h3 className="text-2xl font-heading font-bold text-foreground mb-3">No events found</h3>
-                  <p className="text-muted-foreground mb-8 text-lg">Try adjusting your filters or be the first to share an event!</p>
+                <div className="p-20 glass-card rounded-[3rem] text-center border-dashed border-primary/20">
+                  <Frown className="h-20 w-20 text-primary/20 mx-auto mb-8" />
+                  <h3 className="text-3xl font-heading font-bold text-foreground mb-4">No events found</h3>
+                  <p className="text-muted-foreground mb-10 text-lg max-w-xs mx-auto">Try adjusting your filters or share your own soulful event.</p>
                   <div className="flex flex-col sm:flex-row justify-center gap-4">
                     {hasActiveFilters && (
-                      <Button variant="outline" onClick={handleClearFilters} className="rounded-xl px-6 py-6 text-lg">
-                        Clear All Filters
+                      <Button variant="outline" onClick={handleClearFilters} className="rounded-2xl px-8 py-7 text-lg font-bold">
+                        Clear Filters
                       </Button>
                     )}
                     <Link to="/submit-event">
-                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-8 py-6 text-lg font-bold shadow-lg">
-                        <PlusCircle className="mr-2 h-5 w-5" /> Add Your Event
+                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-10 py-7 text-lg font-bold shadow-2xl transition-transform hover:scale-105">
+                        <PlusCircle className="mr-2 h-6 w-6" /> Add Your Event
                       </Button>
                     </Link>
                   </div>
@@ -250,15 +263,15 @@ const EventsListV2 = () => {
               )}
 
               {hasMore && displayedEvents.length > 0 && (
-                <div className="flex justify-center mt-12">
-                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="min-w-[240px] h-12 rounded-xl transition-all hover:bg-primary hover:text-primary-foreground font-bold text-lg">
+                <div className="flex justify-center mt-16">
+                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="min-w-[280px] h-14 rounded-2xl transition-all hover:bg-primary hover:text-primary-foreground font-bold text-lg shadow-xl">
                     {loadingMore ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Load More Events'}
                   </Button>
                 </div>
               )}
             </section>
           ) : (
-            <div className="animate-in fade-in duration-700">
+            <div className="animate-in fade-in duration-1000">
               <AdvancedEventCalendar
                 events={filteredEvents}
                 onEventSelect={handleViewDetails}
@@ -267,10 +280,10 @@ const EventsListV2 = () => {
                 currentMonth={currentMonth}
                 onMonthChange={setCurrentMonth}
               />
-              <div className="mt-12">
-                <h3 className="text-3xl font-heading font-bold text-foreground mb-8 border-b pb-3 border-border tracking-tight">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
+              <div className="mt-16">
+                <h3 className="text-3xl font-heading font-bold text-foreground mb-10 border-b pb-4 border-border/40 tracking-tight">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
                 {selectedDayEvents.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-8">
+                  <div className="grid grid-cols-1 gap-12">
                     {selectedDayEvents.map(event => (
                       <EventCardV2 
                         key={event.id} 
@@ -283,8 +296,8 @@ const EventsListV2 = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-16 bg-secondary/30 rounded-3xl border border-dashed border-border text-center">
-                    <Frown className="h-16 w-16 text-muted-foreground mx-auto mb-6 opacity-30" />
+                  <div className="p-20 glass-card rounded-[3rem] text-center border-dashed border-primary/20">
+                    <Frown className="h-16 w-16 text-primary/20 mx-auto mb-6" />
                     <p className="text-xl font-medium text-muted-foreground">No events scheduled for this day.</p>
                   </div>
                 )}

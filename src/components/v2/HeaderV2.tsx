@@ -59,29 +59,29 @@ const HeaderV2 = () => {
   const isAdminUser = user?.email === 'daniele.buatti@gmail.com';
 
   return (
-    <header className="w-full bg-primary py-4 px-4 md:px-8 flex justify-center sticky top-0 z-50 shadow-md">
-      <div className="w-full max-w-2xl flex justify-between items-center">
-        <Link to="/" className="flex flex-col items-start text-primary-foreground hover:opacity-90 transition-opacity">
-          <span className="text-3xl font-bold leading-none font-heading tracking-tight">SoulFlow</span>
-          <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-primary-foreground/60 leading-none mt-1.5">Australia</span>
+    <header className="w-full py-6 px-4 md:px-8 flex justify-center sticky top-0 z-50">
+      <div className="w-full max-w-2xl flex justify-between items-center glass px-6 py-3 rounded-full shadow-2xl border border-white/30 dark:border-white/10">
+        <Link to="/" className="flex flex-col items-start group">
+          <span className="text-2xl font-bold leading-none font-heading tracking-tight text-primary group-hover:text-primary/80 transition-colors">SoulFlow</span>
+          <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground leading-none mt-1">Australia</span>
         </Link>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-white/10 rounded-full h-10 w-10">
-              <Menu className="h-6 w-6" />
+            <Button variant="ghost" size="icon" className="hover:bg-primary/10 rounded-full h-10 w-10 transition-all duration-300">
+              <Menu className="h-5 w-5 text-primary" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[220px] p-2 dark:bg-card dark:border-border shadow-xl rounded-xl">
+          <DropdownMenuContent align="end" className="w-[240px] p-2 glass shadow-2xl rounded-2xl border-white/20 mt-2">
             {user ? (
               <>
-                <DropdownMenuLabel className="text-xs font-bold text-muted-foreground px-2 py-1.5 uppercase tracking-wider">Menu</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground/60 px-3 py-2 uppercase tracking-[0.2em]">Navigation</DropdownMenuLabel>
                 {authenticatedNavItems.map((item) => {
                   const isActive = location.pathname === item.to || (item.to === "/" && location.pathname === "/");
                   return (
-                    <DropdownMenuItem key={item.to} asChild className="rounded-lg cursor-pointer">
-                      <Link to={item.to} className={cn("flex items-center py-2", isActive && "bg-primary/10 text-primary font-bold")}>
+                    <DropdownMenuItem key={item.to} asChild className="rounded-xl cursor-pointer focus:bg-primary/10 focus:text-primary">
+                      <Link to={item.to} className={cn("flex items-center py-2.5 px-3 transition-all", isActive && "bg-primary/10 text-primary font-bold")}>
                         <item.icon className={cn("mr-3 h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} /> {item.label}
                       </Link>
                     </DropdownMenuItem>
@@ -89,13 +89,13 @@ const HeaderV2 = () => {
                 })}
                 {isAdminUser && (
                   <>
-                    <DropdownMenuSeparator className="my-2" />
-                    <DropdownMenuLabel className="text-xs font-bold text-muted-foreground px-2 py-1.5 uppercase tracking-wider">Admin</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="my-2 opacity-20" />
+                    <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground/60 px-3 py-2 uppercase tracking-[0.2em]">Admin</DropdownMenuLabel>
                     {adminNavItems.map((item) => {
                       const isActive = location.pathname === item.to;
                       return (
-                        <DropdownMenuItem key={item.to} asChild className="rounded-lg cursor-pointer">
-                          <Link to={item.to} className={cn("flex items-center py-2", isActive && "bg-primary/10 text-primary font-bold")}>
+                        <DropdownMenuItem key={item.to} asChild className="rounded-xl cursor-pointer focus:bg-primary/10 focus:text-primary">
+                          <Link to={item.to} className={cn("flex items-center py-2.5 px-3 transition-all", isActive && "bg-primary/10 text-primary font-bold")}>
                             <item.icon className={cn("mr-3 h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} /> {item.label}
                           </Link>
                         </DropdownMenuItem>
@@ -103,8 +103,8 @@ const HeaderV2 = () => {
                     })}
                   </>
                 )}
-                <DropdownMenuSeparator className="my-2" />
-                <DropdownMenuItem onClick={handleLogout} className="flex items-center py-2 text-destructive hover:text-destructive/80 rounded-lg cursor-pointer">
+                <DropdownMenuSeparator className="my-2 opacity-20" />
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center py-2.5 px-3 text-destructive hover:text-destructive/80 rounded-xl cursor-pointer focus:bg-destructive/10">
                   <LogOut className="mr-3 h-4 w-4" /> Logout
                 </DropdownMenuItem>
               </>
@@ -112,8 +112,8 @@ const HeaderV2 = () => {
               unauthenticatedNavItems.map((item) => {
                 const isActive = location.pathname === item.to || (item.to === "/" && location.pathname === "/");
                 return (
-                  <DropdownMenuItem key={item.to} asChild className="rounded-lg cursor-pointer">
-                    <Link to={item.to} className={cn("flex items-center py-2", isActive && "bg-primary/10 text-primary font-bold")}>
+                  <DropdownMenuItem key={item.to} asChild className="rounded-xl cursor-pointer focus:bg-primary/10 focus:text-primary">
+                    <Link to={item.to} className={cn("flex items-center py-2.5 px-3 transition-all", isActive && "bg-primary/10 text-primary font-bold")}>
                       <item.icon className={cn("mr-3 h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} /> {item.label}
                     </Link>
                   </DropdownMenuItem>
