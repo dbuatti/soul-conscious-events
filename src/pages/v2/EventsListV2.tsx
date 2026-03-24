@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay, isSameMonth } from 'date-fns';
+import { format, parseISO, isToday, isPast, isSameDay, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, PlusCircle, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Frown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
-import FilterDropdownsV2, { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
+import FilterDropdownsV2 from '@/components/v2/FilterDropdownsV2';
 import { useSession } from '@/components/SessionContextProvider';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import { generateRecurringInstances } from '@/utils/event-utils';
+import { useEventFilters } from '@/hooks/use-event-filters';
 
 const EVENTS_PER_LOAD = 6;
 
@@ -27,20 +27,14 @@ const EventsListV2 = () => {
   const [availableVenues, setAvailableVenues] = useState<string[]>([]);
   const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]);
 
-  const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
-    date: 'All Upcoming',
-    category: [],
-    venue: [],
-    price: [],
-    state: [],
-  });
-
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
+  const { filters, setFilters, filteredEvents } = useEventFilters(allEvents);
 
   const fetchFavouriteVenues = useCallback(async () => {
     if (!user) {
@@ -101,68 +95,18 @@ const EventsListV2 = () => {
     }
   }, [fetchInitialEvents, fetchFavouriteVenues, isSessionLoading]);
 
-  const getFilteredEvents = useCallback(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const tomorrow = addDays(now, 1);
-
-    return allEvents.filter(event => {
-      const eventDate = parseISO(event.event_date);
-
-      switch (filters.date) {
-        case 'Today': if (!isToday(eventDate)) return false; break;
-        case 'Tomorrow': if (!isSameDay(eventDate, tomorrow)) return false; break;
-        case 'This Week':
-          const startW = startOfWeek(now, { weekStartsOn: 1 });
-          const endW = endOfWeek(now, { weekStartsOn: 1 });
-          if (!(eventDate >= startW && eventDate <= endW)) return false;
-          break;
-        case 'This Month':
-          const startM = startOfMonth(now);
-          const endM = endOfMonth(now);
-          if (!(eventDate >= startM && eventDate <= endM)) return false;
-          break;
-        case 'All Upcoming':
-          if (isPast(eventDate) && !isToday(eventDate)) return false;
-          break;
-      }
-
-      if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) return false;
-      if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) return false;
-      
-      if (filters.price.length > 0) {
-        const lowerCasePrice = event.price?.toLowerCase() || '';
-        const isFree = lowerCasePrice.includes('free');
-        const isDonation = lowerCasePrice.includes('donation');
-        const isPaid = !isFree && !isDonation && !!lowerCasePrice;
-
-        let priceMatch = false;
-        if (filters.price.includes('Free') && isFree) priceMatch = true;
-        if (filters.price.includes('Paid') && isPaid) priceMatch = true;
-        if (filters.price.includes('Donation') && isDonation) priceMatch = true;
-        if (!priceMatch) return false;
-      }
-      
-      if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) return false;
-      
-      return true;
-    });
-  }, [allEvents, filters]);
-
   useEffect(() => {
-    const filtered = getFilteredEvents();
-    setDisplayedEvents(filtered.slice(0, EVENTS_PER_LOAD));
+    setDisplayedEvents(filteredEvents.slice(0, EVENTS_PER_LOAD));
     setOffset(EVENTS_PER_LOAD);
-    setHasMore(filtered.length > EVENTS_PER_LOAD);
-  }, [getFilteredEvents]);
+    setHasMore(filteredEvents.length > EVENTS_PER_LOAD);
+  }, [filteredEvents]);
 
   const handleLoadMore = () => {
     setLoadingMore(true);
-    const filtered = getFilteredEvents();
-    const nextEvents = filtered.slice(offset, offset + EVENTS_PER_LOAD);
+    const nextEvents = filteredEvents.slice(offset, offset + EVENTS_PER_LOAD);
     setDisplayedEvents(prevEvents => [...prevEvents, ...nextEvents]);
     setOffset(prevOffset => prevOffset + nextEvents.length);
-    setHasMore(filtered.length > offset + nextEvents.length);
+    setHasMore(filteredEvents.length > offset + nextEvents.length);
     setLoadingMore(false);
   };
 
@@ -207,9 +151,7 @@ const EventsListV2 = () => {
     setIsEventDetailDialogOpen(true);
   };
 
-  const allFilteredEvents = getFilteredEvents();
-  const selectedDayEvents = allFilteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
-  const currentMonthEvents = allFilteredEvents.filter(event => isSameMonth(parseISO(event.event_date), currentMonth) && !isSameDay(parseISO(event.event_date), selectedDay));
+  const selectedDayEvents = filteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
 
   return (
     <div className="w-full max-w-2xl">
@@ -263,7 +205,7 @@ const EventsListV2 = () => {
           ) : (
             <div>
               <AdvancedEventCalendar
-                events={allFilteredEvents}
+                events={filteredEvents}
                 onEventSelect={handleViewDetails}
                 selectedDay={selectedDay}
                 onDayClick={setSelectedDay}
