@@ -13,13 +13,14 @@ export interface Event {
   special_notes?: string;
   organizer_contact?: string;
   event_type?: string;
-  approval_status?: string; // Renamed from 'state'
-  geographical_state?: string; // New field for Australian state
+  approval_status?: string;
+  geographical_state?: string;
   image_url?: string;
   user_id?: string;
   is_deleted?: boolean;
   discount_code?: string;
-  google_maps_link?: string; // New field for Google Maps link
-  recurring_pattern?: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY'; // New field for recurrence
-  is_recurring_instance?: boolean; // Added for generated recurring event instances
+  google_maps_link?: string;
+  recurring_pattern?: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY';
+  is_recurring_instance?: boolean;
+  created_at?: string; // Added to support 'NEW' badge logic
 }

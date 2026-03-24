@@ -2,13 +2,14 @@ import React from 'react';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isToday, isTomorrow, differenceInDays, differenceInHours } from 'date-fns';
 import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface EventCardV2Props {
   event: Event;
@@ -33,6 +34,23 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const isDonation = event.price?.toLowerCase().includes('donation');
   const displayPrice = event.price ? event.price.replace(/\$/g, '') : '';
 
+  const eventDate = parseISO(event.event_date);
+  const endDate = event.end_date ? parseISO(event.end_date) : null;
+  
+  // Smart Date Label
+  let dateLabel = format(eventDate, 'EEEE, MMMM d');
+  if (isToday(eventDate)) dateLabel = 'Today';
+  else if (isTomorrow(eventDate)) dateLabel = 'Tomorrow';
+
+  // Duration Label
+  const durationDays = endDate ? differenceInDays(endDate, eventDate) + 1 : 1;
+  const durationLabel = durationDays > 1 ? `${durationDays} days` : null;
+
+  // "NEW" Badge Logic (Created in last 24 hours)
+  const isNew = event.created_at 
+    ? Math.abs(differenceInHours(new Date(), parseISO(event.created_at))) < 24 
+    : false;
+
   const handleNativeShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const baseId = event.id.split('-')[0];
@@ -51,7 +69,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         }
       }
     } else {
-      onShare(event, e); // Fallback to the parent's clipboard share
+      onShare(event, e);
     }
   };
 
@@ -75,9 +93,9 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               {event.event_type.toUpperCase()}
             </Badge>
           )}
-          {isFeaturedToday && (
-            <Badge className="bg-accent text-white text-[10px] px-4 py-1.5 font-black tracking-widest border-none shadow-lg rounded-full animate-pulse">
-              TODAY
+          {isNew && (
+            <Badge className="bg-green-500 text-white text-[10px] px-4 py-1.5 font-black tracking-widest border-none shadow-lg rounded-full">
+              NEW
             </Badge>
           )}
         </div>
@@ -111,7 +129,12 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         <div className="space-y-4 text-muted-foreground text-sm mb-8">
           <div className="flex items-center font-bold text-foreground/80">
             <Calendar className="mr-3 h-5 w-5 text-primary" />
-            <span>{format(parseISO(event.event_date), 'EEEE, MMMM d')}</span>
+            <span className={cn(isToday(eventDate) && "text-primary")}>{dateLabel}</span>
+            {durationLabel && (
+              <Badge variant="outline" className="ml-3 border-primary/20 text-[10px] font-bold text-primary/60">
+                {durationLabel}
+              </Badge>
+            )}
           </div>
           <div className="flex items-center">
             <Clock className="mr-3 h-5 w-5 text-primary/60" />
