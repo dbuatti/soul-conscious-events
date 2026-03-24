@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
-import { toast } from 'sonner';
 import { getRedirectUrl } from '@/lib/utils';
 
 const Login = () => {
@@ -53,7 +52,7 @@ const Login = () => {
             },
           }}
           theme="light"
-          redirectTo={`${getRedirectUrl()}old`}
+          redirectTo={`${getRedirectUrl()}/old`}
           localization={{
             variables: {
               sign_in: {

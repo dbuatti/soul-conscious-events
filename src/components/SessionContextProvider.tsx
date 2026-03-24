@@ -7,7 +7,6 @@ interface SessionContextType {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
-  // Removed isViewingAsPublic and toggleViewAsPublic
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -16,19 +15,29 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // Removed isViewingAsPublic state
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    // Function to clear the auth hash from the URL
+    const clearAuthHash = () => {
+      if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('error'))) {
+        // Use replaceState to clear the hash without adding to browser history
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       setSession(currentSession);
       setUser(currentSession?.user || null);
       setIsLoading(false);
 
-      // Redirect authenticated users from login page to home
-      if (currentSession && location.pathname === '/login') {
-        navigate('/');
+      if (currentSession) {
+        clearAuthHash();
+        // Redirect authenticated users from login page to home
+        if (location.pathname === '/login' || location.pathname === '/old/login') {
+          navigate(location.pathname.startsWith('/old') ? '/old' : '/');
+        }
       }
     });
 
@@ -36,16 +45,17 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       setSession(currentSession);
       setUser(currentSession?.user || null);
       setIsLoading(false);
-      // Redirect authenticated users from login page to home on initial load
-      if (currentSession && location.pathname === '/login') {
-        navigate('/');
+      
+      if (currentSession) {
+        clearAuthHash();
+        if (location.pathname === '/login' || location.pathname === '/old/login') {
+          navigate(location.pathname.startsWith('/old') ? '/old' : '/');
+        }
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate, location.pathname]);
-
-  // Removed toggleViewAsPublic function
 
   return (
     <SessionContext.Provider value={{ session, user, isLoading }}>
