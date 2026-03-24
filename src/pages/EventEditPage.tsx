@@ -1,54 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form'; // Corrected import path
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { cn, extractAustralianState } from '@/lib/utils'; // Import extractAustralianState
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
-} from '@/components/ui/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose,
-} from '@/components/ui/dialog';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { eventTypes, australianStates } from '@/lib/constants';
 import { Event } from '@/types/event';
-import ImageUploadInput from '@/components/ImageUploadInput'; // Import the new component
-import GooglePlaceAutocomplete from '@/components/GooglePlaceAutocomplete'; // Import new component
-import EventPreviewDialog from '@/components/EventPreviewDialog'; // Import EventPreviewDialog
-import RecurringEventFields from '@/components/RecurringEventFields'; // Import RecurringEventFields
-
-const eventFormSchema = z.object({
-  eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
-  eventDate: z.date({ required_error: 'A date is required.' }),
-  endDate: z.date().optional(),
-  eventTime: z.string().optional().or(z.literal('')),
-  placeName: z.string().optional().or(z.literal('')),
-  fullAddress: z.string().optional().or(z.literal('')),
-  description: z.string().optional().or(z.literal('')),
-  ticketLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  price: z.string().optional().or(z.literal('')), // Removed the refine rule
-  specialNotes: z.string().optional().or(z.literal('')),
-  organizerContact: z.string().optional().or(z.literal('')),
-  eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')),
-  imageFile: z.any().optional(),
-  imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  discountCode: z.string().optional().or(z.literal('')),
-  googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
-  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'NONE']).optional().or(z.literal('')), // Added 'NONE'
-});
+import EventForm from '@/components/EventForm';
+import EventPreviewDialog from '@/components/EventPreviewDialog';
+import { eventFormSchema, EventFormValues } from '@/lib/schemas';
+import { isValidEventId, getBaseEventId } from '@/utils/event-utils';
 
 const EventEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,17 +22,14 @@ const EventEditPage: React.FC = () => {
   const [loadingEvent, setLoadingEvent] = useState(true);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewData, setPreviewData] = useState<z.infer<typeof eventFormSchema> | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); // State for preview URL
+  const [previewData, setPreviewData] = useState<EventFormValues | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
-  // Determine if we are in duplication mode based on the route path
   const isDuplicating = location.pathname.startsWith('/duplicate-event');
-  const eventId = id; // Use id from params for fetching/updating
+  const eventId = id || '';
+  const isIdValid = isValidEventId(eventId);
 
-  // Immediate validation check for the ID format
-  const isIdValid = eventId && eventId.length >= 30;
-
-  const form = useForm<z.infer<typeof eventFormSchema>>({
+  const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       eventName: '',
@@ -84,25 +45,25 @@ const EventEditPage: React.FC = () => {
       geographicalState: '',
       imageUrl: '',
       discountCode: '',
-      googleMapsLink: '', // Initialize new field
-      recurringPattern: 'NONE', // Set default to 'NONE'
+      googleMapsLink: '',
+      recurringPattern: 'NONE',
     },
   });
 
   useEffect(() => {
     const fetchEvent = async () => {
       if (!isIdValid) {
-        // This case should be caught by the early return below, but included for safety
         toast.error('Invalid event ID format.');
         navigate('/404');
         return;
       }
 
       setLoadingEvent(true);
+      const baseId = getBaseEventId(eventId);
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .eq('id', eventId)
+        .eq('id', baseId)
         .single();
 
       if (error) {
@@ -131,12 +92,10 @@ const EventEditPage: React.FC = () => {
           geographicalState: data.geographical_state || '',
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
-          googleMapsLink: data.google_maps_link || '', // Set new field from fetched data
-          recurringPattern: data.recurring_pattern || 'NONE', // Map null/undefined to 'NONE'
+          googleMapsLink: data.google_maps_link || '',
+          recurringPattern: data.recurring_pattern || 'NONE',
         });
-        setImagePreviewUrl(data.image_url || null); // Set initial preview URL
-      } else {
-        navigate('/404');
+        setImagePreviewUrl(data.image_url || null);
       }
       setLoadingEvent(false);
     };
@@ -148,101 +107,47 @@ const EventEditPage: React.FC = () => {
     }
   }, [eventId, navigate, form, isDuplicating, isIdValid]);
 
-  const onSubmit = async (values: z.infer<typeof eventFormSchema>) => {
+  const onSubmit = async (values: EventFormValues) => {
     if (!currentEvent) return;
 
-    // Critical check before update/insert
-    if (!isDuplicating && (!eventId || eventId.length < 30)) {
+    const baseId = getBaseEventId(eventId);
+    if (!isDuplicating && !isValidEventId(baseId)) {
       toast.error('Cannot save changes: Invalid event ID.');
       return;
     }
 
-    let finalImageUrl: string | null = null;
-    
-    // Helper function to format URL or return null if empty
-    const formatUrl = (url: string | undefined): string | null => {
-      if (!url) return null;
-      let formattedUrl = url.trim();
-      if (formattedUrl === '') return null;
-      if (!/^https?:\/\//i.test(formattedUrl)) {
-        formattedUrl = `https://${formattedUrl}`;
-      }
-      return formattedUrl;
-    };
-
     const loadingToastId = toast.loading(isDuplicating ? 'Creating duplicate event...' : 'Saving changes...');
 
     try {
-      // --- Image Handling Logic ---
-      const imageFile = form.getValues('imageFile');
-      const imageUrlField = form.getValues('imageUrl');
-      const isExistingSupabaseImage = currentEvent.image_url && currentEvent.image_url.includes('supabase.co/storage/v1/object/public/event-images');
-
-      if (imageFile) { // Case 1: New file selected (Upload required)
-        // If editing, delete old image if it was a Supabase file
-        if (!isDuplicating && isExistingSupabaseImage) {
-          const oldFileName = currentEvent.image_url!.split('/').pop();
-          if (oldFileName) {
-            await supabase.storage.from('event-images').remove([oldFileName]);
-          }
-        }
-        
-        const fileExtension = imageFile.name.split('.').pop();
+      let finalImageUrl: string | null = currentEvent.image_url || null;
+      
+      if (values.imageFile) {
+        const fileExtension = values.imageFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExtension}`;
         const { error: uploadError } = await supabase.storage
           .from('event-images')
-          .upload(fileName, imageFile, {
-            cacheControl: '3600',
-            upsert: false,
-          });
+          .upload(fileName, values.imageFile);
 
-        if (uploadError) throw new Error(`Failed to upload new image: ${uploadError.message}`);
+        if (uploadError) throw uploadError;
 
         const { data: publicUrlData } = supabase.storage
           .from('event-images')
           .getPublicUrl(fileName);
 
         finalImageUrl = publicUrlData.publicUrl;
-
-      } else if (imageUrlField) { // Case 2: URL provided (External or existing)
-        // If editing, delete old image if it was a Supabase file
-        if (!isDuplicating && isExistingSupabaseImage) {
-          const oldFileName = currentEvent.image_url!.split('/').pop();
-          if (oldFileName) {
-            await supabase.storage.from('event-images').remove([oldFileName]);
-          }
-        }
-        finalImageUrl = imageUrlField;
-
-      } else if (isDuplicating) { // Case 3: Duplicating, no new file/URL provided, keep original URL (if external) or set null (if internal file)
-        // If duplicating, we only keep the URL if it's external. If it was a file, we don't copy the file, so we set it to null.
-        finalImageUrl = isExistingSupabaseImage ? null : currentEvent.image_url;
-        
-      } else if (!isDuplicating && !imageFile && !imageUrlField && isExistingSupabaseImage) { // Case 4: Editing, image removed
-        // Delete old image if it was a Supabase file
-        const oldFileName = currentEvent.image_url!.split('/').pop();
-        if (oldFileName) {
-          await supabase.storage.from('event-images').remove([oldFileName]);
-        }
-        finalImageUrl = null;
-      } else { // Case 5: Editing, no change to image, keep existing URL
-        finalImageUrl = currentEvent.image_url;
+      } else if (values.imageUrl) {
+        finalImageUrl = values.imageUrl;
       }
-      // --- End Image Handling Logic ---
-
-      const dateToSave = format(values.eventDate, 'yyyy-MM-dd');
-      const endDateToSave = values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null;
-      const recurringPattern = values.recurringPattern === 'NONE' ? null : values.recurringPattern;
 
       const eventData = {
         event_name: values.eventName,
-        event_date: dateToSave,
-        end_date: endDateToSave,
+        event_date: format(values.eventDate, 'yyyy-MM-dd'),
+        end_date: values.endDate ? format(values.endDate, 'yyyy-MM-dd') : null,
         event_time: values.eventTime || null,
         place_name: values.placeName || null,
         full_address: values.fullAddress || null,
         description: values.description || null,
-        ticket_link: formatUrl(values.ticketLink),
+        ticket_link: values.ticketLink || null,
         price: values.price || null,
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,
@@ -250,65 +155,40 @@ const EventEditPage: React.FC = () => {
         geographical_state: values.geographicalState || null,
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
-        google_maps_link: formatUrl(values.googleMapsLink),
-        recurring_pattern: recurringPattern, // Use mapped value
-        user_id: user?.id || null, // Ensure user_id is set for new/duplicated events
-        approval_status: 'approved', // Set to approved
-        is_deleted: false,
+        google_maps_link: values.googleMapsLink || null,
+        recurring_pattern: values.recurringPattern === 'NONE' ? null : values.recurringPattern,
+        user_id: user?.id || null,
+        approval_status: 'approved',
       };
 
       let error;
       if (isDuplicating) {
-        // Insert as a new event
         const { error: insertError } = await supabase.from('events').insert([eventData]);
         error = insertError;
       } else {
-        // Update existing event
-        const { error: updateError } = await supabase.from('events').update(eventData).eq('id', eventId);
+        const { error: updateError } = await supabase.from('events').update(eventData).eq('id', baseId);
         error = updateError;
       }
 
-      if (error) {
-        console.error('Supabase operation error:', error);
-        throw new Error(error.message);
-      }
+      if (error) throw error;
 
-      toast.success(isDuplicating ? 'Event duplicated and approved!' : 'Event updated successfully!', { id: loadingToastId });
-      
-      // --- New Redirection Logic ---
-      const redirectTo = (location.state as { from?: string })?.from || '/';
-      navigate(redirectTo);
-      // --- End New Redirection Logic ---
-
+      toast.success(isDuplicating ? 'Event duplicated!' : 'Event updated!', { id: loadingToastId });
+      navigate('/');
     } catch (error: any) {
-      console.error('Unexpected error during event submission:', error);
-      toast.error(`An unexpected error occurred: ${error.message}`, { id: loadingToastId });
+      console.error('Error during event submission:', error);
+      toast.error(`An error occurred: ${error.message}`, { id: loadingToastId });
     }
   };
-
-  // If the ID is invalid, show an error message immediately and stop rendering the form
-  if (!isIdValid) {
-    return (
-      <div className="w-full max-w-2xl text-center p-8 bg-card rounded-lg border border-border shadow-md">
-        <h2 className="text-3xl font-bold text-destructive mb-4 font-heading">Error: Invalid Event ID</h2>
-        <p className="text-muted-foreground mb-6">The event link you followed contains an invalid identifier. Please check the URL or return to the events list.</p>
-        <Button onClick={() => navigate('/')}>Go to Home</Button>
-      </div>
-    );
-  }
 
   const handlePreview = () => {
     const data = form.getValues();
     setPreviewData(data);
-    // Update imagePreviewUrl from form values for the dialog
     const currentImageFile = form.getValues('imageFile');
     const currentImageUrlField = form.getValues('imageUrl');
     if (currentImageFile) {
       setImagePreviewUrl(URL.createObjectURL(currentImageFile));
     } else if (currentImageUrlField) {
       setImagePreviewUrl(currentImageUrlField);
-    } else {
-      setImagePreviewUrl(currentEvent?.image_url || null); // Fallback to original event image
     }
     setIsPreviewOpen(true);
   };
@@ -321,18 +201,9 @@ const EventEditPage: React.FC = () => {
         <div className="space-y-4">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
         </div>
       </div>
     );
-  }
-
-  const isCreatorOrAdmin = user?.id === currentEvent?.user_id || user?.email === 'daniele.buatti@gmail.com';
-
-  if (!isCreatorOrAdmin && !isDuplicating) {
-    toast.error('You do not have permission to edit this event.');
-    navigate('/');
-    return null;
   }
 
   return (
@@ -341,331 +212,16 @@ const EventEditPage: React.FC = () => {
         {isDuplicating ? 'Duplicate Event' : 'Edit Event'}
       </h2>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="eventName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="eventName">Event Name</FormLabel>
-                <FormControl>
-                  <Input id="eventName" placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="eventDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel htmlFor="eventDate">Start Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          id="eventDate"
-                          variant={'outline'}
-                          className={cn(
-                            'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={(date) => {
-                          field.onChange(date);
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="endDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel htmlFor="endDate">End Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        id="endDate"
-                        variant={'outline'}
-                        className={cn(
-                          'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
-                    <Calendar
-                      key={field.name}
-                      mode="single"
-                      selected={field.value as Date | undefined}
-                      onSelect={(date) => field.onChange(date)}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <RecurringEventFields form={form} /> {/* New Recurrence Field */}
-
-        <FormField
-          control={form.control}
-          name="eventTime"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="eventTime">Time</FormLabel>
-              <FormControl>
-                <Input id="eventTime" placeholder="e.g., 7-10 PM" {...field} className="focus-visible:ring-primary" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="bg-card p-6 rounded-xl shadow-lg border border-border">
+        <EventForm
+          form={form}
+          onSubmit={onSubmit}
+          isSubmitting={form.formState.isSubmitting}
+          onBack={() => navigate(-1)}
+          onPreview={handlePreview}
+          currentImageUrl={currentEvent?.image_url}
         />
-
-        <FormField
-          control={form.control}
-          name="placeName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="placeName">Place Name</FormLabel>
-              <FormControl>
-                <GooglePlaceAutocomplete
-                  form={form}
-                  name="placeName"
-                  addressName="fullAddress"
-                  stateName="geographicalState"
-                  placeholder="e.g., Art of Living Centre"
-                  className="focus-visible:ring-primary"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* New wrapper for Address and State */}
-          <FormField
-            control={form.control}
-            name="fullAddress"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="fullAddress">Address</FormLabel>
-                <FormControl>
-                  <Input
-                    id="fullAddress"
-                    placeholder="e.g., 123 Main St, Suburb, State, Postcode"
-                    {...field}
-                    onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      const extractedState = extractAustralianState(e.target.value);
-                      if (extractedState) {
-                        form.setValue('geographicalState', extractedState, { shouldValidate: true });
-                      } else {
-                        form.setValue('geographicalState', '', { shouldValidate: true });
-                      }
-                    }}
-                    className="focus-visible:ring-primary"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="geographicalState"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="geographicalState">State</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger id="geographicalState" className="focus-visible:ring-primary">
-                      <SelectValue placeholder="Select a state" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="dark:bg-card dark:border-border">
-                    {australianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="googleMapsLink"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="googleMapsLink">Google Maps Link</FormLabel>
-              <FormControl>
-                <Input id="googleMapsLink" placeholder="e.g., https://maps.app.goo.gl/..." {...field} className="focus-visible:ring-primary" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="description">Description</FormLabel>
-              <FormControl>
-                <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="ticketLink"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="ticketLink">Ticket/Booking Link</FormLabel>
-              <FormControl>
-                <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="price">Price</FormLabel>
-              <FormControl>
-                <Input id="price" placeholder="e.g., 90, Free, 15-20 donation" {...field} className="focus-visible:ring-primary" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="specialNotes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="specialNotes">Special Notes</FormLabel>
-              <FormControl>
-                <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="organizerContact"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="organizerContact">Organizer Name/Contact</FormLabel>
-              <FormControl>
-                <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-primary" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="eventType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="eventType">Event Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger id="eventType" className="focus-visible:ring-primary">
-                    <SelectValue placeholder="Select an event type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="dark:bg-card dark:border-border">
-                  {eventTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="discountCode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="discountCode">Discount Code</FormLabel>
-              <FormControl>
-                <Input id="discountCode" placeholder="e.g., SOULFLOW10" {...field} className="focus-visible:ring-primary" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <ImageUploadInput form={form} currentImageUrl={currentEvent?.image_url} name="imageFile" />
-
-        <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline" onClick={() => navigate(location.state?.from || '/')} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-            Back
-          </Button>
-          <Button type="button" variant="outline" onClick={handlePreview} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-            Preview
-          </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
-            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isDuplicating ? 'Submit Duplicate' : 'Save Changes'}
-          </Button>
-        </div>
-      </form>
-    </Form>
+      </div>
 
       <EventPreviewDialog
         isOpen={isPreviewOpen}

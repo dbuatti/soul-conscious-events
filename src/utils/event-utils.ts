@@ -34,12 +34,10 @@ export const generateRecurringInstances = (event: Event): Event[] => {
         return instances;
     }
 
-    // Stop generating if the next date is too far in the future (e.g., 3 months from now)
     if (nextDate > addMonths(new Date(), 3)) {
       break;
     }
 
-    // Only generate instances that are in the future or today
     if (isFuture(nextDate) || isToday(nextDate)) {
       const newEvent: Event = {
         ...event,
@@ -67,4 +65,14 @@ export const formatPrice = (price?: string | null) => {
     return `$${price}`;
   }
   return price;
+};
+
+export const getBaseEventId = (id: string): string => {
+  return id.split('-')[0];
+};
+
+export const isValidEventId = (id: string): boolean => {
+  const baseId = getBaseEventId(id);
+  // Heuristic: UUIDs are 36 chars. We allow some flexibility but block obviously corrupted short IDs.
+  return baseId.length >= 30 && baseId.includes('-');
 };

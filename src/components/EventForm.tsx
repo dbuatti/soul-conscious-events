@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { z } from 'zod';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
-import { cn, extractAustralianState } from '@/lib/utils'; // Import extractAustralianState
+import { cn, extractAustralianState } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,33 +18,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { eventTypes, australianStates } from '@/lib/constants';
-import ImageUploadInput from '@/components/ImageUploadInput'; // Import the new component
-import GooglePlaceAutocomplete from '@/components/GooglePlaceAutocomplete'; // Import new component
-import RecurringEventFields from './RecurringEventFields'; // Import RecurringEventFields
-
-// Define the schema locally to avoid import issues
-const eventFormSchema = z.object({
-  eventName: z.string().min(2, { message: 'Event name must be at least 2 characters.' }),
-  eventDate: z.date({ required_error: 'A date is required.' }),
-  endDate: z.date().optional(),
-  eventTime: z.string().optional().or(z.literal('')),
-  placeName: z.string().optional().or(z.literal('')),
-  fullAddress: z.string().optional().or(z.literal('')),
-  description: z.string().optional().or(z.literal('')),
-  ticketLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  price: z.string().optional().or(z.literal('')), // Removed the refine rule
-  specialNotes: z.string().optional().or(z.literal('')),
-  organizerContact: z.string().optional().or(z.literal('')),
-  eventType: z.string().optional().or(z.literal('')),
-  geographicalState: z.string().optional().or(z.literal('')),
-  imageFile: z.any().optional(),
-  imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
-  discountCode: z.string().optional().or(z.literal('')),
-  googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')), // New field
-  recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'NONE']).optional().or(z.literal('')), // New field
-});
-
-type EventFormValues = z.infer<typeof eventFormSchema>;
+import ImageUploadInput from '@/components/ImageUploadInput';
+import GooglePlaceAutocomplete from '@/components/GooglePlaceAutocomplete';
+import RecurringEventFields from './RecurringEventFields';
+import { EventFormValues } from '@/lib/schemas';
 
 interface EventFormProps {
   form: UseFormReturn<EventFormValues>;
@@ -53,12 +29,10 @@ interface EventFormProps {
   isSubmitting: boolean;
   onBack: () => void;
   onPreview: () => void;
-  currentImageUrl?: string | null; // Prop to pass current image URL for ImageUploadInput
+  currentImageUrl?: string | null;
 }
 
 const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onBack, onPreview, currentImageUrl }) => {
-  // Removed placeNameInputRef and its useEffect for Autocomplete, now handled by GooglePlaceAutocomplete component
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -103,10 +77,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={(date) => {
-                        field.onChange(date);
-                        // Removed the automatic setting of endDate to eventDate
-                      }}
+                      onSelect={field.onChange}
                       initialFocus
                     />
                   </PopoverContent>
@@ -140,10 +111,9 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
                     <Calendar
-                      key={field.name}
                       mode="single"
-                      selected={field.value as Date | undefined}
-                      onSelect={(date) => field.onChange(date)}
+                      selected={field.value}
+                      onSelect={field.onChange}
                       initialFocus
                     />
                   </PopoverContent>
@@ -154,7 +124,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           />
         </div>
 
-        <RecurringEventFields form={form} /> {/* New Recurrence Field */}
+        <RecurringEventFields form={form} />
 
         <FormField
           control={form.control}
@@ -191,7 +161,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* New wrapper for Address and State */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="fullAddress"
@@ -203,14 +173,11 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                     id="fullAddress"
                     placeholder="e.g., 123 Main St, Suburb, State, Postcode"
                     {...field}
-                    onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
                     onChange={(e) => {
                       field.onChange(e);
                       const extractedState = extractAustralianState(e.target.value);
                       if (extractedState) {
                         form.setValue('geographicalState', extractedState, { shouldValidate: true });
-                      } else {
-                        form.setValue('geographicalState', '', { shouldValidate: true });
                       }
                     }}
                     className="focus-visible:ring-primary"
