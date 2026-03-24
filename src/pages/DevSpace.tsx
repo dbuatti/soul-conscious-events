@@ -89,16 +89,16 @@ const DevSpace = () => {
   };
 
   const renderColumn = (title: string, tasks: DevTask[], icon: React.ReactNode) => (
-    <div className="flex-1 p-4 bg-card rounded-lg min-w-[300px] shadow-md border border-border">
-      <h2 className="text-xl font-bold text-foreground mb-4 flex items-center font-heading">
+    <div className="flex-1 p-6 bg-card rounded-[2rem] min-w-[300px] shadow-lg border border-border">
+      <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center font-heading">
         {icon}
-        <span className="ml-2">{title} ({tasks.length})</span>
+        <span className="ml-3">{title} ({tasks.length})</span>
       </h2>
       <div className="space-y-4">
         {loading ? (
           <>
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-32 w-full rounded-2xl" />
+            <Skeleton className="h-32 w-full rounded-2xl" />
           </>
         ) : (
           tasks.map(task => (
@@ -110,24 +110,27 @@ const DevSpace = () => {
   );
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-4xl font-bold text-foreground font-heading">Dev Space</h1>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Button onClick={handleCreateTestUser} disabled={isCreatingUser} className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 ease-in-out transform hover:scale-105">
-            {isCreatingUser ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
-            {isCreatingUser ? 'Creating User...' : 'Create Test User'}
+    <div className="w-full max-w-6xl mx-auto px-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-12 gap-6">
+        <div className="space-y-2 text-center sm:text-left">
+          <h1 className="text-5xl font-black text-foreground font-heading tracking-tight">Dev Space</h1>
+          <p className="text-muted-foreground font-medium">Internal roadmap and testing tools.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button onClick={handleCreateTestUser} disabled={isCreatingUser} variant="outline" className="h-12 rounded-xl px-6 font-bold transition-all hover:bg-blue-50 hover:text-blue-600 border-blue-200">
+            {isCreatingUser ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <UserPlus className="mr-2 h-5 w-5" />}
+            {isCreatingUser ? 'Creating...' : 'Create Test User'}
           </Button>
-          <Button onClick={() => setIsAddDialogOpen(true)} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Idea
+          <Button onClick={() => setIsAddDialogOpen(true)} className="h-12 rounded-xl px-8 bg-primary hover:bg-primary/80 text-primary-foreground font-bold shadow-lg transition-transform hover:scale-105">
+            <PlusCircle className="mr-2 h-5 w-5" /> Add Idea
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {renderColumn('Ideas', columns.idea, <Lightbulb className="h-6 w-6 text-yellow-400" />)}
-        {renderColumn('In Progress', columns.in_progress, <Zap className="h-6 w-6 text-blue-400" />)}
-        {renderColumn('Completed', columns.completed, <CheckCircle className="h-6 w-6 text-green-400" />)}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {renderColumn('Ideas', columns.idea, <Lightbulb className="h-7 w-7 text-yellow-500" />)}
+        {renderColumn('In Progress', columns.in_progress, <Zap className="h-7 w-7 text-blue-500" />)}
+        {renderColumn('Completed', columns.completed, <CheckCircle className="h-7 w-7 text-green-500" />)}
       </div>
 
       <AddDevTaskDialog

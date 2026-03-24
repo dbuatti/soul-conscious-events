@@ -5,8 +5,8 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parseISO, isSameDay } from 'date-fns'; // Import isSameDay
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Globe, Share2, Edit, Trash2, Copy, ArrowLeft } from 'lucide-react'; // Changed Tag to Sparkles
+import { format, parseISO, isSameDay } from 'date-fns';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Globe, Share2, Edit, Trash2, Copy, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -20,8 +20,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Event } from '@/types/event'; // Import the shared Event type
-import BookmarkButton from '@/components/BookmarkButton'; // Import BookmarkButton
+import { Event } from '@/types/event';
+import BookmarkButton from '@/components/BookmarkButton';
 
 const formatPrice = (price?: string | null) => {
   if (!price) return 'N/A';
@@ -29,7 +29,6 @@ const formatPrice = (price?: string | null) => {
   if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
     return price;
   }
-  // Check if it looks like a number or contains numbers, and doesn't already start with '$'
   if (/\d/.test(price) && !price.startsWith('$')) {
     return `$${price}`;
   }
@@ -52,7 +51,6 @@ const EventDetailPage: React.FC = () => {
       }
 
       setLoading(true);
-      // Use the base ID for fetching, in case a recurring instance ID was navigated to
       const baseId = id.split('-')[0];
       
       const { data, error } = await supabase
@@ -67,7 +65,6 @@ const EventDetailPage: React.FC = () => {
         navigate('/404');
       } else if (data) {
         setEvent(data);
-        // Log page view
         const { error: logError } = await supabase.from('event_analytics_logs').insert([
           {
             event_id: data.id,
@@ -89,10 +86,7 @@ const EventDetailPage: React.FC = () => {
 
   const handleDelete = async () => {
     if (!event) return;
-    
-    // Ensure we use the base UUID for deletion
     const baseId = event.id.split('-')[0];
-
     const { error } = await supabase.from('events').delete().eq('id', baseId);
 
     if (error) {
@@ -108,8 +102,6 @@ const EventDetailPage: React.FC = () => {
     try {
       await navigator.clipboard.writeText(code);
       toast.success('Discount code copied to clipboard!');
-
-      // Log the copy action
       const { error: logError } = await supabase.from('discount_code_usage_logs').insert([
         {
           event_id: event?.id,
@@ -117,7 +109,6 @@ const EventDetailPage: React.FC = () => {
           copied_at: new Date().toISOString(),
         },
       ]);
-
       if (logError) {
         console.error('Error logging discount code copy:', logError);
       }
@@ -129,8 +120,6 @@ const EventDetailPage: React.FC = () => {
 
   const handleTicketLinkClick = async () => {
     if (!event?.ticket_link) return;
-
-    // Log the ticket link click
     const { error: logError } = await supabase.from('event_analytics_logs').insert([
       {
         event_id: event.id,
@@ -146,223 +135,185 @@ const EventDetailPage: React.FC = () => {
 
   if (loading || isSessionLoading) {
     return (
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-6xl px-4">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
-        <Skeleton className="w-full h-64 rounded-lg mb-4" />
-        <div className="space-y-4">
-          <Skeleton className="h-6 w-full" />
-          <Skeleton className="h-6 w-full" />
-          <Skeleton className="h-6 w-full" />
-          <Skeleton className="h-6 w-full" />
-          <Skeleton className="h-6 w-full" />
-        </div>
+        <Skeleton className="w-full h-96 rounded-[3rem] mb-8" />
       </div>
     );
   }
 
-  if (!event) {
-    return null; // Should be handled by navigate('/404')
-  }
+  if (!event) return null;
 
   const googleMapsLink = event.google_maps_link || (event.full_address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
     : '#');
 
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
-
   const startDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
-
   const dateDisplay = endDate && !isSameDay(startDate, endDate)
     ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`
     : format(startDate, 'MMM d, yyyy');
 
   return (
-    <div className="w-full max-w-2xl">
-      <div className="flex justify-start mb-6">
-        <Button variant="outline" onClick={() => navigate(-1)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+    <div className="w-full max-w-6xl px-4">
+      <div className="flex justify-start mb-8">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-full hover:bg-primary/10 text-primary font-bold">
+          <ArrowLeft className="mr-2 h-5 w-5" /> Back to Events
         </Button>
       </div>
-      <h2 className="text-3xl font-bold text-foreground mb-6 text-center">{event.event_name}</h2>
 
-      {event.image_url && (
-        <div className="mb-6">
-          <a href={event.image_url} target="_blank" rel="noopener noreferrer">
-            <img
-              src={event.image_url}
-              alt={`Image for ${event.event_name}`}
-              className="w-full h-80 object-cover rounded-lg shadow-lg"
-              loading="lazy"
-            />
-          </a>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="lg:col-span-7 space-y-8">
+          {event.image_url ? (
+            <div className="relative w-full aspect-video rounded-[3rem] overflow-hidden shadow-2xl">
+              <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-full aspect-video bg-gradient-to-br from-primary/20 via-accent/10 to-secondary rounded-[3rem] flex items-center justify-center">
+              <span className="text-primary/30 font-heading text-6xl italic font-bold tracking-tighter">SoulFlow</span>
+            </div>
+          )}
+
+          <div className="space-y-6">
+            <div className="flex flex-wrap gap-3">
+              {event.event_type && (
+                <Badge className="bg-primary/10 text-primary border-none px-4 py-1.5 rounded-full font-black tracking-widest text-[10px]">
+                  {event.event_type.toUpperCase()}
+                </Badge>
+              )}
+            </div>
+            <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground leading-tight">
+              {event.event_name}
+            </h1>
+            <div className="flex flex-wrap items-center gap-6 text-muted-foreground font-medium">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <span>{dateDisplay}</span>
+              </div>
+              {event.event_time && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <span>{event.event_time}</span>
+                </div>
+              )}
+            </div>
+            <div className="prose prose-lg dark:prose-invert max-w-none">
+              <p className="text-xl leading-relaxed text-foreground/80 whitespace-pre-wrap">
+                {event.description}
+              </p>
+            </div>
+          </div>
         </div>
-      )}
 
-      <Card className="shadow-lg rounded-lg border-none dark:bg-secondary dark:border-border">
-        <CardHeader>
-          <CardDescription className="flex items-center text-muted-foreground mt-2">
-            <Calendar className="mr-2 h-4 w-4 text-primary" />
-            {dateDisplay}
-            {event.event_time && (
-              <>
-                <Clock className="ml-4 mr-2 h-4 w-4 text-primary" />
-                {event.event_time}
-              </>
-            )}
-          </CardDescription>
-          {(event.place_name || event.full_address || event.geographical_state) && (
-            <CardDescription className="flex flex-col items-start text-muted-foreground mt-1">
-              {event.place_name && (
-                <div className="flex items-center mb-1">
-                  <MapPin className="mr-2 h-4 w-4 text-primary" />
-                  <Badge variant="secondary" className="bg-accent text-accent-foreground text-base py-1 px-2">
-                    {event.place_name}
-                  </Badge>
-                </div>
-              )}
+        <div className="lg:col-span-5 space-y-8">
+          <Card className="organic-card rounded-[2.5rem] p-8 space-y-8 sticky top-32">
+            <div className="space-y-6">
+              <h3 className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.3em]">Event Details</h3>
+              
               {event.full_address && (
-                <div className="flex items-center">
-                  {!event.place_name && <MapPin className="mr-2 h-4 w-4 text-primary" />}
-                  <a
-                    href={googleMapsLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline text-base"
-                  >
-                    {event.full_address}
-                  </a>
+                <div className="flex items-start gap-4 group">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground">{event.place_name || 'Location'}</p>
+                    <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      {event.full_address}
+                    </a>
+                  </div>
                 </div>
               )}
-              {event.geographical_state && (
-                <div className="flex items-center mt-1">
-                  <MapPin className="mr-2 h-4 w-4 text-primary" />
-                  <Badge variant="secondary" className="bg-accent text-accent-foreground text-base py-1 px-2">
-                    {event.geographical_state}
-                  </Badge>
-                </div>
-              )}
-            </CardDescription>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {event.description && (
-            <div>
-              <h3 className="font-semibold text-foreground mb-2">Description:</h3>
-              <p className="text-foreground whitespace-pre-wrap">{event.description}</p>
-            </div>
-          )}
-          {event.price && (
-            <p className="flex items-start text-foreground">
-              <DollarSign className="mr-2 h-5 w-5 text-primary" />
-              <span className="font-medium">Price:&nbsp;</span> {formatPrice(event.price)}
-              {event.price.toLowerCase() === 'free' && (
-                <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">Free</Badge>
-              )}
-            </p>
-          )}
-          {event.ticket_link && (
-            <div className="flex items-center">
-              <LinkIcon className="mr-2 h-5 w-5 text-primary" />
-              <a
-                href={event.ticket_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline text-base transition-all duration-300 ease-in-out transform hover:scale-105"
-                onClick={handleTicketLinkClick}
-              >
-                Ticket/Booking Link
-              </a>
-            </div>
-          )}
-          {event.discount_code && (
-            <div className="flex items-center text-foreground">
-              <h4 className="text-sm font-semibold text-muted-foreground mr-2">DISCOUNT CODE:</h4>
-              <Badge variant="secondary" className="bg-primary/10 text-primary text-base py-1 px-2 mr-2">
-                {event.discount_code}
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleCopyCode(event.discount_code!)}
-                className="transition-all duration-300 ease-in-out transform hover:scale-105"
-              >
-                <Copy className="mr-2 h-4 w-4" /> Copy Code
-              </Button>
-            </div>
-          )}
-          {event.special_notes && (
-            <div>
-              <h3 className="font-semibold text-foreground mb-2 flex items-center">
-                <Info className="mr-2 h-5 w-5 text-primary" />
-                Special Notes:
-              </h3>
-              <p className="text-foreground whitespace-pre-wrap pl-7">{event.special_notes}</p>
-            </div>
-          )}
-          {event.organizer_contact && (
-            <p className="flex items-center text-foreground">
-              <User className="mr-2 h-5 w-5 text-primary" />
-              <span className="font-medium">Organizer:&nbsp;</span> {event.organizer_contact} {/* Added space */}
-            </p>
-          )}
-          {event.event_type && (
-            <p className="flex items-center text-foreground">
-              <Sparkles className="mr-2 h-5 w-5 text-primary" /> {/* Changed Tag to Sparkles */}
-              <span className="font-medium">Event Type:&nbsp;</span> {event.event_type} {/* Added space */}
-            </p>
-          )}
-        </CardContent>
-      </Card>
 
-      <div className="flex flex-wrap justify-end gap-2 mt-6">
-        <BookmarkButton eventId={event.id} size="default" className="w-full sm:w-auto" />
-        <Button variant="outline" onClick={() => navigate(-1)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
-        {event.full_address && (
-          <a href={googleMapsLink} target="_blank" rel="noopener noreferrer">
-            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-              <MapPin className="mr-2 h-4 w-4" /> View on Map {/* Changed Globe to MapPin */}
-            </Button>
-          </a>
-        )}
-        <Button onClick={() => {
-          const eventUrl = `${window.location.origin}/events/${event.id}`;
-          navigator.clipboard.writeText(eventUrl)
-            .then(() => toast.success('Event link copied to clipboard!'))
-            .catch(() => toast.error('Failed to copy link. Please try again.'));
-        }} className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-          <Share2 className="mr-2 h-4 w-4" /> Share Event
-        </Button>
-        {isCreatorOrAdmin && (
-          <>
-            <Button variant="outline" onClick={() => navigate(`/edit-event/${event.id}`)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
-              <Edit className="mr-2 h-4 w-4" /> Edit
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="transition-all duration-300 ease-in-out transform hover:scale-105">
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+              {event.price && (
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <DollarSign className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground">{formatPrice(event.price)}</p>
+                    <p className="text-sm text-muted-foreground">Admission Fee</p>
+                  </div>
+                </div>
+              )}
+
+              {event.organizer_contact && (
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground">{event.organizer_contact}</p>
+                    <p className="text-sm text-muted-foreground">Organizer</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              {event.ticket_link && (
+                <Button 
+                  onClick={handleTicketLinkClick}
+                  className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/80 text-primary-foreground text-lg font-black shadow-xl transition-transform hover:scale-[1.02]"
+                >
+                  <LinkIcon className="mr-2 h-5 w-5" /> Get Tickets
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="dark:bg-card dark:border-border">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-foreground">Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-muted-foreground">
-                    This action cannot be undone. This will permanently delete your event
-                    and remove its data from our servers.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/80 text-destructive-foreground">Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
-        )}
+              )}
+              
+              <div className="flex gap-3">
+                <BookmarkButton eventId={event.id} size="default" className="flex-1 h-14 rounded-2xl bg-secondary/50 hover:bg-secondary border-none" />
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    const url = `${window.location.origin}/events/${event.id}`;
+                    navigator.clipboard.writeText(url).then(() => toast.success('Link copied!'));
+                  }}
+                  className="flex-1 h-14 rounded-2xl bg-secondary/50 hover:bg-secondary border-none"
+                >
+                  <Share2 className="mr-2 h-5 w-5" /> Share
+                </Button>
+              </div>
+            </div>
+
+            {event.discount_code && (
+              <div className="p-6 bg-primary/5 rounded-2xl border border-dashed border-primary/20 text-center space-y-2">
+                <p className="text-[10px] font-black text-primary/60 uppercase tracking-widest">Discount Code</p>
+                <div className="flex items-center justify-center gap-3">
+                  <code className="text-2xl font-black text-primary tracking-wider">{event.discount_code}</code>
+                  <Button variant="ghost" size="icon" onClick={() => handleCopyCode(event.discount_code!)} className="h-8 w-8 rounded-full hover:bg-primary/10">
+                    <Copy className="h-4 w-4 text-primary" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {isCreatorOrAdmin && (
+              <div className="pt-6 border-t border-border/50 flex gap-3">
+                <Button variant="outline" onClick={() => navigate(`/edit-event/${event.id}`)} className="flex-1 rounded-xl">
+                  <Edit className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="flex-1 rounded-xl">
+                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-[2rem]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="font-heading text-2xl">Delete Event?</AlertDialogTitle>
+                      <AlertDialogDescription>This action cannot be undone. This event will be permanently removed.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive rounded-xl">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
+          </Card>
+        </div>
       </div>
     </div>
   );

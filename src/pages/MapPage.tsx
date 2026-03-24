@@ -3,12 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Loader2, Frown, PlusCircle } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Loader2, Frown, PlusCircle, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import MapContainer from '@/components/MapContainer';
-import { Event } from '@/types/event'; // Import the shared Event type
+import { Event } from '@/types/event';
 
 const MapPage = () => {
   const [loading, setLoading] = useState(true);
@@ -16,12 +16,10 @@ const MapPage = () => {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
 
-  // Callback to receive the map instance from MapContainer
   const handleMapLoad = useCallback((map: google.maps.Map) => {
     setMapInstance(map);
   }, []);
 
-  // Effect to fetch events
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
@@ -33,8 +31,8 @@ const MapPage = () => {
         .select('*')
         .not('full_address', 'is', null)
         .gte('event_date', todayFormatted)
-        .eq('approval_status', 'approved') // Filter by new approval_status
-        .eq('is_deleted', false) // Exclude deleted events
+        .eq('approval_status', 'approved')
+        .eq('is_deleted', false)
         .order('event_date', { ascending: true });
 
       if (error) {
@@ -49,12 +47,10 @@ const MapPage = () => {
     fetchEvents();
   }, []);
 
-  // Effect to add/update markers when events or mapInstance change
   useEffect(() => {
     if (mapInstance && events.length > 0) {
-      // Clear existing markers
       markers.forEach(marker => marker.setMap(null));
-      setMarkers([]); // Reset markers array
+      setMarkers([]);
 
       const geocoder = new window.google.maps.Geocoder();
       const infoWindow = new window.google.maps.InfoWindow();
@@ -70,26 +66,28 @@ const MapPage = () => {
                 title: event.event_name,
                 icon: {
                   path: window.google.maps.SymbolPath.CIRCLE,
-                  scale: 8,
+                  scale: 10,
                   fillColor: 'hsl(var(--primary))',
                   fillOpacity: 0.9,
-                  strokeWeight: 0,
+                  strokeWeight: 2,
+                  strokeColor: '#ffffff',
                 },
               });
 
               const contentString = `
-                <div class="p-2 dark:bg-card dark:text-foreground">
-                  <h3 class="text-lg font-semibold text-primary mb-1">${event.event_name}</h3>
-                  <p class="text-sm text-muted-foreground flex items-center mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar mr-1 text-primary" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-                    ${event.event_date ? format(new Date(event.event_date), 'PPP') : 'Date TBD'}
-                    ${event.event_time ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock ml-2 mr-1 text-primary" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${event.event_time}` : ''}
-                  </p>
-                  ${event.place_name ? `<p class="text-sm text-muted-foreground flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-1 text-primary" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${event.place_name}</p>` : ''}
-                  ${event.full_address ? `<p class="text-sm text-muted-foreground flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-1 text-primary" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${event.full_address}</p>` : ''}
-                  ${event.price ? `<p class="text-sm text-muted-foreground flex items-center mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign mr-1 text-primary" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>${event.price}</p>` : ''}
-                  ${event.ticket_link ? `<p class="text-sm text-primary hover:underline flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link mr-1 text-primary" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07L9.5 3.5"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07L14.5 20.5"/></svg><a href="${event.ticket_link}" target="_blank" rel="noopener noreferrer">Ticket Link</a></p>` : ''}
-                  <a href="/events/${event.id}" class="text-primary hover:underline text-sm mt-2 block">View Details</a>
+                <div class="p-4 max-w-[280px] font-sans">
+                  <h3 class="text-lg font-black text-primary mb-2 leading-tight">${event.event_name}</h3>
+                  <div class="space-y-2 text-sm text-muted-foreground">
+                    <p class="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+                      ${event.event_date ? format(new Date(event.event_date), 'PPP') : 'Date TBD'}
+                    </p>
+                    <p class="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                      ${event.place_name || event.full_address}
+                    </p>
+                  </div>
+                  <a href="/events/${event.id}" class="mt-4 block w-full text-center py-2 bg-primary text-white rounded-lg font-bold text-xs transition-opacity hover:opacity-90">View Details</a>
                 </div>
               `;
 
@@ -98,15 +96,12 @@ const MapPage = () => {
                 infoWindow.open(mapInstance, marker);
               });
               newMarkers.push(marker);
-            } else {
-              console.warn(`MapPage: Geocoding failed for address: "${event.full_address}", status: ${status}`);
             }
           });
         }
       });
       setMarkers(newMarkers);
 
-      // Cleanup function for markers
       return () => {
         newMarkers.forEach(marker => marker.setMap(null));
       };
@@ -114,42 +109,46 @@ const MapPage = () => {
   }, [events, mapInstance]);
 
   return (
-    <div className="w-full max-w-2xl">
-      <h1 className="text-4xl font-bold text-foreground mb-4 text-center">Event Map</h1>
-      <p className="text-xl text-muted-foreground mb-6 text-center">
-        Explore soulful events near you on the map.
-      </p>
-      <div className="w-full h-[600px] rounded-lg shadow-md border border-border relative">
-        {/* Always render MapContainer, and let it handle its own initialization */}
+    <div className="w-full max-w-6xl px-4">
+      <div className="mb-12 text-center space-y-4">
+        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
+          <Sparkles className="h-3 w-3 mr-2" /> Explore Nearby
+        </div>
+        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Event Map</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
+          Discover soulful gatherings vibrating in your local area.
+        </p>
+      </div>
+
+      <div className="w-full h-[700px] rounded-[3rem] shadow-2xl border border-border relative overflow-hidden organic-card">
         <MapContainer
           onMapLoad={handleMapLoad}
           center={{ lat: -37.8136, lng: 144.9631 }}
           zoom={10}
         />
-        {/* Show loading overlay if mapInstance is not yet available or events are loading */}
         {(loading || !mapInstance) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary z-10 rounded-lg">
-            <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-            <p className="text-xl font-semibold text-foreground mb-2">Loading map and events...</p>
-            <p className="text-muted-foreground text-center">This might take a moment as we fetch event locations.</p>
-            <Skeleton className="w-3/4 h-48 mt-8 rounded-lg" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary/90 backdrop-blur-sm z-10">
+            <Loader2 className="h-16 w-16 text-primary animate-spin mb-6" />
+            <p className="text-2xl font-black font-heading text-foreground">Loading Map...</p>
+            <p className="text-muted-foreground font-medium mt-2">Fetching soulful locations across Australia.</p>
           </div>
         )}
       </div>
-      <p className="text-center text-sm text-muted-foreground mt-4">
-        <span className="font-semibold">Note:</span> This map functionality, including address lookups, relies on the Google Maps API.
-        It is currently operating on free Google API credits, which means its availability and performance may vary
-        and could stop working unexpectedly if usage limits are exceeded. This is a new feature and an ongoing learning experience!
-      </p>
+
+      <div className="mt-12 p-8 bg-secondary/30 rounded-[2.5rem] border border-border/50 text-center max-w-3xl mx-auto">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          <span className="font-black text-foreground uppercase tracking-widest text-[10px] block mb-2">Note</span>
+          This map functionality relies on the Google Maps API. It is currently operating on free credits, so availability may vary. We appreciate your patience as we refine this feature!
+        </p>
+      </div>
+
       {!loading && events.length === 0 && (
-        <div className="p-8 bg-secondary rounded-lg border border-border text-center mt-6">
-          <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg font-semibold text-foreground mb-4">
-            No events with addresses found to display on the map.
-          </p>
+        <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20 mt-12">
+          <Frown className="h-20 w-20 text-primary/20 mx-auto mb-8" />
+          <p className="text-2xl font-bold text-muted-foreground mb-8">No events with addresses found to display.</p>
           <Link to="/submit-event">
-            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add the First Event!
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+              <PlusCircle className="mr-3 h-7 w-7" /> Add the First Event!
             </Button>
           </Link>
         </div>
