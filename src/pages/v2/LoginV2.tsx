@@ -101,7 +101,7 @@ const LoginV2 = () => {
               },
             },
           }}
-          theme="dark"
+          theme="light"
           redirectTo={getRedirectUrl()}
           localization={{
             variables: {

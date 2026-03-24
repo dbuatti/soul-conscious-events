@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
 import { toast } from 'sonner';
-import { getRedirectUrl } from '@/lib/utils'; // Import getRedirectUrl
+import { getRedirectUrl } from '@/lib/utils';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -13,14 +13,13 @@ const Login = () => {
 
   useEffect(() => {
     if (!isLoading && user) {
-      // If user is already logged in, redirect to old home
       navigate('/old');
     }
   }, [user, isLoading, navigate]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-background dark:to-background">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
         <p className="text-lg text-foreground">Loading authentication...</p>
       </div>
     );
@@ -53,8 +52,8 @@ const Login = () => {
               },
             },
           }}
-          theme="dark" // Set default theme to dark for Auth UI
-          redirectTo={`${getRedirectUrl()}old`} // Use the dynamic redirect URL, append /old for this specific route
+          theme="light"
+          redirectTo={`${getRedirectUrl()}old`}
           localization={{
             variables: {
               sign_in: {
