@@ -4,6 +4,7 @@ import { Event } from '@/types/event';
 import { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
 
 export const useEventFilters = (allEvents: Event[]) => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
     date: 'All Upcoming',
     category: [],
@@ -18,6 +19,18 @@ export const useEventFilters = (allEvents: Event[]) => {
     const tomorrow = addDays(now, 1);
 
     return allEvents.filter(event => {
+      // Search Filtering
+      if (searchTerm) {
+        const lowerSearch = searchTerm.toLowerCase();
+        const matchesSearch = 
+          event.event_name.toLowerCase().includes(lowerSearch) ||
+          (event.description?.toLowerCase().includes(lowerSearch)) ||
+          (event.place_name?.toLowerCase().includes(lowerSearch)) ||
+          (event.geographical_state?.toLowerCase().includes(lowerSearch));
+        
+        if (!matchesSearch) return false;
+      }
+
       const eventDate = parseISO(event.event_date);
 
       // Date Filtering
@@ -64,11 +77,13 @@ export const useEventFilters = (allEvents: Event[]) => {
       
       return true;
     });
-  }, [allEvents, filters]);
+  }, [allEvents, filters, searchTerm]);
 
   return {
     filters,
     setFilters,
+    searchTerm,
+    setSearchTerm,
     filteredEvents,
   };
 };

@@ -3,8 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isPast, isSameDay, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, FilterX } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, FilterX, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
@@ -35,7 +36,7 @@ const EventsListV2 = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const { filters, setFilters, filteredEvents } = useEventFilters(allEvents);
+  const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents } = useEventFilters(allEvents);
 
   const fetchFavouriteVenues = useCallback(async () => {
     if (!user) {
@@ -153,6 +154,7 @@ const EventsListV2 = () => {
   };
 
   const handleClearFilters = () => {
+    setSearchTerm('');
     setFilters({
       date: 'All Upcoming',
       category: [],
@@ -163,21 +165,32 @@ const EventsListV2 = () => {
   };
 
   const selectedDayEvents = filteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
-  const hasActiveFilters = filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
+  const hasActiveFilters = searchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
 
   return (
     <div className="w-full max-w-2xl">
-      <div className="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <FilterDropdownsV2
-          currentFilters={filters}
-          onFilterChange={setFilters}
-          availableVenues={availableVenues}
-          favouriteVenues={favouriteVenues}
-          onToggleFavouriteVenue={handleToggleFavouriteVenue}
-          isUserLoggedIn={!!user}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
+      <div className="mb-6 space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search events, venues, or locations..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-11 rounded-xl border-border bg-card focus-visible:ring-primary"
+          />
+        </div>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <FilterDropdownsV2
+            currentFilters={filters}
+            onFilterChange={setFilters}
+            availableVenues={availableVenues}
+            favouriteVenues={favouriteVenues}
+            onToggleFavouriteVenue={handleToggleFavouriteVenue}
+            isUserLoggedIn={!!user}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        </div>
       </div>
 
       {loading ? (

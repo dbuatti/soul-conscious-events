@@ -52,9 +52,9 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const displayPrice = event.price ? event.price.replace(/\$/g, '') : '';
 
   return (
-    <Card className="group flex flex-row shadow-md rounded-xl border border-border hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer overflow-hidden dark:bg-card dark:border-border">
+    <Card className="group flex flex-col sm:flex-row shadow-md rounded-xl border border-border hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer overflow-hidden dark:bg-card dark:border-border">
       {event.image_url && (
-        <div className="relative w-1/3 sm:w-2/5 flex-shrink-0 aspect-square sm:aspect-video overflow-hidden">
+        <div className="relative w-full sm:w-1/3 md:w-2/5 flex-shrink-0 aspect-video sm:aspect-square md:aspect-video overflow-hidden">
           <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
           
