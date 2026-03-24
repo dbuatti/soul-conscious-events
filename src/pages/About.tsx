@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, CalendarDays, Heart, MessageSquare } from 'lucide-react';
+import { Sparkles, CalendarDays, Heart, MessageSquare, Compass, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const About = () => {
@@ -11,89 +11,89 @@ const About = () => {
         <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
           <Sparkles className="h-3 w-3 mr-2" /> Our Story
         </div>
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">About SoulFlow</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-          Hi, I’m Daniele — and I created SoulFlow as a space to bring together soulful, heart-centred events from across Australia.
+        <h1 className="text-5xl sm:text-7xl font-black font-heading tracking-tight text-foreground">About SoulFlow</h1>
+        <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-medium leading-relaxed">
+          SoulFlow was born from a simple desire: to find and share the moments that make us feel truly alive.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        <Card className="organic-card rounded-[2.5rem] p-4">
+        <Card className="organic-card rounded-[2.5rem] p-6">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
-              <Sparkles className="mr-3 h-8 w-8 text-primary" /> My Vision
+              <Compass className="mr-3 h-8 w-8 text-primary" /> The Vision
             </CardTitle>
           </CardHeader>
           <CardContent className="text-foreground leading-relaxed space-y-4 text-lg">
             <p>
-              My hope is for SoulFlow to become a living, breathing hub for connection and inspiration — a space where you can discover events that feel aligned, heartfelt, and authentic.
+              I created SoulFlow as a sanctuary for heart-centred events across Australia. My hope is for this to become a living, breathing hub for intentional connection—a space where you can discover gatherings that feel aligned, heartfelt, and authentic.
             </p>
             <p>
-              In a world that can sometimes feel noisy or disconnected, I believe that shared experiences — singing together, moving together, meditating, learning — have the power to remind us of our humanity.
+              In a world that can often feel noisy or disconnected, I believe that shared experiences—singing together, moving together, meditating, and learning—have the power to remind us of our shared humanity.
             </p>
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-4">
+        <Card className="organic-card rounded-[2.5rem] p-6">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
-              <CalendarDays className="mr-3 h-8 w-8 text-primary" /> What You Can Do
+              <Users className="mr-3 h-8 w-8 text-primary" /> Your Journey
             </CardTitle>
           </CardHeader>
           <CardContent className="text-foreground leading-relaxed space-y-4 text-lg">
             <p className="flex items-start">
-              <span className="font-black text-primary mr-3">•</span> Browse a curated list of upcoming soulful gatherings — from sound journeys to community circles.
+              <span className="font-black text-primary mr-3">•</span> <span className="font-bold">Discover the Unseen:</span> Browse a curated collection of soulful gatherings, from deep sound journeys to intimate community circles.
             </p>
             <p className="flex items-start">
-              <span className="font-black text-primary mr-3">•</span> Use the calendar view to see what’s coming up this week or month at a glance.
+              <span className="font-black text-primary mr-3">•</span> <span className="font-bold">Plan with Intention:</span> Use our calendar and map views to see what’s vibrating in your area this week or month.
             </p>
             <p className="flex items-start">
-              <span className="font-black text-primary mr-3">•</span> Share your own events easily with our AI-powered helper.
+              <span className="font-black text-primary mr-3">•</span> <span className="font-bold">Share Your Magic:</span> Easily contribute your own events to the community using our AI-powered submission helper.
             </p>
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-4 md:col-span-2">
+        <Card className="organic-card rounded-[2.5rem] p-8 md:col-span-2">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-primary flex items-center justify-center font-heading">
-              <Heart className="mr-3 h-8 w-8 text-primary" /> SoulFlow x HeartBeats
+            <CardTitle className="text-4xl font-bold text-primary flex items-center justify-center font-heading">
+              <Heart className="mr-3 h-10 w-10 text-primary" /> SoulFlow x HeartBeats
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-foreground leading-relaxed flex flex-col items-center text-center max-w-3xl mx-auto">
+          <CardContent className="text-foreground leading-relaxed flex flex-col items-center text-center max-w-4xl mx-auto">
             <img
               src="/heartbeats-logo.png"
               alt="HeartBeats Logo"
               className="h-32 w-auto mb-8 object-contain rounded-2xl"
             />
-            <p className="text-lg mb-8">
-              I’m really excited to be collaborating with HeartBeats — a collective that hosts events celebrating expression, music, growth, and connection. If you’re promoting your event on Instagram, tag <span className="font-black text-primary">@heartbeatslive</span> — they love resharing community events that align with the same spirit.
+            <p className="text-xl mb-8 leading-relaxed">
+              We are proud to collaborate with <span className="font-bold">HeartBeats</span>—a collective dedicated to celebrating expression, music, growth, and connection. If you’re promoting your event on Instagram, tag <span className="font-black text-primary">@heartbeatslive</span>. They love amplifying community events that align with the spirit of conscious gathering.
             </p>
-            <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-8 py-6 text-lg font-black shadow-xl transition-transform hover:scale-105">
+            <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-10 py-8 text-xl font-black shadow-xl transition-transform hover:scale-105">
               <a href="https://www.instagram.com/heartbeatslive" target="_blank" rel="noopener noreferrer">
-                Follow HeartBeats
+                Follow the Vibration
               </a>
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-4 md:col-span-2 bg-secondary/30 border-dashed">
+        <Card className="organic-card rounded-[2.5rem] p-8 md:col-span-2 bg-secondary/30 border-dashed">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-foreground flex items-center font-heading">
-              <MessageSquare className="mr-3 h-8 w-8 text-accent" /> A Work in Progress
+              <MessageSquare className="mr-3 h-8 w-8 text-accent" /> A Co-Created Space
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-foreground leading-relaxed space-y-4 text-lg">
+          <CardContent className="text-foreground leading-relaxed space-y-6 text-lg">
             <p>
-              SoulFlow is still a prototype — something I’m building and learning from as I go. Your feedback honestly means the world to me. It helps shape how this platform grows and evolves.
+              SoulFlow is currently a prototype—a project I’m building and learning from in real-time. Your feedback is the compass that helps this platform grow and evolve.
             </p>
             <p>
               If you have suggestions, ideas, or spot something that could be improved, please reach out through the{' '}
               <Link to="/contact" className="text-primary hover:underline font-black">
                 Contact page
-              </Link>.
+              </Link>. Every message helps us build a better home for the community.
             </p>
             <div className="pt-8 text-center">
-              <p className="font-heading text-2xl text-primary font-bold">Warmly, Daniele</p>
+              <p className="font-heading text-3xl text-primary font-bold italic">Warmly, Daniele</p>
             </div>
           </CardContent>
         </Card>
