@@ -195,7 +195,7 @@ const EventEditPage: React.FC = () => {
 
   if (isSessionLoading || loadingEvent) {
     return (
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-6xl px-4">
         <Skeleton className="h-10 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/2 mb-6" />
         <div className="space-y-4">
@@ -207,12 +207,17 @@ const EventEditPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-2xl">
-      <h2 className="text-3xl font-bold text-foreground mb-6 text-center font-heading">
-        {isDuplicating ? 'Duplicate Event' : 'Edit Event'}
-      </h2>
+    <div className="w-full max-w-6xl px-4">
+      <div className="mb-12 text-center space-y-4">
+        <h2 className="text-5xl font-black text-foreground font-heading tracking-tight">
+          {isDuplicating ? 'Duplicate Event' : 'Edit Event'}
+        </h2>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
+          {isDuplicating ? 'Create a new event based on this one.' : 'Update your event details below.'}
+        </p>
+      </div>
 
-      <div className="bg-card p-6 rounded-xl shadow-lg border border-border">
+      <div className="bg-card p-8 sm:p-12 rounded-[3rem] shadow-xl border border-border organic-card">
         <EventForm
           form={form}
           onSubmit={onSubmit}

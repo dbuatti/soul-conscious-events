@@ -183,15 +183,17 @@ const SubmitEvent = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-4xl font-bold text-foreground mb-6 text-center font-heading">Submit Your Event</h2>
-        <p className="text-xl text-muted-foreground mb-12 text-center leading-relaxed">
+      <div className="mb-12 text-center space-y-4">
+        <h2 className="text-5xl font-black text-foreground font-heading tracking-tight">Submit Your Event</h2>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
           Share your soulful event with the community.
         </p>
+      </div>
 
+      <div className="grid grid-cols-1 gap-8">
         <AiParsingSection onAiParseComplete={handleAiParseComplete} />
 
-        <div className="bg-card p-8 sm:p-12 rounded-[3rem] shadow-xl border border-border">
+        <div className="bg-card p-8 sm:p-12 rounded-[3rem] shadow-xl border border-border organic-card">
           <EventForm
             form={form}
             onSubmit={onSubmit}
