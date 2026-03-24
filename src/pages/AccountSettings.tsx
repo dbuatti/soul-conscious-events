@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Loader2, User as UserIcon, Mail, Globe, SunMoon } from 'lucide-react'; // Added SunMoon icon
+import { Settings, Loader2, User as UserIcon, Mail, Globe, SunMoon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { countries } from '@/lib/countries';
-import { ThemeToggle } from '@/components/ThemeToggle'; // Import ThemeToggle
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const formSchema = z.object({
   firstName: z.string().optional().or(z.literal('')),
@@ -61,22 +61,19 @@ const AccountSettings = () => {
         .eq('id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user profile:', error);
-        toast.error('Failed to load profile information.');
+        toast.error('Failed to load profile.');
       } else if (data) {
         form.reset({
           firstName: data.first_name || '',
           lastName: data.last_name || '',
           username: data.username || '',
-          email: data.email || user.email || '', // Fallback to auth.user email
+          email: data.email || user.email || '',
           country: data.country || '',
         });
       } else {
-        // If no profile exists, populate with auth.user email
-        form.reset({
-          email: user.email || '',
-        });
+        form.reset({ email: user.email || '' });
       }
       setLoadingProfile(false);
     };
@@ -87,10 +84,7 @@ const AccountSettings = () => {
   }, [user, isSessionLoading, form]);
 
   const onSubmit = async (values: AccountSettingsFormValues) => {
-    if (!user) {
-      toast.error('You must be logged in to update your profile.');
-      return;
-    }
+    if (!user) return;
 
     const loadingToastId = toast.loading('Updating profile...');
     try {
@@ -105,164 +99,144 @@ const AccountSettings = () => {
         },
       });
 
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-
-      toast.success('Profile updated successfully!', { id: loadingToastId });
+      if (response.error) throw new Error(response.error.message);
+      toast.success('Profile updated!', { id: loadingToastId });
     } catch (error: any) {
-      console.error('Error updating profile:', error);
-      toast.error(`Failed to update profile: ${error.message}`, { id: loadingToastId });
+      toast.error(`Failed to update: ${error.message}`, { id: loadingToastId });
     }
   };
 
   if (isSessionLoading || loadingProfile) {
     return (
-      <div className="w-full max-w-2xl">
-        <Skeleton className="h-10 w-3/4 mb-4" />
-        <Skeleton className="h-6 w-1/2 mb-6" />
-        <Card className="shadow-lg rounded-lg bg-card border border-border">
-          <CardHeader>
-            <Skeleton className="h-8 w-1/3 mb-2" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-24 ml-auto" />
-          </CardContent>
-        </Card>
+      <div className="w-full max-w-6xl px-4">
+        <Skeleton className="h-16 w-1/3 mb-12" />
+        <div className="max-w-2xl mx-auto space-y-8">
+          <Skeleton className="h-[400px] w-full rounded-[3rem]" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl">
-      <h1 className="text-4xl font-bold text-foreground mb-6 text-center font-heading">Account Settings</h1>
-      <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
-        Manage your profile and preferences here.
-      </p>
+    <div className="w-full max-w-6xl px-4">
+      <div className="mb-16 text-center space-y-4">
+        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
+          <Settings className="h-3 w-3 mr-2" /> Preferences
+        </div>
+        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Account Settings</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
+          Manage your profile and app preferences here.
+        </p>
+      </div>
 
-      <Card className="shadow-lg rounded-lg bg-card border border-border mb-8">
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
-            <Settings className="mr-3 h-6 w-6 text-primary" /> General Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-foreground leading-relaxed">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center">
-                      <UserIcon className="mr-2 h-4 w-4 text-muted-foreground" /> First Name (Optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} className="focus-visible:ring-primary" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center">
-                      <UserIcon className="mr-2 h-4 w-4 text-muted-foreground" /> Last Name (Optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} className="focus-visible:ring-primary" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center">
-                      <UserIcon className="mr-2 h-4 w-4 text-muted-foreground" /> Username (Optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="johndoe" {...field} className="focus-visible:ring-primary" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center">
-                      <Mail className="mr-2 h-4 w-4 text-muted-foreground" /> Email Address
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="john.doe@example.com" {...field} className="focus-visible:ring-primary" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center">
-                      <Globe className="mr-2 h-4 w-4 text-muted-foreground" /> Country (Optional)
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+      <div className="max-w-2xl mx-auto space-y-8">
+        <Card className="organic-card rounded-[3rem] p-8 sm:p-12">
+          <CardHeader className="px-0 pt-0">
+            <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
+              <UserIcon className="mr-3 h-8 w-8 text-primary" /> General Info
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-0 pb-0">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold">First Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John" {...field} className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold">Last Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Doe" {...field} className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">Username</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="focus-visible:ring-primary">
-                          <SelectValue placeholder="Select your country" />
-                        </SelectTrigger>
+                        <Input placeholder="johndoe" {...field} className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary" />
                       </FormControl>
-                      <SelectContent className="bg-card border border-border">
-                        {countries.map((country) => (
-                          <SelectItem key={country.value} value={country.value}>
-                            {country.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end">
-                <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
-                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Changes
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">Email Address</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="john.doe@example.com" {...field} className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">Country</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary">
+                            <SelectValue placeholder="Select your country" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-xl">
+                          {countries.map((country) => (
+                            <SelectItem key={country.value} value={country.value}>
+                              {country.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={form.formState.isSubmitting} className="w-full bg-primary hover:bg-primary/80 text-primary-foreground h-14 rounded-2xl text-lg font-black shadow-xl transition-transform hover:scale-105">
+                  {form.formState.isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Save Changes'}
                 </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
 
-      {/* New Card for Theme Settings */}
-      <Card className="shadow-lg rounded-lg bg-card border border-border">
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold text-primary flex items-center font-heading">
-            <SunMoon className="mr-3 h-6 w-6 text-primary" /> Theme Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-foreground leading-relaxed flex items-center justify-between">
-          <p>Toggle between light and dark mode:</p>
-          <ThemeToggle />
-        </CardContent>
-      </Card>
+        <Card className="organic-card rounded-[3rem] p-8 sm:p-12">
+          <CardHeader className="px-0 pt-0">
+            <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
+              <SunMoon className="mr-3 h-8 w-8 text-primary" /> Appearance
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-0 pb-0 flex items-center justify-between">
+            <p className="text-lg font-medium">Toggle between light and dark mode:</p>
+            <ThemeToggle />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

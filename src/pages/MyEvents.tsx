@@ -3,11 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, PlusCircle, Loader2, UserPlus, CalendarCheck } from 'lucide-react'; // Added UserPlus
+import { Frown, PlusCircle, UserPlus, CalendarCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import UserEventCard from '@/components/UserEventCard';
-import { Event } from '@/types/event'; // Import the shared Event type
+import { Event } from '@/types/event';
 
 const MyEvents: React.FC = () => {
   const { user, isLoading: isSessionLoading } = useSession();
@@ -25,20 +25,14 @@ const MyEvents: React.FC = () => {
       .from('events')
       .select('*')
       .eq('user_id', user.id)
-      .eq('is_deleted', false) // Exclude deleted events
+      .eq('is_deleted', false)
       .order('event_date', { ascending: true });
 
     if (error) {
       console.error('Error fetching user events:', error);
       toast.error('Failed to load your events.');
     } else {
-      // Filter out corrupted IDs (IDs that are too short to be UUIDs)
       const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
-      
-      if (data && data.length !== validEvents.length) {
-        console.warn(`Filtered out ${data.length - validEvents.length} user events with corrupted IDs.`);
-      }
-      
       setEvents(validEvents as Event[]);
     }
     setLoadingEvents(false);
@@ -52,17 +46,13 @@ const MyEvents: React.FC = () => {
 
   if (isSessionLoading || loadingEvents) {
     return (
-      <div className="w-full max-w-2xl">
-        <Skeleton className="h-10 w-3/4 mb-4" />
-        <Skeleton className="h-6 w-1/2 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="w-full max-w-6xl px-4">
+        <Skeleton className="h-16 w-1/3 mb-12" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex flex-col space-y-3">
-              <Skeleton className="h-[200px] w-full rounded-lg" />
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-10 w-full" />
+            <div key={i} className="flex flex-col space-y-8">
+              <Skeleton className="h-[400px] w-full rounded-[3rem]" />
+              <Skeleton className="h-12 w-3/4" />
             </div>
           ))}
         </div>
@@ -72,17 +62,15 @@ const MyEvents: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="w-full max-w-2xl text-center p-8 bg-card rounded-lg border border-border shadow-md">
-        <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-lg font-semibold text-foreground mb-4">
-          Sign up or log in to create and manage your events!
-        </p>
-        <p className="text-muted-foreground mb-6">
-          As a registered user, you can easily submit new events, edit your existing ones, and track their approval status.
+      <div className="w-full max-w-2xl text-center p-12 organic-card rounded-[3rem] shadow-2xl">
+        <UserPlus className="h-20 w-20 text-primary/20 mx-auto mb-8" />
+        <h2 className="text-4xl font-heading font-bold mb-6">Manage Your Events</h2>
+        <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
+          Sign up or log in to create and manage your soulful gatherings on SoulFlow.
         </p>
         <Link to="/login">
-          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
-            <CalendarCheck className="mr-2 h-4 w-4" /> Sign Up / Log In
+          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+            Sign Up / Log In
           </Button>
         </Link>
       </div>
@@ -90,32 +78,38 @@ const MyEvents: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-2xl">
-      <h1 className="text-4xl font-bold text-foreground mb-6 text-center font-heading">My Events</h1>
-      <p className="text-xl text-muted-foreground mb-8 text-center leading-relaxed">
-        Here are all the events you've submitted to SoulFlow.
-      </p>
+    <div className="w-full max-w-6xl px-4">
+      <div className="mb-16 text-center space-y-4">
+        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
+          <CalendarCheck className="h-3 w-3 mr-2" /> Your Contributions
+        </div>
+        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">My Events</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
+          Manage and track the events you've shared with the community.
+        </p>
+      </div>
 
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-end mb-12">
         <Link to="/submit-event">
-          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground transition-all duration-300 ease-in-out transform hover:scale-105">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Event
+          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-8 py-6 text-lg font-black shadow-xl transition-transform hover:scale-105">
+            <PlusCircle className="mr-2 h-6 w-6" /> Add New Event
           </Button>
         </Link>
       </div>
 
       {events.length === 0 ? (
-        <div className="p-8 bg-card rounded-lg border border-border text-center shadow-md">
-          <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg font-semibold text-foreground mb-4">You haven't submitted any events yet.</p>
+        <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20">
+          <Frown className="h-24 w-24 text-primary/20 mx-auto mb-10" />
+          <h3 className="text-4xl font-heading font-bold text-foreground mb-6">No events yet</h3>
+          <p className="text-muted-foreground mb-12 text-xl max-w-sm mx-auto font-medium">You haven't submitted any events to SoulFlow yet.</p>
           <Link to="/submit-event">
-            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
-              <PlusCircle className="mr-2 h-4 w-4" /> Submit Your First Event!
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+              Submit Your First Event
             </Button>
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {events.map((event) => (
             <UserEventCard key={event.id} event={event} onEventDeleted={fetchMyEvents} />
           ))}

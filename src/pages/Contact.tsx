@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Mail } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client'; // Import supabase client
+import { Mail, MessageSquare } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const contactFormSchema = z.object({
   name: z.string().optional(),
@@ -48,104 +48,107 @@ const Contact = () => {
 
     if (error) {
       console.error('Error submitting contact form:', error);
-      toast.error('Failed to send message. Please try again.');
+      toast.error('Failed to send message.');
     } else {
-      toast.success('Thank you for your feedback! Your message has been sent.');
+      toast.success('Thank you! Your message has been sent.');
       form.reset();
     }
   };
 
   return (
-    <div className="w-full max-w-2xl">
-      <h2 className="text-3xl font-bold text-foreground mb-6 text-center">Contact Us</h2>
-      <p className="text-center text-muted-foreground mb-8">
-        We'd love to hear from you! Please use the form below to send us your suggestions, recommendations, or feedback.
-      </p>
+    <div className="w-full max-w-6xl px-4">
+      <div className="mb-16 text-center space-y-4">
+        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
+          <MessageSquare className="h-3 w-3 mr-2" /> Get in Touch
+        </div>
+        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Contact Us</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
+          We'd love to hear from you! Send us your suggestions, recommendations, or feedback.
+        </p>
+      </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Your Name (Optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Doe" {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Your Email (Optional)</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="you@example.com" {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="subject"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Subject</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+      <div className="max-w-2xl mx-auto organic-card p-8 sm:p-12 rounded-[3rem]">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-bold">Your Name (Optional)</FormLabel>
                   <FormControl>
-                    <SelectTrigger className="focus-visible:ring-primary">
-                      <SelectValue placeholder="Select a subject" />
-                    </SelectTrigger>
+                    <Input placeholder="John Doe" {...field} className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary" />
                   </FormControl>
-                  <SelectContent className="dark:bg-card dark:border-border">
-                    <SelectItem value="suggestion">Suggestion</SelectItem>
-                    <SelectItem value="recommendation">Recommendation</SelectItem>
-                    <SelectItem value="feedback">Feedback</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="message"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Message</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Type your message here..." rows={5} {...field} className="focus-visible:ring-primary" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-bold">Your Email (Optional)</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="you@example.com" {...field} className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="flex justify-end">
-            <Button type="submit" disabled={form.formState.isSubmitting} className="transition-all duration-300 ease-in-out transform hover:scale-105 bg-primary hover:bg-primary/80 text-primary-foreground">
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-bold">Subject</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary">
+                        <SelectValue placeholder="Select a subject" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="suggestion">Suggestion</SelectItem>
+                      <SelectItem value="recommendation">Recommendation</SelectItem>
+                      <SelectItem value="feedback">Feedback</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-bold">Message</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Type your message here..." rows={5} {...field} className="rounded-xl bg-secondary/50 border-none focus-visible:ring-primary" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full bg-primary hover:bg-primary/80 text-primary-foreground h-14 rounded-2xl text-lg font-black shadow-xl transition-transform hover:scale-105">
               {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
             </Button>
-          </div>
-        </form>
-      </Form>
+          </form>
+        </Form>
+      </div>
 
-      <div className="mt-10 text-center text-foreground">
-        <p className="flex items-center justify-center text-lg font-medium">
-          <Mail className="mr-2 h-5 w-5 text-primary" />
-          For direct inquiries, you can reach us at:
-        </p>
-        <p className="text-xl font-semibold">
-          daniele.buatti@gmail.com
-        </p>
+      <div className="mt-20 text-center space-y-4">
+        <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-4">
+          <Mail className="h-8 w-8 text-primary" />
+        </div>
+        <p className="text-lg font-medium text-muted-foreground">For direct inquiries, reach us at:</p>
+        <p className="text-3xl font-black text-foreground font-heading">daniele.buatti@gmail.com</p>
       </div>
     </div>
   );
