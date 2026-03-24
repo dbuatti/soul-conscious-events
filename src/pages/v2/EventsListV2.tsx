@@ -3,8 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isPast, isSameDay, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2 } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, FilterX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
@@ -151,7 +152,18 @@ const EventsListV2 = () => {
     setIsEventDetailDialogOpen(true);
   };
 
+  const handleClearFilters = () => {
+    setFilters({
+      date: 'All Upcoming',
+      category: [],
+      venue: [],
+      price: [],
+      state: [],
+    });
+  };
+
   const selectedDayEvents = filteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
+  const hasActiveFilters = filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
 
   return (
     <div className="w-full max-w-2xl">
@@ -182,21 +194,51 @@ const EventsListV2 = () => {
         <>
           {viewMode === 'list' ? (
             <section className="mb-12">
-              <h2 className="text-3xl font-heading font-bold text-foreground mb-6 border-b pb-2 border-border">Events</h2>
-              <div className="grid grid-cols-1 gap-6">
-                {displayedEvents.map(event => (
-                  <EventCardV2
-                    key={event.id}
-                    event={event}
-                    onShare={handleShare}
-                    onDelete={handleDelete}
-                    onViewDetails={handleViewDetails}
-                  />
-                ))}
+              <div className="flex items-center justify-between mb-6 border-b pb-2 border-border">
+                <h2 className="text-3xl font-heading font-bold text-foreground">Events</h2>
+                {hasActiveFilters && (
+                  <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground hover:text-primary">
+                    <FilterX className="mr-2 h-4 w-4" /> Clear Filters
+                  </Button>
+                )}
               </div>
-              {hasMore && (
-                <div className="flex justify-center mt-8">
-                  <Button onClick={handleLoadMore} disabled={loadingMore} className="bg-primary hover:bg-primary/80 text-primary-foreground">
+              
+              {displayedEvents.length > 0 ? (
+                <div className="grid grid-cols-1 gap-6">
+                  {displayedEvents.map(event => (
+                    <EventCardV2
+                      key={event.id}
+                      event={event}
+                      onShare={handleShare}
+                      onDelete={handleDelete}
+                      onViewDetails={handleViewDetails}
+                      isFeaturedToday={isToday(parseISO(event.event_date))}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 bg-secondary/50 rounded-2xl border border-dashed border-border text-center">
+                  <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <h3 className="text-xl font-semibold text-foreground mb-2">No events found</h3>
+                  <p className="text-muted-foreground mb-6">Try adjusting your filters or be the first to share an event!</p>
+                  <div className="flex flex-col sm:flex-row justify-center gap-3">
+                    {hasActiveFilters && (
+                      <Button variant="outline" onClick={handleClearFilters}>
+                        Clear All Filters
+                      </Button>
+                    )}
+                    <Link to="/submit-event">
+                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Your Event
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {hasMore && displayedEvents.length > 0 && (
+                <div className="flex justify-center mt-10">
+                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="min-w-[200px] transition-all hover:bg-primary hover:text-primary-foreground">
                     {loadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Load More Events'}
                   </Button>
                 </div>
@@ -212,18 +254,25 @@ const EventsListV2 = () => {
                 currentMonth={currentMonth}
                 onMonthChange={setCurrentMonth}
               />
-              <div className="mt-8">
-                <h3 className="text-2xl font-heading font-bold text-foreground mb-4 border-b pb-2 border-border">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
+              <div className="mt-10">
+                <h3 className="text-2xl font-heading font-bold text-foreground mb-6 border-b pb-2 border-border">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
                 {selectedDayEvents.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6">
                     {selectedDayEvents.map(event => (
-                      <EventCardV2 key={event.id} event={event} onShare={handleShare} onDelete={handleDelete} onViewDetails={handleViewDetails} />
+                      <EventCardV2 
+                        key={event.id} 
+                        event={event} 
+                        onShare={handleShare} 
+                        onDelete={handleDelete} 
+                        onViewDetails={handleViewDetails}
+                        isFeaturedToday={isToday(parseISO(event.event_date))}
+                      />
                     ))}
                   </div>
                 ) : (
-                  <div className="p-8 bg-secondary rounded-xl border border-border text-center">
-                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-lg font-semibold text-foreground">No events scheduled for this day.</p>
+                  <div className="p-12 bg-secondary/50 rounded-2xl border border-dashed border-border text-center">
+                    <Frown className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium text-muted-foreground">No events scheduled for this day.</p>
                   </div>
                 )}
               </div>
