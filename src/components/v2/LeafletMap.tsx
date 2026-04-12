@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
+import * as L from 'leaflet';
 import { Event } from '@/types/event';
 import { format, parseISO } from 'date-fns';
 import { Calendar, MapPin, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Fix for default marker icons in Leaflet
-const customIcon = new L.DivIcon({
-  html: '<div class="marker-pin"></div>',
-  className: 'custom-div-icon',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-});
+// Fix for default marker icons in Leaflet using a custom DivIcon
+const createCustomIcon = () => {
+  return new L.DivIcon({
+    html: '<div class="marker-pin"></div>',
+    className: 'custom-div-icon',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+};
 
 interface GeocodedEvent extends Event {
   lat: number;
@@ -30,9 +32,9 @@ const MapController = ({ center, zoom }: { center: [number, number], zoom: numbe
   
   useEffect(() => {
     if (center && map) {
-      map.flyTo(center, zoom, {
-        duration: 1.5,
-        easeLinearity: 0.25
+      map.setView(center, zoom, {
+        animate: true,
+        duration: 1.5
       });
     }
   }, [center, zoom, map]);
@@ -44,42 +46,51 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
   const [mapCenter, setMapCenter] = useState<[number, number]>([-25.2744, 133.7751]); // Center of Australia
   const [zoom, setZoom] = useState(4);
+  
+  const customIcon = useMemo(() => createCustomIcon(), []);
 
   useEffect(() => {
     const geocodeEvents = async () => {
       const results: GeocodedEvent[] = [];
       
-      for (const event of events) {
-        if (event.full_address) {
-          try {
-            const cacheKey = `geo_${event.full_address}`;
-            const cached = sessionStorage.getItem(cacheKey);
-            
-            if (cached) {
-              const { lat, lng } = JSON.parse(cached);
-              results.push({ ...event, lat, lng });
-              continue;
-            }
+      // Only geocode events that have a full address
+      const eventsToGeocode = events.filter(e => e.full_address);
 
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address)}&limit=1`
-            );
-            const data = await response.json();
-            
-            if (data && data.length > 0) {
-              const lat = parseFloat(data[0].lat);
-              const lng = parseFloat(data[0].lon);
-              results.push({ ...event, lat, lng });
-              sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
-            }
-          } catch (error) {
-            console.error('Geocoding error:', error);
+      for (const event of eventsToGeocode) {
+        const cacheKey = `geo_${event.full_address}`;
+        const cached = sessionStorage.getItem(cacheKey);
+        
+        if (cached) {
+          try {
+            const { lat, lng } = JSON.parse(cached);
+            results.push({ ...event, lat, lng });
+            continue;
+          } catch (e) {
+            sessionStorage.removeItem(cacheKey);
           }
         }
+
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`
+          );
+          const data = await response.json();
+          
+          if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            results.push({ ...event, lat, lng });
+            sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
+          }
+        } catch (error) {
+          console.error('Geocoding error for address:', event.full_address, error);
+        }
       }
+      
       setGeocodedEvents(results);
 
       if (results.length > 0) {
+        // Center on the first result or calculate bounds
         setMapCenter([results[0].lat, results[0].lng]);
         setZoom(12);
       }
@@ -87,6 +98,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
 
     if (events.length > 0) {
       geocodeEvents();
+    } else {
+      setGeocodedEvents([]);
     }
   }, [events]);
 
@@ -97,6 +110,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         zoom={zoom} 
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%' }}
+        className="z-0"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -110,7 +124,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
             position={[event.lat, event.lng]} 
             icon={customIcon}
           >
-            <Popup>
+            <Popup closeButton={false} className="custom-popup">
               <div className="p-4 min-w-[200px] space-y-3">
                 <h3 className="font-black text-primary text-lg leading-tight">{event.event_name}</h3>
                 <div className="space-y-1 text-xs text-muted-foreground">
