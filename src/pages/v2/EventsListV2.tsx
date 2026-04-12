@@ -16,6 +16,7 @@ import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import { generateRecurringInstances } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const EVENTS_PER_LOAD = 8;
 
@@ -273,7 +274,10 @@ const EventsListV2 = () => {
                 <h2 className="text-5xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
                 <div className="flex items-center gap-3">
                   {searchTerm && <span className="text-xs font-black text-primary/60 uppercase tracking-widest animate-pulse">Searching...</span>}
-                  <div className="text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-4 py-1.5 rounded-full">
+                  <div className={cn(
+                    "text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-4 py-1.5 rounded-full transition-all duration-500",
+                    filteredEvents.length > 0 && "text-primary/80"
+                  )}>
                     {filteredEvents.length} {filteredEvents.length === 1 ? 'Event' : 'Events'} Found
                   </div>
                 </div>

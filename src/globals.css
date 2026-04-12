@@ -101,6 +101,11 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-primary/30 rounded-full border-4 border-solid border-secondary hover:bg-primary/50 transition-colors;
   }
+
+  /* Custom Focus States */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
 }
 
 .organic-card {
@@ -115,7 +120,17 @@
   animation: fadeIn 0.8s ease-out forwards;
 }
 
+.pop-in {
+  animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }

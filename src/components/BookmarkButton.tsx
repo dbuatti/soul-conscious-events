@@ -18,6 +18,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
   const { user, isLoading: isSessionLoading } = useSession();
   const [isBookmarked, setIsBookmarked] = useState(initialIsBookmarked);
   const [loading, setLoading] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const baseEventId = getBaseEventId(eventId);
   const isIdValid = isValidEventId(eventId);
@@ -54,6 +55,8 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
     }
 
     setLoading(true);
+    setIsAnimating(true);
+    
     if (isBookmarked) {
       const { error } = await supabase
         .from('user_bookmarks')
@@ -75,7 +78,9 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
         toast.success('Event bookmarked!');
       }
     }
+    
     setLoading(false);
+    setTimeout(() => setIsAnimating(false), 300);
   };
 
   return (
@@ -84,9 +89,11 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
       size={size}
       onClick={handleBookmarkToggle}
       disabled={loading || isSessionLoading || !isIdValid}
+      aria-label={isBookmarked ? "Remove from Bookmarks" : "Add to Bookmarks"}
       className={cn(
         "transition-all duration-300 ease-in-out transform hover:scale-105",
         isBookmarked ? "bg-primary text-primary-foreground hover:bg-primary/80" : "text-muted-foreground hover:bg-accent",
+        isAnimating && "pop-in",
         className
       )}
       title={isBookmarked ? "Remove from Bookmarks" : "Add to Bookmarks"}
