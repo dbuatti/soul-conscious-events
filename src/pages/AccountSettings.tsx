@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Loader2, User as UserIcon, Mail, Globe, SunMoon } from 'lucide-react';
+import { Loader2, User as UserIcon, SunMoon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -119,14 +119,8 @@ const AccountSettings = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <div className="mb-16 text-center space-y-4">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
-          <Settings className="h-3 w-3 mr-2" /> Preferences
-        </div>
+      <div className="mb-16 text-center">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Account Settings</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-          Manage your profile and app preferences here.
-        </p>
       </div>
 
       <div className="max-w-2xl mx-auto space-y-8">

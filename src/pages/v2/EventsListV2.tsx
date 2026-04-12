@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO, isToday, isPast, isSameDay, subDays } from 'date-fns';
+import { format, parseISO, isToday, isPast, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, FilterX, Search, Sparkles, Bookmark, CalendarCheck, Share2, X, Map as MapIcon } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -186,9 +186,6 @@ const EventsListV2 = () => {
   return (
     <div className="w-full max-w-6xl px-4">
       <div className="mb-12 sm:mb-20 text-center space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-top-4 duration-1000">
-        <div className="inline-flex items-center px-4 py-1.5 sm:px-5 sm:py-2 rounded-full bg-primary/10 text-primary text-[10px] sm:text-[11px] font-black tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-1 sm:mb-2">
-          <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-2 sm:mr-2.5" /> Discover Your Flow
-        </div>
         <h1 className="text-4xl sm:text-6xl md:text-8xl font-black font-heading tracking-tight text-foreground leading-[1.1] sm:leading-[1.05]">
           Soulful Gatherings <br />
           <span className="text-primary italic font-normal">Across Australia</span>
@@ -436,14 +433,14 @@ const EventsListV2 = () => {
             </div>
             <div className="space-y-4 sm:space-y-6">
               <div className="h-12 w-12 sm:h-16 sm:w-16 bg-primary/10 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto">
-                <CalendarCheck className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               </div>
               <h3 className="font-black text-xl sm:text-2xl">Share Events</h3>
               <p className="text-muted-foreground text-sm sm:text-base font-medium">Submit your own workshops or circles to our growing community.</p>
             </div>
             <div className="space-y-4 sm:space-y-6">
               <div className="h-12 w-12 sm:h-16 sm:w-16 bg-primary/10 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto">
-                <Share2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               </div>
               <h3 className="font-black text-xl sm:text-2xl">Manage Listings</h3>
               <p className="text-muted-foreground text-sm sm:text-base font-medium">Easily edit or update your event details at any time.</p>

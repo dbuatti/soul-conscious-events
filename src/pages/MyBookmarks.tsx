@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Bookmark, UserPlus, Sparkles } from 'lucide-react';
+import { Bookmark, UserPlus, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
@@ -126,14 +126,8 @@ const MyBookmarks: React.FC = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <div className="mb-16 text-center space-y-4">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
-          <Bookmark className="h-3 w-3 mr-2 fill-current" /> Your Collection
-        </div>
+      <div className="mb-16 text-center">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">My Bookmarks</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-          A curated space for the events that nourish your soul.
-        </p>
       </div>
 
       {bookmarkedEvents.length === 0 ? (
@@ -154,7 +148,7 @@ const MyBookmarks: React.FC = () => {
               key={event.id}
               event={event}
               onShare={handleShare}
-              onDelete={() => {}} // Bookmarks don't delete the event
+              onDelete={() => {}}
               onViewDetails={handleViewDetails}
             />
           ))}

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
@@ -210,13 +209,10 @@ const EventEditPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <div className="mb-12 text-center space-y-4">
+      <div className="mb-12 text-center">
         <h2 className="text-5xl font-black text-foreground font-heading tracking-tight">
           {isDuplicating ? 'Duplicate Event' : 'Edit Event'}
         </h2>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-          {isDuplicating ? 'Create a new event based on this one.' : 'Update your event details below.'}
-        </p>
       </div>
 
       <div className="bg-card p-8 sm:p-12 rounded-[3rem] shadow-xl border border-border organic-card">

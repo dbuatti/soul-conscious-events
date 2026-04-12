@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, PlusCircle, UserPlus, CalendarCheck } from 'lucide-react';
+import { Frown, PlusCircle, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import UserEventCard from '@/components/UserEventCard';
@@ -26,7 +26,7 @@ const MyEvents: React.FC = () => {
       .select('*')
       .eq('user_id', user.id)
       .eq('is_deleted', false)
-      .order('event_date', { ascending: false }); // Changed to descending for reverse chronological order
+      .order('event_date', { ascending: false });
 
     if (error) {
       console.error('Error fetching user events:', error);
@@ -79,14 +79,8 @@ const MyEvents: React.FC = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <div className="mb-16 text-center space-y-4">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
-          <CalendarCheck className="h-3 w-3 mr-2" /> Your Contributions
-        </div>
+      <div className="mb-16 text-center">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">My Events</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-          Manage and track the events you've shared with the community.
-        </p>
       </div>
 
       <div className="flex justify-end mb-12">

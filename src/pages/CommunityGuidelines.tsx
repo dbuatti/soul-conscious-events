@@ -1,16 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ListChecks, Ban, Handshake, MessageCircleWarning, ShieldCheck, AlertTriangle, Heart, Users, Sparkles } from 'lucide-react';
+import { ListChecks, Ban, Handshake, MessageCircleWarning, Heart, Users, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const CommunityGuidelines = () => {
   return (
     <div className="w-full max-w-6xl px-4">
       <div className="mb-16 text-center space-y-4">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
-          <ShieldCheck className="h-3 w-3 mr-2" /> Safe Space
-        </div>
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Community Guidelines</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
           SoulFlow is a space dedicated to fostering personal growth, community connection, creativity, and well-being.
@@ -26,15 +23,12 @@ const CommunityGuidelines = () => {
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="flex gap-4">
-              <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-1" />
               <p className="text-lg"><span className="font-black">Hate speech</span>, discrimination, or violence toward any person or group is strictly prohibited.</p>
             </div>
             <div className="flex gap-4">
-              <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-1" />
               <p className="text-lg">Any intent to <span className="font-black">incite conflict</span>, aggression, or harm will result in immediate removal.</p>
             </div>
             <div className="flex gap-4">
-              <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-1" />
               <p className="text-lg">Primary <span className="font-black">political rallies</span>, protests, or campaigns are not the focus of this platform.</p>
             </div>
           </CardContent>

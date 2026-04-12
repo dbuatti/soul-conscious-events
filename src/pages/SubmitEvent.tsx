@@ -180,11 +180,8 @@ const SubmitEvent = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <div className="mb-12 text-center space-y-4">
+      <div className="mb-12 text-center">
         <h2 className="text-5xl font-black text-foreground font-heading tracking-tight">Submit Your Event</h2>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-          Share your soulful event with the community.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-8">

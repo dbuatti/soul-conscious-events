@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
 import { getRedirectUrl } from '@/lib/utils';
-import { Bookmark, CalendarCheck, PlusCircle, Sparkles } from 'lucide-react';
+import { Bookmark, CalendarCheck, PlusCircle } from 'lucide-react';
 
 const LoginV2 = () => {
   const navigate = useNavigate();
@@ -29,9 +29,6 @@ const LoginV2 = () => {
     <div className="flex flex-col lg:flex-row items-center justify-center min-h-[calc(100vh-120px)] px-4 py-12 gap-16 max-w-6xl mx-auto">
       <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
         <div className="space-y-4">
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
-            <Sparkles className="h-3 w-3 mr-2" /> Join the Flow
-          </div>
           <h1 className="text-5xl font-black font-heading tracking-tight text-foreground leading-tight">
             Your Soulful <br />
             <span className="text-primary italic font-normal">Journey Awaits</span>

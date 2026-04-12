@@ -1,16 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, CalendarDays, Heart, MessageSquare, Compass, Users, Search, Map, PlusCircle } from 'lucide-react';
+import { CalendarDays, Heart, MessageSquare, Compass, Search, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const About = () => {
   return (
     <div className="w-full max-w-6xl px-4">
       <div className="mb-16 text-center space-y-4">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
-          <Sparkles className="h-3 w-3 mr-2" /> Our Story
-        </div>
         <h1 className="text-5xl sm:text-7xl font-black font-heading tracking-tight text-foreground">About SoulFlow</h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-medium leading-relaxed">
           SoulFlow was born from a simple desire: to find and share the moments that make us feel truly alive.

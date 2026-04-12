@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Mail, MessageSquare } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const contactFormSchema = z.object({
@@ -57,14 +57,8 @@ const Contact = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <div className="mb-16 text-center space-y-4">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
-          <MessageSquare className="h-3 w-3 mr-2" /> Get in Touch
-        </div>
+      <div className="mb-16 text-center">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Contact Us</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-          We'd love to hear from you! Send us your suggestions, recommendations, or feedback.
-        </p>
       </div>
 
       <div className="max-w-2xl mx-auto organic-card p-8 sm:p-12 rounded-[3rem]">
