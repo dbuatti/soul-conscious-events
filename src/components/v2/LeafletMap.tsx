@@ -6,7 +6,7 @@ import { format, parseISO } from 'date-fns';
 import { Calendar, MapPin, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Fix for default marker icons in Leaflet with React
+// Fix for default marker icons in Leaflet
 const customIcon = new L.DivIcon({
   html: '<div class="marker-pin"></div>',
   className: 'custom-div-icon',
@@ -25,11 +25,18 @@ interface LeafletMapProps {
 }
 
 // Component to handle map centering and zooming
-const MapController = ({ center }: { center: [number, number] }) => {
+const MapController = ({ center, zoom }: { center: [number, number], zoom: number }) => {
   const map = useMap();
+  
   useEffect(() => {
-    map.flyTo(center, map.getZoom(), { duration: 1.5 });
-  }, [center, map]);
+    if (center) {
+      map.flyTo(center, zoom, {
+        duration: 1.5,
+        easeLinearity: 0.25
+      });
+    }
+  }, [center, zoom, map]);
+
   return null;
 };
 
@@ -42,19 +49,20 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     const geocodeEvents = async () => {
       const results: GeocodedEvent[] = [];
       
-      // To avoid hitting rate limits, we only geocode events with a full address
-      // and we limit the concurrent requests
+      // Limit geocoding to events with addresses and use a simple cache
       for (const event of events) {
         if (event.full_address) {
           try {
-            // Check session storage first to avoid redundant API calls
-            const cached = sessionStorage.getItem(`geo_${event.full_address}`);
+            const cacheKey = `geo_${event.full_address}`;
+            const cached = sessionStorage.getItem(cacheKey);
+            
             if (cached) {
               const { lat, lng } = JSON.parse(cached);
               results.push({ ...event, lat, lng });
               continue;
             }
 
+            // Using Nominatim (OpenStreetMap) for free geocoding
             const response = await fetch(
               `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address)}&limit=1`
             );
@@ -64,7 +72,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
               const lat = parseFloat(data[0].lat);
               const lng = parseFloat(data[0].lon);
               results.push({ ...event, lat, lng });
-              sessionStorage.setItem(`geo_${event.full_address}`, JSON.stringify({ lat, lng }));
+              sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
             }
           } catch (error) {
             console.error('Geocoding error:', error);
@@ -73,29 +81,31 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       }
       setGeocodedEvents(results);
 
-      // If we have results, center on the first one or calculate bounds
+      // Center on the first result if available
       if (results.length > 0) {
         setMapCenter([results[0].lat, results[0].lng]);
-        setZoom(10);
+        setZoom(12);
       }
     };
 
-    geocodeEvents();
+    if (events.length > 0) {
+      geocodeEvents();
+    }
   }, [events]);
 
   return (
-    <div className="w-full h-[600px] relative">
+    <div className="w-full h-[600px] relative overflow-hidden rounded-[2.5rem] border border-border shadow-2xl">
       <MapContainer 
         center={mapCenter} 
         zoom={zoom} 
         scrollWheelZoom={true}
-        className="w-full h-full"
+        style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapController center={mapCenter} />
+        <MapController center={mapCenter} zoom={zoom} />
         
         {geocodedEvents.map((event) => (
           <Marker 
