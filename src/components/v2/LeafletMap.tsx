@@ -47,7 +47,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         }
 
         try {
-          // Nominatim requires a User-Agent and a delay between requests
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           const response = await fetch(
@@ -161,7 +160,9 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
             size="sm" 
             className="h-auto p-0 text-primary font-black text-[11px] mt-1"
             onClick={() => {
-              map.closePopup();
+              if (mapInstanceRef.current) {
+                mapInstanceRef.current.closePopup();
+              }
               onViewDetails(event);
             }}
           >
@@ -187,7 +188,13 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       });
     }
 
-    setTimeout(() => map.invalidateSize(), 100);
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
 
   }, [geocodedEvents, onViewDetails]);
 

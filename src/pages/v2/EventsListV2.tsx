@@ -13,7 +13,7 @@ import { Event } from '@/types/event';
 import FilterDropdownsV2 from '@/components/v2/FilterDropdownsV2';
 import { useSession } from '@/components/SessionContextProvider';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import { generateRecurringInstances } from '@/utils/event-utils';
+import { generateRecurringInstances, getBaseEventId } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -132,7 +132,7 @@ const EventsListV2 = () => {
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
     e.stopPropagation();
-    const baseId = event.id.split('-')[0];
+    const baseId = getBaseEventId(event.id);
     navigator.clipboard.writeText(`${window.location.origin}/events/${baseId}`)
       .then(() => toast.success('Event link copied!'))
       .catch(() => toast.error('Failed to copy link.'));
@@ -140,13 +140,16 @@ const EventsListV2 = () => {
 
   const handleDelete = async (eventId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const baseId = eventId.split('-')[0];
+    const baseId = getBaseEventId(eventId);
     if (baseId.length < 30) return;
     if (window.confirm('Are you sure you want to delete this event?')) {
       const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
       if (!error) {
         toast.success('Event moved to trash.');
         fetchInitialEvents();
+      } else {
+        console.error('Error deleting event:', error);
+        toast.error('Failed to delete event.');
       }
     }
   };
