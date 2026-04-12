@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Leaflet CSS */
-@import "leaflet/dist/leaflet.css";
-
 @layer base {
   :root {
     /* Light Mode: Golden Hour */
@@ -115,11 +112,6 @@
 }
 
 /* Leaflet Customizations */
-.leaflet-container {
-  @apply rounded-[2.5rem] border border-border shadow-2xl z-0;
-  background: #fdfbf7 !important;
-}
-
 .leaflet-popup-content-wrapper {
   @apply rounded-2xl p-0 overflow-hidden shadow-xl border border-border;
 }

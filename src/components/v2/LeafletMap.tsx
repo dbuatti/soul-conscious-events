@@ -148,14 +148,24 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     mapInstanceRef.current = map;
 
     // Use ResizeObserver to handle container size changes (fixes quadrant issue)
-    const resizeObserver = new ResizeObserver(() => {
-      if (mapInstanceRef.current) {
-        console.log('[LeafletMap] Container resized, invalidating size');
-        mapInstanceRef.current.invalidateSize();
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        console.log(`[LeafletMap] Container resized to: ${width}x${height}`);
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize({ animate: false });
+        }
       }
     });
 
     resizeObserver.observe(mapRef.current);
+
+    // Initial invalidateSize after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize({ animate: false });
+      }
+    }, 100);
 
     return () => {
       resizeObserver.disconnect();
