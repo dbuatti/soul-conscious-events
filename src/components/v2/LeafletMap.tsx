@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Event } from '@/types/event';
 import { format, parseISO } from 'date-fns';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createRoot } from 'react-dom/client';
 
@@ -21,24 +21,42 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
+  const [geocodingStatus, setGeocodingStatus] = useState<{
+    total: number;
+    completed: number;
+    failed: number;
+    isProcessing: boolean;
+  }>({ total: 0, completed: 0, failed: 0, isProcessing: false });
 
-  // 1. Geocoding Logic
+  // 1. Geocoding Logic with Logging
   useEffect(() => {
     let isMounted = true;
 
     const geocodeEvents = async () => {
+      console.log('[LeafletMap] Starting geocoding for', events.length, 'events');
       const results: GeocodedEvent[] = [];
       const eventsWithAddress = events.filter(e => e.full_address);
+      
+      setGeocodingStatus({
+        total: eventsWithAddress.length,
+        completed: 0,
+        failed: 0,
+        isProcessing: true
+      });
 
       for (const event of eventsWithAddress) {
-        const cacheKey = `geo_v2_${event.full_address}`;
+        if (!isMounted) break;
+
+        const cacheKey = `geo_v3_${event.full_address}`;
         const cached = sessionStorage.getItem(cacheKey);
         
         if (cached) {
           try {
             const { lat, lng } = JSON.parse(cached);
             if (!isNaN(lat) && !isNaN(lng)) {
+              console.log('[LeafletMap] Cache hit for:', event.full_address);
               results.push({ ...event, lat, lng });
+              setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));
               continue;
             }
           } catch (e) {
@@ -47,18 +65,20 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         }
 
         try {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log('[LeafletMap] Fetching coordinates for:', event.full_address);
+          // Nominatim requires a User-Agent and a delay between requests
+          await new Promise(resolve => setTimeout(resolve, 1100));
           
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1&addressdetails=1`,
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`,
             {
               headers: {
-                'User-Agent': 'SoulFlow-Australia-Community-App'
+                'User-Agent': 'SoulFlow-Australia-Community-App-v2'
               }
             }
           );
           
-          if (!response.ok) throw new Error('Geocoding service error');
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           
           const data = await response.json();
           
@@ -66,17 +86,28 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
             const lat = parseFloat(data[0].lat);
             const lng = parseFloat(data[0].lon);
             if (!isNaN(lat) && !isNaN(lng)) {
+              console.log('[LeafletMap] Successfully geocoded:', event.event_name, 'at', lat, lng);
               results.push({ ...event, lat, lng });
               sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
+              setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));
+            } else {
+              console.warn('[LeafletMap] Invalid coordinates received for:', event.full_address);
+              setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
             }
+          } else {
+            console.warn('[LeafletMap] No results found for:', event.full_address);
+            setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
           }
         } catch (error) {
-          console.error('Geocoding error:', event.full_address, error);
+          console.error('[LeafletMap] Geocoding error for:', event.full_address, error);
+          setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
         }
       }
       
       if (isMounted) {
+        console.log('[LeafletMap] Geocoding complete. Total markers:', results.length);
         setGeocodedEvents(results);
+        setGeocodingStatus(prev => ({ ...prev, isProcessing: false }));
       }
     };
 
@@ -84,6 +115,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       geocodeEvents();
     } else {
       setGeocodedEvents([]);
+      setGeocodingStatus({ total: 0, completed: 0, failed: 0, isProcessing: false });
     }
 
     return () => {
@@ -95,6 +127,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    console.log('[LeafletMap] Initializing map instance');
     const map = L.map(mapRef.current, {
       center: [-25.2744, 133.7751],
       zoom: 4,
@@ -110,6 +143,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
 
     return () => {
       if (mapInstanceRef.current) {
+        console.log('[LeafletMap] Cleaning up map instance');
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
@@ -122,6 +156,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     const markersLayer = markersLayerRef.current;
     if (!map || !markersLayer) return;
 
+    console.log('[LeafletMap] Updating markers on map. Count:', geocodedEvents.length);
     markersLayer.clearLayers();
 
     if (geocodedEvents.length === 0) return;
@@ -181,6 +216,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     });
 
     if (bounds.isValid()) {
+      console.log('[LeafletMap] Fitting map to bounds');
       map.fitBounds(bounds, { 
         padding: [50, 50], 
         maxZoom: 13,
@@ -202,6 +238,28 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     <div className="w-full h-[500px] sm:h-[600px] relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-border shadow-2xl bg-secondary/10">
       <div ref={mapRef} className="w-full h-full z-0" />
       
+      {/* Status Overlay */}
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-[1000] flex flex-col gap-2">
+        <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg flex items-center gap-3">
+          {geocodingStatus.isProcessing ? (
+            <Loader2 className="h-4 w-4 text-primary animate-spin" />
+          ) : geocodingStatus.failed > 0 ? (
+            <AlertCircle className="h-4 w-4 text-destructive" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+          )}
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-widest text-foreground">
+              {geocodingStatus.isProcessing ? 'Locating Events...' : 'Map Ready'}
+            </span>
+            <span className="text-[9px] font-bold text-muted-foreground">
+              {geocodedEvents.length} of {geocodingStatus.total} events found
+              {geocodingStatus.failed > 0 && ` (${geocodingStatus.failed} failed)`}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
         Free Map Coverage via OpenStreetMap
       </div>
