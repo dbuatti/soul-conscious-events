@@ -9,6 +9,7 @@ import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, PlusCircle } from 'lucide-react';
+import { getBaseEventId } from '@/utils/event-utils';
 
 interface EventCardListProps {
   events: Event[];
@@ -96,7 +97,7 @@ const EventCardList: React.FC<EventCardListProps> = ({
       : format(parseISO(event.event_date), 'PPP');
 
     // Determine the ID to use for deletion (always the base UUID)
-    const baseId = event.id.split('-')[0];
+    const baseId = getBaseEventId(event.id);
 
     return (
       <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>

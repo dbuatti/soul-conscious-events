@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
+import { getBaseEventId } from '@/utils/event-utils';
 
 const formatPrice = (price?: string | null) => {
   if (!price) return 'N/A';
@@ -51,7 +52,7 @@ const EventDetailPage: React.FC = () => {
       }
 
       setLoading(true);
-      const baseId = id.split('-')[0];
+      const baseId = getBaseEventId(id);
       
       const { data, error } = await supabase
         .from('events')
@@ -86,7 +87,7 @@ const EventDetailPage: React.FC = () => {
 
   const handleDelete = async () => {
     if (!event) return;
-    const baseId = event.id.split('-')[0];
+    const baseId = getBaseEventId(event.id);
     const { error } = await supabase.from('events').delete().eq('id', baseId);
 
     if (error) {

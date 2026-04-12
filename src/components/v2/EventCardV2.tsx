@@ -16,6 +16,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getBaseEventId } from '@/utils/event-utils';
 
 interface EventCardV2Props {
   event: Event;
@@ -60,7 +61,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
 
   const handleNativeShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const baseId = event.id.split('-')[0];
+    const baseId = getBaseEventId(event.id);
     const shareUrl = `${window.location.origin}/events/${baseId}`;
     const shareData = {
       title: event.event_name,
@@ -85,6 +86,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
       }
     }
   };
+
+  const baseId = getBaseEventId(event.id);
 
   return (
     <Card 
@@ -201,7 +204,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               <>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Link to={`/edit-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
+                    <Link to={`/edit-event/${baseId}`} onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full">
                         <Edit className="h-4 w-4 text-muted-foreground hover:text-primary" />
                       </Button>
@@ -212,7 +215,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Link to={`/duplicate-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
+                    <Link to={`/duplicate-event/${baseId}`} onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full">
                         <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
                       </Button>

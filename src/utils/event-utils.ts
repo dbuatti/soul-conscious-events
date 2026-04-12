@@ -67,13 +67,25 @@ export const formatPrice = (price?: string | null) => {
   return price;
 };
 
+/**
+ * Extracts the base UUID from an event ID.
+ * Standard UUIDs have 4 hyphens (5 parts). 
+ * Recurring instances append a date suffix (e.g., UUID-20231027).
+ */
 export const getBaseEventId = (id: string): string => {
-  return id.split('-')[0];
+  if (!id) return '';
+  const parts = id.split('-');
+  // A standard UUID has 5 parts. If we have more, the rest is likely a suffix.
+  if (parts.length > 5) {
+    return parts.slice(0, 5).join('-');
+  }
+  return id;
 };
 
 export const isValidEventId = (id: string): boolean => {
   const baseId = getBaseEventId(id);
-  return baseId.length >= 30 && baseId.includes('-');
+  // A standard UUID is 36 characters long
+  return baseId.length === 36 && baseId.includes('-');
 };
 
 // Calendar Export Utilities

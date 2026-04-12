@@ -18,6 +18,7 @@ import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import heroBackground from '@/assets/phil-hero-background.jpeg'; // Corrected import for the image
 import EventFilterBar from '@/components/EventFilterBar'; // Import the EventFilterBar component
 import EventCardList from '@/components/EventCardList'; // Import EventCardList
+import { getBaseEventId } from '@/utils/event-utils';
 
 interface Event {
   id: string;
@@ -182,7 +183,8 @@ const EventsList = () => {
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
     e.stopPropagation();
-    const eventUrl = `${window.location.origin}/events/${event.id}`;
+    const baseId = getBaseEventId(event.id);
+    const eventUrl = `${window.location.origin}/events/${baseId}`;
     navigator.clipboard.writeText(eventUrl)
       .then(() => toast.success('Event link copied to clipboard!'))
       .catch(() => toast.error('Failed to copy link. Please try again.'));
@@ -191,7 +193,7 @@ const EventsList = () => {
   const handleDelete = async (eventId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     // Ensure we use the base UUID for deletion, in case a recurring instance ID was passed
-    const baseId = eventId.split('-')[0]; 
+    const baseId = getBaseEventId(eventId); 
 
     // CRITICAL CHECK: If the base ID is still the corrupted short string, we stop here.
     if (baseId.length < 30) {
