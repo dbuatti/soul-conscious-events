@@ -49,6 +49,8 @@ const EventsListV2 = () => {
 
   const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents } = useEventFilters(allEvents);
 
+  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
+
   const fetchFavouriteVenues = useCallback(async () => {
     if (!user) {
       setFavouriteVenues([]);
@@ -250,15 +252,17 @@ const EventsListV2 = () => {
             onViewModeChange={(mode) => setViewMode(mode)}
           />
           
-          <div className="flex justify-center lg:justify-start">
-            <Button 
-              variant={viewMode === 'map' ? 'default' : 'outline'}
-              onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-              className="rounded-xl gap-2 h-10 px-6 font-bold transition-all w-full sm:w-auto"
-            >
-              <MapIcon className="h-4 w-4" /> {viewMode === 'map' ? 'Show List' : 'Show Map'}
-            </Button>
-          </div>
+          {isAdmin && (
+            <div className="flex justify-center lg:justify-start">
+              <Button 
+                variant={viewMode === 'map' ? 'default' : 'outline'}
+                onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+                className="rounded-xl gap-2 h-10 px-6 font-bold transition-all w-full sm:w-auto"
+              >
+                <MapIcon className="h-4 w-4" /> {viewMode === 'map' ? 'Show List' : 'Show Map'}
+              </Button>
+            </div>
+          )}
 
           {hasActiveFilters && (
             <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/40 animate-in fade-in slide-in-from-bottom-2">
