@@ -28,7 +28,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     isProcessing: boolean;
   }>({ total: 0, completed: 0, failed: 0, isProcessing: false });
 
-  // 1. Geocoding Logic with Logging
+  // 1. Geocoding Logic
   useEffect(() => {
     let isMounted = true;
 
@@ -47,14 +47,13 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       for (const event of eventsWithAddress) {
         if (!isMounted) break;
 
-        const cacheKey = `geo_v3_${event.full_address}`;
+        const cacheKey = `geo_v4_${event.full_address}`;
         const cached = sessionStorage.getItem(cacheKey);
         
         if (cached) {
           try {
             const { lat, lng } = JSON.parse(cached);
             if (!isNaN(lat) && !isNaN(lng)) {
-              console.log('[LeafletMap] Cache hit for:', event.full_address);
               results.push({ ...event, lat, lng });
               setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));
               continue;
@@ -65,8 +64,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         }
 
         try {
-          console.log('[LeafletMap] Fetching coordinates for:', event.full_address);
-          // Nominatim requires a User-Agent and a delay between requests
           await new Promise(resolve => setTimeout(resolve, 1100));
           
           const response = await fetch(
@@ -86,26 +83,22 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
             const lat = parseFloat(data[0].lat);
             const lng = parseFloat(data[0].lon);
             if (!isNaN(lat) && !isNaN(lng)) {
-              console.log('[LeafletMap] Successfully geocoded:', event.event_name, 'at', lat, lng);
               results.push({ ...event, lat, lng });
               sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
               setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));
             } else {
-              console.warn('[LeafletMap] Invalid coordinates received for:', event.full_address);
               setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
             }
           } else {
-            console.warn('[LeafletMap] No results found for:', event.full_address);
             setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
           }
         } catch (error) {
-          console.error('[LeafletMap] Geocoding error for:', event.full_address, error);
+          console.error('[LeafletMap] Geocoding error:', event.full_address, error);
           setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
         }
       }
       
       if (isMounted) {
-        console.log('[LeafletMap] Geocoding complete. Total markers:', results.length);
         setGeocodedEvents(results);
         setGeocodingStatus(prev => ({ ...prev, isProcessing: false }));
       }
@@ -132,6 +125,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       center: [-25.2744, 133.7751],
       zoom: 4,
       scrollWheelZoom: true,
+      zoomControl: false, // We'll use custom placement or just rely on scroll
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -156,25 +150,26 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     const markersLayer = markersLayerRef.current;
     if (!map || !markersLayer) return;
 
-    console.log('[LeafletMap] Updating markers on map. Count:', geocodedEvents.length);
+    console.log('[LeafletMap] Updating markers. Count:', geocodedEvents.length);
     markersLayer.clearLayers();
 
     if (geocodedEvents.length === 0) return;
 
-    const customIcon = L.divIcon({
-      html: '<div class="marker-pin"></div>',
-      className: 'custom-div-icon',
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
-    });
-
     const bounds = L.latLngBounds([]);
 
     geocodedEvents.forEach((event) => {
+      // Using a more robust divIcon with inline styles to ensure visibility
+      const customIcon = L.divIcon({
+        html: `<div style="width: 24px; height: 24px; background-color: #B34629; border: 2px solid white; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>`,
+        className: 'custom-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
+
       const marker = L.marker([event.lat, event.lng], { icon: customIcon });
       
       const popupContent = document.createElement('div');
-      popupContent.className = 'custom-popup-content p-3 min-w-[180px] space-y-2';
+      popupContent.className = 'p-3 min-w-[180px] space-y-2';
       
       const root = createRoot(popupContent);
       root.render(
@@ -212,6 +207,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       });
       
       markersLayer.addLayer(marker);
+      console.log('[LeafletMap] Added marker for:', event.event_name);
       bounds.extend([event.lat, event.lng]);
     });
 
@@ -228,14 +224,14 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.invalidateSize();
       }
-    }, 100);
+    }, 200);
 
     return () => clearTimeout(timer);
 
   }, [geocodedEvents, onViewDetails]);
 
   return (
-    <div className="w-full h-[500px] sm:h-[600px] relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-border shadow-2xl bg-secondary/10">
+    <div className="w-full h-[500px] sm:h-[600px] relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl bg-secondary/10 border-none">
       <div ref={mapRef} className="w-full h-full z-0" />
       
       {/* Status Overlay */}
