@@ -101,11 +101,6 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-primary/30 rounded-full border-4 border-solid border-secondary hover:bg-primary/50 transition-colors;
   }
-
-  /* Custom Focus States */
-  :focus-visible {
-    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
-  }
 }
 
 .organic-card {
