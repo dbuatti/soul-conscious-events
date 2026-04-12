@@ -14,9 +14,20 @@ interface GeocodedEvent extends Event {
 interface LeafletMapProps {
   events: Event[];
   onViewDetails: (event: Event) => void;
+  className?: string;
+  zoom?: number;
+  center?: [number, number];
+  interactive?: boolean;
 }
 
-const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
+const LeafletMap: React.FC<LeafletMapProps> = ({ 
+  events, 
+  onViewDetails, 
+  className,
+  zoom = 4,
+  center = [-25.2744, 133.7751],
+  interactive = true
+}) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -47,7 +58,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       for (const event of eventsWithAddress) {
         if (!isMounted) break;
 
-        const cacheKey = `geo_v4_${event.full_address}`;
+        const cacheKey = `geo_v5_${event.full_address}`;
         const cached = sessionStorage.getItem(cacheKey);
         
         if (cached) {
@@ -69,9 +80,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`,
             {
-              headers: {
-                'User-Agent': 'SoulFlow-Australia-Community-App-v2'
-              }
+              headers: { 'User-Agent': 'SoulFlow-Australia-Community-App-v2' }
             }
           );
           
@@ -111,42 +120,45 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       setGeocodingStatus({ total: 0, completed: 0, failed: 0, isProcessing: false });
     }
 
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [events]);
 
-  // 2. Map Initialization
+  // 2. Map Initialization & Resize Handling
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    const width = mapRef.current.clientWidth;
-    const height = mapRef.current.clientHeight;
-    console.log(`[LeafletMap] Initializing map. Container size: ${width}x${height}`);
-
+    console.log('[LeafletMap] Initializing map instance');
     const map = L.map(mapRef.current, {
-      center: [-25.2744, 133.7751],
-      zoom: 4,
-      scrollWheelZoom: true,
+      center: center,
+      zoom: zoom,
+      scrollWheelZoom: interactive,
       zoomControl: false,
+      dragging: interactive,
+      touchZoom: interactive,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    tiles.on('tileload', () => console.log('[LeafletMap] Tile loaded successfully'));
+    tiles.on('tileerror', (e) => console.error('[LeafletMap] Tile load error:', e));
 
     markersLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
 
-    // Force a resize check after a short delay to fix the "quadrant" issue
-    setTimeout(() => {
+    // Use ResizeObserver to handle container size changes (fixes quadrant issue)
+    const resizeObserver = new ResizeObserver(() => {
       if (mapInstanceRef.current) {
-        console.log('[LeafletMap] Forcing invalidateSize() after init');
+        console.log('[LeafletMap] Container resized, invalidating size');
         mapInstanceRef.current.invalidateSize();
       }
-    }, 500);
+    });
+
+    resizeObserver.observe(mapRef.current);
 
     return () => {
+      resizeObserver.disconnect();
       if (mapInstanceRef.current) {
         console.log('[LeafletMap] Cleaning up map instance');
         mapInstanceRef.current.remove();
@@ -161,9 +173,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     const markersLayer = markersLayerRef.current;
     if (!map || !markersLayer) return;
 
-    console.log('[LeafletMap] Updating markers. Count:', geocodedEvents.length);
     markersLayer.clearLayers();
-
     if (geocodedEvents.length === 0) return;
 
     const bounds = L.latLngBounds([]);
@@ -200,9 +210,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
             size="sm" 
             className="h-auto p-0 text-primary font-black text-[11px] mt-1"
             onClick={() => {
-              if (mapInstanceRef.current) {
-                mapInstanceRef.current.closePopup();
-              }
+              map.closePopup();
               onViewDetails(event);
             }}
           >
@@ -211,60 +219,42 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         </div>
       );
 
-      marker.bindPopup(popupContent, {
-        className: 'custom-leaflet-popup',
-        maxWidth: 300
-      });
-      
+      marker.bindPopup(popupContent, { className: 'custom-leaflet-popup', maxWidth: 300 });
       markersLayer.addLayer(marker);
       bounds.extend([event.lat, event.lng]);
     });
 
     if (bounds.isValid()) {
       console.log('[LeafletMap] Fitting map to bounds');
-      map.fitBounds(bounds, { 
-        padding: [50, 50], 
-        maxZoom: 13,
-        animate: true 
-      });
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 13, animate: true });
     }
-
-    // Ensure the map is correctly sized whenever markers change
-    const timer = setTimeout(() => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize();
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-
   }, [geocodedEvents, onViewDetails]);
 
   return (
-    <div className="w-full h-[500px] sm:h-[600px] relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl bg-[#fdfbf7] border-none">
+    <div className={`w-full relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl bg-[#fdfbf7] border-none ${className || 'h-[500px] sm:h-[600px]'}`}>
       <div ref={mapRef} className="w-full h-full z-0" />
       
-      {/* Status Overlay */}
-      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-[1000] flex flex-col gap-2">
-        <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg flex items-center gap-3">
-          {geocodingStatus.isProcessing ? (
-            <Loader2 className="h-4 w-4 text-primary animate-spin" />
-          ) : geocodingStatus.failed > 0 ? (
-            <AlertCircle className="h-4 w-4 text-destructive" />
-          ) : (
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-          )}
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-widest text-foreground">
-              {geocodingStatus.isProcessing ? 'Locating Events...' : 'Map Ready'}
-            </span>
-            <span className="text-[9px] font-bold text-muted-foreground">
-              {geocodedEvents.length} of {geocodingStatus.total} events found
-              {geocodingStatus.failed > 0 && ` (${geocodingStatus.failed} failed)`}
-            </span>
+      {interactive && (
+        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-[1000] flex flex-col gap-2">
+          <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg flex items-center gap-3">
+            {geocodingStatus.isProcessing ? (
+              <Loader2 className="h-4 w-4 text-primary animate-spin" />
+            ) : geocodingStatus.failed > 0 ? (
+              <AlertCircle className="h-4 w-4 text-destructive" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            )}
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest text-foreground">
+                {geocodingStatus.isProcessing ? 'Locating Events...' : 'Map Ready'}
+              </span>
+              <span className="text-[9px] font-bold text-muted-foreground">
+                {geocodedEvents.length} of {geocodingStatus.total} events found
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
         Free Map Coverage via OpenStreetMap

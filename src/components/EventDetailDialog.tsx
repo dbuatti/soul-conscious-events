@@ -46,7 +46,8 @@ import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { formatPrice, getGoogleCalendarUrl, downloadIcalFile, getBaseEventId } from '@/utils/event-utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getStaticMapUrl, openInMaps } from '@/lib/utils';
+import { openInMaps } from '@/lib/utils';
+import LeafletMap from '@/components/v2/LeafletMap';
 
 interface EventDetailDialogProps {
   event: Event | null;
@@ -65,20 +66,12 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const handleDelete = async () => {
     if (!event) return;
     const baseId = getBaseEventId(event.id);
-    
-    // Use update to move to trash instead of permanent delete for consistency
-    const { error } = await supabase
-      .from('events')
-      .update({ is_deleted: true })
-      .eq('id', baseId);
-
+    const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
     if (error) {
-      console.error('Error deleting event:', error);
       toast.error('Failed to move event to trash.');
     } else {
       toast.success('Event moved to trash successfully!');
       onClose();
-      // Refresh the page or navigate to home to update the list
       window.location.reload();
     }
   };
@@ -155,7 +148,6 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const startDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
   const dateDisplay = endDate && !isSameDay(startDate, endDate) ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}` : format(startDate, 'MMM d, yyyy');
-  const staticMapUrl = event.full_address ? getStaticMapUrl(event.full_address) : null;
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
   const Content = (
@@ -212,19 +204,23 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                   </div>
                 </div>
                 
-                {staticMapUrl && (
+                <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden border border-border shadow-sm">
+                  <LeafletMap 
+                    events={[event]} 
+                    onViewDetails={() => {}} 
+                    className="h-full w-full" 
+                    zoom={15}
+                    interactive={false}
+                  />
                   <div 
-                    className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden border border-border shadow-sm cursor-pointer group"
+                    className="absolute inset-0 bg-black/0 hover:bg-black/5 transition-colors flex items-center justify-center cursor-pointer z-10"
                     onClick={() => openInMaps(event.full_address!)}
                   >
-                    <img src={staticMapUrl} alt="Map Preview" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
-                      <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
-                        <Navigation className="h-3 w-3" /> Get Directions
-                      </div>
+                    <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg opacity-0 hover:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
+                      <Navigation className="h-3 w-3" /> Get Directions
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             )}
             {event.price && (
