@@ -18,6 +18,7 @@ interface LeafletMapProps {
   zoom?: number;
   center?: [number, number];
   interactive?: boolean;
+  showWatermark?: boolean;
 }
 
 const LeafletMap: React.FC<LeafletMapProps> = ({ 
@@ -26,7 +27,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   className,
   zoom = 4,
   center = [-25.2744, 133.7751],
-  interactive = true
+  interactive = true,
+  showWatermark = true
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -135,6 +137,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       zoomControl: false,
       dragging: interactive,
       touchZoom: interactive,
+      attributionControl: false, // Hide default Leaflet attribution
     });
 
     const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -147,7 +150,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     markersLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
 
-    // Use ResizeObserver to handle container size changes (fixes quadrant issue)
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
@@ -160,7 +162,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 
     resizeObserver.observe(mapRef.current);
 
-    // Initial invalidateSize after a short delay to ensure DOM is ready
     setTimeout(() => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.invalidateSize({ animate: false });
@@ -266,9 +267,11 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         </div>
       )}
 
-      <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
-        Free Map Coverage via OpenStreetMap
-      </div>
+      {showWatermark && (
+        <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
+          Free Map Coverage via OpenStreetMap
+        </div>
+      )}
     </div>
   );
 };

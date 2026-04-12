@@ -211,6 +211,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                     className="h-full w-full" 
                     zoom={15}
                     interactive={false}
+                    showWatermark={false}
                   />
                   <div 
                     className="absolute inset-0 bg-black/0 hover:bg-black/5 transition-colors flex items-center justify-center cursor-pointer z-10"
