@@ -70,10 +70,11 @@ serve(async (req: Request) => {
       **Extraction Rules:**
       1. **Dates:** Use 'YYYY-MM-DD' format. Assume the current year is ${currentYear} unless specified.
       2. **Event Type:** MUST be one of: [Music, Workshop, Meditation, Open Mic, Sound Bath, Foraging, Community Gathering, Other].
-      3. **State:** MUST be one of: [ACT, NSW, NT, QLD, SA, TAS, VIC, WA].
-      4. **Description:** Keep the original paragraph structure.
-      5. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
-      6. **Google Maps:** Look for links starting with "maps.app.goo.gl" or "google.com/maps".
+      3. **State:** MUST be one of: [ACT, NSW, NT, QLD, SA, TAS, VIC, WA]. Look for state names or abbreviations in the text.
+      4. **Full Address:** Format this for optimal geocoding by OpenStreetMap. It should ideally look like: "Street Number Street Name, Suburb, STATE Postcode, Australia". If only a suburb is mentioned, use "Suburb, STATE, Australia".
+      5. **Description:** Keep the original paragraph structure.
+      6. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
+      7. **Google Maps:** Look for links starting with "maps.app.goo.gl" or "google.com/maps".
 
       **Expected JSON Format:**
       {
