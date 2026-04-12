@@ -42,14 +42,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
-import { formatPrice, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
+import { formatPrice, getGoogleCalendarUrl, downloadIcalFile, getBaseEventId } from '@/utils/event-utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getStaticMapUrl, openInMaps } from '@/lib/utils';
 
@@ -69,15 +64,22 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   const handleDelete = async () => {
     if (!event) return;
-    const baseId = event.id.split('-')[0];
-    const { error } = await supabase.from('events').delete().eq('id', baseId);
+    const baseId = getBaseEventId(event.id);
+    
+    // Use update to move to trash instead of permanent delete for consistency
+    const { error } = await supabase
+      .from('events')
+      .update({ is_deleted: true })
+      .eq('id', baseId);
 
     if (error) {
-      toast.error('Failed to delete event.');
+      console.error('Error deleting event:', error);
+      toast.error('Failed to move event to trash.');
     } else {
-      toast.success('Event deleted successfully!');
+      toast.success('Event moved to trash successfully!');
       onClose();
-      navigate('/');
+      // Refresh the page or navigate to home to update the list
+      window.location.reload();
     }
   };
 
@@ -113,7 +115,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   const handleShare = async () => {
     if (!event) return;
-    const baseId = event.id.split('-')[0];
+    const baseId = getBaseEventId(event.id);
     const shareData = {
       title: event.event_name,
       text: `Check out this soulful event: ${event.event_name}`,
@@ -154,7 +156,6 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const endDate = event.end_date ? parseISO(event.end_date) : null;
   const dateDisplay = endDate && !isSameDay(startDate, endDate) ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}` : format(startDate, 'MMM d, yyyy');
   const staticMapUrl = event.full_address ? getStaticMapUrl(event.full_address) : null;
-  const googleMapsLink = event.google_maps_link || (event.full_address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}` : '#');
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
   const Content = (
@@ -332,7 +333,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         <div className="flex gap-2">
           {isCreatorOrAdmin && (
             <>
-              <Button variant="outline" className="rounded-xl h-10 text-xs sm:text-sm font-bold" onClick={() => { onClose(); navigate(`/edit-event/${event.id.split('-')[0]}`); }}>
+              <Button variant="outline" className="rounded-xl h-10 text-xs sm:text-sm font-bold" onClick={() => { onClose(); navigate(`/edit-event/${getBaseEventId(event.id)}`); }}>
                 <Edit className="mr-2 h-4 w-4" /> Edit
               </Button>
 
@@ -365,6 +366,10 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="h-[94vh] rounded-t-[2.5rem] border-none shadow-2xl">
           <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted mb-4 mt-2" />
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{event.event_name}</DrawerTitle>
+            <DrawerDescription>Event details for {event.event_name}</DrawerDescription>
+          </DrawerHeader>
           {Content}
         </DrawerContent>
       </Drawer>
@@ -374,6 +379,10 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[94vh] overflow-hidden dark:bg-card dark:border-border p-0 border-none shadow-2xl flex flex-col">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{event.event_name}</DialogTitle>
+          <DialogDescription>Event details for {event.event_name}</DialogDescription>
+        </DialogHeader>
         {Content}
       </DialogContent>
     </Dialog>
