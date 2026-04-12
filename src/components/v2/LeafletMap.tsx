@@ -29,7 +29,7 @@ const MapController = ({ center, zoom }: { center: [number, number], zoom: numbe
   const map = useMap();
   
   useEffect(() => {
-    if (center) {
+    if (center && map) {
       map.flyTo(center, zoom, {
         duration: 1.5,
         easeLinearity: 0.25
@@ -49,7 +49,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     const geocodeEvents = async () => {
       const results: GeocodedEvent[] = [];
       
-      // Limit geocoding to events with addresses and use a simple cache
       for (const event of events) {
         if (event.full_address) {
           try {
@@ -62,7 +61,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
               continue;
             }
 
-            // Using Nominatim (OpenStreetMap) for free geocoding
             const response = await fetch(
               `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address)}&limit=1`
             );
@@ -81,7 +79,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       }
       setGeocodedEvents(results);
 
-      // Center on the first result if available
       if (results.length > 0) {
         setMapCenter([results[0].lat, results[0].lng]);
         setZoom(12);
@@ -94,7 +91,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
   }, [events]);
 
   return (
-    <div className="w-full h-[600px] relative overflow-hidden rounded-[2.5rem] border border-border shadow-2xl">
+    <div className="w-full h-[600px] relative overflow-hidden rounded-[2.5rem] border border-border shadow-2xl bg-secondary/10">
       <MapContainer 
         center={mapCenter} 
         zoom={zoom} 
