@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isPast, isSameDay, subDays } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, FilterX, Search, Sparkles, Bookmark, CalendarCheck, Share2, X } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, FilterX, Search, Sparkles, Bookmark, CalendarCheck, Share2, X, Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,7 @@ import { generateRecurringInstances } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import LeafletMap from '@/components/v2/LeafletMap';
 
 const EVENTS_PER_LOAD = 8;
 
@@ -39,7 +40,7 @@ const EventsListV2 = () => {
   const [availableVenues, setAvailableVenues] = useState<string[]>([]);
   const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]);
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
 
@@ -246,9 +247,19 @@ const EventsListV2 = () => {
             favouriteVenues={favouriteVenues}
             onToggleFavouriteVenue={handleToggleFavouriteVenue}
             isUserLoggedIn={!!user}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
+            viewMode={viewMode === 'map' ? 'list' : viewMode}
+            onViewModeChange={(mode) => setViewMode(mode)}
           />
+          
+          <div className="flex justify-center lg:justify-start">
+            <Button 
+              variant={viewMode === 'map' ? 'default' : 'outline'}
+              onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+              className="rounded-xl gap-2 h-10 px-6 font-bold transition-all"
+            >
+              <MapIcon className="h-4 w-4" /> {viewMode === 'map' ? 'Show List' : 'Show Map'}
+            </Button>
+          </div>
 
           {hasActiveFilters && (
             <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/40 animate-in fade-in slide-in-from-bottom-2">
@@ -362,7 +373,7 @@ const EventsListV2 = () => {
                 </div>
               )}
             </section>
-          ) : (
+          ) : viewMode === 'calendar' ? (
             <div className="animate-in fade-in duration-1000">
               <AdvancedEventCalendar
                 events={filteredEvents}
@@ -394,6 +405,16 @@ const EventsListV2 = () => {
                   </div>
                 )}
               </div>
+            </div>
+          ) : (
+            <div className="animate-in fade-in duration-1000 mb-32">
+              <div className="flex items-center justify-between mb-12 border-b pb-8 border-border/40">
+                <h2 className="text-5xl font-heading font-bold text-foreground tracking-tight">Event Map</h2>
+                <div className="text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-4 py-1.5 rounded-full">
+                  {filteredEvents.length} Locations Found
+                </div>
+              </div>
+              <LeafletMap events={filteredEvents} onViewDetails={handleViewDetails} />
             </div>
           )}
         </>
