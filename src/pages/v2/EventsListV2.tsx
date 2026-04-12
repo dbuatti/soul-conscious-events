@@ -234,7 +234,7 @@ const EventsListV2 = () => {
                 </Badge>
               ))}
               {filters.price.map(p => (
-                <Badge key={p} variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1 rounded-full flex items-center gap-1">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1 rounded-full flex items-center gap-1">
                   {p}
                   <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('price', p)} />
                 </Badge>
