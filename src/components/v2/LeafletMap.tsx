@@ -11,17 +11,9 @@ interface GeocodedEvent extends Event {
   lng: number;
 }
 
-// Sub-component to handle markers and map view updates
-// This ensures useMap() is called within the MapContainer context
-const MapContent = ({ 
-  events, 
-  icon, 
-  onViewDetails 
-}: { 
-  events: GeocodedEvent[], 
-  icon: L.DivIcon,
-  onViewDetails: (event: Event) => void
-}) => {
+// Sub-component to handle map view updates (fitBounds)
+// This must be a child of MapContainer to use useMap()
+const MapController = ({ events }: { events: GeocodedEvent[] }) => {
   const map = useMap();
 
   useEffect(() => {
@@ -44,41 +36,7 @@ const MapContent = ({
     }
   }, [events, map]);
 
-  return (
-    <>
-      {events.map((event) => (
-        <Marker 
-          key={event.id} 
-          position={[event.lat, event.lng]} 
-          icon={icon}
-        >
-          <Popup className="custom-popup">
-            <div className="p-3 min-w-[180px] space-y-2">
-              <h3 className="font-black text-primary text-base leading-tight">{event.event_name}</h3>
-              <div className="space-y-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-3 w-3 text-primary/60" />
-                  <span>{format(parseISO(event.event_date), 'MMM d, yyyy')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3 w-3 text-primary/60" />
-                  <span className="truncate">{event.place_name || 'Location'}</span>
-                </div>
-              </div>
-              <Button 
-                variant="link" 
-                size="sm" 
-                className="h-auto p-0 text-primary font-black text-[11px] mt-1"
-                onClick={() => onViewDetails(event)}
-              >
-                View Details →
-              </Button>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </>
-  );
+  return null; // This component doesn't render anything itself
 };
 
 interface LeafletMapProps {
@@ -154,11 +112,39 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <MapContent 
-          events={geocodedEvents} 
-          icon={customIcon} 
-          onViewDetails={onViewDetails} 
-        />
+        <MapController events={geocodedEvents} />
+        
+        {geocodedEvents.map((event) => (
+          <Marker 
+            key={event.id} 
+            position={[event.lat, event.lng]} 
+            icon={customIcon}
+          >
+            <Popup className="custom-popup">
+              <div className="p-3 min-w-[180px] space-y-2">
+                <h3 className="font-black text-primary text-base leading-tight">{event.event_name}</h3>
+                <div className="space-y-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-3 w-3 text-primary/60" />
+                    <span>{format(parseISO(event.event_date), 'MMM d, yyyy')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-3 w-3 text-primary/60" />
+                    <span className="truncate">{event.place_name || 'Location'}</span>
+                  </div>
+                </div>
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="h-auto p-0 text-primary font-black text-[11px] mt-1"
+                  onClick={() => onViewDetails(event)}
+                >
+                  View Details →
+                </Button>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
       
       <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
