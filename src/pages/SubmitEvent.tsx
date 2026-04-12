@@ -63,13 +63,10 @@ const SubmitEvent = () => {
     let endDate: Date | undefined;
 
     if (parsedData.eventDate) {
-      const dateParts = String(parsedData.eventDate).split(/ & | - /).map(s => s.trim());
-      if (dateParts.length > 1) {
-        eventDate = new Date(dateParts[0]);
-        endDate = new Date(dateParts[1]);
-      } else {
-        eventDate = new Date(parsedData.eventDate);
-      }
+      eventDate = new Date(parsedData.eventDate);
+    }
+    if (parsedData.endDate) {
+      endDate = new Date(parsedData.endDate);
     }
 
     if (eventDate && isNaN(eventDate.getTime())) eventDate = undefined;

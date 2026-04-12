@@ -16,15 +16,33 @@ serve(async (req: Request) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // 1. Authentication Check
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: 'No authorization header' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 401,
+    });
+  }
+
   const supabaseClient = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
     Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     {
       global: {
-        headers: { 'x-my-custom-header': 'SoulFlow-Edge-Function' },
+        headers: { Authorization: authHeader },
       },
     }
   )
+
+  // Verify the user is logged in
+  const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 401,
+    });
+  }
 
   let input_text = '';
   let parsed_data: any = null;
@@ -37,7 +55,6 @@ serve(async (req: Request) => {
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
       error_message = 'GEMINI_API_KEY is not set in environment variables.';
-      console.error(error_message);
       return new Response(JSON.stringify({ error: error_message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -47,59 +64,52 @@ serve(async (req: Request) => {
     const currentYear = new Date().getFullYear();
 
     const prompt = `
-      You are an AI assistant specialized in extracting event details from unstructured text.
-      Your task is to parse the provided event text and return a JSON object containing the extracted information.
-      Crucially, your response MUST contain ONLY the JSON object, with no additional text or markdown formatting.
+      You are an expert event coordinator for "SoulFlow", a platform for conscious and soulful events in Australia.
+      Your task is to parse the provided text (which could be a flyer, email, or social post) and extract event details into a clean JSON object.
 
-      **Formatting Rules:**
-      - For the 'description' and 'specialNotes' fields, preserve the original paragraph structure and line breaks.
-      - If a field is not found, omit it from the JSON.
-      - Ensure dates are in 'YYYY-MM-DD' format. Assume the current year is ${currentYear}.
-      - If a date range is provided, extract the start date as 'eventDate' and the end date as 'endDate'.
+      **Extraction Rules:**
+      1. **Dates:** Use 'YYYY-MM-DD' format. Assume the current year is ${currentYear} unless specified.
+      2. **Event Type:** MUST be one of: [Music, Workshop, Meditation, Open Mic, Sound Bath, Foraging, Community Gathering, Other].
+      3. **State:** MUST be one of: [ACT, NSW, NT, QLD, SA, TAS, VIC, WA].
+      4. **Description:** Keep the original paragraph structure.
+      5. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
+      6. **Google Maps:** Look for links starting with "maps.app.goo.gl" or "google.com/maps".
 
-      Here is the event text:
-      "${text}"
-
-      Expected JSON format:
+      **Expected JSON Format:**
       {
-        "eventName": "Example Event",
-        "eventDate": "2024-12-25",
-        "endDate": "2024-12-26",
-        "eventTime": "7:00 PM",
-        "placeName": "The Venue",
-        "fullAddress": "123 Main St, City, State, Postcode",
-        "description": "Description text...",
-        "ticketLink": "https://example.com/tickets",
-        "price": "$50",
-        "specialNotes": "Notes...",
-        "organizerContact": "John Doe",
-        "eventType": "Music",
-        "state": "VIC"
+        "eventName": "string",
+        "eventDate": "YYYY-MM-DD",
+        "endDate": "YYYY-MM-DD (optional)",
+        "eventTime": "string",
+        "placeName": "string",
+        "fullAddress": "string",
+        "description": "string",
+        "ticketLink": "string (URL)",
+        "price": "string",
+        "specialNotes": "string",
+        "organizerContact": "string",
+        "eventType": "string",
+        "geographicalState": "string",
+        "discountCode": "string",
+        "googleMapsLink": "string (URL)"
       }
+
+      Return ONLY the JSON object. No markdown, no explanations.
+
+      Text to parse:
+      "${text}"
     `;
 
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt,
-          }],
-        }],
+        contents: [{ parts: [{ text: prompt }] }],
       }),
     });
 
     if (!geminiResponse.ok) {
-      const errorBody = await geminiResponse.json();
-      error_message = `Gemini API error: ${geminiResponse.status}`;
-      console.error(error_message, errorBody);
-      return new Response(JSON.stringify({ error: error_message }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: geminiResponse.status,
-      });
+      throw new Error(`Gemini API error: ${geminiResponse.status}`);
     }
 
     const geminiData = await geminiResponse.json();
@@ -108,21 +118,8 @@ serve(async (req: Request) => {
     if (generatedText) {
       const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        generatedText = jsonMatch[0];
+        parsed_data = JSON.parse(jsonMatch[0]);
       }
-
-      try {
-        parsed_data = JSON.parse(generatedText);
-      } catch (jsonError: any) {
-        error_message = `Failed to parse AI output as JSON.`;
-        console.error(error_message, generatedText);
-        return new Response(JSON.stringify({ error: error_message }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        });
-      }
-    } else {
-      parsed_data = {};
     }
 
     return new Response(JSON.stringify({ parsed_data }), {
@@ -131,19 +128,26 @@ serve(async (req: Request) => {
     });
 
   } catch (error: any) {
-    error_message = `Unexpected error: ${error.message}`;
+    error_message = error.message;
     return new Response(JSON.stringify({ error: error_message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
   } finally {
-    // Log the attempt to the database
-    await supabaseClient
+    // Log the attempt with user context
+    const adminClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    
+    await adminClient
       .from('ai_parsing_logs')
       .insert({
         input_text: input_text,
         parsed_data: parsed_data,
         error_message: error_message,
+        // @ts-ignore
+        user_id: user?.id || null
       });
   }
 });
