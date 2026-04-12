@@ -33,6 +33,9 @@ interface EventFormProps {
 }
 
 const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onBack, onPreview, currentImageUrl }) => {
+  const descriptionValue = form.watch('description') || '';
+  const specialNotesValue = form.watch('specialNotes') || '';
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -233,9 +236,14 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="description">Description</FormLabel>
+              <div className="flex justify-between items-center">
+                <FormLabel htmlFor="description">Description</FormLabel>
+                <span className={cn("text-[10px] font-bold uppercase tracking-widest", descriptionValue.length > 1000 ? "text-destructive" : "text-muted-foreground/60")}>
+                  {descriptionValue.length} / 1000
+                </span>
+              </div>
               <FormControl>
-                <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary" />
+                <Textarea id="description" placeholder="Purpose, vibe, activities..." {...field} className="focus-visible:ring-primary min-h-[120px]" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -275,9 +283,14 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="specialNotes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="specialNotes">Special Notes</FormLabel>
+              <div className="flex justify-between items-center">
+                <FormLabel htmlFor="specialNotes">Special Notes</FormLabel>
+                <span className={cn("text-[10px] font-bold uppercase tracking-widest", specialNotesValue.length > 300 ? "text-destructive" : "text-muted-foreground/60")}>
+                  {specialNotesValue.length} / 300
+                </span>
+              </div>
               <FormControl>
-                <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary" />
+                <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary min-h-[80px]" />
               </FormControl>
               <FormMessage />
             </FormItem>

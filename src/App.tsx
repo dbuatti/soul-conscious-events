@@ -28,6 +28,7 @@ import HeaderV2 from "./components/v2/HeaderV2"; // Import HeaderV2
 import AccountSettings from "./pages/AccountSettings"; // Import new AccountSettings page
 import Footer from "./components/Footer"; // Import Footer
 import ScrollToTopButton from "./components/ScrollToTopButton"; // Import ScrollToTopButton
+import ScrollProgress from "./components/ScrollProgress"; // Import ScrollProgress
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const queryClient = new QueryClient();
 const LayoutV2: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col items-center bg-background">
+      <ScrollProgress /> {/* Add the progress bar here */}
       <HeaderV2 />
       <main className="flex-grow w-full px-2 flex flex-col items-center py-8">
         {children}

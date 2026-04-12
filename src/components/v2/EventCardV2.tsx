@@ -3,7 +3,7 @@ import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { format, parseISO, isToday, isTomorrow, differenceInDays, differenceInHours } from 'date-fns';
-import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight, Copy } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
@@ -54,10 +54,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const handleNativeShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const baseId = event.id.split('-')[0];
+    const shareUrl = `${window.location.origin}/events/${baseId}`;
     const shareData = {
       title: event.event_name,
       text: `Check out this soulful event: ${event.event_name}`,
-      url: `${window.location.origin}/events/${baseId}`,
+      url: shareUrl,
     };
 
     if (navigator.share && navigator.canShare?.(shareData)) {
@@ -69,7 +70,13 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         }
       }
     } else {
-      onShare(event, e);
+      // Fallback to copy link
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Event link copied to clipboard!');
+      } catch (err) {
+        toast.error('Failed to copy link.');
+      }
     }
   };
 
@@ -105,6 +112,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             variant="secondary"
             size="icon"
             onClick={handleNativeShare}
+            title="Share or Copy Link"
             className="h-10 w-10 rounded-full shadow-xl bg-white/90 hover:bg-white"
           >
             <Share2 className="h-4 w-4 text-primary" />
