@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Search, Star, List, CalendarDays } from 'lucide-react';
+import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Heart, Users, Palette, Utensils, Leaf, GraduationCap, Globe, Zap, HelpCircle } from 'lucide-react';
 import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,21 @@ export interface FilterDropdownsV2Props {
   viewMode: 'list' | 'calendar';
   onViewModeChange: (mode: 'list' | 'calendar') => void;
 }
+
+const categoryIcons: Record<string, React.ReactNode> = {
+  'Wellness': <Heart className="h-3.5 w-3.5 mr-2" />,
+  'Dance & Movement': <Zap className="h-3.5 w-3.5 mr-2" />,
+  'Consciousness & Spirituality': <Sparkles className="h-3.5 w-3.5 mr-2" />,
+  'Arts & Creativity': <Palette className="h-3.5 w-3.5 mr-2" />,
+  'Community & Social': <Users className="h-3.5 w-3.5 mr-2" />,
+  'Music': <Music className="h-3.5 w-3.5 mr-2" />,
+  'Food & Drink': <Utensils className="h-3.5 w-3.5 mr-2" />,
+  'Relationships & Connection': <Heart className="h-3.5 w-3.5 mr-2" />,
+  'Talks & Learning': <GraduationCap className="h-3.5 w-3.5 mr-2" />,
+  'Local Culture': <Globe className="h-3.5 w-3.5 mr-2" />,
+  'Nature & Outdoors': <Leaf className="h-3.5 w-3.5 mr-2" />,
+  'Other': <HelpCircle className="h-3.5 w-3.5 mr-2" />,
+};
 
 const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
   currentFilters,
@@ -98,7 +113,10 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
           onSelect={(e) => e.preventDefault()}
           className="cursor-pointer flex-grow"
         >
-          {option}
+          <div className="flex items-center">
+            {filterType === 'category' && categoryIcons[option]}
+            {option}
+          </div>
         </DropdownMenuCheckboxItem>
         {filterType === 'venue' && isUserLoggedIn && (
           <Button
