@@ -187,49 +187,48 @@ const EventsListV2 = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <div className="mb-12 sm:mb-20 text-center space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-top-4 duration-1000">
-        <h1 className="text-4xl sm:text-6xl md:text-8xl font-black font-heading tracking-tight text-foreground leading-[1.1] sm:leading-[1.05]">
+      <div className="mb-8 sm:mb-20 text-center space-y-3 sm:space-y-6 animate-in fade-in slide-in-from-top-4 duration-1000">
+        <h1 className="text-3xl sm:text-6xl md:text-8xl font-black font-heading tracking-tight text-foreground leading-[1.1] sm:leading-[1.05]">
           Soulful Gatherings <br />
           <span className="text-primary italic font-normal">Across Australia</span>
         </h1>
-        <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium px-4">
-          Find workshops, meditations, and community events that nourish your spirit and connect you with like-minded souls.
+        <p className="text-sm sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium px-4">
+          Find workshops, meditations, and community events that nourish your spirit.
         </p>
       </div>
 
-      <div className="mb-10 sm:mb-16 space-y-6 sm:space-y-8 organic-card p-6 sm:p-12 rounded-[2rem] sm:rounded-[3rem]">
+      <div className="mb-8 sm:mb-16 space-y-4 sm:space-y-8 organic-card p-4 sm:p-12 rounded-[1.5rem] sm:rounded-[3rem]">
         <div className="space-y-4 sm:space-y-6">
           <div className="relative group">
-            <Search className="absolute left-5 sm:left-8 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
             <Input
               placeholder="Search events..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-14 sm:pl-20 pr-12 sm:pr-16 h-14 sm:h-20 rounded-2xl sm:rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-lg sm:text-2xl placeholder:text-muted-foreground/40 font-medium"
+              className="pl-10 sm:pl-20 pr-10 sm:pr-16 h-12 sm:h-20 rounded-xl sm:rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-base sm:text-2xl placeholder:text-muted-foreground/40 font-medium"
             />
             {searchTerm && (
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={() => setSearchTerm('')}
-                className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary"
+                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary"
               >
-                <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                <X className="h-4 w-4 sm:h-6 sm:w-6" />
               </Button>
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-2 sm:px-4">
-            <span className="text-[9px] sm:text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest mr-1 sm:mr-2">Quick Filters:</span>
-            <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2 px-1">
+            <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1 -mx-1 px-1">
               {QUICK_FILTERS.map((qf) => (
                 <button
                   key={qf.value}
                   onClick={() => toggleQuickFilter(qf.value)}
                   className={cn(
-                    "px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 border",
+                    "whitespace-nowrap px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 border",
                     filters.category.includes(qf.value)
-                      ? "bg-primary border-primary text-white shadow-lg scale-105"
+                      ? "bg-primary border-primary text-white shadow-md scale-105"
                       : "bg-background border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
                   )}
                 >
@@ -265,39 +264,39 @@ const EventsListV2 = () => {
           )}
 
           {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/40 animate-in fade-in slide-in-from-bottom-2">
-              <span className="text-[9px] sm:text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest mr-1 sm:mr-2">Active:</span>
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-border/40 animate-in fade-in slide-in-from-bottom-2">
+              <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest mr-1">Active:</span>
               {filters.date !== 'All Upcoming' && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 sm:px-3 sm:py-1 rounded-full flex items-center gap-1 text-[10px] sm:text-xs">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {filters.date}
                   <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('date')} />
                 </Badge>
               )}
               {filters.category.map(cat => (
-                <Badge key={cat} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 sm:px-3 sm:py-1 rounded-full flex items-center gap-1 text-[10px] sm:text-xs">
+                <Badge key={cat} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {cat}
                   <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('category', cat)} />
                 </Badge>
               ))}
               {filters.venue.map(v => (
-                <Badge key={v} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 sm:px-3 sm:py-1 rounded-full flex items-center gap-1 text-[10px] sm:text-xs">
+                <Badge key={v} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {v}
                   <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('venue', v)} />
                 </Badge>
               ))}
               {filters.price.map(p => (
-                <Badge key={p} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 sm:px-3 sm:py-1 rounded-full flex items-center gap-1 text-[10px] sm:text-xs">
+                <Badge key={p} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {p}
                   <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('price', p)} />
                 </Badge>
               ))}
               {filters.state.map(s => (
-                <Badge key={s} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 sm:px-3 sm:py-1 rounded-full flex items-center gap-1 text-[10px] sm:text-xs">
+                <Badge key={s} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {s}
                   <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('state', s)} />
                 </Badge>
               ))}
-              <Button variant="link" size="sm" onClick={handleClearFilters} className="text-[9px] sm:text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest p-0 h-auto ml-1 sm:ml-2">
+              <Button variant="link" size="sm" onClick={handleClearFilters} className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest p-0 h-auto ml-1">
                 Clear All
               </Button>
             </div>
@@ -306,14 +305,13 @@ const EventsListV2 = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex flex-col space-y-6 sm:space-y-8">
-              <Skeleton className="h-[250px] sm:h-[400px] w-full rounded-[2rem] sm:rounded-[2.5rem]" />
-              <div className="space-y-3 sm:space-y-4 px-2 sm:px-4">
-                <Skeleton className="h-8 sm:h-10 w-3/4 rounded-xl" />
-                <Skeleton className="h-5 sm:h-6 w-1/2 rounded-lg" />
-                <Skeleton className="h-5 sm:h-6 w-2/3 rounded-lg" />
+            <div key={i} className="flex flex-col space-y-4 sm:space-y-8">
+              <Skeleton className="h-[200px] sm:h-[400px] w-full rounded-2xl sm:rounded-[2.5rem]" />
+              <div className="space-y-2 sm:space-y-4 px-2">
+                <Skeleton className="h-6 sm:h-10 w-3/4 rounded-lg" />
+                <Skeleton className="h-4 sm:h-6 w-1/2 rounded-md" />
               </div>
             </div>
           ))}
@@ -321,22 +319,18 @@ const EventsListV2 = () => {
       ) : (
         <>
           {viewMode === 'list' ? (
-            <section className="mb-20 sm:mb-32">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 sm:mb-12 border-b pb-6 sm:pb-8 border-border/40 gap-4">
-                <h2 className="text-3xl sm:text-5xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
-                <div className="flex items-center gap-3">
-                  {searchTerm && <span className="text-[10px] sm:text-xs font-black text-primary/60 uppercase tracking-widest animate-pulse">Searching...</span>}
-                  <div className={cn(
-                    "text-[10px] sm:text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full transition-all duration-500",
-                    filteredEvents.length > 0 && "text-primary/80"
-                  )}>
-                    {filteredEvents.length} {filteredEvents.length === 1 ? 'Event' : 'Events'} Found
+            <section className="mb-16 sm:mb-32">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-12 border-b pb-4 sm:pb-8 border-border/40 gap-2">
+                <h2 className="text-2xl sm:text-5xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
+                <div className="flex items-center gap-2">
+                  <div className="text-[10px] sm:text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 rounded-full">
+                    {filteredEvents.length} {filteredEvents.length === 1 ? 'Event' : 'Events'}
                   </div>
                 </div>
               </div>
               
               {displayedEvents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
                   {displayedEvents.map(event => (
                     <EventCardV2
                       key={event.id}
@@ -349,19 +343,19 @@ const EventsListV2 = () => {
                   ))}
                 </div>
               ) : (
-                <div className="p-12 sm:p-24 organic-card rounded-[2.5rem] sm:rounded-[4rem] text-center border-dashed border-primary/20">
-                  <Frown className="h-16 w-16 sm:h-24 sm:w-24 text-primary/20 mx-auto mb-6 sm:mb-10" />
-                  <h3 className="text-2xl sm:text-4xl font-heading font-bold text-foreground mb-4 sm:mb-6">No events found</h3>
-                  <p className="text-base sm:text-xl text-muted-foreground mb-8 sm:mb-12 max-w-sm mx-auto font-medium">Try adjusting your filters or share your own soulful event.</p>
-                  <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+                <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-dashed border-primary/20">
+                  <Frown className="h-12 w-12 sm:h-24 sm:w-24 text-primary/20 mx-auto mb-4 sm:mb-10" />
+                  <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">No events found</h3>
+                  <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-12 max-w-sm mx-auto font-medium">Try adjusting your filters or share your own event.</p>
+                  <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-6">
                     {hasActiveFilters && (
-                      <Button variant="outline" onClick={handleClearFilters} className="rounded-2xl px-8 py-6 sm:px-10 sm:py-8 text-lg sm:text-xl font-black">
+                      <Button variant="outline" onClick={handleClearFilters} className="rounded-xl px-6 py-4 sm:px-10 sm:py-8 text-base sm:text-xl font-black">
                         Clear Filters
                       </Button>
                     )}
                     <Link to="/submit-event">
-                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-8 py-6 sm:px-12 sm:py-8 text-lg sm:text-xl font-black shadow-2xl transition-transform hover:scale-105">
-                        <PlusCircle className="mr-2 sm:mr-3 h-6 w-6 sm:h-7 sm:w-7" /> Add Your Event
+                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-6 py-4 sm:px-12 sm:py-8 text-base sm:text-xl font-black shadow-xl">
+                        <PlusCircle className="mr-2 h-5 w-5 sm:h-7 sm:w-7" /> Add Your Event
                       </Button>
                     </Link>
                   </div>
@@ -369,9 +363,9 @@ const EventsListV2 = () => {
               )}
 
               {hasMore && displayedEvents.length > 0 && (
-                <div className="flex justify-center mt-16 sm:mt-24">
-                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="w-full sm:min-w-[340px] h-16 sm:h-20 rounded-2xl sm:rounded-[2rem] transition-all hover:bg-primary hover:text-primary-foreground font-black text-xl sm:text-2xl shadow-2xl">
-                    {loadingMore ? <Loader2 className="mr-3 h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : 'Load More Events'}
+                <div className="flex justify-center mt-12 sm:mt-24">
+                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="w-full sm:min-w-[300px] h-12 sm:h-20 rounded-xl sm:rounded-[2rem] font-black text-base sm:text-2xl shadow-lg">
+                    {loadingMore ? <Loader2 className="mr-2 h-4 w-4 sm:h-6 sm:w-6 animate-spin" /> : 'Load More'}
                   </Button>
                 </div>
               )}
@@ -386,10 +380,10 @@ const EventsListV2 = () => {
                 currentMonth={currentMonth}
                 onMonthChange={setCurrentMonth}
               />
-              <div className="mt-16 sm:mt-24">
-                <h3 className="text-3xl sm:text-5xl font-heading font-bold text-foreground mb-8 sm:mb-12 border-b pb-6 sm:pb-8 border-border/40 tracking-tight">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
+              <div className="mt-12 sm:mt-24">
+                <h3 className="text-2xl sm:text-5xl font-heading font-bold text-foreground mb-6 sm:mb-12 border-b pb-4 sm:pb-8 border-border/40 tracking-tight">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
                 {selectedDayEvents.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
                     {selectedDayEvents.map(event => (
                       <EventCardV2 
                         key={event.id} 
@@ -402,19 +396,19 @@ const EventsListV2 = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-12 sm:p-24 organic-card rounded-[2.5rem] sm:rounded-[4rem] text-center border-dashed border-primary/20">
-                    <Frown className="h-16 w-16 sm:h-20 sm:w-20 text-primary/20 mx-auto mb-6 sm:mb-8" />
-                    <p className="text-xl sm:text-2xl font-bold text-muted-foreground">No events scheduled for this day.</p>
+                  <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-dashed border-primary/20">
+                    <Frown className="h-12 w-12 sm:h-20 sm:w-20 text-primary/20 mx-auto mb-4 sm:mb-8" />
+                    <p className="text-lg sm:text-2xl font-bold text-muted-foreground">No events scheduled for this day.</p>
                   </div>
                 )}
               </div>
             </div>
           ) : (
-            <div className="animate-in fade-in duration-1000 mb-20 sm:mb-32">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 sm:mb-12 border-b pb-6 sm:pb-8 border-border/40 gap-4">
-                <h2 className="text-3xl sm:text-5xl font-heading font-bold text-foreground tracking-tight">Event Map</h2>
-                <div className="text-[10px] sm:text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full w-fit">
-                  {filteredEvents.length} Locations Found
+            <div className="animate-in fade-in duration-1000 mb-16 sm:mb-32">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-12 border-b pb-4 sm:pb-8 border-border/40 gap-2">
+                <h2 className="text-2xl sm:text-5xl font-heading font-bold text-foreground tracking-tight">Event Map</h2>
+                <div className="text-[10px] sm:text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 rounded-full w-fit">
+                  {filteredEvents.length} Locations
                 </div>
               </div>
               <LeafletMap events={filteredEvents} onViewDetails={handleViewDetails} />
@@ -424,34 +418,34 @@ const EventsListV2 = () => {
       )}
 
       {!user && !loading && (
-        <section className="mt-20 sm:mt-40 mb-16 sm:mb-24 organic-card p-8 sm:p-20 rounded-[2.5rem] sm:rounded-[4rem] text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
-          <h2 className="text-3xl sm:text-5xl font-heading font-bold text-foreground mb-8 sm:mb-12">Join the SoulFlow Community</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 mb-12 sm:mb-16">
-            <div className="space-y-4 sm:space-y-6">
-              <div className="h-12 w-12 sm:h-16 sm:w-16 bg-primary/10 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto">
-                <Bookmark className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+        <section className="mt-16 sm:mt-40 mb-12 sm:mb-24 organic-card p-6 sm:p-20 rounded-[2rem] sm:rounded-[4rem] text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
+          <h2 className="text-2xl sm:text-5xl font-heading font-bold text-foreground mb-6 sm:mb-12">Join the SoulFlow Community</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-12 mb-8 sm:mb-16">
+            <div className="space-y-2 sm:space-y-6">
+              <div className="h-10 w-10 sm:h-16 sm:w-16 bg-primary/10 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto">
+                <Bookmark className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
               </div>
-              <h3 className="font-black text-xl sm:text-2xl">Save Favourites</h3>
-              <p className="text-muted-foreground text-sm sm:text-base font-medium">Bookmark events you love and never miss a soulful gathering.</p>
+              <h3 className="font-black text-lg sm:text-2xl">Save Favourites</h3>
+              <p className="text-muted-foreground text-xs sm:text-base font-medium">Bookmark events you love and never miss a gathering.</p>
             </div>
-            <div className="space-y-4 sm:space-y-6">
-              <div className="h-12 w-12 sm:h-16 sm:w-16 bg-primary/10 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto">
-                <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <div className="space-y-2 sm:space-y-6">
+              <div className="h-10 w-10 sm:h-16 sm:w-16 bg-primary/10 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto">
+                <Sparkles className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
               </div>
-              <h3 className="font-black text-xl sm:text-2xl">Share Events</h3>
-              <p className="text-muted-foreground text-sm sm:text-base font-medium">Submit your own workshops or circles to our growing community.</p>
+              <h3 className="font-black text-lg sm:text-2xl">Share Events</h3>
+              <p className="text-muted-foreground text-xs sm:text-base font-medium">Submit your own workshops or circles to our community.</p>
             </div>
-            <div className="space-y-4 sm:space-y-6">
-              <div className="h-12 w-12 sm:h-16 sm:w-16 bg-primary/10 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto">
-                <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <div className="space-y-2 sm:space-y-6">
+              <div className="h-10 w-10 sm:h-16 sm:w-16 bg-primary/10 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto">
+                <PlusCircle className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
               </div>
-              <h3 className="font-black text-xl sm:text-2xl">Manage Listings</h3>
-              <p className="text-muted-foreground text-sm sm:text-base font-medium">Easily edit or update your event details at any time.</p>
+              <h3 className="font-black text-lg sm:text-2xl">Manage Listings</h3>
+              <p className="text-muted-foreground text-xs sm:text-base font-medium">Easily edit or update your event details at any time.</p>
             </div>
           </div>
           <Link to="/login">
-            <Button className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl sm:rounded-[2rem] px-10 py-8 sm:px-16 sm:py-10 text-xl sm:text-2xl font-black shadow-2xl transition-transform hover:scale-105">
+            <Button className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl sm:rounded-[2rem] px-8 py-6 sm:px-16 sm:py-10 text-lg sm:text-2xl font-black shadow-xl">
               Sign Up for Free
             </Button>
           </Link>
