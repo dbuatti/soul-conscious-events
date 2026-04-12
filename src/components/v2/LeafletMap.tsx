@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, FeatureGroup } from 'react-leaflet';
 import L from 'leaflet';
 import { Event } from '@/types/event';
 import { format, parseISO } from 'date-fns';
@@ -11,12 +11,13 @@ interface GeocodedEvent extends Event {
   lng: number;
 }
 
-// Sub-component to handle map view updates (fitBounds)
-// This must be a child of MapContainer to use useMap()
+// Move MapController outside to ensure component stability
 const MapController = ({ events }: { events: GeocodedEvent[] }) => {
   const map = useMap();
 
   useEffect(() => {
+    if (!map) return;
+
     if (events.length === 0) {
       map.setView([-25.2744, 133.7751], 4);
       return;
@@ -36,7 +37,7 @@ const MapController = ({ events }: { events: GeocodedEvent[] }) => {
     }
   }, [events, map]);
 
-  return null; // This component doesn't render anything itself
+  return null;
 };
 
 interface LeafletMapProps {
@@ -48,6 +49,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const geocodeEvents = async () => {
       const results: GeocodedEvent[] = [];
       const eventsToGeocode = events.filter(e => e.full_address);
@@ -72,7 +75,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
           );
           const data = await response.json();
           
-          if (data && data.length > 0) {
+          if (data && data.length > 0 && isMounted) {
             const lat = parseFloat(data[0].lat);
             const lng = parseFloat(data[0].lon);
             results.push({ ...event, lat, lng });
@@ -82,7 +85,9 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
           console.error('Geocoding error:', event.full_address, error);
         }
       }
-      setGeocodedEvents(results);
+      if (isMounted) {
+        setGeocodedEvents(results);
+      }
     };
 
     if (events.length > 0) {
@@ -90,6 +95,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     } else {
       setGeocodedEvents([]);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [events]);
 
   const customIcon = useMemo(() => L.divIcon({
@@ -114,37 +123,39 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         
         <MapController events={geocodedEvents} />
         
-        {geocodedEvents.map((event) => (
-          <Marker 
-            key={event.id} 
-            position={[event.lat, event.lng]} 
-            icon={customIcon}
-          >
-            <Popup className="custom-popup">
-              <div className="p-3 min-w-[180px] space-y-2">
-                <h3 className="font-black text-primary text-base leading-tight">{event.event_name}</h3>
-                <div className="space-y-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3 w-3 text-primary/60" />
-                    <span>{format(parseISO(event.event_date), 'MMM d, yyyy')}</span>
+        <FeatureGroup>
+          {geocodedEvents.map((event) => (
+            <Marker 
+              key={event.id} 
+              position={[event.lat, event.lng]} 
+              icon={customIcon}
+            >
+              <Popup className="custom-popup">
+                <div className="p-3 min-w-[180px] space-y-2">
+                  <h3 className="font-black text-primary text-base leading-tight">{event.event_name}</h3>
+                  <div className="space-y-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3 text-primary/60" />
+                      <span>{format(parseISO(event.event_date), 'MMM d, yyyy')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3 w-3 text-primary/60" />
+                      <span className="truncate">{event.place_name || 'Location'}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3 w-3 text-primary/60" />
-                    <span className="truncate">{event.place_name || 'Location'}</span>
-                  </div>
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="h-auto p-0 text-primary font-black text-[11px] mt-1"
+                    onClick={() => onViewDetails(event)}
+                  >
+                    View Details →
+                  </Button>
                 </div>
-                <Button 
-                  variant="link" 
-                  size="sm" 
-                  className="h-auto p-0 text-primary font-black text-[11px] mt-1"
-                  onClick={() => onViewDetails(event)}
-                >
-                  View Details →
-                </Button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          ))}
+        </FeatureGroup>
       </MapContainer>
       
       <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
