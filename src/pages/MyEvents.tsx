@@ -26,7 +26,7 @@ const MyEvents: React.FC = () => {
       .select('*')
       .eq('user_id', user.id)
       .eq('is_deleted', false)
-      .order('event_date', { ascending: true });
+      .order('event_date', { ascending: false }); // Changed to descending for reverse chronological order
 
     if (error) {
       console.error('Error fetching user events:', error);
