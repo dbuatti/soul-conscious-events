@@ -19,7 +19,7 @@ const MapUpdater = ({ events }: { events: GeocodedEvent[] }) => {
     if (!map || events.length === 0) return;
 
     try {
-      // Invalidate size to ensure map renders correctly if it was previously hidden
+      // Invalidate size to ensure map renders correctly
       map.invalidateSize();
 
       const bounds = L.latLngBounds(events.map(event => [event.lat, event.lng]));
@@ -70,7 +70,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         }
 
         try {
-          // Using Nominatim for free geocoding
           const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`
           );
@@ -118,7 +117,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         center={[-25.2744, 133.7751]}
         zoom={4}
         scrollWheelZoom={true}
-        className="w-full h-full z-0"
+        className="w-full h-full"
+        style={{ zIndex: 0 }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
