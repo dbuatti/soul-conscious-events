@@ -159,11 +159,16 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             {isCreatorOrAdmin && (
               <>
                 <Link to={`/edit-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full">
+                  <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full" title="Edit Event">
                     <Edit className="h-4 w-4 text-muted-foreground hover:text-primary" />
                   </Button>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={(e) => onDelete(event.id, e)} className="h-10 w-10 hover:bg-destructive/10 rounded-full">
+                <Link to={`/duplicate-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
+                  <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full" title="Duplicate Event">
+                    <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="icon" onClick={(e) => onDelete(event.id, e)} className="h-10 w-10 hover:bg-destructive/10 rounded-full" title="Delete Event">
                   <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                 </Button>
               </>

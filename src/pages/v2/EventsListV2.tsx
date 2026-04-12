@@ -256,9 +256,12 @@ const EventsListV2 = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex flex-col space-y-8">
-              <Skeleton className="h-[400px] w-full rounded-[3rem]" />
-              <Skeleton className="h-12 w-3/4" />
-              <Skeleton className="h-8 w-1/2" />
+              <Skeleton className="h-[400px] w-full rounded-[2.5rem]" />
+              <div className="space-y-4 px-4">
+                <Skeleton className="h-10 w-3/4 rounded-xl" />
+                <Skeleton className="h-6 w-1/2 rounded-lg" />
+                <Skeleton className="h-6 w-2/3 rounded-lg" />
+              </div>
             </div>
           ))}
         </div>

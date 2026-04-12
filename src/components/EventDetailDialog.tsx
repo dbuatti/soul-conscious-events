@@ -77,6 +77,18 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     }
   };
 
+  const handleCopyAddress = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!event?.full_address) return;
+    try {
+      await navigator.clipboard.writeText(event.full_address);
+      toast.success('Address copied to clipboard!');
+    } catch (err) {
+      toast.error('Failed to copy address.');
+    }
+  };
+
   const handleShare = async () => {
     if (!event) return;
     const baseId = event.id.split('-')[0];
@@ -176,12 +188,23 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             <div className="space-y-4">
               <h3 className="text-xs uppercase font-bold tracking-[0.2em] text-muted-foreground/70">Location & Price</h3>
               {event.full_address && (
-                <div className="flex items-start text-foreground group">
+                <div className="flex items-start text-foreground group relative">
                   <MapPin className="mr-3 h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors leading-snug">
-                    {event.place_name && <span className="block font-bold mb-0.5">{event.place_name}</span>}
-                    <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">{event.full_address}</span>
-                  </a>
+                  <div className="flex-1">
+                    <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors leading-snug block">
+                      {event.place_name && <span className="block font-bold mb-0.5">{event.place_name}</span>}
+                      <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">{event.full_address}</span>
+                    </a>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ml-2" 
+                    onClick={handleCopyAddress}
+                    title="Copy Address"
+                  >
+                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
                 </div>
               )}
               {event.price && (
@@ -238,7 +261,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               
               {event.ticket_link && (
                 <Button 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-6 rounded-xl shadow-lg transition-all transform hover:scale-[1.02]" 
+                  className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-bold py-6 rounded-xl shadow-lg transition-all transform hover:scale-[1.02]" 
                   onClick={handleTicketLinkClick}
                 >
                   <LinkIcon className="mr-2 h-5 w-5" /> Get Your Tickets
@@ -286,7 +309,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                       <Trash2 className="mr-2 h-4 w-4" /> Delete
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-2xl">
+                  <AlertDialogContent className="rounded-[2rem]">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="font-heading text-2xl">Delete Event?</AlertDialogTitle>
                       <AlertDialogDescription>This action cannot be undone. This event will be permanently removed.</AlertDialogDescription>
