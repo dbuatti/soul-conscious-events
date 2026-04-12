@@ -120,12 +120,15 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    console.log('[LeafletMap] Initializing map instance');
+    const width = mapRef.current.clientWidth;
+    const height = mapRef.current.clientHeight;
+    console.log(`[LeafletMap] Initializing map. Container size: ${width}x${height}`);
+
     const map = L.map(mapRef.current, {
       center: [-25.2744, 133.7751],
       zoom: 4,
       scrollWheelZoom: true,
-      zoomControl: false, // We'll use custom placement or just rely on scroll
+      zoomControl: false,
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -134,6 +137,14 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
 
     markersLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
+
+    // Force a resize check after a short delay to fix the "quadrant" issue
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        console.log('[LeafletMap] Forcing invalidateSize() after init');
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 500);
 
     return () => {
       if (mapInstanceRef.current) {
@@ -158,7 +169,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     const bounds = L.latLngBounds([]);
 
     geocodedEvents.forEach((event) => {
-      // Using a more robust divIcon with inline styles to ensure visibility
       const customIcon = L.divIcon({
         html: `<div style="width: 24px; height: 24px; background-color: #B34629; border: 2px solid white; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>`,
         className: 'custom-div-icon',
@@ -207,7 +217,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       });
       
       markersLayer.addLayer(marker);
-      console.log('[LeafletMap] Added marker for:', event.event_name);
       bounds.extend([event.lat, event.lng]);
     });
 
@@ -220,18 +229,19 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       });
     }
 
+    // Ensure the map is correctly sized whenever markers change
     const timer = setTimeout(() => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.invalidateSize();
       }
-    }, 200);
+    }, 300);
 
     return () => clearTimeout(timer);
 
   }, [geocodedEvents, onViewDetails]);
 
   return (
-    <div className="w-full h-[500px] sm:h-[600px] relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl bg-secondary/10 border-none">
+    <div className="w-full h-[500px] sm:h-[600px] relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl bg-[#fdfbf7] border-none">
       <div ref={mapRef} className="w-full h-full z-0" />
       
       {/* Status Overlay */}
