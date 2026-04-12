@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Event } from '@/types/event';
 import { format, parseISO } from 'date-fns';
@@ -47,9 +47,20 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         }
 
         try {
+          // Nominatim requires a User-Agent and a delay between requests
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`,
+            {
+              headers: {
+                'User-Agent': 'SoulFlow-Australia-Community-App'
+              }
+            }
           );
+          
+          if (!response.ok) throw new Error('Geocoding service error');
+          
           const data = await response.json();
           
           if (data && data.length > 0 && isMounted) {
@@ -99,8 +110,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     mapInstanceRef.current = map;
 
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
     };
   }, []);
 
@@ -110,7 +123,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     const markersLayer = markersLayerRef.current;
     if (!map || !markersLayer) return;
 
-    // Clear existing markers
     markersLayer.clearLayers();
 
     if (geocodedEvents.length === 0) return;
@@ -127,7 +139,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     geocodedEvents.forEach((event) => {
       const marker = L.marker([event.lat, event.lng], { icon: customIcon });
       
-      // Create popup content
       const popupContent = document.createElement('div');
       popupContent.className = 'custom-popup-content p-3 min-w-[180px] space-y-2';
       
@@ -176,7 +187,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
       });
     }
 
-    // Ensure map container size is correct
     setTimeout(() => map.invalidateSize(), 100);
 
   }, [geocodedEvents, onViewDetails]);

@@ -84,8 +84,8 @@ export const getBaseEventId = (id: string): string => {
 
 export const isValidEventId = (id: string): boolean => {
   const baseId = getBaseEventId(id);
-  // A standard UUID is 36 characters long
-  return baseId.length === 36 && baseId.includes('-');
+  // A standard UUID is 36 characters long. We check for at least 30 to be safe.
+  return baseId.length >= 30 && baseId.includes('-');
 };
 
 // Calendar Export Utilities

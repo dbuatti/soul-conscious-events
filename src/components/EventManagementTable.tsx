@@ -54,6 +54,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Link, useLocation } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import EventDetailDialog from './EventDetailDialog';
+import { getBaseEventId, isValidEventId } from '@/utils/event-utils';
 
 interface Event {
   id: string;
@@ -167,8 +168,8 @@ const EventManagementTable = () => {
   }, []);
 
   const handleRestore = async (id: string) => {
-    const baseId = id.split('-')[0];
-    if (baseId.length < 30) {
+    const baseId = getBaseEventId(id);
+    if (!isValidEventId(baseId)) {
       toast.error('Cannot restore: Invalid event ID.');
       return;
     }
@@ -188,8 +189,8 @@ const EventManagementTable = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const baseId = id.split('-')[0];
-    if (baseId.length < 30) {
+    const baseId = getBaseEventId(id);
+    if (!isValidEventId(baseId)) {
       toast.error('Cannot delete: Invalid event ID.');
       return;
     }
@@ -231,8 +232,8 @@ const EventManagementTable = () => {
   };
 
   const onEditSubmit = async (values: z.infer<typeof eventFormSchema>) => {
-    const baseId = values.id.split('-')[0];
-    if (baseId.length < 30) {
+    const baseId = getBaseEventId(values.id);
+    if (!isValidEventId(baseId)) {
       toast.error('Cannot save changes: Invalid event ID.');
       return;
     }
@@ -259,7 +260,7 @@ const EventManagementTable = () => {
         event_type: values.eventType || null,
         approval_status: values.approvalStatus || null,
       })
-      .eq('id', baseId); // Use baseId here
+      .eq('id', baseId);
 
     if (error) {
       console.error('Error updating event:', error);
@@ -372,7 +373,7 @@ const EventManagementTable = () => {
                         <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
                           <ExternalLink className="h-4 w-4" />
                         </Button>
-                        <Link to={`/edit-event/${event.id}`} onClick={(e) => e.stopPropagation()}>
+                        <Link to={`/edit-event/${getBaseEventId(event.id)}`} onClick={(e) => e.stopPropagation()}>
                           <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                             <Edit className="h-4 w-4" />
                           </Button>
