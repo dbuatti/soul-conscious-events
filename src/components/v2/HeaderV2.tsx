@@ -48,8 +48,8 @@ const HeaderV2 = () => {
     <header className="w-full py-6 px-4 md:px-8 flex justify-center sticky top-0 z-50">
       <div className="w-full max-w-6xl flex justify-between items-center floating-nav px-8 py-4 rounded-full">
         <Link to="/" className="flex flex-col items-start group">
-          <span className="text-2xl font-bold leading-none font-heading tracking-tight text-primary group-hover:text-primary/80 transition-colors">SoulFlow</span>
-          <span className="text-[10px] uppercase tracking-[0.4em] font-black text-muted-foreground/60 leading-none mt-1.5">Australia</span>
+          <span className="text-2xl font-bold leading-none font-heading tracking-tight text-primary group-hover:text-primary/80 transition-all duration-500 group-hover:tracking-widest">SoulFlow</span>
+          <span className="text-[10px] uppercase tracking-[0.4em] font-black text-muted-foreground/60 leading-none mt-1.5 group-hover:text-primary/40 transition-colors duration-500">Australia</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-2">

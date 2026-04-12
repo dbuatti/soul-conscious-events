@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X, CalendarPlus, ChevronDown } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X, CalendarPlus, ChevronDown, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -34,6 +34,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { formatPrice, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
@@ -48,6 +53,8 @@ interface EventDetailDialogProps {
 const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose, cameFromCalendar = false }) => {
   const navigate = useNavigate();
   const { user } = useSession();
+  const [copiedAddress, setCopiedAddress] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const handleDelete = async () => {
     if (!event) return;
@@ -66,7 +73,9 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const handleCopyCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
+      setCopiedCode(true);
       toast.success('Discount code copied!');
+      setTimeout(() => setCopiedCode(false), 2000);
       await supabase.from('discount_code_usage_logs').insert([{
         event_id: event?.id,
         user_id: user?.id || null,
@@ -83,7 +92,9 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     if (!event?.full_address) return;
     try {
       await navigator.clipboard.writeText(event.full_address);
+      setCopiedAddress(true);
       toast.success('Address copied to clipboard!');
+      setTimeout(() => setCopiedAddress(false), 2000);
     } catch (err) {
       toast.error('Failed to copy address.');
     }
@@ -151,8 +162,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       <DialogContent className="sm:max-w-[650px] max-h-[92vh] overflow-y-auto dark:bg-card dark:border-border p-0 border-none shadow-2xl">
         <div className="relative">
           {event.image_url ? (
-            <div className="w-full h-[300px] sm:h-[350px] overflow-hidden">
-              <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover" loading="lazy" />
+            <div className="w-full h-[300px] sm:h-[350px] overflow-hidden bg-secondary/20">
+              <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover image-fade-in" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
             </div>
           ) : (
@@ -196,15 +207,19 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                       <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">{event.full_address}</span>
                     </a>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ml-2" 
-                    onClick={handleCopyAddress}
-                    title="Copy Address"
-                  >
-                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ml-2" 
+                        onClick={handleCopyAddress}
+                      >
+                        {copiedAddress ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{copiedAddress ? 'Copied!' : 'Copy Address'}</p></TooltipContent>
+                  </Tooltip>
                 </div>
               )}
               {event.price && (
@@ -274,9 +289,15 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                     <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Discount Code</p>
                     <code className="text-xl font-black text-primary tracking-wider">{event.discount_code}</code>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)} className="rounded-lg">
-                    <Copy className="mr-2 h-4 w-4" /> Copy Code
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)} className="rounded-lg min-w-[120px]">
+                        {copiedCode ? <Check className="mr-2 h-4 w-4 text-green-600" /> : <Copy className="mr-2 h-4 w-4" />}
+                        {copiedCode ? 'Copied!' : 'Copy Code'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Copy to clipboard</p></TooltipContent>
+                  </Tooltip>
                 </div>
               )}
 
@@ -292,23 +313,47 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
         <DialogFooter className="flex flex-wrap justify-between items-center p-6 sm:p-8 border-t bg-secondary/20 gap-4">
           <div className="flex gap-2">
-            <BookmarkButton eventId={event.id} size="default" className="rounded-xl px-4" />
-            <Button variant="ghost" className="rounded-xl px-4" onClick={handleShare}>
-              <Share2 className="mr-2 h-4 w-4" /> Share
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <BookmarkButton eventId={event.id} size="default" className="rounded-xl px-4" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent><p>Bookmark</p></TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" className="rounded-xl px-4" onClick={handleShare}>
+                  <Share2 className="mr-2 h-4 w-4" /> Share
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Share Event</p></TooltipContent>
+            </Tooltip>
           </div>
           <div className="flex gap-2">
             {isCreatorOrAdmin && (
               <>
-                <Button variant="outline" className="rounded-xl" onClick={() => { onClose(); navigate(`/edit-event/${event.id.split('-')[0]}`); }}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="rounded-xl">
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" className="rounded-xl" onClick={() => { onClose(); navigate(`/edit-event/${event.id.split('-')[0]}`); }}>
+                      <Edit className="mr-2 h-4 w-4" /> Edit
                     </Button>
-                  </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Edit Details</p></TooltipContent>
+                </Tooltip>
+
+                <AlertDialog>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="rounded-xl">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Delete Event</p></TooltipContent>
+                  </Tooltip>
                   <AlertDialogContent className="rounded-[2rem]">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="font-heading text-2xl">Delete Event?</AlertDialogTitle>

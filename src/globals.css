@@ -88,6 +88,19 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
   }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-full border-4 border-solid border-secondary hover:bg-primary/50 transition-colors;
+  }
 }
 
 .organic-card {
@@ -96,4 +109,13 @@
 
 .floating-nav {
   @apply bg-white/90 dark:bg-black/60 backdrop-blur-lg border border-white/50 dark:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.1)];
+}
+
+.image-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

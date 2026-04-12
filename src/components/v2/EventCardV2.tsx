@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { format, parseISO, isToday, isTomorrow, differenceInDays, differenceInHours } from 'date-fns';
-import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight, Copy } from 'lucide-react';
+import { format, parseISO, isToday, isTomorrow, differenceInDays, differenceInHours, formatDistanceToNow } from 'date-fns';
+import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight, Copy, Sparkles } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface EventCardV2Props {
   event: Event;
@@ -29,6 +35,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const { user } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
   const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const isFree = event.price?.toLowerCase().includes('free');
   const isDonation = event.price?.toLowerCase().includes('donation');
@@ -39,7 +46,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   
   // Smart Date Label
   let dateLabel = format(eventDate, 'EEEE, MMMM d');
-  if (isToday(eventDate)) dateLabel = 'Today';
+  const isEventToday = isToday(eventDate);
+  if (isEventToday) dateLabel = 'Today';
   else if (isTomorrow(eventDate)) dateLabel = 'Tomorrow';
 
   // Duration Label
@@ -47,9 +55,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const durationLabel = durationDays > 1 ? `${durationDays} days` : null;
 
   // "NEW" Badge Logic (Created in last 24 hours)
-  const isNew = event.created_at 
-    ? Math.abs(differenceInHours(new Date(), parseISO(event.created_at))) < 24 
-    : false;
+  const createdAt = event.created_at ? parseISO(event.created_at) : null;
+  const isNew = createdAt ? Math.abs(differenceInHours(new Date(), createdAt)) < 24 : false;
 
   const handleNativeShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -70,7 +77,6 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         }
       }
     } else {
-      // Fallback to copy link
       try {
         await navigator.clipboard.writeText(shareUrl);
         toast.success('Event link copied to clipboard!');
@@ -85,39 +91,74 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
       className="group flex flex-col organic-card rounded-[2.5rem] overflow-hidden cursor-pointer animate-in fade-in slide-in-from-bottom-8 duration-700"
       onClick={() => onViewDetails(event)}
     >
-      <div className="relative w-full aspect-[16/9] overflow-hidden">
+      <div className="relative w-full aspect-[16/9] overflow-hidden bg-secondary/30">
+        {!imageLoaded && event.image_url && <Skeleton className="absolute inset-0 z-10" />}
+        
         {event.image_url ? (
-          <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy" />
+          <img 
+            src={event.image_url} 
+            alt={event.event_name} 
+            onLoad={() => setImageLoaded(true)}
+            className={cn(
+              "w-full h-full object-cover transition-all duration-1000 group-hover:scale-110",
+              imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-105"
+            )} 
+            loading="lazy" 
+          />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-secondary flex items-center justify-center">
             <span className="text-primary/30 font-heading text-4xl italic font-bold tracking-tighter">SoulFlow</span>
           </div>
         )}
         
-        <div className="absolute top-6 left-6 flex flex-wrap gap-2">
+        <div className="absolute top-6 left-6 flex flex-wrap gap-2 z-20">
           {event.event_type && (
             <Badge className="bg-white/90 dark:bg-black/60 text-primary text-[10px] px-4 py-1.5 font-black tracking-widest border-none shadow-lg rounded-full">
               {event.event_type.toUpperCase()}
             </Badge>
           )}
-          {isNew && (
-            <Badge className="bg-green-500 text-white text-[10px] px-4 py-1.5 font-black tracking-widest border-none shadow-lg rounded-full">
-              NEW
+          {isEventToday && (
+            <Badge className="bg-accent text-white text-[10px] px-4 py-1.5 font-black tracking-widest border-none shadow-lg rounded-full animate-pulse">
+              TODAY
             </Badge>
+          )}
+          {isNew && createdAt && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge className="bg-green-500 text-white text-[10px] px-4 py-1.5 font-black tracking-widest border-none shadow-lg rounded-full">
+                  NEW
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Added {formatDistanceToNow(createdAt, { addSuffix: true })}</p>
+              </TooltipContent>
+            </Tooltip>
           )}
         </div>
 
-        <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 transition-all duration-500">
-          <Button
-            variant="secondary"
-            size="icon"
-            onClick={handleNativeShare}
-            title="Share or Copy Link"
-            className="h-10 w-10 rounded-full shadow-xl bg-white/90 hover:bg-white"
-          >
-            <Share2 className="h-4 w-4 text-primary" />
-          </Button>
-          <BookmarkButton eventId={event.id} size="icon" className="h-10 w-10 rounded-full shadow-xl bg-white/90 dark:bg-black/60" />
+        <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0 transition-all duration-500 z-20">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={handleNativeShare}
+                className="h-10 w-10 rounded-full shadow-xl bg-white/90 hover:bg-white"
+              >
+                <Share2 className="h-4 w-4 text-primary" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Share Event</p></TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div onClick={(e) => e.stopPropagation()}>
+                <BookmarkButton eventId={event.id} size="icon" className="h-10 w-10 rounded-full shadow-xl bg-white/90 dark:bg-black/60" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent><p>Bookmark</p></TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -137,7 +178,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         <div className="space-y-4 text-muted-foreground text-sm mb-8">
           <div className="flex items-center font-bold text-foreground/80">
             <Calendar className="mr-3 h-5 w-5 text-primary" />
-            <span className={cn(isToday(eventDate) && "text-primary")}>{dateLabel}</span>
+            <span className={cn(isEventToday && "text-primary")}>{dateLabel}</span>
             {durationLabel && (
               <Badge variant="outline" className="ml-3 border-primary/20 text-[10px] font-bold text-primary/60">
                 {durationLabel}
@@ -158,19 +199,36 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           <div className="flex gap-1">
             {isCreatorOrAdmin && (
               <>
-                <Link to={`/edit-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full" title="Edit Event">
-                    <Edit className="h-4 w-4 text-muted-foreground hover:text-primary" />
-                  </Button>
-                </Link>
-                <Link to={`/duplicate-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full" title="Duplicate Event">
-                    <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
-                  </Button>
-                </Link>
-                <Button variant="ghost" size="icon" onClick={(e) => onDelete(event.id, e)} className="h-10 w-10 hover:bg-destructive/10 rounded-full" title="Delete Event">
-                  <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={`/edit-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full">
+                        <Edit className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Edit Event</p></TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={`/duplicate-event/${event.id.split('-')[0]}`} onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 rounded-full">
+                        <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Duplicate Event</p></TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={(e) => onDelete(event.id, e)} className="h-10 w-10 hover:bg-destructive/10 rounded-full">
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Delete Event</p></TooltipContent>
+                </Tooltip>
               </>
             )}
           </div>
