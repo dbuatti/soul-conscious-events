@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Heart, Users, Palette, Utensils, Leaf, GraduationCap, Globe, Zap, HelpCircle } from 'lucide-react';
+import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Heart, Users, Palette, Utensils, Leaf, GraduationCap, Globe, Zap, HelpCircle, Map as MapIcon } from 'lucide-react';
 import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -28,8 +28,8 @@ export interface FilterDropdownsV2Props {
   favouriteVenues: string[];
   onToggleFavouriteVenue: (placeName: string, isFavourited: boolean) => void;
   isUserLoggedIn: boolean;
-  viewMode: 'list' | 'calendar';
-  onViewModeChange: (mode: 'list' | 'calendar') => void;
+  viewMode: 'list' | 'calendar' | 'map';
+  onViewModeChange: (mode: 'list' | 'calendar' | 'map') => void;
 }
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -173,11 +173,11 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
     );
   };
 
-  const buttonClasses = "flex items-center gap-2 rounded-xl px-4 py-2 h-10 bg-secondary/50 border-none hover:bg-secondary transition-all text-sm font-medium";
+  const buttonClasses = "flex items-center gap-2 rounded-xl px-4 py-2 h-10 bg-secondary/50 border-none hover:bg-secondary transition-all text-sm font-medium whitespace-nowrap";
 
   return (
-    <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
-      <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-center lg:justify-start">
+    <div className="flex flex-col md:flex-row items-center justify-between gap-6 w-full">
+      <div className="flex flex-wrap items-center gap-2 w-full md:flex-1 justify-center md:justify-start">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
@@ -235,13 +235,16 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
         </DropdownMenu>
       </div>
 
-      <div className="flex items-center bg-secondary/50 p-1 rounded-xl ml-auto">
-        <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar') => value && onViewModeChange(value)}>
-          <ToggleGroupItem value="list" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+      <div className="flex items-center bg-secondary/50 p-1 rounded-xl shrink-0">
+        <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && onViewModeChange(value)}>
+          <ToggleGroupItem value="list" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="List View">
             <List className="h-4 w-4" />
           </ToggleGroupItem>
-          <ToggleGroupItem value="calendar" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+          <ToggleGroupItem value="calendar" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="Calendar View">
             <CalendarDays className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="map" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="Map View">
+            <MapIcon className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

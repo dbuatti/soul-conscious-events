@@ -126,9 +126,7 @@ const App = () => (
             <Route
               path="/map"
               element={
-                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
-                  <LayoutV2><MapPage /></LayoutV2>
-                </ProtectedRoute>
+                <LayoutV2><MapPage /></LayoutV2>
               }
             />
 
