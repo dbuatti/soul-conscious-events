@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import * as L from 'leaflet';
+import L from 'leaflet';
 import { Event } from '@/types/event';
 import { format, parseISO } from 'date-fns';
 import { Calendar, MapPin, ArrowRight } from 'lucide-react';
@@ -74,6 +74,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`
           );
+          if (!response.ok) throw new Error('Geocoding request failed');
           const data = await response.json();
           
           if (data && data.length > 0) {
