@@ -11,26 +11,31 @@ interface GeocodedEvent extends Event {
   lng: number;
 }
 
-// Sub-component to handle map view updates (centering/zooming)
-const MapController = ({ events }: { events: GeocodedEvent[] }) => {
+// Sub-component to handle markers and map view updates
+// This ensures useMap() is called within the MapContainer context
+const MapContent = ({ 
+  events, 
+  icon, 
+  onViewDetails 
+}: { 
+  events: GeocodedEvent[], 
+  icon: L.DivIcon,
+  onViewDetails: (event: Event) => void
+}) => {
   const map = useMap();
 
   useEffect(() => {
     if (events.length === 0) {
-      // Default view of Australia if no events
       map.setView([-25.2744, 133.7751], 4);
       return;
     }
 
     try {
-      // Create bounds object from all event coordinates
       const bounds = L.latLngBounds(events.map(event => [event.lat, event.lng]));
-      
       if (bounds.isValid()) {
-        // Fit the map to these bounds with padding
         map.fitBounds(bounds, { 
           padding: [50, 50], 
-          maxZoom: 13, // Prevent zooming in too far for single events
+          maxZoom: 13,
           animate: true 
         });
       }
@@ -39,7 +44,41 @@ const MapController = ({ events }: { events: GeocodedEvent[] }) => {
     }
   }, [events, map]);
 
-  return null;
+  return (
+    <>
+      {events.map((event) => (
+        <Marker 
+          key={event.id} 
+          position={[event.lat, event.lng]} 
+          icon={icon}
+        >
+          <Popup className="custom-popup">
+            <div className="p-3 min-w-[180px] space-y-2">
+              <h3 className="font-black text-primary text-base leading-tight">{event.event_name}</h3>
+              <div className="space-y-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-3 w-3 text-primary/60" />
+                  <span>{format(parseISO(event.event_date), 'MMM d, yyyy')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-3 w-3 text-primary/60" />
+                  <span className="truncate">{event.place_name || 'Location'}</span>
+                </div>
+              </div>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="h-auto p-0 text-primary font-black text-[11px] mt-1"
+                onClick={() => onViewDetails(event)}
+              >
+                View Details →
+              </Button>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </>
+  );
 };
 
 interface LeafletMapProps {
@@ -50,7 +89,6 @@ interface LeafletMapProps {
 const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
 
-  // Geocoding Logic with caching
   useEffect(() => {
     const geocodeEvents = async () => {
       const results: GeocodedEvent[] = [];
@@ -71,7 +109,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         }
 
         try {
-          // Using Nominatim (OpenStreetMap) for free geocoding
           const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`
           );
@@ -97,7 +134,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     }
   }, [events]);
 
-  // Custom marker icon - memoized for stability
   const customIcon = useMemo(() => L.divIcon({
     html: '<div class="marker-pin"></div>',
     className: 'custom-div-icon',
@@ -118,39 +154,11 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <MapController events={geocodedEvents} />
-
-        {geocodedEvents.map((event) => (
-          <Marker 
-            key={event.id} 
-            position={[event.lat, event.lng]} 
-            icon={customIcon}
-          >
-            <Popup className="custom-popup">
-              <div className="p-3 min-w-[180px] space-y-2">
-                <h3 className="font-black text-primary text-base leading-tight">{event.event_name}</h3>
-                <div className="space-y-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3 w-3 text-primary/60" />
-                    <span>{format(parseISO(event.event_date), 'MMM d, yyyy')}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3 w-3 text-primary/60" />
-                    <span className="truncate">{event.place_name || 'Location'}</span>
-                  </div>
-                </div>
-                <Button 
-                  variant="link" 
-                  size="sm" 
-                  className="h-auto p-0 text-primary font-black text-[11px] mt-1"
-                  onClick={() => onViewDetails(event)}
-                >
-                  View Details →
-                </Button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        <MapContent 
+          events={geocodedEvents} 
+          icon={customIcon} 
+          onViewDetails={onViewDetails} 
+        />
       </MapContainer>
       
       <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
