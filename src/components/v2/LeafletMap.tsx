@@ -1,42 +1,15 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import { Event } from '@/types/event';
 import { format, parseISO } from 'date-fns';
 import { Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { createRoot } from 'react-dom/client';
 
 interface GeocodedEvent extends Event {
   lat: number;
   lng: number;
 }
-
-// Component to handle map view updates based on events
-const MapUpdater = ({ events }: { events: GeocodedEvent[] }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!map || events.length === 0) return;
-
-    try {
-      // Invalidate size to ensure map renders correctly
-      map.invalidateSize();
-
-      const bounds = L.latLngBounds(events.map(event => [event.lat, event.lng]));
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { 
-          padding: [50, 50], 
-          maxZoom: 13,
-          animate: true 
-        });
-      }
-    } catch (error) {
-      console.error('Error fitting map bounds:', error);
-    }
-  }, [events, map]);
-
-  return null;
-};
 
 interface LeafletMapProps {
   events: Event[];
@@ -44,8 +17,12 @@ interface LeafletMapProps {
 }
 
 const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
 
+  // 1. Geocoding Logic
   useEffect(() => {
     let isMounted = true;
 
@@ -104,61 +81,109 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     };
   }, [events]);
 
-  const customIcon = useMemo(() => L.divIcon({
-    html: '<div class="marker-pin"></div>',
-    className: 'custom-div-icon',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-  }), []);
+  // 2. Map Initialization
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    const map = L.map(mapRef.current, {
+      center: [-25.2744, 133.7751],
+      zoom: 4,
+      scrollWheelZoom: true,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    markersLayerRef.current = L.layerGroup().addTo(map);
+    mapInstanceRef.current = map;
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, []);
+
+  // 3. Update Markers and Bounds
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const markersLayer = markersLayerRef.current;
+    if (!map || !markersLayer) return;
+
+    // Clear existing markers
+    markersLayer.clearLayers();
+
+    if (geocodedEvents.length === 0) return;
+
+    const customIcon = L.divIcon({
+      html: '<div class="marker-pin"></div>',
+      className: 'custom-div-icon',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+    });
+
+    const bounds = L.latLngBounds([]);
+
+    geocodedEvents.forEach((event) => {
+      const marker = L.marker([event.lat, event.lng], { icon: customIcon });
+      
+      // Create popup content
+      const popupContent = document.createElement('div');
+      popupContent.className = 'custom-popup-content p-3 min-w-[180px] space-y-2';
+      
+      const root = createRoot(popupContent);
+      root.render(
+        <div className="space-y-2">
+          <h3 className="font-black text-primary text-base leading-tight">{event.event_name}</h3>
+          <div className="space-y-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-3 w-3 text-primary/60" />
+              <span>{format(parseISO(event.event_date), 'MMM d, yyyy')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-3 w-3 text-primary/60" />
+              <span className="truncate">{event.place_name || 'Location'}</span>
+            </div>
+          </div>
+          <Button 
+            variant="link" 
+            size="sm" 
+            className="h-auto p-0 text-primary font-black text-[11px] mt-1"
+            onClick={() => {
+              map.closePopup();
+              onViewDetails(event);
+            }}
+          >
+            View Details →
+          </Button>
+        </div>
+      );
+
+      marker.bindPopup(popupContent, {
+        className: 'custom-leaflet-popup',
+        maxWidth: 300
+      });
+      
+      markersLayer.addLayer(marker);
+      bounds.extend([event.lat, event.lng]);
+    });
+
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { 
+        padding: [50, 50], 
+        maxZoom: 13,
+        animate: true 
+      });
+    }
+
+    // Ensure map container size is correct
+    setTimeout(() => map.invalidateSize(), 100);
+
+  }, [geocodedEvents, onViewDetails]);
 
   return (
     <div className="w-full h-[500px] sm:h-[600px] relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-border shadow-2xl bg-secondary/10">
-      <MapContainer
-        center={[-25.2744, 133.7751]}
-        zoom={4}
-        scrollWheelZoom={true}
-        className="w-full h-full"
-        style={{ zIndex: 0 }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        
-        <MapUpdater events={geocodedEvents} />
-        
-        {geocodedEvents.map((event) => (
-          <Marker 
-            key={event.id} 
-            position={[event.lat, event.lng]} 
-            icon={customIcon}
-          >
-            <Popup className="custom-popup">
-              <div className="p-3 min-w-[180px] space-y-2">
-                <h3 className="font-black text-primary text-base leading-tight">{event.event_name}</h3>
-                <div className="space-y-1 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3 w-3 text-primary/60" />
-                    <span>{format(parseISO(event.event_date), 'MMM d, yyyy')}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3 w-3 text-primary/60" />
-                    <span className="truncate">{event.place_name || 'Location'}</span>
-                  </div>
-                </div>
-                <Button 
-                  variant="link" 
-                  size="sm" 
-                  className="h-auto p-0 text-primary font-black text-[11px] mt-1"
-                  onClick={() => onViewDetails(event)}
-                >
-                  View Details →
-                </Button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      <div ref={mapRef} className="w-full h-full z-0" />
       
       <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
         Free Map Coverage via OpenStreetMap
