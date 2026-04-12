@@ -24,11 +24,11 @@ import MyBookmarks from "./pages/MyBookmarks";
 // V2 Imports
 import EventsListV2 from "./pages/v2/EventsListV2";
 import LoginV2 from "./pages/v2/LoginV2";
-import HeaderV2 from "./components/v2/HeaderV2"; // Import HeaderV2
-import AccountSettings from "./pages/AccountSettings"; // Import new AccountSettings page
-import Footer from "./components/Footer"; // Import Footer
-import ScrollToTopButton from "./components/ScrollToTopButton"; // Import ScrollToTopButton
-import ScrollProgress from "./components/ScrollProgress"; // Import ScrollProgress
+import HeaderV2 from "./components/v2/HeaderV2";
+import AccountSettings from "./pages/AccountSettings";
+import Footer from "./components/Footer";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import ScrollProgress from "./components/ScrollProgress";
 
 const queryClient = new QueryClient();
 
@@ -36,13 +36,13 @@ const queryClient = new QueryClient();
 const LayoutV2: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col items-center bg-background">
-      <ScrollProgress /> {/* Add the progress bar here */}
+      <ScrollProgress />
       <HeaderV2 />
       <main className="flex-grow w-full px-2 flex flex-col items-center py-8">
         {children}
       </main>
-      <Footer /> {/* Reusing existing Footer */}
-      <ScrollToTopButton /> {/* Add the new button here */}
+      <Footer />
+      <ScrollToTopButton />
     </div>
   );
 };
@@ -108,7 +108,7 @@ const App = () => (
             <Route path="/contact" element={<LayoutV2><Contact /></LayoutV2>} />
             <Route path="/community-guidelines" element={<LayoutV2><CommunityGuidelines /></LayoutV2>} />
             <Route
-              path="/admin/panel" // Changed path to be under V2 layout
+              path="/admin/panel"
               element={
                 <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
                   <LayoutV2><AdminPanel /></LayoutV2>
@@ -116,7 +116,7 @@ const App = () => (
               }
             />
             <Route
-              path="/dev-space" // Changed path to be under V2 layout
+              path="/dev-space"
               element={
                 <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
                   <LayoutV2><DevSpace /></LayoutV2>
@@ -124,7 +124,7 @@ const App = () => (
               }
             />
             <Route
-              path="/map" // Changed path to be under V2 layout
+              path="/map"
               element={
                 <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
                   <LayoutV2><MapPage /></LayoutV2>
@@ -154,7 +154,7 @@ const App = () => (
             />
             <Route path="/old/map" element={<Layout><MapPage /></Layout>} />
 
-            <Route path="*" element={<LayoutV2><NotFound /></LayoutV2>} /> {/* NotFound also uses V2 layout */}
+            <Route path="*" element={<LayoutV2><NotFound /></LayoutV2>} />
           </Routes>
         </SessionContextProvider>
       </BrowserRouter>

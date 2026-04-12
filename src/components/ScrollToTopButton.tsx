@@ -34,12 +34,12 @@ const ScrollToTopButton: React.FC = () => {
       size="icon"
       onClick={scrollToTop}
       className={cn(
-        "fixed bottom-4 right-4 z-50 rounded-full shadow-lg transition-opacity duration-300",
-        isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+        "fixed bottom-8 right-8 z-50 rounded-full shadow-2xl transition-all duration-500 transform hover:scale-110 bg-white/90 dark:bg-black/60 backdrop-blur-md border-white/20",
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
       )}
       title="Scroll to top"
     >
-      <ChevronUp className="h-5 w-5" />
+      <ChevronUp className="h-6 w-6 text-primary" />
     </Button>
   );
 };
