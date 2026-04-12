@@ -20,6 +20,14 @@ import { cn } from '@/lib/utils';
 
 const EVENTS_PER_LOAD = 8;
 
+const QUICK_FILTERS = [
+  { label: 'Wellness', value: 'Wellness' },
+  { label: 'Music', value: 'Music' },
+  { label: 'Meditation', value: 'Meditation' },
+  { label: 'Dance', value: 'Dance & Movement' },
+  { label: 'Social', value: 'Community & Social' },
+];
+
 const EventsListV2 = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const [allEvents, setAllEvents] = useState<Event[]>([]);
@@ -161,6 +169,16 @@ const EventsListV2 = () => {
     }
   };
 
+  const toggleQuickFilter = (category: string) => {
+    const isSelected = filters.category.includes(category);
+    setFilters({
+      ...filters,
+      category: isSelected 
+        ? filters.category.filter(c => c !== category)
+        : [...filters.category, category]
+    });
+  };
+
   const selectedDayEvents = filteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
   const hasActiveFilters = searchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
 
@@ -180,24 +198,44 @@ const EventsListV2 = () => {
       </div>
 
       <div className="mb-16 space-y-8 organic-card p-8 sm:p-12 rounded-[3rem]">
-        <div className="relative group">
-          <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
-          <Input
-            placeholder="Search events, venues, or locations..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-20 pr-16 h-20 rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-2xl placeholder:text-muted-foreground/40 font-medium"
-          />
-          {searchTerm && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setSearchTerm('')}
-              className="absolute right-6 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary"
-            >
-              <X className="h-6 w-6" />
-            </Button>
-          )}
+        <div className="space-y-6">
+          <div className="relative group">
+            <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+            <Input
+              placeholder="Search events, venues, or locations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-20 pr-16 h-20 rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-2xl placeholder:text-muted-foreground/40 font-medium"
+            />
+            {searchTerm && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setSearchTerm('')}
+                className="absolute right-6 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 px-4">
+            <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest mr-2">Quick Filters:</span>
+            {QUICK_FILTERS.map((qf) => (
+              <button
+                key={qf.value}
+                onClick={() => toggleQuickFilter(qf.value)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border",
+                  filters.category.includes(qf.value)
+                    ? "bg-primary border-primary text-white shadow-lg scale-105"
+                    : "bg-background border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+                )}
+              >
+                {qf.label}
+              </button>
+            ))}
+          </div>
         </div>
         
         <div className="space-y-6">
