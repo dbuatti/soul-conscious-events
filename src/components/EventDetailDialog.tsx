@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X, CalendarPlus, ChevronDown, Check } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X, CalendarPlus, ChevronDown, Check, Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {
@@ -52,6 +51,7 @@ import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { formatPrice, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getStaticMapUrl, openInMaps } from '@/lib/utils';
 
 interface EventDetailDialogProps {
   event: Event | null;
@@ -104,7 +104,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     try {
       await navigator.clipboard.writeText(event.full_address);
       setCopiedAddress(true);
-      toast.success('Address copied to clipboard!');
+      toast.success('Address copied!');
       setTimeout(() => setCopiedAddress(false), 2000);
     } catch (err) {
       toast.error('Failed to copy address.');
@@ -148,15 +148,14 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     window.open(event.ticket_link, '_blank');
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !event) return null;
 
-  if (!event) return null;
-
-  const googleMapsLink = event.google_maps_link || (event.full_address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}` : '#');
-  const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
   const startDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
   const dateDisplay = endDate && !isSameDay(startDate, endDate) ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}` : format(startDate, 'MMM d, yyyy');
+  const staticMapUrl = event.full_address ? getStaticMapUrl(event.full_address) : null;
+  const googleMapsLink = event.google_maps_link || (event.full_address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}` : '#');
+  const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
   const Content = (
     <div className="flex flex-col h-full">
@@ -197,32 +196,33 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       </div>
 
       <div className="px-4 sm:px-8 py-4 sm:py-6 space-y-6 sm:space-y-8 overflow-y-auto flex-grow">
-        <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground/70">Location & Price</h3>
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Location & Price</h3>
             {event.full_address && (
-              <div className="flex items-start text-foreground group relative">
-                <MapPin className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors leading-snug block">
-                    {event.place_name && <span className="block font-bold mb-0.5 text-sm sm:text-base">{event.place_name}</span>}
-                    <span className="text-xs sm:text-sm text-muted-foreground group-hover:text-primary transition-colors">{event.full_address}</span>
-                  </a>
+              <div className="space-y-3">
+                <div className="flex items-start text-foreground group relative">
+                  <MapPin className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <button onClick={() => openInMaps(event.full_address!)} className="text-left hover:text-primary transition-colors leading-snug block">
+                      {event.place_name && <span className="block font-bold mb-0.5 text-sm sm:text-base">{event.place_name}</span>}
+                      <span className="text-xs sm:text-sm text-muted-foreground group-hover:text-primary transition-colors">{event.full_address}</span>
+                    </button>
+                  </div>
                 </div>
-                {!isMobile && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ml-2" 
-                        onClick={handleCopyAddress}
-                      >
-                        {copiedAddress ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>{copiedAddress ? 'Copied!' : 'Copy Address'}</p></TooltipContent>
-                  </Tooltip>
+                
+                {staticMapUrl && (
+                  <div 
+                    className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden border border-border shadow-sm cursor-pointer group"
+                    onClick={() => openInMaps(event.full_address!)}
+                  >
+                    <img src={staticMapUrl} alt="Map Preview" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
+                      <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
+                        <Navigation className="h-3 w-3" /> Get Directions
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -233,8 +233,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </div>
             )}
           </div>
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground/70">Organizer & Details</h3>
+          <div className="space-y-4">
+            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Organizer & Details</h3>
             {event.organizer_contact && (
               <div className="flex items-center text-foreground">
                 <User className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
@@ -247,27 +247,36 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 <span className="font-medium capitalize text-sm sm:text-base">Repeats {event.recurring_pattern.toLowerCase()}</span>
               </div>
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="rounded-lg h-8 sm:h-9 px-2 sm:px-3 text-[10px] sm:text-xs font-bold">
-                  <CalendarPlus className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Add to Calendar <ChevronDown className="ml-1.5 sm:ml-2 h-3 w-3 opacity-50" />
+            <div className="flex flex-wrap gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="rounded-xl h-9 px-3 text-[10px] sm:text-xs font-bold">
+                    <CalendarPlus className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Add to Calendar <ChevronDown className="ml-1.5 sm:ml-2 h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="rounded-xl">
+                  <DropdownMenuItem onClick={() => window.open(getGoogleCalendarUrl(event), '_blank')} className="cursor-pointer">
+                    Google Calendar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadIcalFile(event)} className="cursor-pointer">
+                    Download iCal File
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              {event.full_address && (
+                <Button variant="outline" size="sm" onClick={handleCopyAddress} className="rounded-xl h-9 px-3 text-[10px] sm:text-xs font-bold">
+                  {copiedAddress ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
+                  {copiedAddress ? 'Copied!' : 'Copy Address'}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="rounded-xl">
-                <DropdownMenuItem onClick={() => window.open(getGoogleCalendarUrl(event), '_blank')} className="cursor-pointer">
-                  Google Calendar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => downloadIcalFile(event)} className="cursor-pointer">
-                  Download iCal File
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+            </div>
           </div>
         </section>
 
         {event.description && (
           <section className="space-y-2 sm:space-y-3">
-            <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground/70">About this event</h3>
+            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">About this event</h3>
             <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm sm:text-lg">
               {event.description}
             </p>
@@ -275,25 +284,25 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         )}
 
         {(event.ticket_link || event.special_notes || event.discount_code) && (
-          <section className="bg-secondary/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-5 border border-border/50">
-            <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground/70">Booking Information</h3>
+          <section className="bg-secondary/30 rounded-2xl p-5 sm:p-6 space-y-5 border border-border/50">
+            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Booking Information</h3>
             
             {event.ticket_link && (
               <Button 
-                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-bold py-4 sm:py-6 rounded-xl shadow-lg transition-all" 
+                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-black py-6 rounded-xl shadow-lg transition-all transform hover:scale-[1.01]" 
                 onClick={handleTicketLinkClick}
               >
-                <LinkIcon className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Get Your Tickets
+                <LinkIcon className="mr-2 h-5 w-5" /> Get Your Tickets
               </Button>
             )}
 
             {event.discount_code && (
-              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-background rounded-xl border border-dashed border-primary/30">
+              <div className="flex flex-col sm:flex-row items-center gap-3 p-4 bg-background rounded-xl border border-dashed border-primary/30">
                 <div className="flex-1 text-center sm:text-left">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5">Discount Code</p>
-                  <code className="text-lg sm:text-xl font-black text-primary tracking-wider">{event.discount_code}</code>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase mb-0.5">Discount Code</p>
+                  <code className="text-xl font-black text-primary tracking-wider">{event.discount_code}</code>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)} className="rounded-lg min-w-[100px] sm:min-w-[120px] h-8 sm:h-10 text-xs">
+                <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)} className="rounded-lg min-w-[120px] h-10 text-xs font-bold">
                   {copiedCode ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
                   {copiedCode ? 'Copied!' : 'Copy Code'}
                 </Button>
@@ -301,8 +310,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             )}
 
             {event.special_notes && (
-              <div className="flex items-start bg-yellow-500/5 p-3 sm:p-4 rounded-xl border border-yellow-500/20">
-                <Info className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start bg-yellow-500/5 p-4 rounded-xl border border-yellow-500/20">
+                <Info className="mr-3 h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm text-foreground/80 italic leading-relaxed">{event.special_notes}</p>
               </div>
             )}
@@ -310,33 +319,33 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         )}
       </div>
 
-      <div className="flex flex-wrap justify-between items-center p-4 sm:p-8 border-t bg-secondary/20 gap-3 sm:gap-4 mt-auto">
+      <div className="flex flex-wrap justify-between items-center p-4 sm:p-8 border-t bg-secondary/20 gap-4 mt-auto">
         <div className="flex gap-2">
           <div onClick={(e) => e.stopPropagation()}>
-            <BookmarkButton eventId={event.id} size="default" className="rounded-xl px-3 sm:px-4 h-9 sm:h-10" />
+            <BookmarkButton eventId={event.id} size="default" className="rounded-xl px-4 h-10" />
           </div>
           
-          <Button variant="ghost" className="rounded-xl px-3 sm:px-4 h-9 sm:h-10 text-xs sm:text-sm" onClick={handleShare}>
-            <Share2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Share
+          <Button variant="ghost" className="rounded-xl px-4 h-10 text-xs sm:text-sm font-bold" onClick={handleShare}>
+            <Share2 className="mr-2 h-4 w-4" /> Share
           </Button>
         </div>
         <div className="flex gap-2">
           {isCreatorOrAdmin && (
             <>
-              <Button variant="outline" className="rounded-xl h-9 sm:h-10 text-xs sm:text-sm" onClick={() => { onClose(); navigate(`/edit-event/${event.id.split('-')[0]}`); }}>
-                <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Edit
+              <Button variant="outline" className="rounded-xl h-10 text-xs sm:text-sm font-bold" onClick={() => { onClose(); navigate(`/edit-event/${event.id.split('-')[0]}`); }}>
+                <Edit className="mr-2 h-4 w-4" /> Edit
               </Button>
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="rounded-xl h-9 sm:h-10 text-xs sm:text-sm">
-                    <Trash2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Delete
+                  <Button variant="destructive" className="rounded-xl h-10 text-xs sm:text-sm font-bold">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-[1.5rem] sm:rounded-[2rem] w-[90vw] max-w-md">
+                <AlertDialogContent className="rounded-[2rem] w-[90vw] max-w-md">
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="font-heading text-xl sm:text-2xl">Delete Event?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-sm sm:text-base">This action cannot be undone. This event will be permanently removed.</AlertDialogDescription>
+                    <AlertDialogTitle className="font-heading text-2xl">Delete Event?</AlertDialogTitle>
+                    <AlertDialogDescription>This action cannot be undone. This event will be permanently removed.</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                     <AlertDialogCancel className="rounded-xl mt-0">Cancel</AlertDialogCancel>
@@ -354,7 +363,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="h-[92vh] rounded-t-[2rem] border-none shadow-2xl">
+        <DrawerContent className="h-[94vh] rounded-t-[2.5rem] border-none shadow-2xl">
           <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted mb-4 mt-2" />
           {Content}
         </DrawerContent>
@@ -364,7 +373,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[650px] max-h-[92vh] overflow-hidden dark:bg-card dark:border-border p-0 border-none shadow-2xl flex flex-col">
+      <DialogContent className="sm:max-w-[700px] max-h-[94vh] overflow-hidden dark:bg-card dark:border-border p-0 border-none shadow-2xl flex flex-col">
         {Content}
       </DialogContent>
     </Dialog>

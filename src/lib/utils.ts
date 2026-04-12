@@ -1,36 +1,40 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { australianStates } from '@/lib/constants';
-import { Capacitor } from '@capacitor/core'; // Import Capacitor
+import { Capacitor } from '@capacitor/core';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Refined helper function to extract Australian state from address
 export const extractAustralianState = (address: string): string | null => {
-  if (!address) {
-    return null;
-  }
+  if (!address) return null;
   const upperCaseAddress = address.toUpperCase();
-  // Regex to find a 2-letter state abbreviation followed by a space and 4 digits (postcode)
-  // or just a 2-letter state abbreviation at a word boundary
   const stateRegex = new RegExp(`\\b(${australianStates.join('|')})\\b(?:\\s+\\d{4})?`, 'i');
   const match = upperCaseAddress.match(stateRegex);
-
-  if (match && match[1]) {
-    return match[1];
-  }
-
-  return null;
+  return match ? match[1] : null;
 };
 
 export const getRedirectUrl = (): string => {
   if (Capacitor.isNativePlatform()) {
-    // For Capacitor, use the custom URL scheme defined in capacitor.config.ts
-    // The appId is 'com.example.soulconsciousevents'
     return 'com.example.soulconsciousevents://';
   }
-  // For web, use the current origin
   return window.location.origin;
+};
+
+export const getStaticMapUrl = (address: string): string => {
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  if (!apiKey || !address) return '';
+  const encodedAddress = encodeURIComponent(address);
+  // Using a custom style to match the app's warm/organic aesthetic
+  return `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=15&size=800x400&maptype=roadmap&markers=color:0xB34629%7C${encodedAddress}&key=${apiKey}&style=feature:all|element:all|saturation:-20|lightness:10`;
+};
+
+export const openInMaps = (address: string) => {
+  if (!address) return;
+  const encodedAddress = encodeURIComponent(address);
+  const url = Capacitor.isNativePlatform() 
+    ? `maps://maps.apple.com/?q=${encodedAddress}` // iOS/Android native maps
+    : `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`; // Web
+  window.open(url, '_blank');
 };
