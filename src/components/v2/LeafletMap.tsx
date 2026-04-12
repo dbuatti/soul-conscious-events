@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Event } from '@/types/event';
@@ -22,15 +22,21 @@ const MapController = ({ events }: { events: GeocodedEvent[] }) => {
       return;
     }
 
-    // Create bounds object from all event coordinates
-    const bounds = L.latLngBounds(events.map(event => [event.lat, event.lng]));
-    
-    // Fit the map to these bounds with padding
-    map.fitBounds(bounds, { 
-      padding: [50, 50], 
-      maxZoom: 13, // Prevent zooming in too far for single events
-      animate: true 
-    });
+    try {
+      // Create bounds object from all event coordinates
+      const bounds = L.latLngBounds(events.map(event => [event.lat, event.lng]));
+      
+      if (bounds.isValid()) {
+        // Fit the map to these bounds with padding
+        map.fitBounds(bounds, { 
+          padding: [50, 50], 
+          maxZoom: 13, // Prevent zooming in too far for single events
+          animate: true 
+        });
+      }
+    } catch (error) {
+      console.error('Error fitting map bounds:', error);
+    }
   }, [events, map]);
 
   return null;
@@ -91,13 +97,13 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
     }
   }, [events]);
 
-  // Custom marker icon
-  const customIcon = L.divIcon({
+  // Custom marker icon - memoized for stability
+  const customIcon = useMemo(() => L.divIcon({
     html: '<div class="marker-pin"></div>',
     className: 'custom-div-icon',
     iconSize: [24, 24],
     iconAnchor: [12, 12],
-  });
+  }), []);
 
   return (
     <div className="w-full h-[500px] sm:h-[600px] relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-border shadow-2xl bg-secondary/10">
