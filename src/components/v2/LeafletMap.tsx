@@ -19,6 +19,9 @@ const MapUpdater = ({ events }: { events: GeocodedEvent[] }) => {
     if (!map || events.length === 0) return;
 
     try {
+      // Invalidate size to ensure map renders correctly if it was previously hidden
+      map.invalidateSize();
+
       const bounds = L.latLngBounds(events.map(event => [event.lat, event.lng]));
       if (bounds.isValid()) {
         map.fitBounds(bounds, { 
@@ -57,8 +60,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
         if (cached) {
           try {
             const { lat, lng } = JSON.parse(cached);
-            results.push({ ...event, lat, lng });
-            continue;
+            if (!isNaN(lat) && !isNaN(lng)) {
+              results.push({ ...event, lat, lng });
+              continue;
+            }
           } catch (e) {
             sessionStorage.removeItem(cacheKey);
           }
@@ -74,8 +79,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ events, onViewDetails }) => {
           if (data && data.length > 0 && isMounted) {
             const lat = parseFloat(data[0].lat);
             const lng = parseFloat(data[0].lon);
-            results.push({ ...event, lat, lng });
-            sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
+            if (!isNaN(lat) && !isNaN(lng)) {
+              results.push({ ...event, lat, lng });
+              sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
+            }
           }
         } catch (error) {
           console.error('Geocoding error:', event.full_address, error);
