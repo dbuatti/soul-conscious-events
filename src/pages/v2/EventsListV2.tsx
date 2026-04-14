@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO, isToday, isPast, isSameDay } from 'date-fns';
+import { format, parseISO, isToday, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Bookmark, Database, WifiOff, ShieldAlert } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Database, WifiOff, ShieldAlert, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -48,7 +48,7 @@ const EventsListV2 = () => {
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents } = useEventFilters(allEvents);
+  const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents, totalCount } = useEventFilters(allEvents);
 
   const fetchFavouriteVenues = useCallback(async () => {
     if (!user) {
@@ -71,27 +71,18 @@ const EventsListV2 = () => {
   }, [user]);
 
   const processEventData = (data: any[]) => {
-    const validEvents = (data || []).filter(event => {
-      const isValid = event.id && event.id.length > 30;
-      if (!isValid) console.warn(`[EventsListV2] Filtering out corrupted ID: ${event.id}`);
-      return isValid;
-    });
+    const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
 
     let combinedEvents: Event[] = [];
     validEvents.forEach(event => {
-      // Add the original event
       combinedEvents.push(event);
-
-      // Add recurring instances if applicable
       if (event.recurring_pattern) {
         const instances = generateRecurringInstances(event);
         combinedEvents = combinedEvents.concat(instances);
       }
     });
 
-    // Sort all events chronologically
     combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
-    
     setAllEvents(combinedEvents);
     
     const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
@@ -99,7 +90,6 @@ const EventsListV2 = () => {
   };
 
   const fetchInitialEvents = useCallback(async () => {
-    console.log('[EventsListV2] Starting fetchInitialEvents...');
     setLoading(true);
     setDbStatus('checking');
     
@@ -107,8 +97,6 @@ const EventsListV2 = () => {
     const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieWpkaHhwYmZ2cXNyenpkandpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzYyNzIsImV4cCI6MjA2OTE1MjI3Mn0.1BpuFdmZnV_-jjncopxWODAGn7-Coh716jzbYeTrNT4";
 
     try {
-      // Use Raw Authenticated Fetch to bypass library-level interference
-      console.log('[EventsListV2] Attempting Super Raw Authenticated Fetch...');
       const rawResponse = await fetch(`${SUPABASE_URL}/rest/v1/events?approval_status=eq.approved&is_deleted=eq.false&order=event_date.asc`, {
         method: 'GET',
         headers: {
@@ -120,21 +108,16 @@ const EventsListV2 = () => {
 
       if (rawResponse.ok) {
         const data = await rawResponse.json();
-        console.log(`[EventsListV2] Super Raw Fetch SUCCESS. Received ${data.length} events.`);
         setDbStatus('connected');
         processEventData(data);
         setLoading(false);
         return;
-      } else {
-        console.error(`[EventsListV2] Super Raw Fetch FAILED with status: ${rawResponse.status}`);
-        if (rawResponse.status === 401 || rawResponse.status === 403) {
-          setDbStatus('auth_error');
-          setLoading(false);
-          return;
-        }
+      } else if (rawResponse.status === 401 || rawResponse.status === 403) {
+        setDbStatus('auth_error');
+        setLoading(false);
+        return;
       }
 
-      // Fallback to standard client if raw fetch failed
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -142,14 +125,10 @@ const EventsListV2 = () => {
         .eq('is_deleted', false)
         .order('event_date', { ascending: true });
 
-      if (error) {
-        throw error;
-      } else {
-        setDbStatus('connected');
-        processEventData(data || []);
-      }
+      if (error) throw error;
+      setDbStatus('connected');
+      processEventData(data || []);
     } catch (err: any) {
-      console.error('[EventsListV2] Final fetch error:', err);
       setDbStatus('error');
       toast.error(`Connection issue: ${err.message}`);
     } finally {
@@ -157,10 +136,15 @@ const EventsListV2 = () => {
     }
   }, []);
 
+  // Fetch events once on mount
   useEffect(() => {
     fetchInitialEvents();
+  }, [fetchInitialEvents]);
+
+  // Fetch user-specific data when session is ready
+  useEffect(() => {
     if (!isSessionLoading) fetchFavouriteVenues();
-  }, [fetchInitialEvents, fetchFavouriteVenues, isSessionLoading]);
+  }, [fetchFavouriteVenues, isSessionLoading]);
 
   useEffect(() => {
     setDisplayedEvents(filteredEvents.slice(0, EVENTS_PER_LOAD));
@@ -207,9 +191,6 @@ const EventsListV2 = () => {
       if (!error) {
         toast.success('Event moved to trash.');
         fetchInitialEvents();
-      } else {
-        console.error('Error deleting event:', error);
-        toast.error('Failed to delete event.');
       }
     }
   };
@@ -402,7 +383,7 @@ const EventsListV2 = () => {
                 <h2 className="text-2xl sm:text-5xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
                 <div className="flex items-center gap-2">
                   <div className="text-[10px] sm:text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 rounded-full">
-                    {filteredEvents.length} {filteredEvents.length === 1 ? 'Event' : 'Events'}
+                    {hasActiveFilters ? `Showing ${filteredEvents.length} of ${totalCount}` : `${filteredEvents.length} ${filteredEvents.length === 1 ? 'Event' : 'Events'}`}
                   </div>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { format, parseISO, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay, isFriday, isSaturday, isSunday, nextSaturday } from 'date-fns';
+import { format, parseISO, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay } from 'date-fns';
 import { Event } from '@/types/event';
 import { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
 
@@ -14,11 +14,6 @@ export const useEventFilters = (allEvents: Event[]) => {
   });
 
   const filteredEvents = useMemo(() => {
-    console.log('[useEventFilters] Starting filtering process...');
-    console.log('[useEventFilters] Input events count:', allEvents.length);
-    console.log('[useEventFilters] Active filters:', filters);
-    console.log('[useEventFilters] Search term:', searchTerm);
-
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     const tomorrow = addDays(now, 1);
@@ -40,13 +35,25 @@ export const useEventFilters = (allEvents: Event[]) => {
 
       // 2. Date Filter
       switch (filters.date) {
-        case 'Today': if (!isToday(eventDate)) return false; break;
-        case 'Tomorrow': if (!isSameDay(eventDate, tomorrow)) return false; break;
+        case 'Today': 
+          if (!isToday(eventDate)) return false; 
+          break;
+        case 'Tomorrow': 
+          if (!isSameDay(eventDate, tomorrow)) return false; 
+          break;
         case 'This Weekend':
-          const sat = nextSaturday(now);
-          const sun = addDays(sat, 1);
-          const fri = addDays(sat, -1);
-          if (!(isSameDay(eventDate, fri) || isSameDay(eventDate, sat) || isSameDay(eventDate, sun))) return false;
+          // Logic: Find the Friday of the current week. 
+          // If today is Mon-Thu, it's the upcoming Friday.
+          // If today is Fri-Sun, it's the current Friday.
+          const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+          let diffToFriday = (5 - dayOfWeek);
+          if (dayOfWeek === 0) diffToFriday = -2; // Sunday -> Friday was 2 days ago
+          if (dayOfWeek === 6) diffToFriday = -1; // Saturday -> Friday was 1 day ago
+          
+          const thisFri = addDays(now, diffToFriday);
+          const thisSun = addDays(thisFri, 2);
+          
+          if (!(eventDate >= thisFri && eventDate <= thisSun)) return false;
           break;
         case 'This Week':
           const startW = startOfWeek(now, { weekStartsOn: 1 });
@@ -89,10 +96,6 @@ export const useEventFilters = (allEvents: Event[]) => {
       return true;
     });
 
-    console.log('[useEventFilters] Filtering complete. Result count:', result.length);
-    if (allEvents.length > 0 && result.length === 0) {
-      console.warn('[useEventFilters] All events were filtered out! Check filter logic.');
-    }
     return result;
   }, [allEvents, filters, searchTerm]);
 
@@ -102,5 +105,6 @@ export const useEventFilters = (allEvents: Event[]) => {
     searchTerm,
     setSearchTerm,
     filteredEvents,
+    totalCount: allEvents.length
   };
 };
