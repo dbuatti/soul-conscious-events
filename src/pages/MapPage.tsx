@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Frown, PlusCircle, Sparkles } from 'lucide-react';
+import { Loader2, Frown, PlusCircle, Sparkles, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import LeafletMap from '@/components/v2/LeafletMap';
@@ -13,27 +13,54 @@ const MapPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking');
 
   useEffect(() => {
     const fetchEvents = async () => {
-      console.log('[MapPage] Fetching events with addresses...');
+      console.log('[MapPage] Initiating database connection check...');
       setLoading(true);
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .not('full_address', 'is', null)
-        .eq('approval_status', 'approved')
-        .eq('is_deleted', false)
-        .order('event_date', { ascending: true });
+      
+      try {
+        // First, check if we can even reach the database with a simple count
+        const { count, error: pingError } = await supabase
+          .from('events')
+          .select('*', { count: 'exact', head: true });
 
-      if (error) {
-        console.error('[MapPage] Error fetching events:', error);
-        toast.error('Failed to load events.');
-      } else {
-        console.log(`[MapPage] Successfully fetched ${data?.length || 0} events with addresses.`);
-        setEvents(data || []);
+        if (pingError) {
+          console.error('[MapPage] Database connection error:', pingError);
+          setDbStatus('error');
+          toast.error(`Database connection failed: ${pingError.message}`);
+          setLoading(false);
+          return;
+        }
+
+        console.log(`[MapPage] Database connected. Total events in table: ${count}`);
+        setDbStatus('connected');
+
+        // Now fetch the specific events for the map
+        console.log('[MapPage] Fetching approved events with addresses...');
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .not('full_address', 'is', null)
+          .eq('approval_status', 'approved')
+          .eq('is_deleted', false)
+          .order('event_date', { ascending: true });
+
+        if (error) {
+          console.error('[MapPage] Error fetching filtered events:', error);
+          toast.error(`Failed to load event data: ${error.message}`);
+        } else {
+          console.log(`[MapPage] Successfully fetched ${data?.length || 0} events for mapping.`);
+          setEvents(data || []);
+        }
+      } catch (err: any) {
+        console.error('[MapPage] Unexpected error during fetch:', err);
+        setDbStatus('error');
+        toast.error('An unexpected error occurred while connecting to the database.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchEvents();
@@ -60,7 +87,20 @@ const MapPage = () => {
       {loading ? (
         <div className="w-full h-[600px] rounded-[3rem] bg-secondary/30 flex flex-col items-center justify-center border border-border">
           <Loader2 className="h-16 w-16 text-primary animate-spin mb-6" />
-          <p className="text-2xl font-black font-heading text-foreground">Loading Map...</p>
+          <p className="text-2xl font-black font-heading text-foreground">
+            {dbStatus === 'checking' ? 'Connecting to Database...' : 'Loading Map Data...'}
+          </p>
+        </div>
+      ) : dbStatus === 'error' ? (
+        <div className="p-24 organic-card rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
+          <Database className="h-20 w-20 text-destructive/20 mx-auto mb-8" />
+          <h3 className="text-3xl font-heading font-bold text-foreground mb-4">Connection Issue</h3>
+          <p className="text-xl text-muted-foreground mb-8 max-w-md mx-auto">
+            We're having trouble reaching the database. This could be a temporary network issue or a configuration problem.
+          </p>
+          <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+            Try Again
+          </Button>
         </div>
       ) : events.length === 0 ? (
         <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20">
