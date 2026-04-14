@@ -41,37 +41,36 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     isProcessing: boolean;
   }>({ total: 0, completed: 0, failed: 0, isProcessing: false });
 
-  // 1. Geocoding Logic
+  // 1. Geocoding Logic with Fallback and Incremental Updates
   useEffect(() => {
     let isMounted = true;
+    const results: GeocodedEvent[] = [];
+    const eventsWithAddress = events.filter(e => e.full_address);
+    
+    setGeocodedEvents([]); // Reset on new events list
+    setGeocodingStatus({
+      total: eventsWithAddress.length,
+      completed: 0,
+      failed: 0,
+      isProcessing: true
+    });
 
     const geocodeEvents = async () => {
-      console.log('[LeafletMap] Starting geocoding for', events.length, 'events');
-      const results: GeocodedEvent[] = [];
-      const eventsWithAddress = events.filter(e => e.full_address);
-      
-      console.log('[LeafletMap] Events with addresses:', eventsWithAddress.length);
-
-      setGeocodingStatus({
-        total: eventsWithAddress.length,
-        completed: 0,
-        failed: 0,
-        isProcessing: true
-      });
-
       for (const event of eventsWithAddress) {
         if (!isMounted) break;
 
-        const cacheKey = `geo_v5_${event.full_address}`;
+        const cacheKey = `geo_v6_${event.full_address}`;
         const cached = sessionStorage.getItem(cacheKey);
         
         if (cached) {
           try {
             const { lat, lng } = JSON.parse(cached);
             if (!isNaN(lat) && !isNaN(lng)) {
-              console.log(`[LeafletMap] Using cached coordinates for: ${event.full_address}`);
               results.push({ ...event, lat, lng });
-              setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));
+              if (isMounted) {
+                setGeocodedEvents([...results]);
+                setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));
+              }
               continue;
             }
           } catch (e) {
@@ -80,46 +79,55 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         }
 
         try {
-          console.log(`[LeafletMap] Fetching coordinates for: ${event.full_address}`);
-          // Respect Nominatim's usage policy (1 request per second)
+          // Respect Nominatim's usage policy
           await new Promise(resolve => setTimeout(resolve, 1100));
           
-          const response = await fetch(
+          // Try full address first
+          let response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.full_address!)}&limit=1`,
-            {
-              headers: { 'User-Agent': 'SoulFlow-Australia-Community-App-v2' }
-            }
+            { headers: { 'User-Agent': 'SoulFlow-Australia-Community-App-v2' } }
           );
           
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          let data = await response.json();
           
-          const data = await response.json();
+          // Fallback: If full address fails, try a broader search (Suburb, State, Australia)
+          if ((!data || data.length === 0) && event.full_address?.includes(',')) {
+            const parts = event.full_address.split(',');
+            if (parts.length > 1) {
+              const fallbackAddress = parts.slice(1).join(',').trim();
+              console.log(`[LeafletMap] Retrying with fallback: ${fallbackAddress}`);
+              await new Promise(resolve => setTimeout(resolve, 1100));
+              response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fallbackAddress)}&limit=1`,
+                { headers: { 'User-Agent': 'SoulFlow-Australia-Community-App-v2' } }
+              );
+              data = await response.json();
+            }
+          }
           
           if (data && data.length > 0 && isMounted) {
             const lat = parseFloat(data[0].lat);
             const lng = parseFloat(data[0].lon);
             if (!isNaN(lat) && !isNaN(lng)) {
-              console.log(`[LeafletMap] Successfully geocoded: ${event.full_address} -> [${lat}, ${lng}]`);
               results.push({ ...event, lat, lng });
               sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
-              setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));
+              if (isMounted) {
+                setGeocodedEvents([...results]);
+                setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));
+              }
             } else {
-              console.warn(`[LeafletMap] Invalid coordinates returned for: ${event.full_address}`);
               setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
             }
           } else {
-            console.warn(`[LeafletMap] No results found for: ${event.full_address}`);
             setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
           }
         } catch (error) {
-          console.error('[LeafletMap] Geocoding error for:', event.full_address, error);
+          console.error('[LeafletMap] Geocoding error:', error);
           setGeocodingStatus(prev => ({ ...prev, failed: prev.failed + 1 }));
         }
       }
       
       if (isMounted) {
-        console.log(`[LeafletMap] Geocoding complete. Found ${results.length} locations.`);
-        setGeocodedEvents(results);
         setGeocodingStatus(prev => ({ ...prev, isProcessing: false }));
       }
     };
@@ -127,97 +135,63 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     if (events.length > 0) {
       geocodeEvents();
     } else {
-      console.log('[LeafletMap] No events provided to map.');
-      setGeocodedEvents([]);
       setGeocodingStatus({ total: 0, completed: 0, failed: 0, isProcessing: false });
     }
 
     return () => { isMounted = false; };
   }, [events]);
 
-  // 2. Map Initialization & Resize Handling
+  // 2. Map Initialization
   useEffect(() => {
-    if (!mapRef.current) {
-      console.error('[LeafletMap] Map container ref is null');
-      return;
-    }
-    
-    if (mapInstanceRef.current) {
-      console.log('[LeafletMap] Map already initialized, skipping');
-      return;
-    }
+    if (!mapRef.current || mapInstanceRef.current) return;
 
-    console.log('[LeafletMap] Initializing Leaflet map instance');
-    try {
-      const map = L.map(mapRef.current, {
-        center: center,
-        zoom: zoom,
-        scrollWheelZoom: interactive,
-        zoomControl: false,
-        dragging: interactive,
-        touchZoom: interactive,
-        attributionControl: false,
-      });
+    const map = L.map(mapRef.current, {
+      center: center,
+      zoom: zoom,
+      scrollWheelZoom: interactive,
+      zoomControl: false,
+      dragging: interactive,
+      touchZoom: interactive,
+      attributionControl: false,
+    });
 
-      const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-      tiles.on('tileload', () => console.log('[LeafletMap] Tile loaded successfully'));
-      tiles.on('tileerror', (e) => console.error('[LeafletMap] Tile load error:', e));
+    markersLayerRef.current = L.layerGroup().addTo(map);
+    mapInstanceRef.current = map;
 
-      markersLayerRef.current = L.layerGroup().addTo(map);
-      mapInstanceRef.current = map;
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
 
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          const { width, height } = entry.contentRect;
-          console.log(`[LeafletMap] Container resized to: ${width}x${height}`);
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.invalidateSize({ animate: false });
-          }
-        }
-      });
+    resizeObserver.observe(mapRef.current);
 
-      resizeObserver.observe(mapRef.current);
+    setTimeout(() => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    }, 500);
 
-      // Force a size invalidation after a short delay to ensure correct rendering
-      setTimeout(() => {
-        if (mapInstanceRef.current) {
-          console.log('[LeafletMap] Forcing initial size invalidation');
-          mapInstanceRef.current.invalidateSize({ animate: false });
-        }
-      }, 200);
-
-      return () => {
-        console.log('[LeafletMap] Cleaning up map instance');
-        resizeObserver.disconnect();
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.remove();
-          mapInstanceRef.current = null;
-        }
-      };
-    } catch (err) {
-      console.error('[LeafletMap] Critical error during map initialization:', err);
-    }
+    return () => {
+      resizeObserver.disconnect();
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
   }, []);
 
-  // 3. Update Markers and Bounds
+  // 3. Update Markers
   useEffect(() => {
     const map = mapInstanceRef.current;
     const markersLayer = markersLayerRef.current;
-    if (!map || !markersLayer) {
-      console.warn('[LeafletMap] Map or markers layer not ready for update');
-      return;
-    }
+    if (!map || !markersLayer) return;
 
-    console.log(`[LeafletMap] Updating markers for ${geocodedEvents.length} events`);
     markersLayer.clearLayers();
     
-    if (geocodedEvents.length === 0) {
-      console.log('[LeafletMap] No geocoded events to display on map');
-      return;
-    }
+    if (geocodedEvents.length === 0) return;
 
     const bounds = L.latLngBounds([]);
 
@@ -267,11 +241,9 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       bounds.extend([event.lat, event.lng]);
     });
 
-    if (bounds.isValid()) {
-      console.log('[LeafletMap] Fitting map to bounds:', bounds.toBBoxString());
+    // Only auto-zoom if we have multiple events or if it's the initial load
+    if (bounds.isValid() && geocodedEvents.length > 0) {
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 13, animate: true });
-    } else {
-      console.warn('[LeafletMap] Bounds are invalid, skipping fitBounds');
     }
   }, [geocodedEvents, onViewDetails]);
 
