@@ -5,14 +5,42 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, MapPin, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Loader2, MapPin, Plus, Sparkles, Trash2, Edit, Save } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+const venueSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  full_address: z.string().optional().or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+  website: z.string().optional().or(z.literal('')),
+  hours: z.string().optional().or(z.literal('')),
+  highlights: z.string().optional().or(z.literal('')),
+});
+
+type VenueFormValues = z.infer<typeof venueSchema>;
 
 const VenueManagementTable = () => {
   const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAiParsing, setIsAiParsing] = useState(false);
   const [rawText, setRawText] = useState('');
+  const [editingVenue, setEditingVenue] = useState<any | null>(null);
+
+  const form = useForm<VenueFormValues>({
+    resolver: zodResolver(venueSchema),
+    defaultValues: {
+      name: '',
+      full_address: '',
+      phone: '',
+      website: '',
+      hours: '',
+      highlights: '',
+    },
+  });
 
   const fetchVenues = async () => {
     setLoading(true);
@@ -45,7 +73,37 @@ const VenueManagementTable = () => {
     }
   };
 
+  const handleEdit = (venue: any) => {
+    setEditingVenue(venue);
+    form.reset({
+      name: venue.name || '',
+      full_address: venue.full_address || '',
+      phone: venue.phone || '',
+      website: venue.website || '',
+      hours: venue.hours || '',
+      highlights: venue.highlights || '',
+    });
+  };
+
+  const onUpdateSubmit = async (values: VenueFormValues) => {
+    if (!editingVenue) return;
+
+    const { error } = await supabase
+      .from('venues')
+      .update(values)
+      .eq('id', editingVenue.id);
+
+    if (error) {
+      toast.error('Failed to update venue');
+    } else {
+      toast.success('Venue updated successfully');
+      setEditingVenue(null);
+      fetchVenues();
+    }
+  };
+
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this venue?')) return;
     const { error } = await supabase.from('venues').delete().eq('id', id);
     if (!error) {
       toast.success('Venue removed');
@@ -64,6 +122,7 @@ const VenueManagementTable = () => {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Paste Google Maps Info</DialogTitle>
+              <DialogDescription>The AI will extract the name, address, and details automatically.</DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
               <Textarea 
@@ -72,7 +131,6 @@ const VenueManagementTable = () => {
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
               />
-              <p className="text-xs text-muted-foreground italic">The AI will extract the name, address, and details automatically.</p>
             </div>
             <DialogFooter>
               <Button onClick={handleAiAdd} disabled={isAiParsing}>
@@ -99,15 +157,108 @@ const VenueManagementTable = () => {
                 <TableCell className="font-bold">{v.name}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{v.full_address}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)} className="text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(v)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)} className="text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={!!editingVenue} onOpenChange={(open) => !open && setEditingVenue(null)}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Venue</DialogTitle>
+            <DialogDescription>Update the details for this community venue.</DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onUpdateSubmit)} className="space-y-4 py-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Venue Name</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="full_address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Address</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl><Input {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Website</FormLabel>
+                      <FormControl><Input {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="hours"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Operating Hours</FormLabel>
+                    <FormControl><Textarea {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="highlights"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Highlights / Notes</FormLabel>
+                    <FormControl><Textarea {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditingVenue(null)}>Cancel</Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
