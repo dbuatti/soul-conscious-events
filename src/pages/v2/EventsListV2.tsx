@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isPast, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Bookmark } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Bookmark, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -39,6 +39,7 @@ const EventsListV2 = () => {
   const [offset, setOffset] = useState(0);
   const [availableVenues, setAvailableVenues] = useState<string[]>([]);
   const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]);
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error' | 'timeout'>('checking');
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -72,9 +73,21 @@ const EventsListV2 = () => {
   const fetchInitialEvents = useCallback(async () => {
     console.log('[EventsListV2] Starting fetchInitialEvents...');
     setLoading(true);
+    setDbStatus('checking');
     
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database request timed out after 10 seconds')), 10000)
+    );
+
     try {
-      console.log('[EventsListV2] Executing Supabase query for events...');
+      console.log('[EventsListV2] Pinging database...');
+      const pingPromise = supabase.from('events').select('*', { count: 'exact', head: true });
+      
+      await Promise.race([pingPromise, timeoutPromise]);
+      console.log('[EventsListV2] Database ping successful.');
+      setDbStatus('connected');
+
+      console.log('[EventsListV2] Executing main query for events...');
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -84,6 +97,7 @@ const EventsListV2 = () => {
 
       if (error) {
         console.error('[EventsListV2] Supabase query error:', error);
+        setDbStatus('error');
         toast.error(`Failed to load events: ${error.message}`);
       } else {
         console.log(`[EventsListV2] Supabase query successful. Raw data length: ${data?.length || 0}`);
@@ -93,8 +107,6 @@ const EventsListV2 = () => {
           if (!isValid) console.warn(`[EventsListV2] Filtering out corrupted ID: ${event.id}`);
           return isValid;
         });
-
-        console.log(`[EventsListV2] Valid events after ID check: ${validEvents.length}`);
 
         let combinedEvents: Event[] = [];
         validEvents.forEach(event => {
@@ -112,7 +124,7 @@ const EventsListV2 = () => {
         });
 
         combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
-        console.log(`[EventsListV2] Final combined events count (including recurring): ${combinedEvents.length}`);
+        console.log(`[EventsListV2] Final combined events count: ${combinedEvents.length}`);
         
         setAllEvents(combinedEvents);
         const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
@@ -120,7 +132,12 @@ const EventsListV2 = () => {
       }
     } catch (err: any) {
       console.error('[EventsListV2] Unexpected error during fetchInitialEvents:', err);
-      toast.error('An unexpected error occurred while loading events.');
+      if (err.message.includes('timed out')) {
+        setDbStatus('timeout');
+      } else {
+        setDbStatus('error');
+      }
+      toast.error(`Connection issue: ${err.message}`);
     } finally {
       console.log('[EventsListV2] fetchInitialEvents finished.');
       setLoading(false);
@@ -133,7 +150,6 @@ const EventsListV2 = () => {
   }, [fetchInitialEvents, fetchFavouriteVenues, isSessionLoading]);
 
   useEffect(() => {
-    console.log(`[EventsListV2] Filtered events updated. Count: ${filteredEvents.length}`);
     setDisplayedEvents(filteredEvents.slice(0, EVENTS_PER_LOAD));
     setOffset(EVENTS_PER_LOAD);
     setHasMore(filteredEvents.length > EVENTS_PER_LOAD);
@@ -327,16 +343,28 @@ const EventsListV2 = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex flex-col space-y-4 sm:space-y-8">
-              <Skeleton className="h-[200px] sm:h-[400px] w-full rounded-2xl sm:rounded-[2.5rem]" />
-              <div className="space-y-2 sm:space-y-4 px-2">
-                <Skeleton className="h-6 sm:h-10 w-3/4 rounded-lg" />
-                <Skeleton className="h-4 sm:h-6 w-1/2 rounded-md" />
-              </div>
+        <div className="flex flex-col items-center justify-center py-20 space-y-6">
+          <Loader2 className="h-12 w-12 text-primary animate-spin" />
+          <p className="text-xl font-black font-heading text-foreground">
+            {dbStatus === 'checking' ? 'Connecting to SoulFlow...' : 'Gathering Events...'}
+          </p>
+          {dbStatus === 'timeout' && (
+            <div className="text-center space-y-4">
+              <p className="text-muted-foreground max-w-md">The connection is taking longer than expected. This might be due to a slow network or a temporary service issue.</p>
+              <Button onClick={() => window.location.reload()} variant="outline" className="rounded-xl">
+                Try Refreshing
+              </Button>
             </div>
-          ))}
+          )}
+        </div>
+      ) : dbStatus === 'error' ? (
+        <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
+          <Database className="h-12 w-12 sm:h-24 sm:w-24 text-destructive/20 mx-auto mb-4 sm:mb-10" />
+          <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">Connection Issue</h3>
+          <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-12 max-w-sm mx-auto font-medium">We're having trouble reaching the database. Please check your internet connection.</p>
+          <Button onClick={() => fetchInitialEvents()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-6 py-4 sm:px-12 sm:py-8 text-base sm:text-xl font-black shadow-xl">
+            Retry Connection
+          </Button>
         </div>
       ) : (
         <>
