@@ -22,6 +22,7 @@ export const getRedirectUrl = (): string => {
   
   // Use the current origin and ensure no trailing slash
   // This must match exactly what is in the Supabase Redirect URLs allowlist
+  // For localhost:32113, this returns "http://localhost:32113"
   return window.location.origin.replace(/\/$/, '');
 };
 
