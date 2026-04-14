@@ -79,21 +79,21 @@ const EventsListV2 = () => {
 
     let combinedEvents: Event[] = [];
     validEvents.forEach(event => {
-      const eventDate = parseISO(event.event_date);
-      const isUpcoming = !isPast(eventDate) || isToday(eventDate);
-      
-      if (isUpcoming) {
-        combinedEvents.push(event);
-      }
+      // Add the original event
+      combinedEvents.push(event);
 
+      // Add recurring instances if applicable
       if (event.recurring_pattern) {
         const instances = generateRecurringInstances(event);
         combinedEvents = combinedEvents.concat(instances);
       }
     });
 
+    // Sort all events chronologically
     combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
+    
     setAllEvents(combinedEvents);
+    
     const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
     setAvailableVenues(uniqueVenues.sort());
   };
@@ -107,7 +107,7 @@ const EventsListV2 = () => {
     const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieWpkaHhwYmZ2cXNyenpkandpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzYyNzIsImV4cCI6MjA2OTE1MjI3Mn0.1BpuFdmZnV_-jjncopxWODAGn7-Coh716jzbYeTrNT4";
 
     try {
-      // 1. Try Super Raw Authenticated Fetch (Bypasses Supabase Client Library)
+      // Use Raw Authenticated Fetch to bypass library-level interference
       console.log('[EventsListV2] Attempting Super Raw Authenticated Fetch...');
       const rawResponse = await fetch(`${SUPABASE_URL}/rest/v1/events?approval_status=eq.approved&is_deleted=eq.false&order=event_date.asc`, {
         method: 'GET',
@@ -124,7 +124,7 @@ const EventsListV2 = () => {
         setDbStatus('connected');
         processEventData(data);
         setLoading(false);
-        return; // Exit early if raw fetch works
+        return;
       } else {
         console.error(`[EventsListV2] Super Raw Fetch FAILED with status: ${rawResponse.status}`);
         if (rawResponse.status === 401 || rawResponse.status === 403) {
@@ -134,8 +134,7 @@ const EventsListV2 = () => {
         }
       }
 
-      // 2. Fallback to standard client if raw fetch failed for some reason
-      console.log('[EventsListV2] Falling back to standard Supabase client...');
+      // Fallback to standard client if raw fetch failed
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -337,7 +336,7 @@ const EventsListV2 = () => {
                 </Badge>
               ))}
               {filters.price.map(p => (
-                <Badge key={p} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {p}
                   <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('price', p)} />
                 </Badge>
