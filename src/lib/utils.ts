@@ -19,7 +19,8 @@ export const getRedirectUrl = (): string => {
   if (Capacitor.isNativePlatform()) {
     return 'com.example.soulconsciousevents://';
   }
-  return window.location.origin;
+  // Ensure the origin doesn't have a trailing slash for Supabase allowlist matching
+  return window.location.origin.replace(/\/$/, '');
 };
 
 export const getStaticMapUrl = (address: string): string => {
