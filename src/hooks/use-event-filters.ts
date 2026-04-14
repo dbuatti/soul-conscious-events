@@ -90,6 +90,9 @@ export const useEventFilters = (allEvents: Event[]) => {
     });
 
     console.log('[useEventFilters] Filtering complete. Result count:', result.length);
+    if (allEvents.length > 0 && result.length === 0) {
+      console.warn('[useEventFilters] All events were filtered out! Check filter logic.');
+    }
     return result;
   }, [allEvents, filters, searchTerm]);
 

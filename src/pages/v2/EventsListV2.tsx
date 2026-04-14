@@ -54,13 +54,18 @@ const EventsListV2 = () => {
       setFavouriteVenues([]);
       return;
     }
-    const { data } = await supabase
-      .from('user_favourite_venues')
-      .select('place_name')
-      .eq('user_id', user.id);
+    try {
+      const { data, error } = await supabase
+        .from('user_favourite_venues')
+        .select('place_name')
+        .eq('user_id', user.id);
 
-    if (data) {
-      setFavouriteVenues(data.map(item => item.place_name));
+      if (error) throw error;
+      if (data) {
+        setFavouriteVenues(data.map(item => item.place_name));
+      }
+    } catch (err) {
+      console.error('[EventsListV2] Error fetching favourite venues:', err);
     }
   }, [user]);
 
@@ -68,54 +73,58 @@ const EventsListV2 = () => {
     console.log('[EventsListV2] Starting fetchInitialEvents...');
     setLoading(true);
     
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .eq('approval_status', 'approved')
-      .eq('is_deleted', false)
-      .order('event_date', { ascending: true });
+    try {
+      console.log('[EventsListV2] Executing Supabase query for events...');
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('approval_status', 'approved')
+        .eq('is_deleted', false)
+        .order('event_date', { ascending: true });
 
-    if (error) {
-      console.error('[EventsListV2] Supabase error:', error);
-      toast.error('Failed to load events.');
-    } else {
-      console.log(`[EventsListV2] Raw events fetched: ${data?.length || 0}`);
-      
-      const validEvents = (data || []).filter(event => {
-        const isValid = event.id && event.id.length > 30;
-        if (!isValid) console.warn(`[EventsListV2] Filtering out corrupted ID: ${event.id}`);
-        return isValid;
-      });
-
-      console.log(`[EventsListV2] Valid events after ID check: ${validEvents.length}`);
-
-      let combinedEvents: Event[] = [];
-      validEvents.forEach(event => {
-        const eventDate = parseISO(event.event_date);
-        const isUpcoming = !isPast(eventDate) || isToday(eventDate);
+      if (error) {
+        console.error('[EventsListV2] Supabase query error:', error);
+        toast.error(`Failed to load events: ${error.message}`);
+      } else {
+        console.log(`[EventsListV2] Supabase query successful. Raw data length: ${data?.length || 0}`);
         
-        if (isUpcoming) {
-          combinedEvents.push(event);
-        } else {
-          // Log past events that are being hidden by default
-          console.log(`[EventsListV2] Hiding past event: ${event.event_name} (${event.event_date})`);
-        }
+        const validEvents = (data || []).filter(event => {
+          const isValid = event.id && event.id.length > 30;
+          if (!isValid) console.warn(`[EventsListV2] Filtering out corrupted ID: ${event.id}`);
+          return isValid;
+        });
 
-        if (event.recurring_pattern) {
-          const instances = generateRecurringInstances(event);
-          console.log(`[EventsListV2] Generated ${instances.length} instances for recurring event: ${event.event_name}`);
-          combinedEvents = combinedEvents.concat(instances);
-        }
-      });
+        console.log(`[EventsListV2] Valid events after ID check: ${validEvents.length}`);
 
-      combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
-      console.log(`[EventsListV2] Final combined events count: ${combinedEvents.length}`);
-      
-      setAllEvents(combinedEvents);
-      const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
-      setAvailableVenues(uniqueVenues.sort());
+        let combinedEvents: Event[] = [];
+        validEvents.forEach(event => {
+          const eventDate = parseISO(event.event_date);
+          const isUpcoming = !isPast(eventDate) || isToday(eventDate);
+          
+          if (isUpcoming) {
+            combinedEvents.push(event);
+          }
+
+          if (event.recurring_pattern) {
+            const instances = generateRecurringInstances(event);
+            combinedEvents = combinedEvents.concat(instances);
+          }
+        });
+
+        combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
+        console.log(`[EventsListV2] Final combined events count (including recurring): ${combinedEvents.length}`);
+        
+        setAllEvents(combinedEvents);
+        const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
+        setAvailableVenues(uniqueVenues.sort());
+      }
+    } catch (err: any) {
+      console.error('[EventsListV2] Unexpected error during fetchInitialEvents:', err);
+      toast.error('An unexpected error occurred while loading events.');
+    } finally {
+      console.log('[EventsListV2] fetchInitialEvents finished.');
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
