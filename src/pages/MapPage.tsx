@@ -16,6 +16,7 @@ const MapPage = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      console.log('[MapPage] Fetching events with addresses...');
       setLoading(true);
       const { data, error } = await supabase
         .from('events')
@@ -26,9 +27,10 @@ const MapPage = () => {
         .order('event_date', { ascending: true });
 
       if (error) {
-        console.error('MapPage: Error fetching events:', error);
+        console.error('[MapPage] Error fetching events:', error);
         toast.error('Failed to load events.');
       } else {
+        console.log(`[MapPage] Successfully fetched ${data?.length || 0} events with addresses.`);
         setEvents(data || []);
       }
       setLoading(false);
@@ -38,6 +40,7 @@ const MapPage = () => {
   }, []);
 
   const handleViewDetails = (event: Event) => {
+    console.log('[MapPage] Viewing details for event:', event.event_name);
     setSelectedEvent(event);
     setIsEventDetailDialogOpen(true);
   };
