@@ -151,15 +151,15 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
 
   const Content = (
-    <div className="flex flex-col h-full">
-      <div className="relative">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="relative flex-shrink-0">
         {event.image_url ? (
-          <div className="w-full h-[200px] sm:h-[350px] overflow-hidden bg-secondary/20">
+          <div className="w-full h-[200px] sm:h-[300px] overflow-hidden bg-secondary/20">
             <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover image-fade-in" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
           </div>
         ) : (
-          <div className="w-full h-32 sm:h-48 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary flex items-center justify-center">
+          <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary flex items-center justify-center">
             <span className="text-primary/30 font-heading text-3xl sm:text-5xl italic font-bold tracking-tighter">SoulFlow</span>
           </div>
         )}
@@ -170,36 +170,36 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
           </DialogClose>
         )}
 
-        <div className={event.image_url ? "absolute bottom-0 left-0 p-4 sm:p-8 w-full" : "p-4 sm:p-8 pt-6 sm:pt-10"}>
-          <div className="flex flex-wrap gap-2 mb-2 sm:mb-3">
+        <div className={event.image_url ? "absolute bottom-0 left-0 p-4 sm:p-6 w-full" : "p-4 sm:p-6 pt-6 sm:pt-8"}>
+          <div className="flex flex-wrap gap-2 mb-2">
             {event.event_type && (
-              <Badge variant="secondary" className="bg-primary/20 text-primary border-none font-bold px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs">
+              <Badge variant="secondary" className="bg-primary/20 text-primary border-none font-bold px-2 py-0.5 text-[10px] sm:text-xs">
                 {event.event_type.toUpperCase()}
               </Badge>
             )}
           </div>
-          <h2 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-3 font-heading tracking-tight text-foreground leading-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-2 font-heading tracking-tight text-foreground leading-tight">
             {event.event_name}
           </h2>
-          <div className="flex flex-wrap items-center text-xs sm:text-base gap-x-3 sm:gap-x-4 gap-y-1 sm:gap-y-2 text-muted-foreground font-medium">
-            <span className="flex items-center"><Calendar className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" /> {dateDisplay}</span>
-            {event.event_time && <span className="flex items-center"><Clock className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" /> {event.event_time}</span>}
+          <div className="flex flex-wrap items-center text-xs sm:text-sm gap-x-3 gap-y-1 text-muted-foreground font-medium">
+            <span className="flex items-center"><Calendar className="mr-1.5 h-3.5 w-3.5 text-primary" /> {dateDisplay}</span>
+            {event.event_time && <span className="flex items-center"><Clock className="mr-1.5 h-3.5 w-3.5 text-primary" /> {event.event_time}</span>}
           </div>
         </div>
       </div>
 
-      <div className="px-4 sm:px-8 py-4 sm:py-6 space-y-6 sm:space-y-8 overflow-y-auto flex-grow">
+      <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-6 overflow-y-auto flex-grow min-h-0">
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-4">
             <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Location & Price</h3>
             {event.full_address && (
               <div className="space-y-3">
                 <div className="flex items-start text-foreground group relative">
-                  <MapPin className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <button onClick={() => openInMaps(event.full_address!)} className="text-left hover:text-primary transition-colors leading-snug block">
-                      {event.place_name && <span className="block font-bold mb-0.5 text-sm sm:text-base">{event.place_name}</span>}
-                      <span className="text-xs sm:text-sm text-muted-foreground group-hover:text-primary transition-colors">{event.full_address}</span>
+                      {event.place_name && <span className="block font-bold mb-0.5 text-sm">{event.place_name}</span>}
+                      <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">{event.full_address}</span>
                     </button>
                   </div>
                 </div>
@@ -226,8 +226,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             )}
             {event.price && (
               <div className="flex items-center text-foreground">
-                <DollarSign className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                <span className="font-bold text-sm sm:text-base">{formatPrice(event.price)}</span>
+                <DollarSign className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                <span className="font-bold text-sm">{formatPrice(event.price)}</span>
               </div>
             )}
           </div>
@@ -235,21 +235,21 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Organizer & Details</h3>
             {event.organizer_contact && (
               <div className="flex items-center text-foreground">
-                <User className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                <span className="font-medium text-sm sm:text-base">{event.organizer_contact}</span>
+                <User className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                <span className="font-medium text-sm">{event.organizer_contact}</span>
               </div>
             )}
             {event.recurring_pattern && (
               <div className="flex items-center text-foreground">
-                <Repeat className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                <span className="font-medium capitalize text-sm sm:text-base">Repeats {event.recurring_pattern.toLowerCase()}</span>
+                <Repeat className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                <span className="font-medium capitalize text-sm">Repeats {event.recurring_pattern.toLowerCase()}</span>
               </div>
             )}
             <div className="flex flex-wrap gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="rounded-xl h-9 px-3 text-[10px] sm:text-xs font-bold">
-                    <CalendarPlus className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Add to Calendar <ChevronDown className="ml-1.5 sm:ml-2 h-3 w-3 opacity-50" />
+                  <Button variant="outline" size="sm" className="rounded-xl h-9 px-3 text-[10px] font-bold">
+                    <CalendarPlus className="mr-1.5 h-3.5 w-3.5" /> Add to Calendar <ChevronDown className="ml-1.5 h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-xl">
@@ -263,7 +263,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </DropdownMenu>
               
               {event.full_address && (
-                <Button variant="outline" size="sm" onClick={handleCopyAddress} className="rounded-xl h-9 px-3 text-[10px] sm:text-xs font-bold">
+                <Button variant="outline" size="sm" onClick={handleCopyAddress} className="rounded-xl h-9 px-3 text-[10px] font-bold">
                   {copiedAddress ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
                   {copiedAddress ? 'Copied!' : 'Copy Address'}
                 </Button>
@@ -273,16 +273,16 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         </section>
 
         {event.description && (
-          <section className="space-y-2 sm:space-y-3">
+          <section className="space-y-2">
             <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">About this event</h3>
-            <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm sm:text-lg">
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
               {event.description}
             </p>
           </section>
         )}
 
         {(event.ticket_link || event.special_notes || event.discount_code) && (
-          <section className="bg-secondary/30 rounded-2xl p-5 sm:p-6 space-y-5 border border-border/50">
+          <section className="bg-secondary/30 rounded-2xl p-5 space-y-5 border border-border/50">
             <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Booking Information</h3>
             
             {event.ticket_link && (
@@ -310,14 +310,14 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             {event.special_notes && (
               <div className="flex items-start bg-yellow-500/5 p-4 rounded-xl border border-yellow-500/20">
                 <Info className="mr-3 h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs sm:text-sm text-foreground/80 italic leading-relaxed">{event.special_notes}</p>
+                <p className="text-xs text-foreground/80 italic leading-relaxed">{event.special_notes}</p>
               </div>
             )}
           </section>
         )}
       </div>
 
-      <div className="flex flex-wrap justify-between items-center p-4 sm:p-8 border-t bg-secondary/20 gap-4 mt-auto">
+      <div className="flex flex-wrap justify-between items-center p-4 sm:p-6 border-t bg-secondary/20 gap-4 mt-auto flex-shrink-0">
         <div className="flex gap-2">
           <div onClick={(e) => e.stopPropagation()}>
             <BookmarkButton eventId={event.id} size="default" className="rounded-xl px-4 h-10" />
@@ -375,7 +375,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[94vh] overflow-hidden dark:bg-card dark:border-border p-0 border-none shadow-2xl flex flex-col">
+      <DialogContent className="sm:max-w-[700px] h-[90vh] max-h-[90vh] overflow-hidden dark:bg-card dark:border-border p-0 border-none shadow-2xl flex flex-col">
         <DialogHeader className="sr-only">
           <DialogTitle>{event.event_name}</DialogTitle>
           <DialogDescription>Event details for {event.event_name}</DialogDescription>
