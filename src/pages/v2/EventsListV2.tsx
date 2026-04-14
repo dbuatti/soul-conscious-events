@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isPast, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Bookmark, Database } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Bookmark, Database, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -39,7 +39,7 @@ const EventsListV2 = () => {
   const [offset, setOffset] = useState(0);
   const [availableVenues, setAvailableVenues] = useState<string[]>([]);
   const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]);
-  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error' | 'timeout'>('checking');
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error' | 'timeout' | 'blocked'>('checking');
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -80,8 +80,23 @@ const EventsListV2 = () => {
     );
 
     try {
-      console.log('[EventsListV2] Pinging database...');
-      const pingPromise = supabase.from('events').select('*', { count: 'exact', head: true });
+      // Diagnostic: Test raw network connectivity to Supabase
+      console.log('[EventsListV2] Testing raw network connectivity to Supabase API...');
+      try {
+        const rawTest = await fetch('https://tbyjdhxpbfvqsrzzdjwi.supabase.co/rest/v1/', {
+          method: 'GET',
+          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieWpkaHhwYmZ2cXNyenpkandpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzYyNzIsImV4cCI6MjA2OTE1MjI3Mn0.1BpuFdmZnV_-jjncopxWODAGn7-Coh716jzbYeTrNT4' }
+        });
+        console.log('[EventsListV2] Raw network test status:', rawTest.status);
+      } catch (fetchErr) {
+        console.error('[EventsListV2] Raw network test FAILED. This usually means a browser extension or firewall is blocking the request.', fetchErr);
+        setDbStatus('blocked');
+        setLoading(false);
+        return;
+      }
+
+      console.log('[EventsListV2] Pinging database via client...');
+      const pingPromise = supabase.from('events').select('id').limit(1);
       
       await Promise.race([pingPromise, timeoutPromise]);
       console.log('[EventsListV2] Database ping successful.');
@@ -356,6 +371,18 @@ const EventsListV2 = () => {
               </Button>
             </div>
           )}
+        </div>
+      ) : dbStatus === 'blocked' ? (
+        <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
+          <WifiOff className="h-12 w-12 sm:h-24 sm:w-24 text-destructive/20 mx-auto mb-4 sm:mb-10" />
+          <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">Connection Blocked</h3>
+          <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-12 max-w-md mx-auto font-medium">
+            Your browser is unable to reach our database. This is usually caused by an **Ad-Blocker**, **VPN**, or **Privacy Extension**. 
+            Please try disabling them for this site and refresh.
+          </p>
+          <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-6 py-4 sm:px-12 sm:py-8 text-base sm:text-xl font-black shadow-xl">
+            Refresh Page
+          </Button>
         </div>
       ) : dbStatus === 'error' ? (
         <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
