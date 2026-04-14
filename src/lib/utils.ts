@@ -19,7 +19,9 @@ export const getRedirectUrl = (): string => {
   if (Capacitor.isNativePlatform()) {
     return 'com.example.soulconsciousevents://';
   }
-  // Ensure the origin doesn't have a trailing slash for Supabase allowlist matching
+  
+  // Use the current origin and ensure no trailing slash
+  // This must match exactly what is in the Supabase Redirect URLs allowlist
   return window.location.origin.replace(/\/$/, '');
 };
 
@@ -27,7 +29,6 @@ export const getStaticMapUrl = (address: string): string => {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   if (!apiKey || !address) return '';
   const encodedAddress = encodeURIComponent(address);
-  // Using a custom style to match the app's warm/organic aesthetic
   return `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=15&size=800x400&maptype=roadmap&markers=color:0xB34629%7C${encodedAddress}&key=${apiKey}&style=feature:all|element:all|saturation:-20|lightness:10`;
 };
 
@@ -35,7 +36,7 @@ export const openInMaps = (address: string) => {
   if (!address) return;
   const encodedAddress = encodeURIComponent(address);
   const url = Capacitor.isNativePlatform() 
-    ? `maps://maps.apple.com/?q=${encodedAddress}` // iOS/Android native maps
-    : `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`; // Web
+    ? `maps://maps.apple.com/?q=${encodedAddress}` 
+    : `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
   window.open(url, '_blank');
 };
