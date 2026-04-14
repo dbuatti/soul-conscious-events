@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface SessionContextType {
   session: Session | null;
@@ -18,13 +18,21 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
-  const isInitialized = useRef(false);
+  
+  // Use refs to track state across renders and prevent duplicate fetches
+  const lastFetchedUserId = useRef<string | null>(null);
+  const isFetching = useRef<boolean>(false);
 
   const fetchProfile = async (userId: string) => {
+    // Prevent duplicate concurrent fetches or re-fetching the same user
+    if (isFetching.current || (lastFetchedUserId.current === userId && profile)) {
+      return;
+    }
+
     console.log('[SessionContext] Fetching profile for user:', userId);
+    isFetching.current = true;
+    lastFetchedUserId.current = userId;
     
-    // Create a promise that rejects after 5 seconds
     const timeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
     );
@@ -49,6 +57,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     } catch (err) {
       console.error('[SessionContext] Profile fetch failed or timed out:', err);
     } finally {
+      isFetching.current = false;
       setIsLoading(false);
     }
   };
@@ -58,20 +67,19 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     
     const clearAuthHash = () => {
       if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('error'))) {
-        console.log('[SessionContext] Clearing auth hash from URL');
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
     };
 
     // Initial session check
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      console.log('[SessionContext] Initial session check complete:', initialSession?.user?.email || 'No session');
-      setSession(initialSession);
-      setUser(initialSession?.user || null);
-      
-      if (initialSession?.user) {
+      if (initialSession) {
+        console.log('[SessionContext] Initial session found:', initialSession.user.email);
+        setSession(initialSession);
+        setUser(initialSession.user);
         fetchProfile(initialSession.user.id);
       } else {
+        console.log('[SessionContext] No initial session');
         setIsLoading(false);
       }
     }).catch(err => {
@@ -83,20 +91,25 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('[SessionContext] Auth event:', event, currentSession?.user?.email || 'No user');
       
+      const newUser = currentSession?.user || null;
       setSession(currentSession);
-      setUser(currentSession?.user || null);
+      setUser(newUser);
       
-      if (currentSession?.user) {
-        await fetchProfile(currentSession.user.id);
+      if (newUser) {
+        // Only fetch if it's a different user or we don't have a profile
+        if (newUser.id !== lastFetchedUserId.current) {
+          await fetchProfile(newUser.id);
+        }
       } else {
         setProfile(null);
+        lastFetchedUserId.current = null;
         setIsLoading(false);
       }
 
+      // Handle redirects on login
       if (currentSession && (window.location.pathname === '/login' || window.location.pathname === '/old/login')) {
         clearAuthHash();
         const target = window.location.pathname.startsWith('/old') ? '/old' : '/';
-        console.log('[SessionContext] Redirecting to:', target);
         navigate(target);
       }
     });
@@ -105,13 +118,13 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       console.log('[SessionContext] Provider unmounting');
       subscription.unsubscribe();
     };
-  }, [navigate]); // Only run on mount/navigate change
+  }, [navigate]);
 
-  // Safety timeout to ensure app never stays stuck
+  // Global safety timeout
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isLoading) {
-        console.warn('[SessionContext] Global safety timeout reached. Forcing loading to false.');
+        console.warn('[SessionContext] Global safety timeout reached.');
         setIsLoading(false);
       }
     }, 8000);
