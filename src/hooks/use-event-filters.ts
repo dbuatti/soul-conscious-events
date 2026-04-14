@@ -14,11 +14,17 @@ export const useEventFilters = (allEvents: Event[]) => {
   });
 
   const filteredEvents = useMemo(() => {
+    console.log('[useEventFilters] Starting filtering process...');
+    console.log('[useEventFilters] Input events count:', allEvents.length);
+    console.log('[useEventFilters] Active filters:', filters);
+    console.log('[useEventFilters] Search term:', searchTerm);
+
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     const tomorrow = addDays(now, 1);
 
-    return allEvents.filter(event => {
+    const result = allEvents.filter(event => {
+      // 1. Search Term Filter
       if (searchTerm) {
         const lowerSearch = searchTerm.toLowerCase();
         const matchesSearch = 
@@ -32,6 +38,7 @@ export const useEventFilters = (allEvents: Event[]) => {
 
       const eventDate = parseISO(event.event_date);
 
+      // 2. Date Filter
       switch (filters.date) {
         case 'Today': if (!isToday(eventDate)) return false; break;
         case 'Tomorrow': if (!isSameDay(eventDate, tomorrow)) return false; break;
@@ -39,7 +46,6 @@ export const useEventFilters = (allEvents: Event[]) => {
           const sat = nextSaturday(now);
           const sun = addDays(sat, 1);
           const fri = addDays(sat, -1);
-          // Weekend is Fri evening to Sun
           if (!(isSameDay(eventDate, fri) || isSameDay(eventDate, sat) || isSameDay(eventDate, sun))) return false;
           break;
         case 'This Week':
@@ -57,9 +63,13 @@ export const useEventFilters = (allEvents: Event[]) => {
           break;
       }
 
+      // 3. Category Filter
       if (filters.category.length > 0 && !filters.category.includes(event.event_type || '')) return false;
+      
+      // 4. Venue Filter
       if (filters.venue.length > 0 && !filters.venue.includes(event.place_name || '')) return false;
       
+      // 5. Price Filter
       if (filters.price.length > 0) {
         const lowerCasePrice = event.price?.toLowerCase() || '';
         const isFree = lowerCasePrice.includes('free');
@@ -73,10 +83,14 @@ export const useEventFilters = (allEvents: Event[]) => {
         if (!priceMatch) return false;
       }
       
+      // 6. State Filter
       if (filters.state.length > 0 && !filters.state.includes(event.geographical_state || '')) return false;
       
       return true;
     });
+
+    console.log('[useEventFilters] Filtering complete. Result count:', result.length);
+    return result;
   }, [allEvents, filters, searchTerm]);
 
   return {

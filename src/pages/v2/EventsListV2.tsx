@@ -65,7 +65,9 @@ const EventsListV2 = () => {
   }, [user]);
 
   const fetchInitialEvents = useCallback(async () => {
+    console.log('[EventsListV2] Starting fetchInitialEvents...');
     setLoading(true);
+    
     const { data, error } = await supabase
       .from('events')
       .select('*')
@@ -74,20 +76,41 @@ const EventsListV2 = () => {
       .order('event_date', { ascending: true });
 
     if (error) {
-      console.error('Error fetching events:', error);
+      console.error('[EventsListV2] Supabase error:', error);
       toast.error('Failed to load events.');
     } else {
-      const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
+      console.log(`[EventsListV2] Raw events fetched: ${data?.length || 0}`);
+      
+      const validEvents = (data || []).filter(event => {
+        const isValid = event.id && event.id.length > 30;
+        if (!isValid) console.warn(`[EventsListV2] Filtering out corrupted ID: ${event.id}`);
+        return isValid;
+      });
+
+      console.log(`[EventsListV2] Valid events after ID check: ${validEvents.length}`);
+
       let combinedEvents: Event[] = [];
       validEvents.forEach(event => {
-        if (!isPast(parseISO(event.event_date)) || isToday(parseISO(event.event_date))) {
+        const eventDate = parseISO(event.event_date);
+        const isUpcoming = !isPast(eventDate) || isToday(eventDate);
+        
+        if (isUpcoming) {
           combinedEvents.push(event);
+        } else {
+          // Log past events that are being hidden by default
+          console.log(`[EventsListV2] Hiding past event: ${event.event_name} (${event.event_date})`);
         }
+
         if (event.recurring_pattern) {
-          combinedEvents = combinedEvents.concat(generateRecurringInstances(event));
+          const instances = generateRecurringInstances(event);
+          console.log(`[EventsListV2] Generated ${instances.length} instances for recurring event: ${event.event_name}`);
+          combinedEvents = combinedEvents.concat(instances);
         }
       });
+
       combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
+      console.log(`[EventsListV2] Final combined events count: ${combinedEvents.length}`);
+      
       setAllEvents(combinedEvents);
       const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
       setAvailableVenues(uniqueVenues.sort());
@@ -101,6 +124,7 @@ const EventsListV2 = () => {
   }, [fetchInitialEvents, fetchFavouriteVenues, isSessionLoading]);
 
   useEffect(() => {
+    console.log(`[EventsListV2] Filtered events updated. Count: ${filteredEvents.length}`);
     setDisplayedEvents(filteredEvents.slice(0, EVENTS_PER_LOAD));
     setOffset(EVENTS_PER_LOAD);
     setHasMore(filteredEvents.length > EVENTS_PER_LOAD);
