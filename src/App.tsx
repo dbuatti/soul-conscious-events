@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import EventsList from "./pages/EventsList";
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
@@ -32,18 +32,27 @@ import ScrollProgress from "./components/ScrollProgress";
 
 const queryClient = new QueryClient();
 
-// New Layout for V2 to use HeaderV2
-const LayoutV2: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// Persistent Layout for V2
+const LayoutV2 = () => {
   return (
     <div className="min-h-screen flex flex-col items-center bg-background">
       <ScrollProgress />
       <HeaderV2 />
       <main className="flex-grow w-full px-2 flex flex-col items-center py-8">
-        {children}
+        <Outlet />
       </main>
       <Footer />
       <ScrollToTopButton />
     </div>
+  );
+};
+
+// Persistent Layout for Old pages
+const LayoutOld = () => {
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
   );
 };
 
@@ -56,103 +65,50 @@ const App = () => (
         <ScrollToTop />
         <SessionContextProvider>
           <Routes>
-            {/* V2 Prototype Routes - now the main routes */}
-            <Route path="/" element={<LayoutV2><EventsListV2 /></LayoutV2>} />
-            <Route path="/login" element={<LayoutV2><LoginV2 /></LayoutV2>} />
-            <Route path="/submit-event" element={<LayoutV2><SubmitEvent /></LayoutV2>} />
-            <Route path="/about" element={<LayoutV2><About /></LayoutV2>} />
-            <Route
-              path="/my-events"
-              element={
-                <ProtectedRoute>
-                  <LayoutV2><MyEvents /></LayoutV2>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-bookmarks"
-              element={
-                <ProtectedRoute>
-                  <LayoutV2><MyBookmarks /></LayoutV2>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/account-settings"
-              element={
-                <ProtectedRoute>
-                  <LayoutV2><AccountSettings /></LayoutV2>
-                </ProtectedRoute>
-              }
-            />
-            {/* Event Detail and Edit pages for V2 */}
-            <Route path="/events/:id" element={<LayoutV2><EventDetailPage /></LayoutV2>} />
-            <Route
-              path="/edit-event/:id"
-              element={
-                <ProtectedRoute>
-                  <LayoutV2><EventEditPage /></LayoutV2>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/duplicate-event/:id"
-              element={
-                <ProtectedRoute>
-                  <LayoutV2><EventEditPage /></LayoutV2>
-                </ProtectedRoute>
-              }
-            />
+            {/* V2 Prototype Routes */}
+            <Route element={<LayoutV2 />}>
+              <Route path="/" element={<EventsListV2 />} />
+              <Route path="/login" element={<LoginV2 />} />
+              <Route path="/submit-event" element={<SubmitEvent />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+              <Route path="/events/:id" element={<EventDetailPage />} />
+              <Route path="/map" element={<MapPage />} />
+              
+              {/* Protected V2 Routes */}
+              <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+                <Route path="/my-events" element={<MyEvents />} />
+                <Route path="/my-bookmarks" element={<MyBookmarks />} />
+                <Route path="/account-settings" element={<AccountSettings />} />
+                <Route path="/edit-event/:id" element={<EventEditPage />} />
+                <Route path="/duplicate-event/:id" element={<EventEditPage />} />
+              </Route>
 
-            {/* Global pages now using LayoutV2 */}
-            <Route path="/contact" element={<LayoutV2><Contact /></LayoutV2>} />
-            <Route path="/community-guidelines" element={<LayoutV2><CommunityGuidelines /></LayoutV2>} />
-            <Route
-              path="/admin/panel"
-              element={
-                <ProtectedRoute requireAdmin>
-                  <LayoutV2><AdminPanel /></LayoutV2>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dev-space"
-              element={
-                <ProtectedRoute requireAdmin>
-                  <LayoutV2><DevSpace /></LayoutV2>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/map"
-              element={
-                <LayoutV2><MapPage /></LayoutV2>
-              }
-            />
+              {/* Admin V2 Routes */}
+              <Route element={<ProtectedRoute requireAdmin><Outlet /></ProtectedRoute>}>
+                <Route path="/admin/panel" element={<AdminPanel />} />
+                <Route path="/dev-space" element={<DevSpace />} />
+              </Route>
 
-            {/* Original App Routes - now under /old */}
-            <Route path="/old" element={<Layout><EventsList /></Layout>} />
-            <Route path="/old/events/:id" element={<Layout><EventDetailPage /></Layout>} />
-            <Route path="/old/login" element={<Layout><Login /></Layout>} />
-            <Route
-              path="/old/dev-space"
-              element={
-                <ProtectedRoute requireAdmin>
-                  <Layout><DevSpace /></Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/old/edit-event/:id"
-              element={
-                <ProtectedRoute>
-                  <Layout><EventEditPage /></Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/old/map" element={<Layout><MapPage /></Layout>} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
 
-            <Route path="*" element={<LayoutV2><NotFound /></LayoutV2>} />
+            {/* Original App Routes - under /old */}
+            <Route path="/old" element={<LayoutOld />}>
+              <Route index element={<EventsList />} />
+              <Route path="events/:id" element={<EventDetailPage />} />
+              <Route path="login" element={<Login />} />
+              <Route path="map" element={<MapPage />} />
+              
+              <Route element={<ProtectedRoute requireAdmin><Outlet /></ProtectedRoute>}>
+                <Route path="dev-space" element={<DevSpace />} />
+              </Route>
+              
+              <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+                <Route path="edit-event/:id" element={<EventEditPage />} />
+              </Route>
+            </Route>
           </Routes>
         </SessionContextProvider>
       </BrowserRouter>

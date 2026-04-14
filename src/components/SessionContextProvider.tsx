@@ -8,6 +8,7 @@ interface SessionContextType {
   user: User | null;
   profile: any | null;
   isLoading: boolean;
+  isProfileLoading: boolean;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -17,24 +18,25 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
   const navigate = useNavigate();
   
-  // Use refs to track state across renders and prevent duplicate fetches
   const lastFetchedUserId = useRef<string | null>(null);
   const isFetching = useRef<boolean>(false);
 
   const fetchProfile = async (userId: string) => {
-    // Prevent duplicate concurrent fetches or re-fetching the same user
     if (isFetching.current || (lastFetchedUserId.current === userId && profile)) {
       return;
     }
 
     console.log('[SessionContext] Fetching profile for user:', userId);
     isFetching.current = true;
+    setIsProfileLoading(true);
     lastFetchedUserId.current = userId;
     
+    // Increased timeout to 10s for cold starts
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
     );
 
     try {
@@ -58,6 +60,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       console.error('[SessionContext] Profile fetch failed or timed out:', err);
     } finally {
       isFetching.current = false;
+      setIsProfileLoading(false);
       setIsLoading(false);
     }
   };
@@ -71,7 +74,6 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       }
     };
 
-    // Initial session check
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (initialSession) {
         console.log('[SessionContext] Initial session found:', initialSession.user.email);
@@ -87,7 +89,6 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       setIsLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('[SessionContext] Auth event:', event, currentSession?.user?.email || 'No user');
       
@@ -96,7 +97,6 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       setUser(newUser);
       
       if (newUser) {
-        // Only fetch if it's a different user or we don't have a profile
         if (newUser.id !== lastFetchedUserId.current) {
           await fetchProfile(newUser.id);
         }
@@ -104,9 +104,9 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
         setProfile(null);
         lastFetchedUserId.current = null;
         setIsLoading(false);
+        setIsProfileLoading(false);
       }
 
-      // Handle redirects on login
       if (currentSession && (window.location.pathname === '/login' || window.location.pathname === '/old/login')) {
         clearAuthHash();
         const target = window.location.pathname.startsWith('/old') ? '/old' : '/';
@@ -120,19 +120,8 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     };
   }, [navigate]);
 
-  // Global safety timeout
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isLoading) {
-        console.warn('[SessionContext] Global safety timeout reached.');
-        setIsLoading(false);
-      }
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [isLoading]);
-
   return (
-    <SessionContext.Provider value={{ session, user, profile, isLoading }}>
+    <SessionContext.Provider value={{ session, user, profile, isLoading, isProfileLoading }}>
       {children}
     </SessionContext.Provider>
   );
