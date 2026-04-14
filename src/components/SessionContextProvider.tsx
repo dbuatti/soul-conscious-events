@@ -21,27 +21,45 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const location = useLocation();
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (!error && data) {
-      setProfile(data);
+    console.log('[SessionContext] Fetching profile for user:', userId);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.error('[SessionContext] Error fetching profile:', error);
+      } else if (data) {
+        console.log('[SessionContext] Profile fetched successfully:', data.role);
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error('[SessionContext] Unexpected error in fetchProfile:', err);
     }
   };
 
   useEffect(() => {
-    // Function to clear the auth hash from the URL
+    console.log('[SessionContext] Initializing session provider...');
+    
+    // Safety timeout: ensure loading state clears after 10 seconds no matter what
+    const safetyTimeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn('[SessionContext] Safety timeout reached. Forcing isLoading to false.');
+        setIsLoading(false);
+      }
+    }, 10000);
+
     const clearAuthHash = () => {
       if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('error'))) {
-        // Use replaceState to clear the hash without adding to browser history
+        console.log('[SessionContext] Clearing auth hash from URL');
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('[SessionContext] Auth state changed:', event, currentSession?.user?.email);
       setSession(currentSession);
       setUser(currentSession?.user || null);
       
@@ -55,14 +73,15 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
 
       if (currentSession) {
         clearAuthHash();
-        // Redirect authenticated users from login page to home
         if (location.pathname === '/login' || location.pathname === '/old/login') {
+          console.log('[SessionContext] Authenticated user on login page, redirecting...');
           navigate(location.pathname.startsWith('/old') ? '/old' : '/');
         }
       }
     });
 
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      console.log('[SessionContext] Initial session check:', currentSession?.user?.email);
       setSession(currentSession);
       setUser(currentSession?.user || null);
       
@@ -78,9 +97,15 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
           navigate(location.pathname.startsWith('/old') ? '/old' : '/');
         }
       }
+    }).catch(err => {
+      console.error('[SessionContext] Error in getSession:', err);
+      setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, [navigate, location.pathname]);
 
   return (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/components/SessionContextProvider';
 import { toast } from 'sonner';
@@ -14,8 +14,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail,
   const { user, profile, isLoading } = useSession();
   const location = useLocation();
 
+  useEffect(() => {
+    if (!isLoading) {
+      console.log('[ProtectedRoute] Access check:', {
+        path: location.pathname,
+        isAuthenticated: !!user,
+        userEmail: user?.email,
+        userRole: profile?.role,
+        requireAdmin
+      });
+    }
+  }, [isLoading, user, profile, requireAdmin, location.pathname]);
+
   if (isLoading) {
-    // Show a loading state while session is being determined
+    console.log('[ProtectedRoute] Session is loading, showing skeleton...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
         <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
@@ -32,7 +44,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail,
   }
 
   if (!user) {
-    // Not authenticated, redirect to login
+    console.warn('[ProtectedRoute] User not authenticated, redirecting to login');
     toast.error('You need to be logged in to access this page.');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -40,16 +52,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail,
   const isAdmin = profile?.role === 'admin' || user.email === 'daniele.buatti@gmail.com';
 
   if (requireAdmin && !isAdmin) {
+    console.error('[ProtectedRoute] Admin access denied for user:', user.email);
     toast.error('You do not have permission to access this page.');
     return <Navigate to="/" replace />;
   }
 
   if (allowedEmail && user.email !== allowedEmail && !isAdmin) {
-    // Authenticated but not the allowed email, redirect to home or a forbidden page
+    console.error('[ProtectedRoute] Email restriction access denied for user:', user.email);
     toast.error('You do not have permission to access this page.');
     return <Navigate to="/" replace />;
   }
 
+  console.log('[ProtectedRoute] Access granted for:', location.pathname);
   return <>{children}</>;
 };
 
