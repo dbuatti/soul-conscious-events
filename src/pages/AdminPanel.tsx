@@ -8,9 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EventManagementTable from '@/components/EventManagementTable';
 import AnalyticsDashboard from '@/components/AnalyticsDashboard';
-import AiLogsTable from '@/components/AiLogsTable'; // Import the new component
+import AiLogsTable from '@/components/AiLogsTable';
+import VenueManagementTable from '@/components/VenueManagementTable'; // New import
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles } from 'lucide-react';
+import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -169,8 +170,11 @@ const AdminPanel = () => {
       </p>
 
       <Tabs defaultValue="events" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-secondary/50 p-1 rounded-2xl mb-8">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-secondary/50 p-1 rounded-2xl mb-8">
           <TabsTrigger value="events" className="rounded-xl">Events</TabsTrigger>
+          <TabsTrigger value="venues" className="rounded-xl flex items-center gap-2">
+            <MapPin className="h-3.5 w-3.5" /> Venues
+          </TabsTrigger>
           <TabsTrigger value="submissions" className="rounded-xl">Contact</TabsTrigger>
           <TabsTrigger value="analytics" className="rounded-xl">Analytics</TabsTrigger>
           <TabsTrigger value="users" className="rounded-xl">Users</TabsTrigger>
@@ -181,6 +185,10 @@ const AdminPanel = () => {
         
         <TabsContent value="events" className="mt-0">
           <EventManagementTable />
+        </TabsContent>
+
+        <TabsContent value="venues" className="mt-0">
+          <VenueManagementTable />
         </TabsContent>
         
         <TabsContent value="submissions" className="mt-0">

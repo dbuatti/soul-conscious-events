@@ -19,7 +19,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { eventTypes, australianStates } from '@/lib/constants';
 import ImageUploadInput from '@/components/ImageUploadInput';
-import GooglePlaceAutocomplete from '@/components/GooglePlaceAutocomplete';
+import VenueSelect from '@/components/VenueSelect'; // New import
 import RecurringEventFields from './RecurringEventFields';
 import { EventFormValues } from '@/lib/schemas';
 
@@ -150,14 +150,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             <FormItem>
               <FormLabel htmlFor="placeName">Place Name</FormLabel>
               <FormControl>
-                <GooglePlaceAutocomplete
-                  form={form}
-                  name="placeName"
-                  addressName="fullAddress"
-                  stateName="geographicalState"
-                  placeholder="e.g., Art of Living Centre"
-                  className="focus-visible:ring-primary"
-                />
+                <VenueSelect form={form} />
               </FormControl>
               <FormMessage />
             </FormItem>
