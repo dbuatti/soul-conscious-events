@@ -26,6 +26,7 @@ const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
   const [open, setOpen] = useState(false);
   const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -38,6 +39,15 @@ const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
 
   const selectedValue = form.watch('placeName');
 
+  const handleSelectCustom = () => {
+    if (inputValue.trim()) {
+      form.setValue('placeName', inputValue.trim(), { shouldValidate: true });
+      // Clear address if switching to custom, so user knows to fill it
+      form.setValue('fullAddress', '', { shouldValidate: true });
+      setOpen(false);
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -45,31 +55,37 @@ const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between h-12 rounded-xl bg-secondary/50 border-none hover:bg-secondary"
+          className="w-full justify-between h-12 rounded-xl bg-secondary/50 border-none hover:bg-secondary text-left font-normal"
         >
           {selectedValue ? (
-            <span className="flex items-center"><MapPin className="mr-2 h-4 w-4 text-primary" /> {selectedValue}</span>
+            <span className="flex items-center truncate">
+              <MapPin className="mr-2 h-4 w-4 text-primary shrink-0" /> 
+              <span className="truncate">{selectedValue}</span>
+            </span>
           ) : (
-            "Select a known venue or type a new one..."
+            <span className="text-muted-foreground">Select a known venue or type a new one...</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-xl shadow-2xl border-border">
         <Command className="rounded-xl">
-          <CommandInput placeholder="Search venues..." className="h-12" />
+          <CommandInput 
+            placeholder="Search venues..." 
+            className="h-12" 
+            onValueChange={setInputValue}
+          />
           <CommandList>
-            <CommandEmpty className="p-4 text-sm">
-              No venue found. 
+            <CommandEmpty className="p-4 text-sm flex flex-col items-start gap-2">
+              <span>No venue found.</span>
               <Button 
-                variant="link" 
-                className="p-0 h-auto ml-1 font-bold"
-                onClick={() => {
-                  // Allow user to just use what they typed
-                  setOpen(false);
-                }}
+                type="button"
+                variant="secondary" 
+                size="sm"
+                className="font-bold rounded-lg"
+                onClick={handleSelectCustom}
               >
-                Use custom name
+                <Plus className="mr-1 h-3 w-3" /> Use "{inputValue}"
               </Button>
             </CommandEmpty>
             <CommandGroup heading="Community Venues">
