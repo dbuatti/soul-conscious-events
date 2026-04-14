@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isPast, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Bookmark, Database, WifiOff } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Bookmark, Database, WifiOff, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -39,7 +39,7 @@ const EventsListV2 = () => {
   const [offset, setOffset] = useState(0);
   const [availableVenues, setAvailableVenues] = useState<string[]>([]);
   const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]);
-  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error' | 'timeout' | 'blocked'>('checking');
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error' | 'timeout' | 'blocked' | 'auth_error'>('checking');
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -70,39 +70,72 @@ const EventsListV2 = () => {
     }
   }, [user]);
 
+  const processEventData = (data: any[]) => {
+    const validEvents = (data || []).filter(event => {
+      const isValid = event.id && event.id.length > 30;
+      if (!isValid) console.warn(`[EventsListV2] Filtering out corrupted ID: ${event.id}`);
+      return isValid;
+    });
+
+    let combinedEvents: Event[] = [];
+    validEvents.forEach(event => {
+      const eventDate = parseISO(event.event_date);
+      const isUpcoming = !isPast(eventDate) || isToday(eventDate);
+      
+      if (isUpcoming) {
+        combinedEvents.push(event);
+      }
+
+      if (event.recurring_pattern) {
+        const instances = generateRecurringInstances(event);
+        combinedEvents = combinedEvents.concat(instances);
+      }
+    });
+
+    combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
+    setAllEvents(combinedEvents);
+    const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
+    setAvailableVenues(uniqueVenues.sort());
+  };
+
   const fetchInitialEvents = useCallback(async () => {
     console.log('[EventsListV2] Starting fetchInitialEvents...');
     setLoading(true);
     setDbStatus('checking');
     
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database request timed out after 10 seconds')), 10000)
-    );
+    const SUPABASE_URL = "https://tbyjdhxpbfvqsrzzdjwi.supabase.co";
+    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieWpkaHhwYmZ2cXNyenpkandpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzYyNzIsImV4cCI6MjA2OTE1MjI3Mn0.1BpuFdmZnV_-jjncopxWODAGn7-Coh716jzbYeTrNT4";
 
     try {
-      // Diagnostic: Test raw network connectivity to Supabase
-      console.log('[EventsListV2] Testing raw network connectivity to Supabase API...');
-      try {
-        const rawTest = await fetch('https://tbyjdhxpbfvqsrzzdjwi.supabase.co/rest/v1/', {
-          method: 'GET',
-          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieWpkaHhwYmZ2cXNyenpkandpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzYyNzIsImV4cCI6MjA2OTE1MjI3Mn0.1BpuFdmZnV_-jjncopxWODAGn7-Coh716jzbYeTrNT4' }
-        });
-        console.log('[EventsListV2] Raw network test status:', rawTest.status);
-      } catch (fetchErr) {
-        console.error('[EventsListV2] Raw network test FAILED. This usually means a browser extension or firewall is blocking the request.', fetchErr);
-        setDbStatus('blocked');
+      // 1. Try Super Raw Authenticated Fetch (Bypasses Supabase Client Library)
+      console.log('[EventsListV2] Attempting Super Raw Authenticated Fetch...');
+      const rawResponse = await fetch(`${SUPABASE_URL}/rest/v1/events?approval_status=eq.approved&is_deleted=eq.false&order=event_date.asc`, {
+        method: 'GET',
+        headers: {
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (rawResponse.ok) {
+        const data = await rawResponse.json();
+        console.log(`[EventsListV2] Super Raw Fetch SUCCESS. Received ${data.length} events.`);
+        setDbStatus('connected');
+        processEventData(data);
         setLoading(false);
-        return;
+        return; // Exit early if raw fetch works
+      } else {
+        console.error(`[EventsListV2] Super Raw Fetch FAILED with status: ${rawResponse.status}`);
+        if (rawResponse.status === 401 || rawResponse.status === 403) {
+          setDbStatus('auth_error');
+          setLoading(false);
+          return;
+        }
       }
 
-      console.log('[EventsListV2] Pinging database via client...');
-      const pingPromise = supabase.from('events').select('id').limit(1);
-      
-      await Promise.race([pingPromise, timeoutPromise]);
-      console.log('[EventsListV2] Database ping successful.');
-      setDbStatus('connected');
-
-      console.log('[EventsListV2] Executing main query for events...');
+      // 2. Fallback to standard client if raw fetch failed for some reason
+      console.log('[EventsListV2] Falling back to standard Supabase client...');
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -111,50 +144,16 @@ const EventsListV2 = () => {
         .order('event_date', { ascending: true });
 
       if (error) {
-        console.error('[EventsListV2] Supabase query error:', error);
-        setDbStatus('error');
-        toast.error(`Failed to load events: ${error.message}`);
+        throw error;
       } else {
-        console.log(`[EventsListV2] Supabase query successful. Raw data length: ${data?.length || 0}`);
-        
-        const validEvents = (data || []).filter(event => {
-          const isValid = event.id && event.id.length > 30;
-          if (!isValid) console.warn(`[EventsListV2] Filtering out corrupted ID: ${event.id}`);
-          return isValid;
-        });
-
-        let combinedEvents: Event[] = [];
-        validEvents.forEach(event => {
-          const eventDate = parseISO(event.event_date);
-          const isUpcoming = !isPast(eventDate) || isToday(eventDate);
-          
-          if (isUpcoming) {
-            combinedEvents.push(event);
-          }
-
-          if (event.recurring_pattern) {
-            const instances = generateRecurringInstances(event);
-            combinedEvents = combinedEvents.concat(instances);
-          }
-        });
-
-        combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
-        console.log(`[EventsListV2] Final combined events count: ${combinedEvents.length}`);
-        
-        setAllEvents(combinedEvents);
-        const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
-        setAvailableVenues(uniqueVenues.sort());
+        setDbStatus('connected');
+        processEventData(data || []);
       }
     } catch (err: any) {
-      console.error('[EventsListV2] Unexpected error during fetchInitialEvents:', err);
-      if (err.message.includes('timed out')) {
-        setDbStatus('timeout');
-      } else {
-        setDbStatus('error');
-      }
+      console.error('[EventsListV2] Final fetch error:', err);
+      setDbStatus('error');
       toast.error(`Connection issue: ${err.message}`);
     } finally {
-      console.log('[EventsListV2] fetchInitialEvents finished.');
       setLoading(false);
     }
   }, []);
@@ -363,14 +362,17 @@ const EventsListV2 = () => {
           <p className="text-xl font-black font-heading text-foreground">
             {dbStatus === 'checking' ? 'Connecting to SoulFlow...' : 'Gathering Events...'}
           </p>
-          {dbStatus === 'timeout' && (
-            <div className="text-center space-y-4">
-              <p className="text-muted-foreground max-w-md">The connection is taking longer than expected. This might be due to a slow network or a temporary service issue.</p>
-              <Button onClick={() => window.location.reload()} variant="outline" className="rounded-xl">
-                Try Refreshing
-              </Button>
-            </div>
-          )}
+        </div>
+      ) : dbStatus === 'auth_error' ? (
+        <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
+          <ShieldAlert className="h-12 w-12 sm:h-24 sm:w-24 text-destructive/20 mx-auto mb-4 sm:mb-10" />
+          <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">Authentication Issue</h3>
+          <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-12 max-w-md mx-auto font-medium">
+            The database rejected our request. This usually happens if the API keys are misconfigured or if a browser extension is stripping security headers.
+          </p>
+          <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-6 py-4 sm:px-12 sm:py-8 text-base sm:text-xl font-black shadow-xl">
+            Refresh Page
+          </Button>
         </div>
       ) : dbStatus === 'blocked' ? (
         <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
@@ -384,7 +386,7 @@ const EventsListV2 = () => {
             Refresh Page
           </Button>
         </div>
-      ) : dbStatus === 'error' ? (
+      ) : dbStatus === 'error' || dbStatus === 'timeout' ? (
         <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
           <Database className="h-12 w-12 sm:h-24 sm:w-24 text-destructive/20 mx-auto mb-4 sm:mb-10" />
           <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">Connection Issue</h3>
