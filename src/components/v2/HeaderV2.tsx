@@ -17,7 +17,7 @@ import {
 
 const HeaderV2 = () => {
   const location = useLocation();
-  const { user } = useSession();
+  const { user, profile } = useSession();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -29,7 +29,7 @@ const HeaderV2 = () => {
     }
   };
 
-  const isAdminUser = user?.email === 'daniele.buatti@gmail.com';
+  const isAdminUser = profile?.role === 'admin' || user?.email === 'daniele.buatti@gmail.com';
 
   const navItems = user ? [
     { to: "/", label: "Home", icon: Home },

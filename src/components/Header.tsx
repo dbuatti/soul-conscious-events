@@ -27,7 +27,7 @@ interface NavItem {
 const Header = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { user } = useSession();
+  const { user, profile } = useSession();
 
   const getButtonClass = (path: string) => {
     const isActive = location.pathname === path || (path !== "/old" && location.pathname.startsWith(path));
@@ -46,6 +46,8 @@ const Header = () => {
       toast.success('Logged out successfully!');
     }
   };
+
+  const isAdminUser = profile?.role === 'admin' || user?.email === 'daniele.buatti@gmail.com';
 
   const handleAddEventClick = async () => {
     const { error } = await supabase.from('page_visit_logs').insert([
@@ -125,7 +127,7 @@ const Header = () => {
                     </SheetClose>
                   </>
                 )}
-                {user?.email === 'daniele.buatti@gmail.com' && (
+                {isAdminUser && (
                   <>
                     <div className="border-t border-border my-2"></div>
                     {adminNavItems.map((item) => (
@@ -185,7 +187,7 @@ const Header = () => {
                 </Link>
               </>
             )}
-            {user?.email === 'daniele.buatti@gmail.com' && (
+            {isAdminUser && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className={cn("text-foreground hover:text-primary transition-all", isAdminPage && "font-bold text-primary")}>

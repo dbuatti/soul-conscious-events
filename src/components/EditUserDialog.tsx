@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { UserProfile } from '@/pages/AdminPanel'; // Import UserProfile type
 
@@ -29,6 +30,7 @@ const formSchema = z.object({
   firstName: z.string().optional().or(z.literal('')),
   lastName: z.string().optional().or(z.literal('')),
   email: z.string().email({ message: "Invalid email address." }),
+  role: z.enum(['user', 'admin']),
 });
 
 const EditUserDialog: React.FC<EditUserDialogProps> = ({ isOpen, onClose, user, onUserUpdated }) => {
@@ -38,6 +40,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ isOpen, onClose, user, 
       firstName: '',
       lastName: '',
       email: '',
+      role: 'user',
     },
   });
 
@@ -47,6 +50,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ isOpen, onClose, user, 
         firstName: user.first_name || '',
         lastName: user.last_name || '',
         email: user.email,
+        role: (user.role as 'user' | 'admin') || 'user',
       });
     }
   }, [user, form]);
@@ -56,6 +60,19 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ isOpen, onClose, user, 
 
     const loadingToastId = toast.loading('Updating user...');
     try {
+      // Update profile in database
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: values.firstName,
+          last_name: values.lastName,
+          role: values.role,
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Update auth metadata via edge function
       const response = await supabase.functions.invoke('update-user-metadata', {
         body: {
           userId: user.id,
@@ -124,6 +141,27 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ isOpen, onClose, user, 
                   <FormControl>
                     <Input type="email" placeholder="user@example.com" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

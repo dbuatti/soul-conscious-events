@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,6 +39,7 @@ export interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   email: string;
+  role: string;
   created_at: string;
 }
 
@@ -74,6 +76,7 @@ const AdminPanel = () => {
           first_name,
           last_name,
           email,
+          role,
           created_at
         `)
       .order('created_at', { ascending: false });
@@ -257,6 +260,7 @@ const AdminPanel = () => {
                   <TableRow>
                     <TableHead className="text-foreground font-bold">Name</TableHead>
                     <TableHead className="text-foreground font-bold">Email</TableHead>
+                    <TableHead className="text-foreground font-bold">Role</TableHead>
                     <TableHead className="text-foreground font-bold">Joined</TableHead>
                     <TableHead className="text-right text-foreground font-bold">Actions</TableHead>
                   </TableRow>
@@ -277,6 +281,14 @@ const AdminPanel = () => {
                           <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
                           {profile.email}
                         </div>
+                      </TableCell>
+                      <TableCell className="text-foreground">
+                        <span className={cn(
+                          "px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
+                          profile.role === 'admin' ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"
+                        )}>
+                          {profile.role}
+                        </span>
                       </TableCell>
                       <TableCell className="text-foreground">
                         <div className="flex items-center">

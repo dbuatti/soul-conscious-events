@@ -7,10 +7,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedEmail?: string; // Optional email to restrict access
+  requireAdmin?: boolean; // Optional flag to require admin role
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail }) => {
-  const { user, isLoading } = useSession();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail, requireAdmin }) => {
+  const { user, profile, isLoading } = useSession();
   const location = useLocation();
 
   if (isLoading) {
@@ -36,7 +37,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedEmail && user.email !== allowedEmail) {
+  const isAdmin = profile?.role === 'admin' || user.email === 'daniele.buatti@gmail.com';
+
+  if (requireAdmin && !isAdmin) {
+    toast.error('You do not have permission to access this page.');
+    return <Navigate to="/" replace />;
+  }
+
+  if (allowedEmail && user.email !== allowedEmail && !isAdmin) {
     // Authenticated but not the allowed email, redirect to home or a forbidden page
     toast.error('You do not have permission to access this page.');
     return <Navigate to="/" replace />;

@@ -110,7 +110,7 @@ const App = () => (
             <Route
               path="/admin/panel"
               element={
-                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                <ProtectedRoute requireAdmin>
                   <LayoutV2><AdminPanel /></LayoutV2>
                 </ProtectedRoute>
               }
@@ -118,7 +118,7 @@ const App = () => (
             <Route
               path="/dev-space"
               element={
-                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                <ProtectedRoute requireAdmin>
                   <LayoutV2><DevSpace /></LayoutV2>
                 </ProtectedRoute>
               }
@@ -137,7 +137,7 @@ const App = () => (
             <Route
               path="/old/dev-space"
               element={
-                <ProtectedRoute allowedEmail="daniele.buatti@gmail.com">
+                <ProtectedRoute requireAdmin>
                   <Layout><DevSpace /></Layout>
                 </ProtectedRoute>
               }
