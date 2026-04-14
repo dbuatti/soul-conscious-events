@@ -30,7 +30,7 @@ const Login = () => {
         <h2 className="text-3xl font-bold text-foreground text-center mb-6">Sign In to SoulFlow (Old)</h2>
         <Auth
           supabaseClient={supabase}
-          providers={['google']}
+          providers={[]}
           appearance={{
             theme: ThemeSupa,
             variables: {

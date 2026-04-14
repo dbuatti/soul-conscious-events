@@ -73,7 +73,7 @@ const LoginV2 = () => {
         <h2 className="text-3xl font-bold text-foreground text-center mb-8 font-heading">Sign In</h2>
         <Auth
           supabaseClient={supabase}
-          providers={['google']}
+          providers={[]}
           appearance={{
             theme: ThemeSupa,
             variables: {
