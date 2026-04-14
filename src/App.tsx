@@ -11,7 +11,7 @@ import AdminPanel from "./pages/AdminPanel";
 import MapPage from "./pages/MapPage";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { SessionContextProvider } from "./components/SessionContextProvider";
+import { SessionContextProvider } from "@/components/SessionContextProvider";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import EventEditPage from "./pages/EventEditPage";

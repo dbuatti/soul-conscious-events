@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -19,38 +19,43 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const isInitialized = useRef(false);
 
   const fetchProfile = async (userId: string) => {
     console.log('[SessionContext] Fetching profile for user:', userId);
+    
+    // Create a promise that rejects after 5 seconds
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+    );
+
     try {
-      const { data, error } = await supabase
+      const fetchPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
+
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
       
       if (error) {
         console.error('[SessionContext] Error fetching profile:', error);
       } else if (data) {
-        console.log('[SessionContext] Profile fetched successfully:', data.role);
+        console.log('[SessionContext] Profile fetched successfully. Role:', data.role);
         setProfile(data);
+      } else {
+        console.log('[SessionContext] No profile found for user.');
       }
     } catch (err) {
-      console.error('[SessionContext] Unexpected error in fetchProfile:', err);
+      console.error('[SessionContext] Profile fetch failed or timed out:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    console.log('[SessionContext] Initializing session provider...');
+    console.log('[SessionContext] Provider mounted');
     
-    // Safety timeout: ensure loading state clears after 10 seconds no matter what
-    const safetyTimeout = setTimeout(() => {
-      if (isLoading) {
-        console.warn('[SessionContext] Safety timeout reached. Forcing isLoading to false.');
-        setIsLoading(false);
-      }
-    }, 10000);
-
     const clearAuthHash = () => {
       if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('error'))) {
         console.log('[SessionContext] Clearing auth hash from URL');
@@ -58,8 +63,26 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       }
     };
 
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      console.log('[SessionContext] Initial session check complete:', initialSession?.user?.email || 'No session');
+      setSession(initialSession);
+      setUser(initialSession?.user || null);
+      
+      if (initialSession?.user) {
+        fetchProfile(initialSession.user.id);
+      } else {
+        setIsLoading(false);
+      }
+    }).catch(err => {
+      console.error('[SessionContext] getSession error:', err);
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log('[SessionContext] Auth state changed:', event, currentSession?.user?.email);
+      console.log('[SessionContext] Auth event:', event, currentSession?.user?.email || 'No user');
+      
       setSession(currentSession);
       setUser(currentSession?.user || null);
       
@@ -67,46 +90,33 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
         await fetchProfile(currentSession.user.id);
       } else {
         setProfile(null);
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
 
-      if (currentSession) {
+      if (currentSession && (window.location.pathname === '/login' || window.location.pathname === '/old/login')) {
         clearAuthHash();
-        if (location.pathname === '/login' || location.pathname === '/old/login') {
-          console.log('[SessionContext] Authenticated user on login page, redirecting...');
-          navigate(location.pathname.startsWith('/old') ? '/old' : '/');
-        }
+        const target = window.location.pathname.startsWith('/old') ? '/old' : '/';
+        console.log('[SessionContext] Redirecting to:', target);
+        navigate(target);
       }
-    });
-
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      console.log('[SessionContext] Initial session check:', currentSession?.user?.email);
-      setSession(currentSession);
-      setUser(currentSession?.user || null);
-      
-      if (currentSession?.user) {
-        await fetchProfile(currentSession.user.id);
-      }
-      
-      setIsLoading(false);
-      
-      if (currentSession) {
-        clearAuthHash();
-        if (location.pathname === '/login' || location.pathname === '/old/login') {
-          navigate(location.pathname.startsWith('/old') ? '/old' : '/');
-        }
-      }
-    }).catch(err => {
-      console.error('[SessionContext] Error in getSession:', err);
-      setIsLoading(false);
     });
 
     return () => {
-      clearTimeout(safetyTimeout);
+      console.log('[SessionContext] Provider unmounting');
       subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  }, [navigate]); // Only run on mount/navigate change
+
+  // Safety timeout to ensure app never stays stuck
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isLoading) {
+        console.warn('[SessionContext] Global safety timeout reached. Forcing loading to false.');
+        setIsLoading(false);
+      }
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   return (
     <SessionContext.Provider value={{ session, user, profile, isLoading }}>
