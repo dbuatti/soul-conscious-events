@@ -21,6 +21,7 @@ import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { countries } from '@/lib/countries';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import SEO from '@/components/SEO';
 
 const formSchema = z.object({
   firstName: z.string().optional().or(z.literal('')),
@@ -119,6 +120,10 @@ const AccountSettings = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO
+        title="Account Settings | SoulFlow Australia"
+        description="Manage your SoulFlow profile, update your personal information, and customize your appearance settings."
+      />
       <div className="mb-16 text-center">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Account Settings</h1>
       </div>
