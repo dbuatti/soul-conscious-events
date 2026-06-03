@@ -39,6 +39,8 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
   const specialNotesValue = form.watch('specialNotes') || '';
   const priceValue = form.watch('price') || '';
 
+  const errors = form.formState.errors;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -55,7 +57,15 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                 Event Name <span className="text-destructive font-bold">*</span>
               </FormLabel>
               <FormControl>
-                <Input id="eventName" placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-primary" />
+                <Input 
+                  id="eventName" 
+                  placeholder="e.g., Sensory SOAK" 
+                  {...field} 
+                  className={cn(
+                    "focus-visible:ring-primary",
+                    errors.eventName && "border-destructive ring-2 ring-destructive/20 focus-visible:ring-destructive"
+                  )} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -79,7 +89,8 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                         variant={'outline'}
                         className={cn(
                           'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
-                          !field.value && 'text-muted-foreground'
+                          !field.value && 'text-muted-foreground',
+                          errors.eventDate && "border-destructive ring-2 ring-destructive/20 focus-visible:ring-destructive"
                         )}
                       >
                         {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
