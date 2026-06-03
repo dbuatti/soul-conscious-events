@@ -1,8 +1,9 @@
+import { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import EventsList from "./pages/EventsList";
 import NotFound from "./pages/NotFound";
 import SubmitEvent from "./pages/SubmitEvent";
@@ -11,7 +12,8 @@ import AdminPanel from "./pages/AdminPanel";
 import MapPage from "./pages/MapPage";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { SessionContextProvider } from "@/components/SessionContextProvider";
+import { SessionContextProvider, useSession } from "@/components/SessionContextProvider";
+import { supabase } from "@/integrations/supabase/client";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import EventEditPage from "./pages/EventEditPage";
@@ -34,6 +36,20 @@ const queryClient = new QueryClient();
 
 // Persistent Layout for V2
 const LayoutV2 = () => {
+  const location = useLocation();
+  const { user } = useSession();
+
+  useEffect(() => {
+    (async () => {
+      const { error } = await supabase.from('page_visit_logs').insert([{
+        user_id: user?.id || null,
+        page_path: location.pathname,
+        action_type: 'visit',
+      }]);
+      if (error) console.error('Error logging page view:', error);
+    })();
+  }, [location.pathname, user?.id]);
+
   return (
     <div className="min-h-screen flex flex-col items-center bg-background">
       <ScrollProgress />

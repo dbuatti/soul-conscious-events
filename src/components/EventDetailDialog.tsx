@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -60,6 +60,19 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const navigate = useNavigate();
   const { user } = useSession();
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (!isOpen || !event) return;
+    (async () => {
+      const { error } = await supabase.from('event_analytics_logs').insert([{
+        event_id: getBaseEventId(event.id),
+        user_id: user?.id || null,
+        log_type: 'view',
+      }]);
+      if (error) console.error('Error logging dialog view:', error);
+    })();
+  }, [isOpen, event?.id]);
+
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 

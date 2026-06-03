@@ -19,6 +19,15 @@ const HeaderV2 = () => {
   const location = useLocation();
   const { user, profile } = useSession();
 
+  const handleCreateEventClick = async () => {
+    const { error } = await supabase.from('page_visit_logs').insert([{
+      user_id: user?.id || null,
+      page_path: '/submit-event',
+      action_type: 'click_add_event_button',
+    }]);
+    if (error) console.error('Error logging add event button click:', error);
+  };
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -54,7 +63,7 @@ const HeaderV2 = () => {
 
         <div className="hidden md:flex items-center gap-2">
           {navItems.slice(0, 3).map((item) => (
-            <Link key={item.to} to={item.to}>
+            <Link key={item.to} to={item.to} onClick={item.to === '/submit-event' ? handleCreateEventClick : undefined}>
               <Button variant="ghost" className={cn(
                 "rounded-full px-5 font-medium transition-all",
                 location.pathname === item.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary"
@@ -74,7 +83,7 @@ const HeaderV2 = () => {
               <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground/60 px-3 py-2 uppercase tracking-widest">Menu</DropdownMenuLabel>
               {navItems.map((item) => (
                 <DropdownMenuItem key={item.to} asChild className="rounded-xl cursor-pointer">
-                  <Link to={item.to} className="flex items-center py-2.5 px-3">
+                  <Link to={item.to} onClick={item.to === '/submit-event' ? handleCreateEventClick : undefined} className="flex items-center py-2.5 px-3">
                     <item.icon className="mr-3 h-4 w-4 text-primary/60" /> {item.label}
                   </Link>
                 </DropdownMenuItem>
@@ -112,7 +121,7 @@ const HeaderV2 = () => {
             <DropdownMenuContent align="end" className="w-[260px] p-2 rounded-2xl shadow-2xl mt-4">
               {navItems.map((item) => (
                 <DropdownMenuItem key={item.to} asChild className="rounded-xl cursor-pointer">
-                  <Link to={item.to} className="flex items-center py-3 px-3">
+                  <Link to={item.to} onClick={item.to === '/submit-event' ? handleCreateEventClick : undefined} className="flex items-center py-3 px-3">
                     <item.icon className="mr-3 h-5 w-5 text-primary/60" /> {item.label}
                   </Link>
                 </DropdownMenuItem>
