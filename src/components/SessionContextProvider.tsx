@@ -54,6 +54,9 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       }
     } catch (err) {
       console.error('[SessionContext] Profile fetch failed or timed out:', err);
+      // Clear the cached user ID so the next auth event (token refresh, tab focus)
+      // triggers a fresh fetch attempt rather than skipping it indefinitely.
+      lastFetchedUserId.current = null;
     } finally {
       isFetching.current = false;
       setIsProfileLoading(false);
