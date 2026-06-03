@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import LeafletMap from '@/components/v2/LeafletMap';
 import { Event } from '@/types/event';
 import EventDetailDialog from '@/components/EventDetailDialog';
+import SEO from '@/components/SEO';
 
 const MapPage = () => {
   const [loading, setLoading] = useState(true);
@@ -74,6 +75,10 @@ const MapPage = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO 
+        title="Interactive Event Map | SoulFlow Australia"
+        description="Explore soulful gatherings, workshops, meditations, and conscious events near you using our interactive community map."
+      />
       <div className="mb-12 text-center space-y-4">
         <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
           <Sparkles className="h-3 w-3 mr-2" /> Explore Nearby

@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
 import { getRedirectUrl } from '@/lib/utils';
 import { Bookmark, CalendarCheck, PlusCircle } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const LoginV2 = () => {
   const navigate = useNavigate();
@@ -27,6 +28,10 @@ const LoginV2 = () => {
 
   return (
     <div className="flex flex-col lg:flex-row items-center justify-center min-h-[calc(100vh-120px)] px-4 py-12 gap-16 max-w-6xl mx-auto">
+      <SEO 
+        title="Login & Sign Up | SoulFlow Australia"
+        description="Sign in or create a free account on SoulFlow to bookmark events, submit your own conscious gatherings, and manage your listings."
+      />
       <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
         <div className="space-y-4">
           <h1 className="text-5xl font-black font-heading tracking-tight text-foreground leading-tight">

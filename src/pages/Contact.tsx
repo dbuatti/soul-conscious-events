@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import SEO from '@/components/SEO';
 
 const contactFormSchema = z.object({
   name: z.string().optional(),
@@ -57,6 +58,10 @@ const Contact = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO 
+        title="Contact Us | SoulFlow Australia"
+        description="Get in touch with the SoulFlow team. Share your suggestions, feedback, or recommendations to help us co-create a better conscious community platform."
+      />
       <div className="mb-16 text-center">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Contact Us</h1>
       </div>

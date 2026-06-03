@@ -23,6 +23,7 @@ import {
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { getBaseEventId } from '@/utils/event-utils';
+import SEO from '@/components/SEO';
 
 const formatPrice = (price?: string | null) => {
   if (!price) return 'N/A';
@@ -159,6 +160,12 @@ const EventDetailPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO 
+        title={`${event.event_name} | SoulFlow Australia`}
+        description={event.description || `Join us for ${event.event_name} on ${dateDisplay}. Discover more details and book tickets on SoulFlow.`}
+        image={event.image_url || undefined}
+        type="article"
+      />
       <div className="flex justify-start mb-8">
         <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-full hover:bg-primary/10 text-primary font-bold">
           <ArrowLeft className="mr-2 h-5 w-5" /> Back to Events

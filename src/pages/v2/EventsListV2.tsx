@@ -18,6 +18,7 @@ import { useEventFilters } from '@/hooks/use-event-filters';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import LeafletMap from '@/components/v2/LeafletMap';
+import SEO from '@/components/SEO';
 
 const EVENTS_PER_LOAD = 8;
 
@@ -231,6 +232,10 @@ const EventsListV2 = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO 
+        title="SoulFlow | Discover Soulful Events in Australia"
+        description="Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, sound baths, and conscious gatherings."
+      />
       <div className="mb-8 sm:mb-20 text-center space-y-3 sm:space-y-6 animate-in fade-in slide-in-from-top-4 duration-1000">
         <h1 className="text-3xl sm:text-6xl md:text-8xl font-black font-heading tracking-tight text-foreground leading-[1.1] sm:leading-[1.05]">
           Soulful Gatherings <br />

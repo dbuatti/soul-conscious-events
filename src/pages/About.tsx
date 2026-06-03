@@ -3,10 +3,15 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarDays, Heart, MessageSquare, Compass, Search, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import SEO from '@/components/SEO';
 
 const About = () => {
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO 
+        title="About Us | SoulFlow Australia"
+        description="Learn about the vision behind SoulFlow, our collaboration with HeartBeats, and how we are co-creating a space for conscious gatherings across Australia."
+      />
       <div className="mb-16 text-center space-y-4">
         <h1 className="text-5xl sm:text-7xl font-black font-heading tracking-tight text-foreground">About SoulFlow</h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-medium leading-relaxed">

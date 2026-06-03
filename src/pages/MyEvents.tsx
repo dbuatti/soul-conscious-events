@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import UserEventCard from '@/components/UserEventCard';
 import { Event } from '@/types/event';
+import SEO from '@/components/SEO';
 
 const MyEvents: React.FC = () => {
   const { user, isLoading: isSessionLoading } = useSession();
@@ -79,6 +80,10 @@ const MyEvents: React.FC = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO 
+        title="My Events | SoulFlow Australia"
+        description="Manage your submitted events, edit details, duplicate listings, or add new soulful gatherings to the SoulFlow platform."
+      />
       <div className="mb-16 text-center">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">My Events</h1>
       </div>

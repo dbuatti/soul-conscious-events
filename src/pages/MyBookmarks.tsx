@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
+import SEO from '@/components/SEO';
 
 interface BookmarkedEventData {
   event_id: string;
@@ -126,6 +127,10 @@ const MyBookmarks: React.FC = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO 
+        title="My Bookmarks | SoulFlow Australia"
+        description="View your saved soulful events, workshops, and conscious gatherings across Australia."
+      />
       <div className="mb-16 text-center">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">My Bookmarks</h1>
       </div>
