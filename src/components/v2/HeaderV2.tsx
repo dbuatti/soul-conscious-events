@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings, Info, Home } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings, Info, Home, LayoutDashboard } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -43,6 +43,7 @@ const HeaderV2 = () => {
   const navItems = user ? [
     { to: "/", label: "Home", icon: Home },
     { to: "/submit-event", label: "Create Event", icon: PlusCircle },
+    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/my-events", label: "My Events", icon: CalendarCheck },
     { to: "/my-bookmarks", label: "My Bookmarks", icon: Bookmark },
     { to: "/account-settings", label: "Settings", icon: Settings },

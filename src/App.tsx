@@ -23,6 +23,7 @@ import DevSpace from "./pages/DevSpace";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import MyEvents from "./pages/MyEvents";
 import MyBookmarks from "./pages/MyBookmarks";
+import Dashboard from "./pages/Dashboard";
 // V2 Imports
 import EventsListV2 from "./pages/v2/EventsListV2";
 import LoginV2 from "./pages/v2/LoginV2";
@@ -97,6 +98,7 @@ const App = () => (
                 <Route path="/my-events" element={<MyEvents />} />
                 <Route path="/my-bookmarks" element={<MyBookmarks />} />
                 <Route path="/account-settings" element={<AccountSettings />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/edit-event/:id" element={<EventEditPage />} />
                 <Route path="/duplicate-event/:id" element={<EventEditPage />} />
               </Route>
