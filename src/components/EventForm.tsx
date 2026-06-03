@@ -39,12 +39,18 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <p className="text-xs text-muted-foreground/80 font-medium">
+          <span className="text-destructive font-bold mr-1">*</span>Indicates required fields
+        </p>
+
         <FormField
           control={form.control}
           name="eventName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="eventName">Event Name</FormLabel>
+              <FormLabel htmlFor="eventName" className="flex items-center gap-1">
+                Event Name <span className="text-destructive font-bold">*</span>
+              </FormLabel>
               <FormControl>
                 <Input id="eventName" placeholder="e.g., Sensory SOAK" {...field} className="focus-visible:ring-primary" />
               </FormControl>
@@ -59,7 +65,9 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             name="eventDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel htmlFor="eventDate">Start Date</FormLabel>
+                <FormLabel htmlFor="eventDate" className="flex items-center gap-1 mb-1">
+                  Start Date <span className="text-destructive font-bold">*</span>
+                </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -95,7 +103,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             name="endDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel htmlFor="endDate">End Date</FormLabel>
+                <FormLabel htmlFor="endDate" className="mb-1">End Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
