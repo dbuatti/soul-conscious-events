@@ -95,6 +95,7 @@ const EventEditPage: React.FC = () => {
           discountCode: data.discount_code || '',
           googleMapsLink: data.google_maps_link || '',
           recurringPattern: data.recurring_pattern || 'NONE',
+          eventDays: data.event_days || undefined,
         });
         setImagePreviewUrl(data.image_url || null);
       }
@@ -158,6 +159,7 @@ const EventEditPage: React.FC = () => {
         discount_code: values.discountCode || null,
         google_maps_link: values.googleMapsLink || null,
         recurring_pattern: values.recurringPattern === 'NONE' ? null : values.recurringPattern,
+        event_days: values.eventDays || null,
         user_id: user?.id || null,
         approval_status: 'approved',
       };

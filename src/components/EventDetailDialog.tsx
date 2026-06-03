@@ -294,6 +294,27 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
           </section>
         )}
 
+        {event.event_days && event.event_days.length > 0 && (
+          <section className="space-y-3">
+            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Daily Schedule</h3>
+            <div className="space-y-2">
+              {event.event_days.map((day) => (
+                <div key={day.date} className="p-3 rounded-xl bg-secondary/30 space-y-1">
+                  <p className="text-xs font-bold text-foreground">{format(parseISO(day.date), 'EEEE, d MMMM')}</p>
+                  {(day.start_time || day.end_time) && (
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {[day.start_time, day.end_time].filter(Boolean).join(' – ')}
+                    </p>
+                  )}
+                  {day.notes && (
+                    <p className="text-xs text-muted-foreground/70 italic">{day.notes}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {(event.ticket_link || event.special_notes || event.discount_code) && (
           <section className="bg-secondary/30 rounded-2xl p-5 space-y-5 border border-border/50">
             <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Booking Information</h3>

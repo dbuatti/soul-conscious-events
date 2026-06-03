@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { format } from 'date-fns';
-import { CalendarIcon, Loader2, HelpCircle, Sparkles } from 'lucide-react';
+import { format, eachDayOfInterval, parseISO, differenceInDays } from 'date-fns';
+import { CalendarIcon, Loader2, Sparkles } from 'lucide-react';
 import { cn, extractAustralianState } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Form,
   FormControl,
@@ -20,7 +21,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { eventTypes, australianStates } from '@/lib/constants';
 import ImageUploadInput from '@/components/ImageUploadInput';
-import VenueSelect from '@/components/VenueSelect'; // New import
+import VenueSelect from '@/components/VenueSelect';
 import RecurringEventFields from './RecurringEventFields';
 import { EventFormValues } from '@/lib/schemas';
 import { formatPrice } from '@/utils/event-utils';
@@ -34,12 +35,94 @@ interface EventFormProps {
   currentImageUrl?: string | null;
 }
 
+type ScheduleDay = { date: string; start_time: string; end_time: string; notes: string };
+
+const MAX_SCHEDULE_DAYS = 14;
+
 const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onBack, onPreview, currentImageUrl }) => {
   const descriptionValue = form.watch('description') || '';
   const specialNotesValue = form.watch('specialNotes') || '';
   const priceValue = form.watch('price') || '';
+  const eventDateValue = form.watch('eventDate');
+  const endDateValue = form.watch('endDate');
 
   const errors = form.formState.errors;
+
+  // Derive stable date strings for effect deps to avoid Date reference churn
+  const eventDateStr = eventDateValue ? format(eventDateValue, 'yyyy-MM-dd') : '';
+  const endDateStr = endDateValue ? format(endDateValue, 'yyyy-MM-dd') : '';
+
+  // Multi-day toggle — initialised from form values so edit mode opens correctly
+  const [isMultiDay, setIsMultiDay] = useState(() => !!form.getValues('endDate'));
+  const [scheduleDays, setScheduleDays] = useState<ScheduleDay[]>([]);
+  // Ref holds the authoritative schedule so the date-change effect can merge without
+  // taking scheduleDays as a dep (which would cause an infinite loop)
+  const prevDaysRef = useRef<ScheduleDay[]>([]);
+
+  // On mount: restore schedule from form (covers edit / duplicate mode)
+  useEffect(() => {
+    const existing = form.getValues('eventDays');
+    if (existing && existing.length > 0) {
+      const normalized: ScheduleDay[] = existing.map(d => ({
+        date: d.date,
+        start_time: d.start_time || '',
+        end_time: d.end_time || '',
+        notes: d.notes || '',
+      }));
+      prevDaysRef.current = normalized;
+      setScheduleDays(normalized);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When form is externally reset with an endDate (edit mode async load), open the toggle
+  useEffect(() => {
+    if (endDateValue && !isMultiDay) setIsMultiDay(true);
+  }, [endDateValue]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Regenerate per-day schedule rows whenever start/end date changes
+  useEffect(() => {
+    if (!isMultiDay || !eventDateValue || !endDateValue || endDateValue < eventDateValue) return;
+    const interval = eachDayOfInterval({ start: eventDateValue, end: endDateValue });
+    if (interval.length > MAX_SCHEDULE_DAYS) return; // guarded in UI too
+
+    const existingByDate: Record<string, ScheduleDay> = {};
+    prevDaysRef.current.forEach(d => { existingByDate[d.date] = d; });
+
+    const newDays: ScheduleDay[] = interval.map(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      return existingByDate[dateStr] ?? { date: dateStr, start_time: '', end_time: '', notes: '' };
+    });
+
+    prevDaysRef.current = newDays;
+    setScheduleDays(newDays);
+    form.setValue('eventDays', newDays);
+  }, [isMultiDay, eventDateStr, endDateStr]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleToggleMultiDay = (checked: boolean) => {
+    setIsMultiDay(checked);
+    if (!checked) {
+      form.setValue('endDate', undefined);
+      form.setValue('eventDays', undefined);
+      setScheduleDays([]);
+      prevDaysRef.current = [];
+    }
+  };
+
+  const updateScheduleRow = (index: number, field: keyof Omit<ScheduleDay, 'date'>, value: string) => {
+    const updated = scheduleDays.map((day, i) =>
+      i === index ? { ...day, [field]: value } : day
+    );
+    prevDaysRef.current = updated;
+    setScheduleDays(updated);
+    form.setValue('eventDays', updated);
+  };
+
+  const rangeExceedsLimit =
+    isMultiDay &&
+    !!eventDateValue &&
+    !!endDateValue &&
+    endDateValue > eventDateValue &&
+    differenceInDays(endDateValue, eventDateValue) + 1 > MAX_SCHEDULE_DAYS;
 
   return (
     <Form {...form}>
@@ -48,6 +131,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           <span className="text-destructive font-bold mr-1">*</span>Indicates required fields
         </p>
 
+        {/* Event Name */}
         <FormField
           control={form.control}
           name="eventName"
@@ -57,14 +141,14 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                 Event Name <span className="text-destructive font-bold">*</span>
               </FormLabel>
               <FormControl>
-                <Input 
-                  id="eventName" 
-                  placeholder="e.g., Sensory SOAK" 
-                  {...field} 
+                <Input
+                  id="eventName"
+                  placeholder="e.g., Sensory SOAK"
+                  {...field}
                   className={cn(
                     "focus-visible:ring-primary",
                     errors.eventName && "border-destructive ring-2 ring-destructive/20 focus-visible:ring-destructive"
-                  )} 
+                  )}
                 />
               </FormControl>
               <FormMessage />
@@ -72,85 +156,139 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="eventDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel htmlFor="eventDate" className="flex items-center gap-1 mb-1">
-                  Start Date <span className="text-destructive font-bold">*</span>
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        id="eventDate"
-                        variant={'outline'}
-                        className={cn(
-                          'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
-                          !field.value && 'text-muted-foreground',
-                          errors.eventDate && "border-destructive ring-2 ring-destructive/20 focus-visible:ring-destructive"
-                        )}
-                      >
-                        {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {/* Start Date */}
+        <FormField
+          control={form.control}
+          name="eventDate"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel htmlFor="eventDate" className="flex items-center gap-1 mb-1">
+                Start Date <span className="text-destructive font-bold">*</span>
+              </FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      id="eventDate"
+                      variant={'outline'}
+                      className={cn(
+                        'w-full md:w-1/2 pl-3 text-left font-normal',
+                        !field.value && 'text-muted-foreground',
+                        errors.eventDate && "border-destructive ring-2 ring-destructive/20 focus-visible:ring-destructive"
+                      )}
+                    >
+                      {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
+                  <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="endDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel htmlFor="endDate" className="mb-1">End Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        id="endDate"
-                        variant={'outline'}
-                        className={cn(
-                          'w-full pl-3 text-left font-normal transition-all duration-300 ease-in-out transform hover:scale-102',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
+        {/* Multi-day toggle */}
+        <div className="flex items-center gap-3 py-1">
+          <Switch
+            id="multi-day-toggle"
+            checked={isMultiDay}
+            onCheckedChange={handleToggleMultiDay}
           />
+          <label htmlFor="multi-day-toggle" className="text-sm font-medium cursor-pointer select-none">
+            Multi-day event
+          </label>
         </div>
+
+        {/* Multi-day section: end date + per-day schedule */}
+        {isMultiDay && (
+          <div className="space-y-5 pl-4 border-l-2 border-primary/20">
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel htmlFor="endDate" className="mb-1">End Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          id="endDate"
+                          variant={'outline'}
+                          className={cn(
+                            'w-full md:w-1/2 pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? format(field.value, 'PPP') : <span>Pick an end date</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => eventDateValue ? date < eventDateValue : false}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {rangeExceedsLimit && (
+              <p className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg">
+                Schedule builder is limited to {MAX_SCHEDULE_DAYS} days. Your end date is saved — per-day times are only shown for shorter ranges.
+              </p>
+            )}
+
+            {scheduleDays.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
+                  Per-day Schedule <span className="normal-case font-normal">(optional)</span>
+                </p>
+                {scheduleDays.map((day, index) => (
+                  <div key={day.date} className="p-4 rounded-xl bg-secondary/30 space-y-2">
+                    <p className="text-xs font-bold text-foreground">
+                      {format(parseISO(day.date), 'EEEE, d MMMM')}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <Input
+                        placeholder="Start time (e.g. 9:00 AM)"
+                        value={day.start_time}
+                        onChange={(e) => updateScheduleRow(index, 'start_time', e.target.value)}
+                        className="focus-visible:ring-primary text-sm"
+                      />
+                      <Input
+                        placeholder="End time (e.g. 5:00 PM)"
+                        value={day.end_time}
+                        onChange={(e) => updateScheduleRow(index, 'end_time', e.target.value)}
+                        className="focus-visible:ring-primary text-sm"
+                      />
+                      <Input
+                        placeholder="Notes (optional)"
+                        value={day.notes}
+                        onChange={(e) => updateScheduleRow(index, 'notes', e.target.value)}
+                        className="focus-visible:ring-primary text-sm"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <RecurringEventFields form={form} />
 
+        {/* Time */}
         <FormField
           control={form.control}
           name="eventTime"
@@ -165,6 +303,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Place Name */}
         <FormField
           control={form.control}
           name="placeName"
@@ -179,6 +318,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Address + State */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -220,9 +360,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                   </FormControl>
                   <SelectContent className="dark:bg-card dark:border-border">
                     {australianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
+                      <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -232,6 +370,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           />
         </div>
 
+        {/* Google Maps Link */}
         <FormField
           control={form.control}
           name="googleMapsLink"
@@ -249,6 +388,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Description */}
         <FormField
           control={form.control}
           name="description"
@@ -268,6 +408,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Ticket Link */}
         <FormField
           control={form.control}
           name="ticketLink"
@@ -277,14 +418,14 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                 Ticket/Booking Link <span className="text-destructive font-bold">*</span>
               </FormLabel>
               <FormControl>
-                <Input 
-                  id="ticketLink" 
-                  placeholder="e.g., www.eventbrite.com.au/e/..." 
-                  {...field} 
+                <Input
+                  id="ticketLink"
+                  placeholder="e.g., www.eventbrite.com.au/e/..."
+                  {...field}
                   className={cn(
                     "focus-visible:ring-primary",
                     errors.ticketLink && "border-destructive ring-2 ring-destructive/20 focus-visible:ring-destructive"
-                  )} 
+                  )}
                 />
               </FormControl>
               <FormDescription className="text-[11px] text-muted-foreground">
@@ -295,6 +436,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Price */}
         <FormField
           control={form.control}
           name="price"
@@ -305,22 +447,12 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                 <Input id="price" placeholder="e.g., 90, Free, 15-20 donation" {...field} className="focus-visible:ring-primary" />
               </FormControl>
               <div className="flex flex-wrap items-center gap-2 mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs rounded-full"
-                  onClick={() => form.setValue('price', 'Free', { shouldValidate: true })}
-                >
+                <Button type="button" variant="outline" size="sm" className="h-7 text-xs rounded-full"
+                  onClick={() => form.setValue('price', 'Free', { shouldValidate: true })}>
                   Set to Free
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs rounded-full"
-                  onClick={() => form.setValue('price', 'Donation', { shouldValidate: true })}
-                >
+                <Button type="button" variant="outline" size="sm" className="h-7 text-xs rounded-full"
+                  onClick={() => form.setValue('price', 'Donation', { shouldValidate: true })}>
                   Set to Donation
                 </Button>
                 {priceValue && (
@@ -334,6 +466,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Special Notes */}
         <FormField
           control={form.control}
           name="specialNotes"
@@ -353,6 +486,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Organizer Contact */}
         <FormField
           control={form.control}
           name="organizerContact"
@@ -367,6 +501,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Event Type */}
         <FormField
           control={form.control}
           name="eventType"
@@ -381,9 +516,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                 </FormControl>
                 <SelectContent className="dark:bg-card dark:border-border">
                   {eventTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -392,6 +525,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Discount Code */}
         <FormField
           control={form.control}
           name="discountCode"
@@ -399,12 +533,12 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             <FormItem>
               <FormLabel htmlFor="discountCode">Discount Code</FormLabel>
               <FormControl>
-                <Input 
-                  id="discountCode" 
-                  placeholder="e.g., SOULFLOW10" 
-                  {...field} 
+                <Input
+                  id="discountCode"
+                  placeholder="e.g., SOULFLOW10"
+                  {...field}
                   onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                  className="focus-visible:ring-primary uppercase tracking-wider font-mono" 
+                  className="focus-visible:ring-primary uppercase tracking-wider font-mono"
                 />
               </FormControl>
               <FormDescription className="text-[11px] text-muted-foreground">

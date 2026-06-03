@@ -23,4 +23,5 @@ export interface Event {
   recurring_pattern?: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY';
   is_recurring_instance?: boolean;
   created_at?: string; // Added to support 'NEW' badge logic
+  event_days?: Array<{ date: string; start_time: string; end_time: string; notes?: string }>;
 }

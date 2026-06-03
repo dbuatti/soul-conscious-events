@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { format, parseISO, isToday, isTomorrow, differenceInDays, differenceInHours, formatDistanceToNow } from 'date-fns';
+import { format, parseISO, isToday, isTomorrow, isSameDay, differenceInDays, differenceInHours, formatDistanceToNow } from 'date-fns';
 import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight, Copy, Sparkles } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
@@ -44,12 +44,20 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
 
   const eventDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
-  
+  const isMultiDayEvent = endDate !== null && !isSameDay(eventDate, endDate);
+
   // Smart Date Label
-  let dateLabel = format(eventDate, 'EEEE, MMMM d');
   const isEventToday = isToday(eventDate);
-  if (isEventToday) dateLabel = 'Today';
-  else if (isTomorrow(eventDate)) dateLabel = 'Tomorrow';
+  let dateLabel: string;
+  if (isMultiDayEvent && endDate) {
+    dateLabel = `${format(eventDate, 'EEE d MMM')} — ${format(endDate, 'EEE d MMM')}`;
+  } else if (isEventToday) {
+    dateLabel = 'Today';
+  } else if (isTomorrow(eventDate)) {
+    dateLabel = 'Tomorrow';
+  } else {
+    dateLabel = format(eventDate, 'EEEE, MMMM d');
+  }
 
   // Duration Label
   const durationDays = endDate ? differenceInDays(endDate, eventDate) + 1 : 1;
@@ -120,7 +128,12 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               {event.event_type.toUpperCase()}
             </Badge>
           )}
-          {isEventToday && (
+          {isMultiDayEvent && (
+            <Badge className="bg-white/90 dark:bg-black/60 text-primary text-[8px] sm:text-[10px] px-2 py-0.5 sm:px-4 sm:py-1.5 font-black tracking-widest border-none shadow-lg rounded-full">
+              ⛺ MULTI-DAY
+            </Badge>
+          )}
+          {isEventToday && !isMultiDayEvent && (
             <Badge className="bg-accent text-white text-[8px] sm:text-[10px] px-2 py-0.5 sm:px-4 sm:py-1.5 font-black tracking-widest border-none shadow-lg rounded-full animate-pulse">
               TODAY
             </Badge>
@@ -159,7 +172,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         <div className="space-y-2 sm:space-y-4 text-muted-foreground text-[11px] sm:text-sm mb-4 sm:mb-8">
           <div className="flex items-center font-bold text-foreground/80">
             <Calendar className="mr-2 sm:mr-3 h-3.5 w-3.5 sm:h-5 sm:w-5 text-primary" />
-            <span className={cn(isEventToday && "text-primary")}>{dateLabel}</span>
+            <span className={cn(isEventToday && !isMultiDayEvent && "text-primary")}>{dateLabel}</span>
           </div>
           <div className="flex items-center">
             <Clock className="mr-2 sm:mr-3 h-3.5 w-3.5 sm:h-5 sm:w-5 text-primary/60" />

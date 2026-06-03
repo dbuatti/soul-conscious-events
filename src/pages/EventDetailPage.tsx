@@ -212,6 +212,27 @@ const EventDetailPage: React.FC = () => {
                 {event.description}
               </p>
             </div>
+
+            {event.event_days && event.event_days.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-black font-heading text-foreground">Daily Schedule</h2>
+                <div className="space-y-3">
+                  {event.event_days.map((day) => (
+                    <div key={day.date} className="organic-card p-4 sm:p-6 rounded-[1.5rem] space-y-1">
+                      <p className="text-sm font-black text-foreground">{format(parseISO(day.date), 'EEEE, d MMMM')}</p>
+                      {(day.start_time || day.end_time) && (
+                        <p className="text-sm text-muted-foreground font-medium">
+                          {[day.start_time, day.end_time].filter(Boolean).join(' – ')}
+                        </p>
+                      )}
+                      {day.notes && (
+                        <p className="text-sm text-muted-foreground/70 italic">{day.notes}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

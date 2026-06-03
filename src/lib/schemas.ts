@@ -19,6 +19,12 @@ export const eventFormSchema = z.object({
   discountCode: z.string().optional().or(z.literal('')),
   googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   recurringPattern: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'NONE']).optional().or(z.literal('')),
+  eventDays: z.array(z.object({
+    date: z.string(),
+    start_time: z.string().optional().or(z.literal('')),
+    end_time: z.string().optional().or(z.literal('')),
+    notes: z.string().optional().or(z.literal('')),
+  })).optional(),
 });
 
 export type EventFormValues = z.infer<typeof eventFormSchema>;
