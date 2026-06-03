@@ -183,7 +183,7 @@ const EventDetailPage: React.FC = () => {
         type="article"
       />
       <div className="flex justify-start mb-8">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-full hover:bg-primary/10 text-primary font-bold">
+        <Button variant="ghost" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')} className="rounded-full hover:bg-primary/10 text-primary font-bold">
           <ArrowLeft className="mr-2 h-5 w-5" /> Back to Events
         </Button>
       </div>

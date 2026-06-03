@@ -33,9 +33,10 @@ const Footer = () => {
             href="https://buymeacoffee.com/danielebuatti"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center text-sm hover:text-primary transition-colors"
+            className="inline-flex flex-col items-center gap-2 hover:text-primary transition-colors"
           >
             <img src="/buy-me-a-coffee.png" alt="Buy Me a Coffee" className="h-10 w-auto" />
+            <span className="text-xs">Buy me a coffee</span>
           </a>
         </div>
       </div>

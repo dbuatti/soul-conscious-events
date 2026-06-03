@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
+import { getBaseEventId } from '@/utils/event-utils';
 import { Event } from '@/types/event';
 import SEO from '@/components/SEO';
 
@@ -80,8 +81,7 @@ const MyBookmarks: React.FC = () => {
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
     e.stopPropagation();
-    const baseId = event.id.split('-')[0];
-    const eventUrl = `${window.location.origin}/events/${baseId}`;
+    const eventUrl = `${window.location.origin}/events/${getBaseEventId(event.id)}`;
     navigator.clipboard.writeText(eventUrl)
       .then(() => toast.success('Event link copied!'))
       .catch(() => toast.error('Failed to copy link.'));
@@ -132,7 +132,12 @@ const MyBookmarks: React.FC = () => {
         description="View your saved soulful events, workshops, and conscious gatherings across Australia."
       />
       <div className="mb-16 text-center">
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">My Bookmarks</h1>
+        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">
+          My Bookmarks
+          {bookmarkedEvents.length > 0 && (
+            <span className="text-3xl sm:text-4xl font-normal text-muted-foreground/50 ml-3">({bookmarkedEvents.length})</span>
+          )}
+        </h1>
       </div>
 
       {bookmarkedEvents.length === 0 ? (

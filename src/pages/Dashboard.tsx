@@ -256,17 +256,17 @@ const Dashboard: React.FC = () => {
                     <div className="grid grid-cols-3 gap-4 sm:gap-8 flex-shrink-0">
                       <div className="text-center space-y-1">
                         <Eye className="h-4 w-4 text-primary/40 mx-auto" />
-                        <p className="text-2xl sm:text-3xl font-black text-foreground leading-none">{m.views}</p>
+                        <p className={cn("text-2xl sm:text-3xl font-black leading-none", m.views === 0 ? "text-muted-foreground/30" : "text-foreground")}>{m.views}</p>
                         <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Views</p>
                       </div>
                       <div className="text-center space-y-1">
                         <MousePointerClick className="h-4 w-4 text-primary/40 mx-auto" />
-                        <p className="text-2xl sm:text-3xl font-black text-foreground leading-none">{m.ticketClicks}</p>
+                        <p className={cn("text-2xl sm:text-3xl font-black leading-none", m.ticketClicks === 0 ? "text-muted-foreground/30" : "text-foreground")}>{m.ticketClicks}</p>
                         <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Clicks</p>
                       </div>
                       <div className="text-center space-y-1">
                         <Tag className="h-4 w-4 text-primary/40 mx-auto" />
-                        <p className="text-2xl sm:text-3xl font-black text-foreground leading-none">{m.discountCopies}</p>
+                        <p className={cn("text-2xl sm:text-3xl font-black leading-none", m.discountCopies === 0 ? "text-muted-foreground/30" : "text-foreground")}>{m.discountCopies}</p>
                         <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Discounts</p>
                       </div>
                     </div>

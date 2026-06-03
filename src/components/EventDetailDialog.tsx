@@ -396,7 +396,15 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="h-[94vh] rounded-t-[2.5rem] border-none shadow-2xl">
-          <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted mb-4 mt-2" />
+          <div className="flex items-center justify-between px-5 pt-3 pb-1 flex-shrink-0">
+            <div className="w-8" />
+            <div className="w-12 h-1.5 rounded-full bg-muted" />
+            <DrawerClose asChild>
+              <button className="rounded-full bg-muted/60 hover:bg-muted p-2 transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </DrawerClose>
+          </div>
           <DrawerHeader className="sr-only">
             <DrawerTitle>{event.event_name}</DrawerTitle>
             <DrawerDescription>Event details for {event.event_name}</DrawerDescription>

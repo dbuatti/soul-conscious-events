@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -175,6 +176,9 @@ const AccountSettings = () => {
                       <FormControl>
                         <Input placeholder="johndoe" {...field} className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary" />
                       </FormControl>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        Shown publicly on your submitted event listings.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

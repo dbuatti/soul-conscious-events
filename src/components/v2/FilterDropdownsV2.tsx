@@ -237,14 +237,17 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
       <div className="flex items-center bg-secondary/50 p-1 rounded-xl shrink-0">
         <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && onViewModeChange(value)}>
-          <ToggleGroupItem value="list" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="List View">
-            <List className="h-4 w-4" />
+          <ToggleGroupItem value="list" className="rounded-lg h-8 px-3 gap-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="List View">
+            <List className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-bold">List</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="calendar" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="Calendar View">
-            <CalendarDays className="h-4 w-4" />
+          <ToggleGroupItem value="calendar" className="rounded-lg h-8 px-3 gap-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="Calendar View">
+            <CalendarDays className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-bold">Calendar</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="map" className="rounded-lg h-8 w-10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="Map View">
-            <MapIcon className="h-4 w-4" />
+          <ToggleGroupItem value="map" className="rounded-lg h-8 px-3 gap-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="Map View">
+            <MapIcon className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-bold">Map</span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

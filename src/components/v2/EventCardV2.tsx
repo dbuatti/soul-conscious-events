@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { format, parseISO, isToday, isTomorrow, isSameDay, differenceInDays, differenceInHours, formatDistanceToNow } from 'date-fns';
+import { format, parseISO, isToday, isTomorrow, isSameDay, differenceInHours } from 'date-fns';
 import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight, Copy, Sparkles } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
@@ -61,8 +61,6 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
     dateLabel = format(eventDate, 'EEEE, MMMM d');
   }
 
-  // Duration (used for isMultiDayEvent check above)
-  const durationDays = endDate ? differenceInDays(endDate, eventDate) + 1 : 1;
 
   // "NEW" Badge Logic (Created in last 24 hours)
   const createdAt = event.created_at ? parseISO(event.created_at) : null;
@@ -210,13 +208,13 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onViewDetails(event); }}
-                className="text-[10px] font-bold text-primary border border-primary/30 bg-primary/5 px-2.5 py-1 rounded-full hover:bg-primary/10 transition-colors whitespace-nowrap"
+                className="text-[10px] font-bold text-primary border border-primary/30 bg-primary/5 px-2.5 py-1.5 rounded-full hover:bg-primary/10 transition-colors whitespace-nowrap"
               >
                 ＋{additionalDatesCount} more date{additionalDatesCount !== 1 ? 's' : ''}
               </button>
             )}
             <Button variant="link" className="text-primary font-black p-0 group/btn text-xs sm:text-base hover:no-underline">
-              Explore <ArrowRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-5 sm:w-5 transition-transform group-hover/btn:translate-x-1" />
+              View Details <ArrowRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-5 sm:w-5 transition-transform group-hover/btn:translate-x-1" />
             </Button>
           </div>
         </div>

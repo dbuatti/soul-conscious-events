@@ -85,7 +85,12 @@ const MyEvents: React.FC = () => {
         description="Manage your submitted events, edit details, duplicate listings, or add new soulful gatherings to the SoulFlow platform."
       />
       <div className="mb-16 text-center">
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">My Events</h1>
+        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">
+          My Events
+          {events.length > 0 && (
+            <span className="text-3xl sm:text-4xl font-normal text-muted-foreground/50 ml-3">({events.length})</span>
+          )}
+        </h1>
       </div>
 
       <div className="flex justify-end mb-12">

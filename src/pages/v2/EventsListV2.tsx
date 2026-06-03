@@ -272,7 +272,7 @@ const EventsListV2 = () => {
           <div className="relative group">
             <Search className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
             <Input
-              placeholder="Search events..."
+              placeholder="Search by name, venue or location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 sm:pl-20 pr-10 sm:pr-16 h-12 sm:h-20 rounded-xl sm:rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-base sm:text-2xl placeholder:text-muted-foreground/40 font-medium"
@@ -327,31 +327,31 @@ const EventsListV2 = () => {
               {filters.date !== 'All Upcoming' && (
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {filters.date}
-                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('date')} />
+                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('date')} />
                 </Badge>
               )}
               {filters.category.map(cat => (
                 <Badge key={cat} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {cat}
-                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('category', cat)} />
+                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('category', cat)} />
                 </Badge>
               ))}
               {filters.venue.map(v => (
                 <Badge key={v} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {v}
-                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('venue', v)} />
+                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('venue', v)} />
                 </Badge>
               ))}
               {filters.price.map(p => (
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {p}
-                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('price', p)} />
+                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('price', p)} />
                 </Badge>
               ))}
               {filters.state.map(s => (
                 <Badge key={s} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {s}
-                  <X className="h-3 w-3 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('state', s)} />
+                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('state', s)} />
                 </Badge>
               ))}
               <Button variant="link" size="sm" onClick={handleClearFilters} className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest p-0 h-auto ml-1">

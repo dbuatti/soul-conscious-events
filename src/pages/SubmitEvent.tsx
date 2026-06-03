@@ -173,7 +173,7 @@ const SubmitEvent = () => {
 
       if (error) throw error;
 
-      toast.success('Event created successfully!', { id: loadingToastId });
+      toast.success('Your event has been submitted! It will appear in the listing shortly.', { id: loadingToastId, duration: 5000 });
       navigate('/');
     } catch (error: any) {
       console.error('Error during event submission:', error);
