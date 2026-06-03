@@ -275,7 +275,15 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             <FormItem>
               <FormLabel htmlFor="ticketLink">Ticket/Booking Link</FormLabel>
               <FormControl>
-                <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
+                <Input 
+                  id="ticketLink" 
+                  placeholder="e.g., www.eventbrite.com.au/e/..." 
+                  {...field} 
+                  className={cn(
+                    "focus-visible:ring-primary",
+                    errors.ticketLink && "border-destructive ring-2 ring-destructive/20 focus-visible:ring-destructive"
+                  )} 
+                />
               </FormControl>
               <FormDescription className="text-[11px] text-muted-foreground">
                 Where attendees can purchase tickets or RSVP (e.g., Eventbrite, Humanitix, or your website).
