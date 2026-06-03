@@ -136,19 +136,22 @@ const EventDetailPage: React.FC = () => {
     }
   };
 
-  const handleTicketLinkClick = async () => {
+  const handleTicketLinkClick = () => {
     if (!event?.ticket_link) return;
-    const { error: logError } = await supabase.from('event_analytics_logs').insert([
+    
+    // Open the link immediately to preserve the user gesture and prevent mobile popup blockers
+    window.open(event.ticket_link, '_blank');
+    
+    // Log the analytics asynchronously in the background
+    supabase.from('event_analytics_logs').insert([
       {
         event_id: event.id,
         user_id: user?.id || null,
         log_type: 'ticket_click',
       },
-    ]);
-    if (logError) {
-      console.error('Error logging ticket link click:', logError);
-    }
-    window.open(event.ticket_link, '_blank');
+    ]).then(({ error }) => {
+      if (error) console.error('Error logging ticket link click:', error);
+    });
   };
 
   if (loading || isSessionLoading) {

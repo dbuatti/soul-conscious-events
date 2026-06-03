@@ -146,14 +146,20 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     }
   };
 
-  const handleTicketLinkClick = async () => {
+  const handleTicketLinkClick = () => {
     if (!event?.ticket_link) return;
-    await supabase.from('event_analytics_logs').insert([{
+    
+    // Open the link immediately to preserve the user gesture and prevent mobile popup blockers
+    window.open(event.ticket_link, '_blank');
+    
+    // Log the analytics asynchronously in the background
+    supabase.from('event_analytics_logs').insert([{
       event_id: getBaseEventId(event.id),
       user_id: user?.id || null,
       log_type: 'ticket_click',
-    }]);
-    window.open(event.ticket_link, '_blank');
+    }]).then(({ error }) => {
+      if (error) console.error('Error logging ticket click:', error);
+    });
   };
 
   if (!isOpen || !event) return null;
