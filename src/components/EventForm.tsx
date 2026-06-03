@@ -273,7 +273,9 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="ticketLink"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="ticketLink">Ticket/Booking Link</FormLabel>
+              <FormLabel htmlFor="ticketLink" className="flex items-center gap-1">
+                Ticket/Booking Link <span className="text-destructive font-bold">*</span>
+              </FormLabel>
               <FormControl>
                 <Input 
                   id="ticketLink" 

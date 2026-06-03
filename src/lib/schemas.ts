@@ -8,7 +8,7 @@ export const eventFormSchema = z.object({
   placeName: z.string().optional().or(z.literal('')),
   fullAddress: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
-  ticketLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
+  ticketLink: z.string().url({ message: "Must be a valid URL" }).min(1, { message: "Ticket/Booking Link is required." }),
   price: z.string().optional().or(z.literal('')),
   specialNotes: z.string().optional().or(z.literal('')),
   organizerContact: z.string().optional().or(z.literal('')),
