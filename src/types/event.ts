@@ -21,6 +21,7 @@ export interface Event {
   discount_code?: string;
   google_maps_link?: string;
   recurring_pattern?: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY';
+  recurring_end_date?: string;
   is_recurring_instance?: boolean;
   created_at?: string; // Added to support 'NEW' badge logic
   event_days?: Array<{ date: string; start_time: string; end_time: string; notes?: string }>;

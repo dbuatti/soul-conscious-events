@@ -9,7 +9,10 @@ export const generateRecurringInstances = (event: Event): Event[] => {
   const originalStartDate = parseISO(event.event_date);
   const originalEndDate = event.end_date ? parseISO(event.end_date) : originalStartDate;
   const duration = originalEndDate.getTime() - originalStartDate.getTime();
-  
+  const endCap = event.recurring_end_date
+    ? parseISO(event.recurring_end_date)
+    : addMonths(new Date(), 3);
+
   const instances: Event[] = [];
   let currentDate = originalStartDate;
   let count = 0;
@@ -34,7 +37,7 @@ export const generateRecurringInstances = (event: Event): Event[] => {
         return instances;
     }
 
-    if (nextDate > addMonths(new Date(), 3)) {
+    if (nextDate > endCap) {
       break;
     }
 

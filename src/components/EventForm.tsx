@@ -59,6 +59,11 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
   // taking scheduleDays as a dep (which would cause an infinite loop)
   const prevDaysRef = useRef<ScheduleDay[]>([]);
 
+  const [scheduleMode, setScheduleMode] = useState<'same' | 'custom'>('same');
+  const scheduleModeRef = useRef<'same' | 'custom'>('same');
+  const [sharedTime, setSharedTime] = useState({ start_time: '', end_time: '', notes: '' });
+  const sharedTimeRef = useRef({ start_time: '', end_time: '', notes: '' });
+
   // On mount: restore schedule from form (covers edit / duplicate mode)
   useEffect(() => {
     const existing = form.getValues('eventDays');
@@ -71,6 +76,21 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
       }));
       prevDaysRef.current = normalized;
       setScheduleDays(normalized);
+
+      // Detect if all days share identical times → restore Mode A; otherwise Mode B
+      const first = normalized[0];
+      const allSame = normalized.every(
+        d => d.start_time === first.start_time && d.end_time === first.end_time && d.notes === first.notes
+      );
+      if (allSame) {
+        const shared = { start_time: first.start_time, end_time: first.end_time, notes: first.notes };
+        sharedTimeRef.current = shared;
+        setSharedTime(shared);
+        // scheduleModeRef stays 'same' (default)
+      } else {
+        scheduleModeRef.current = 'custom';
+        setScheduleMode('custom');
+      }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -90,6 +110,9 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
 
     const newDays: ScheduleDay[] = interval.map(day => {
       const dateStr = format(day, 'yyyy-MM-dd');
+      if (scheduleModeRef.current === 'same') {
+        return { date: dateStr, ...sharedTimeRef.current };
+      }
       return existingByDate[dateStr] ?? { date: dateStr, start_time: '', end_time: '', notes: '' };
     });
 
@@ -105,6 +128,11 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
       form.setValue('eventDays', undefined);
       setScheduleDays([]);
       prevDaysRef.current = [];
+      setScheduleMode('same');
+      scheduleModeRef.current = 'same';
+      const empty = { start_time: '', end_time: '', notes: '' };
+      setSharedTime(empty);
+      sharedTimeRef.current = empty;
     }
   };
 
@@ -115,6 +143,37 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
     prevDaysRef.current = updated;
     setScheduleDays(updated);
     form.setValue('eventDays', updated);
+  };
+
+  const handleScheduleModeChange = (mode: 'same' | 'custom') => {
+    scheduleModeRef.current = mode;
+    if (mode === 'custom') {
+      // A → B: pre-fill each row with the current shared time
+      const filled = scheduleDays.map(d => ({ ...d, ...sharedTimeRef.current }));
+      prevDaysRef.current = filled;
+      setScheduleDays(filled);
+      form.setValue('eventDays', filled);
+    } else {
+      // B → A: clear shared fields, apply empty to all days (don't reverse-merge)
+      const empty = { start_time: '', end_time: '', notes: '' };
+      sharedTimeRef.current = empty;
+      setSharedTime(empty);
+      const withEmpty = scheduleDays.map(d => ({ ...d, ...empty }));
+      prevDaysRef.current = withEmpty;
+      setScheduleDays(withEmpty);
+      form.setValue('eventDays', withEmpty);
+    }
+    setScheduleMode(mode);
+  };
+
+  const updateSharedTime = (field: 'start_time' | 'end_time' | 'notes', value: string) => {
+    const updated = { ...sharedTimeRef.current, [field]: value };
+    sharedTimeRef.current = updated;
+    setSharedTime(updated);
+    const withShared = scheduleDays.map(d => ({ ...d, ...updated }));
+    prevDaysRef.current = withShared;
+    setScheduleDays(withShared);
+    form.setValue('eventDays', withShared);
   };
 
   const rangeExceedsLimit =
@@ -251,10 +310,57 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
 
             {scheduleDays.length > 0 && (
               <div className="space-y-3">
+                {/* Schedule mode pills */}
+                <div className="flex gap-2">
+                  {(['same', 'custom'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => handleScheduleModeChange(mode)}
+                      className={cn(
+                        "px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 border",
+                        scheduleMode === mode
+                          ? "bg-primary border-primary text-primary-foreground shadow-md"
+                          : "bg-background border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+                      )}
+                    >
+                      {mode === 'same' ? 'Same time every day' : 'Custom per day'}
+                    </button>
+                  ))}
+                </div>
+
                 <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
                   Per-day Schedule <span className="normal-case font-normal">(optional)</span>
                 </p>
-                {scheduleDays.map((day, index) => (
+
+                {/* Mode A: single shared row applied to all days */}
+                {scheduleMode === 'same' && (
+                  <div className="p-4 rounded-xl bg-secondary/30">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <Input
+                        placeholder="Start time (e.g. 9:00 AM)"
+                        value={sharedTime.start_time}
+                        onChange={(e) => updateSharedTime('start_time', e.target.value)}
+                        className="focus-visible:ring-primary text-sm"
+                      />
+                      <Input
+                        placeholder="End time (e.g. 5:00 PM)"
+                        value={sharedTime.end_time}
+                        onChange={(e) => updateSharedTime('end_time', e.target.value)}
+                        className="focus-visible:ring-primary text-sm"
+                      />
+                      <Input
+                        placeholder="Notes (optional)"
+                        value={sharedTime.notes}
+                        onChange={(e) => updateSharedTime('notes', e.target.value)}
+                        className="focus-visible:ring-primary text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Mode B: individual row per day */}
+                {scheduleMode === 'custom' && scheduleDays.map((day, index) => (
                   <div key={day.date} className="p-4 rounded-xl bg-secondary/30 space-y-2">
                     <p className="text-xs font-bold text-foreground">
                       {format(parseISO(day.date), 'EEEE, d MMMM')}

@@ -66,7 +66,23 @@ const EventDetailPage: React.FC = () => {
         toast.error('Failed to load event details.');
         navigate('/404');
       } else if (data) {
-        setEvent(data);
+        // If the URL contains a synthetic recurring-instance ID (uuid-yyyyMMdd),
+        // override the displayed date so the page shows the clicked instance, not the base event.
+        let displayData = data;
+        if (id && id !== baseId) {
+          const idParts = id.split('-');
+          if (idParts.length > 5) {
+            const suffix = idParts.slice(5).join('');
+            if (/^\d{8}$/.test(suffix)) {
+              displayData = {
+                ...data,
+                event_date: `${suffix.slice(0, 4)}-${suffix.slice(4, 6)}-${suffix.slice(6, 8)}`,
+                is_recurring_instance: true,
+              };
+            }
+          }
+        }
+        setEvent(displayData);
         const { error: logError } = await supabase.from('event_analytics_logs').insert([
           {
             event_id: data.id,

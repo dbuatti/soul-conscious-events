@@ -165,6 +165,7 @@ const SubmitEvent = () => {
         discount_code: values.discountCode || null,
         google_maps_link: values.googleMapsLink || null,
         recurring_pattern: recurringPattern,
+        recurring_end_date: values.recurringEndDate ? format(values.recurringEndDate, 'yyyy-MM-dd') : null,
         event_days: values.eventDays || null,
         user_id: user?.id || null,
         approval_status: 'approved',

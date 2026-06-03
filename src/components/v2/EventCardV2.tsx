@@ -24,6 +24,7 @@ interface EventCardV2Props {
   onDelete: (eventId: string, e: React.MouseEvent) => void;
   onViewDetails: (event: Event) => void;
   isFeaturedToday?: boolean;
+  additionalDatesCount?: number;
 }
 
 const EventCardV2: React.FC<EventCardV2Props> = ({
@@ -32,6 +33,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   onDelete,
   onViewDetails,
   isFeaturedToday = false,
+  additionalDatesCount = 0,
 }) => {
   const { user } = useSession();
   const isAdmin = user?.email === 'daniele.buatti@gmail.com';
@@ -133,6 +135,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               ⛺ MULTI-DAY
             </Badge>
           )}
+          {(event.recurring_pattern || event.is_recurring_instance) && (
+            <Badge className="bg-white/90 dark:bg-black/60 text-primary text-[8px] sm:text-[10px] px-2 py-0.5 sm:px-4 sm:py-1.5 font-black tracking-widest border-none shadow-lg rounded-full">
+              ⟳ {event.recurring_pattern ?? 'RECURRING'}
+            </Badge>
+          )}
           {isEventToday && !isMultiDayEvent && (
             <Badge className="bg-accent text-white text-[8px] sm:text-[10px] px-2 py-0.5 sm:px-4 sm:py-1.5 font-black tracking-widest border-none shadow-lg rounded-full animate-pulse">
               TODAY
@@ -199,9 +206,20 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
               </>
             )}
           </div>
-          <Button variant="link" className="text-primary font-black p-0 group/btn text-xs sm:text-base hover:no-underline">
-            Explore <ArrowRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-5 sm:w-5 transition-transform group-hover/btn:translate-x-1" />
-          </Button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            {additionalDatesCount > 0 && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onViewDetails(event); }}
+                className="text-[10px] font-bold text-primary border border-primary/30 bg-primary/5 px-2.5 py-1 rounded-full hover:bg-primary/10 transition-colors whitespace-nowrap"
+              >
+                ＋{additionalDatesCount} more date{additionalDatesCount !== 1 ? 's' : ''}
+              </button>
+            )}
+            <Button variant="link" className="text-primary font-black p-0 group/btn text-xs sm:text-base hover:no-underline">
+              Explore <ArrowRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-5 sm:w-5 transition-transform group-hover/btn:translate-x-1" />
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
@@ -50,6 +50,27 @@ const EventsListV2 = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents, totalCount } = useEventFilters(allEvents);
+
+  // Deduplicate recurring series for the list view: keep only the next upcoming instance per series.
+  // Calendar and map views still receive the full filteredEvents so all instances are visible.
+  const { listSource, extraCountMap } = useMemo(() => {
+    const seenBaseIds = new Set<string>();
+    const extraCountMap: Record<string, number> = {};
+    const listSource: Event[] = [];
+    for (const event of filteredEvents) {
+      const baseId = getBaseEventId(event.id);
+      if (seenBaseIds.has(baseId)) {
+        extraCountMap[baseId] = (extraCountMap[baseId] || 0) + 1;
+      } else {
+        seenBaseIds.add(baseId);
+        listSource.push(event);
+      }
+    }
+    return { listSource, extraCountMap };
+  }, [filteredEvents]);
+
+  // Pagination source switches between deduplicated (list) and full (calendar/map)
+  const paginationSource = viewMode === 'list' ? listSource : filteredEvents;
 
   const fetchFavouriteVenues = useCallback(async () => {
     if (!user) {
@@ -148,17 +169,17 @@ const EventsListV2 = () => {
   }, [fetchFavouriteVenues, isSessionLoading]);
 
   useEffect(() => {
-    setDisplayedEvents(filteredEvents.slice(0, EVENTS_PER_LOAD));
+    setDisplayedEvents(paginationSource.slice(0, EVENTS_PER_LOAD));
     setOffset(EVENTS_PER_LOAD);
-    setHasMore(filteredEvents.length > EVENTS_PER_LOAD);
-  }, [filteredEvents]);
+    setHasMore(paginationSource.length > EVENTS_PER_LOAD);
+  }, [paginationSource]);
 
   const handleLoadMore = () => {
     setLoadingMore(true);
-    const nextEvents = filteredEvents.slice(offset, offset + EVENTS_PER_LOAD);
+    const nextEvents = paginationSource.slice(offset, offset + EVENTS_PER_LOAD);
     setDisplayedEvents(prevEvents => [...prevEvents, ...nextEvents]);
     setOffset(prevOffset => prevOffset + nextEvents.length);
-    setHasMore(filteredEvents.length > offset + nextEvents.length);
+    setHasMore(paginationSource.length > offset + nextEvents.length);
     setLoadingMore(false);
   };
 
@@ -388,7 +409,7 @@ const EventsListV2 = () => {
                 <h2 className="text-2xl sm:text-5xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
                 <div className="flex items-center gap-2">
                   <div className="text-[10px] sm:text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 rounded-full">
-                    {hasActiveFilters ? `Showing ${filteredEvents.length} of ${totalCount}` : `${filteredEvents.length} ${filteredEvents.length === 1 ? 'Event' : 'Events'}`}
+                    {hasActiveFilters ? `Showing ${paginationSource.length} of ${totalCount}` : `${paginationSource.length} ${paginationSource.length === 1 ? 'Event' : 'Events'}`}
                   </div>
                 </div>
               </div>
@@ -403,6 +424,7 @@ const EventsListV2 = () => {
                       onDelete={handleDelete}
                       onViewDetails={handleViewDetails}
                       isFeaturedToday={isToday(parseISO(event.event_date))}
+                      additionalDatesCount={extraCountMap[getBaseEventId(event.id)] || 0}
                     />
                   ))}
                 </div>
