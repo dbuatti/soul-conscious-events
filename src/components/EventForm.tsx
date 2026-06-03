@@ -1,7 +1,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, HelpCircle, Sparkles } from 'lucide-react';
 import { cn, extractAustralianState } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,6 +23,7 @@ import ImageUploadInput from '@/components/ImageUploadInput';
 import VenueSelect from '@/components/VenueSelect'; // New import
 import RecurringEventFields from './RecurringEventFields';
 import { EventFormValues } from '@/lib/schemas';
+import { formatPrice } from '@/utils/event-utils';
 
 interface EventFormProps {
   form: UseFormReturn<EventFormValues>;
@@ -35,6 +37,7 @@ interface EventFormProps {
 const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onBack, onPreview, currentImageUrl }) => {
   const descriptionValue = form.watch('description') || '';
   const specialNotesValue = form.watch('specialNotes') || '';
+  const priceValue = form.watch('price') || '';
 
   return (
     <Form {...form}>
@@ -227,6 +230,9 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
               <FormControl>
                 <Input id="googleMapsLink" placeholder="e.g., https://maps.app.goo.gl/..." {...field} className="focus-visible:ring-primary" />
               </FormControl>
+              <FormDescription className="text-[11px] text-muted-foreground">
+                Paste a link to the location on Google Maps to help attendees navigate.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -260,6 +266,9 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
               <FormControl>
                 <Input id="ticketLink" placeholder="e.g., www.eventbrite.com.au/e/..." {...field} className="focus-visible:ring-primary" />
               </FormControl>
+              <FormDescription className="text-[11px] text-muted-foreground">
+                Where attendees can purchase tickets or RSVP (e.g., Eventbrite, Humanitix, or your website).
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -274,6 +283,31 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
               <FormControl>
                 <Input id="price" placeholder="e.g., 90, Free, 15-20 donation" {...field} className="focus-visible:ring-primary" />
               </FormControl>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs rounded-full"
+                  onClick={() => form.setValue('price', 'Free', { shouldValidate: true })}
+                >
+                  Set to Free
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs rounded-full"
+                  onClick={() => form.setValue('price', 'Donation', { shouldValidate: true })}
+                >
+                  Set to Donation
+                </Button>
+                {priceValue && (
+                  <span className="text-xs text-muted-foreground ml-auto flex items-center gap-1 bg-secondary/40 px-2.5 py-1 rounded-full">
+                    <Sparkles className="h-3 w-3 text-primary" /> Will display as: <strong className="text-foreground">{formatPrice(priceValue)}</strong>
+                  </span>
+                )}
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -291,7 +325,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                 </span>
               </div>
               <FormControl>
-                <Textarea id="specialNotes" {...field} className="focus-visible:ring-primary min-h-[80px]" />
+                <Textarea id="specialNotes" placeholder="e.g., Bring a yoga mat, water bottle, and open heart." {...field} className="focus-visible:ring-primary min-h-[80px]" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -344,8 +378,17 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             <FormItem>
               <FormLabel htmlFor="discountCode">Discount Code</FormLabel>
               <FormControl>
-                <Input id="discountCode" placeholder="e.g., SOULFLOW10" {...field} className="focus-visible:ring-primary" />
+                <Input 
+                  id="discountCode" 
+                  placeholder="e.g., SOULFLOW10" 
+                  {...field} 
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                  className="focus-visible:ring-primary uppercase tracking-wider font-mono" 
+                />
               </FormControl>
+              <FormDescription className="text-[11px] text-muted-foreground">
+                Offer a special discount code for SoulFlow community members.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
