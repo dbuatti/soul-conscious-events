@@ -10,6 +10,7 @@ import AiParsingSection from '@/components/AiParsingSection';
 import EventPreviewDialog from '@/components/EventPreviewDialog';
 import { format } from 'date-fns';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
+import SEO from '@/components/SEO';
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ const SubmitEvent = () => {
       googleMapsLink: parsedData.googleMapsLink || '',
       recurringPattern: parsedData.recurringPattern || 'NONE',
     });
-    
+
     if (parsedData.imageUrl) {
       setImagePreviewUrl(parsedData.imageUrl);
     }
@@ -180,6 +181,10 @@ const SubmitEvent = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO
+        title="Submit Your Event | SoulFlow Australia"
+        description="Share your soulful gathering with the community. Use our AI Event Assistant to auto-fill details from flyers or emails instantly."
+      />
       <div className="mb-12 text-center">
         <h2 className="text-5xl font-black text-foreground font-heading tracking-tight">Submit Your Event</h2>
       </div>
