@@ -18,7 +18,6 @@ const MapPage = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      console.log('[MapPage] Initiating database connection check...');
       setLoading(true);
       
       try {
@@ -35,11 +34,9 @@ const MapPage = () => {
           return;
         }
 
-        console.log(`[MapPage] Database connected. Total events in table: ${count}`);
         setDbStatus('connected');
 
         // Now fetch the specific events for the map
-        console.log('[MapPage] Fetching approved events with addresses...');
         const { data, error } = await supabase
           .from('events')
           .select('*')
@@ -52,7 +49,6 @@ const MapPage = () => {
           console.error('[MapPage] Error fetching filtered events:', error);
           toast.error(`Failed to load event data: ${error.message}`);
         } else {
-          console.log(`[MapPage] Successfully fetched ${data?.length || 0} events for mapping.`);
           setEvents(data || []);
         }
       } catch (err: any) {
@@ -68,7 +64,6 @@ const MapPage = () => {
   }, []);
 
   const handleViewDetails = (event: Event) => {
-    console.log('[MapPage] Viewing details for event:', event.event_name);
     setSelectedEvent(event);
     setIsEventDetailDialogOpen(true);
   };

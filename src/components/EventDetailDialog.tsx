@@ -96,7 +96,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       toast.success('Discount code copied!');
       setTimeout(() => setCopiedCode(false), 2000);
       await supabase.from('discount_code_usage_logs').insert([{
-        event_id: event?.id,
+        event_id: getBaseEventId(event?.id ?? ''),
         user_id: user?.id || null,
         copied_at: new Date().toISOString(),
       }]);
@@ -149,7 +149,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const handleTicketLinkClick = async () => {
     if (!event?.ticket_link) return;
     await supabase.from('event_analytics_logs').insert([{
-      event_id: event.id,
+      event_id: getBaseEventId(event.id),
       user_id: user?.id || null,
       log_type: 'ticket_click',
     }]);

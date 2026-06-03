@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import EventDetailDialog from './EventDetailDialog';
-import { Event } from '@/types/event'; // Import the shared Event type
+import { getBaseEventId } from '@/utils/event-utils';
+import { Event } from '@/types/event';
 
 interface UserEventCardProps {
   event: Event;
@@ -55,8 +56,8 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
   };
 
   const handleDelete = async () => {
-    // Ensure we use the base UUID for deletion, even if the event object is a recurring instance
-    const baseId = event.id.split('-')[0];
+    const baseId = getBaseEventId(event.id);
+    if (baseId.length < 30) return;
 
     const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
     if (error) {

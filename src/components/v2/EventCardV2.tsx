@@ -61,9 +61,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
     dateLabel = format(eventDate, 'EEEE, MMMM d');
   }
 
-  // Duration Label
+  // Duration (used for isMultiDayEvent check above)
   const durationDays = endDate ? differenceInDays(endDate, eventDate) + 1 : 1;
-  const durationLabel = durationDays > 1 ? `${durationDays} days` : null;
 
   // "NEW" Badge Logic (Created in last 24 hours)
   const createdAt = event.created_at ? parseISO(event.created_at) : null;

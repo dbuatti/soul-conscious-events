@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/components/SessionContextProvider';
 import { toast } from 'sonner';
@@ -16,18 +16,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail,
 
   // We are "loading" if the session is loading OR if we need an admin role and the profile is still loading
   const isActuallyLoading = isLoading || (requireAdmin && isProfileLoading);
-
-  useEffect(() => {
-    if (!isActuallyLoading) {
-      console.log('[ProtectedRoute] Access check:', {
-        path: location.pathname,
-        isAuthenticated: !!user,
-        userEmail: user?.email,
-        userRole: profile?.role,
-        requireAdmin
-      });
-    }
-  }, [isActuallyLoading, user, profile, requireAdmin, location.pathname]);
 
   if (isActuallyLoading) {
     return (

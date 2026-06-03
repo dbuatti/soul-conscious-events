@@ -50,7 +50,6 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
       }
 
       const parsedData = response.data;
-      console.log('AI Parsed Data:', parsedData);
       onAiParseComplete(parsedData);
       toast.success('Event details parsed successfully!');
     } catch (error: any) {

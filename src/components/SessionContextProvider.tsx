@@ -29,7 +29,6 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       return;
     }
 
-    console.log('[SessionContext] Fetching profile for user:', userId);
     isFetching.current = true;
     setIsProfileLoading(true);
     lastFetchedUserId.current = userId;
@@ -51,10 +50,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       if (error) {
         console.error('[SessionContext] Error fetching profile:', error);
       } else if (data) {
-        console.log('[SessionContext] Profile fetched successfully. Role:', data.role);
         setProfile(data);
-      } else {
-        console.log('[SessionContext] No profile found for user.');
       }
     } catch (err) {
       console.error('[SessionContext] Profile fetch failed or timed out:', err);
@@ -66,8 +62,6 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   };
 
   useEffect(() => {
-    console.log('[SessionContext] Provider mounted');
-    
     const clearAuthHash = () => {
       if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('error'))) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -76,12 +70,10 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
 
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (initialSession) {
-        console.log('[SessionContext] Initial session found:', initialSession.user.email);
         setSession(initialSession);
         setUser(initialSession.user);
         fetchProfile(initialSession.user.id);
       } else {
-        console.log('[SessionContext] No initial session');
         setIsLoading(false);
       }
     }).catch(err => {
@@ -90,8 +82,6 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log('[SessionContext] Auth event:', event, currentSession?.user?.email || 'No user');
-      
       const newUser = currentSession?.user || null;
       setSession(currentSession);
       setUser(newUser);
@@ -115,7 +105,6 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     });
 
     return () => {
-      console.log('[SessionContext] Provider unmounting');
       subscription.unsubscribe();
     };
   }, [navigate]);
