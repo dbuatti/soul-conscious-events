@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Tag, Globe, Share2, List, CalendarDays, X, Edit, Trash2, Lightbulb, Loader2, PlusCircle, Frown, Filter as FilterIcon, Map } from 'lucide-react'; // Added Map icon
+import { List, CalendarDays, Lightbulb, Frown, Map } from 'lucide-react';
 import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import { eventTypes, australianStates } from '@/lib/constants';
-import FilterOverlay from '@/components/FilterOverlay';
 import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import heroBackground from '@/assets/phil-hero-background.jpeg'; // Corrected import for the image

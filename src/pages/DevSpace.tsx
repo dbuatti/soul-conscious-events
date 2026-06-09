@@ -68,7 +68,7 @@ const DevSpace = () => {
       } else {
         const { userId, email: createdEmail, password: createdPassword } = data;
         toast.success(`Test user created: ${createdEmail} (Password: ${createdPassword})`);
-        console.log(`Created Test User: Email: ${createdEmail}, Password: ${createdPassword}, ID: ${userId}`);
+        console.info(`Created test user: ${createdEmail} (ID: ${userId})`);
       }
     } catch (error: unknown) {
       console.error('Error invoking create-test-user function:', error);

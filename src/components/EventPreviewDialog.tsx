@@ -10,7 +10,6 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, DollarSign, LinkIcon, Info, User, Sparkles, Ticket } from 'lucide-react'; // Changed Tag to Sparkles
 
 interface EventPreviewDialogProps {
   isOpen: boolean;

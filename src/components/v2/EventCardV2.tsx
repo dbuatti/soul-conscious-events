@@ -3,7 +3,7 @@ import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { format, parseISO, isToday, isTomorrow, isSameDay, differenceInHours } from 'date-fns';
-import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight, Copy, Sparkles } from 'lucide-react';
+import { Calendar, Clock, MapPin, DollarSign, Share2, Edit, Trash2, ArrowRight } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
@@ -11,11 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { getBaseEventId } from '@/utils/event-utils';
 
 interface EventCardV2Props {

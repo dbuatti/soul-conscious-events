@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Sparkles, Globe, Share2, Edit, Trash2, Copy, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, User, Share2, Edit, Trash2, Copy, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/components/SessionContextProvider';
 import {

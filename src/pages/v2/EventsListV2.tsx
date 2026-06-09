@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Map as MapIcon, Database, WifiOff, ShieldAlert, Bookmark } from 'lucide-react';
+import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Database, WifiOff, ShieldAlert, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -343,7 +343,7 @@ const EventsListV2 = () => {
                 </Badge>
               ))}
               {filters.price.map(p => (
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
+                <Badge key={p} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
                   {p}
                   <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('price', p)} />
                 </Badge>

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { format, parseISO, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay } from 'date-fns';
+import { parseISO, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay } from 'date-fns';
 import { Event } from '@/types/event';
 import { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
 

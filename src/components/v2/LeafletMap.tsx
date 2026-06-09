@@ -98,7 +98,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
             const parts = event.full_address.split(',');
             if (parts.length > 1) {
               const fallbackAddress = parts.slice(1).join(',').trim();
-              console.log(`[LeafletMap] Retrying with fallback: ${fallbackAddress}`);
+              console.warn(`[LeafletMap] Retrying with fallback: ${fallbackAddress}`);
               await new Promise(resolve => setTimeout(resolve, 1100));
               response = await fetch(
                 `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fallbackAddress)}&limit=1`,

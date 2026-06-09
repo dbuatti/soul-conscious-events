@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { Edit, Trash2, PlusCircle, ExternalLink, Image as ImageIcon, Loader2, Frown, RefreshCw } from 'lucide-react';
+import { Edit, Trash2, PlusCircle, ExternalLink, Loader2, Frown, RefreshCw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
