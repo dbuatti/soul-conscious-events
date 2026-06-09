@@ -1,10 +1,13 @@
-// @ts-ignore: Deno standard library imports are not resolved by the local TS compiler
+// @ts-expect-error: Deno standard library imports are not resolved by the local TS compiler
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-// @ts-ignore: ESM imports are not resolved by the local TS compiler
+// @ts-expect-error: ESM imports are not resolved by the local TS compiler
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
-// Declare Deno global for the local TypeScript compiler
-declare const Deno: any;
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,7 +48,7 @@ serve(async (req: Request) => {
   }
 
   let input_text = '';
-  let parsed_data: any = null;
+  let parsed_data: Record<string, unknown> | null = null;
   let error_message: string | null = null;
 
   try {
@@ -114,7 +117,7 @@ serve(async (req: Request) => {
     }
 
     const geminiData = await geminiResponse.json();
-    let generatedText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const generatedText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (generatedText) {
       const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
@@ -128,27 +131,28 @@ serve(async (req: Request) => {
       status: 200,
     });
 
-  } catch (error: any) {
-    error_message = error.message;
+  } catch (error: unknown) {
+    error_message = error instanceof Error ? error.message : String(error);
     return new Response(JSON.stringify({ error: error_message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
   } finally {
     // Log the attempt with user context
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-    
-    await adminClient
-      .from('ai_parsing_logs')
-      .insert({
-        input_text: input_text,
-        parsed_data: parsed_data,
-        error_message: error_message,
-        // @ts-ignore
-        user_id: user?.id || null
-      });
+    if (user) {
+      const adminClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      await adminClient
+        .from('ai_parsing_logs')
+        .insert({
+          input_text: input_text,
+          parsed_data: parsed_data,
+          error_message: error_message,
+          user_id: user.id,
+        });
+    }
   }
 });

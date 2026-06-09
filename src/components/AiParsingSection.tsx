@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
 
 interface AiParsingSectionProps {
-  onAiParseComplete: (parsedData: any) => void;
+  onAiParseComplete: (parsedData: Record<string, unknown>) => void;
 }
 
 const DEBUG_SAMPLES = [
@@ -52,9 +52,9 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
       const parsedData = response.data;
       onAiParseComplete(parsedData);
       toast.success('Event details parsed successfully!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error parsing event details with AI:', error);
-      toast.error(`Failed to parse event details: ${error.message}`);
+      toast.error(`Failed to parse event details: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsAiParsing(false);
     }

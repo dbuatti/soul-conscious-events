@@ -98,8 +98,8 @@ const AnalyticsDashboard: React.FC = () => {
 
     const aggregatedData: { [key: string]: EventAnalytics } = {};
 
-    logs.forEach((log: any) => {
-      const eventId = log.event_id;
+    logs.forEach((log: Record<string, unknown>) => {
+      const eventId = log.event_id as string;
       const eventName = log.events?.event_name || 'Unknown Event';
 
       if (!aggregatedData[eventId]) {
@@ -119,7 +119,7 @@ const AnalyticsDashboard: React.FC = () => {
       }
     });
 
-    discountLogs.forEach((log: any) => {
+    discountLogs.forEach((log: Record<string, unknown>) => {
       const eventId = log.event_id;
       if (aggregatedData[eventId]) {
         aggregatedData[eventId].total_discount_copies++;
@@ -172,8 +172,8 @@ const AnalyticsDashboard: React.FC = () => {
 
     const aggregatedData: { [key: string]: PageAnalytics } = {};
 
-    logs.forEach((log: any) => {
-      const pagePath = log.page_path;
+    logs.forEach((log: Record<string, unknown>) => {
+      const pagePath = log.page_path as string;
 
       if (!aggregatedData[pagePath]) {
         aggregatedData[pagePath] = {

@@ -89,9 +89,9 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ isOpen, onClose, user, 
       toast.success('User updated successfully!', { id: loadingToastId });
       onUserUpdated();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating user:', error);
-      toast.error(`Failed to update user: ${error.message}`, { id: loadingToastId });
+      toast.error(`Failed to update user: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });
     }
   };
 

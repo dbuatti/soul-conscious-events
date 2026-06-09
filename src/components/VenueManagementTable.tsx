@@ -24,11 +24,11 @@ const venueSchema = z.object({
 type VenueFormValues = z.infer<typeof venueSchema>;
 
 const VenueManagementTable = () => {
-  const [venues, setVenues] = useState<any[]>([]);
+  const [venues, setVenues] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAiParsing, setIsAiParsing] = useState(false);
   const [rawText, setRawText] = useState('');
-  const [editingVenue, setEditingVenue] = useState<any | null>(null);
+  const [editingVenue, setEditingVenue] = useState<Record<string, unknown> | null>(null);
 
   const form = useForm<VenueFormValues>({
     resolver: zodResolver(venueSchema),
@@ -66,14 +66,14 @@ const VenueManagementTable = () => {
       toast.success('Venue added successfully!');
       setRawText('');
       fetchVenues();
-    } catch (err: any) {
-      toast.error('Failed to parse venue: ' + err.message);
+    } catch (err: unknown) {
+      toast.error('Failed to parse venue: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsAiParsing(false);
     }
   };
 
-  const handleEdit = (venue: any) => {
+  const handleEdit = (venue: Record<string, unknown>) => {
     setEditingVenue(venue);
     form.reset({
       name: venue.name || '',

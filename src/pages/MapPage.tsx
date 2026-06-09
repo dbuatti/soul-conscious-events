@@ -51,10 +51,10 @@ const MapPage = () => {
         } else {
           setEvents(data || []);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[MapPage] Unexpected error during fetch:', err);
         setDbStatus('error');
-        toast.error('An unexpected error occurred while connecting to the database.');
+        toast.error(`An unexpected error occurred: ${err instanceof Error ? err.message : String(err)}`);
       } finally {
         setLoading(false);
       }

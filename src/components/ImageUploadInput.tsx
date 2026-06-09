@@ -8,7 +8,7 @@ import { FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { z } from 'zod';
 
 interface ImageUploadInputProps {
-  form: UseFormReturn<any>; // Use any for now, as the parent form schema can vary
+  form: UseFormReturn<Record<string, unknown>>;
   currentImageUrl?: string | null; // Existing image URL from the database
   name: 'imageFile' | 'imageUrl'; // Field names for react-hook-form
 }

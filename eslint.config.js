@@ -26,4 +26,16 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    files: ["**/components/ui/*.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  {
+    files: ["**/SessionContextProvider.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );

@@ -15,7 +15,7 @@ import { Calendar, Clock, MapPin, DollarSign, LinkIcon, Info, User, Sparkles, Ti
 interface EventPreviewDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  previewData: any; // Using 'any' for simplicity, but you could define a more specific type
+  previewData: Record<string, unknown> | null;
   imagePreviewUrl: string | null;
 }
 

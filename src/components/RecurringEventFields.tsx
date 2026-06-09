@@ -12,7 +12,7 @@ import { generateRecurringInstances } from '@/utils/event-utils';
 import { Event } from '@/types/event';
 
 interface RecurringEventFieldsProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<Record<string, unknown>>;
 }
 
 const recurrenceOptions = [

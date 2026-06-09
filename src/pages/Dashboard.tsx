@@ -83,14 +83,16 @@ const Dashboard: React.FC = () => {
       metrics[e.id] = { views: 0, ticketClicks: 0, discountCopies: 0 };
     });
 
-    analyticsLogs.forEach((log: any) => {
-      if (!metrics[log.event_id]) return;
-      if (log.log_type === 'view') metrics[log.event_id].views++;
-      else if (log.log_type === 'ticket_click') metrics[log.event_id].ticketClicks++;
+    analyticsLogs.forEach((log: Record<string, unknown>) => {
+      const eventId = log.event_id as string;
+      if (!metrics[eventId]) return;
+      if (log.log_type === 'view') metrics[eventId].views++;
+      else if (log.log_type === 'ticket_click') metrics[eventId].ticketClicks++;
     });
 
-    discountLogs.forEach((log: any) => {
-      if (metrics[log.event_id]) metrics[log.event_id].discountCopies++;
+    discountLogs.forEach((log: Record<string, unknown>) => {
+      const eventId = log.event_id as string;
+      if (metrics[eventId]) metrics[eventId].discountCopies++;
     });
 
     setMetricsMap(metrics);
@@ -104,7 +106,7 @@ const Dashboard: React.FC = () => {
 
     let thisWeek = 0;
     let lastWeek = 0;
-    analyticsLogs.forEach((log: any) => {
+    analyticsLogs.forEach((log: Record<string, unknown>) => {
       if (log.log_type !== 'view') return;
       const d = parseISO(log.logged_at);
       if (d >= thisWeekStart && d <= thisWeekEnd) thisWeek++;

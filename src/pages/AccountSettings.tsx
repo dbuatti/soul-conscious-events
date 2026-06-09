@@ -103,8 +103,8 @@ const AccountSettings = () => {
 
       if (response.error) throw new Error(response.error.message);
       toast.success('Profile updated!', { id: loadingToastId });
-    } catch (error: any) {
-      toast.error(`Failed to update: ${error.message}`, { id: loadingToastId });
+    } catch (error: unknown) {
+      toast.error(`Failed to update: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });
     }
   };
 

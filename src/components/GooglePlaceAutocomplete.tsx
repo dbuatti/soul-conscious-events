@@ -4,25 +4,12 @@ import { extractAustralianState } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 interface GooglePlaceAutocompleteProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<Record<string, unknown>>;
   name: string;
   addressName: string;
   stateName: string;
   placeholder?: string;
   className?: string;
-}
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'gmp-place-autocomplete': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        placeholder?: string;
-        'component-restrictions'?: string;
-        'fields'?: string;
-        'onGmpPlaceselect'?: (event: CustomEvent<{ place: google.maps.places.PlaceResult }>) => void;
-      };
-    }
-  }
 }
 
 const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
@@ -46,31 +33,31 @@ const GooglePlaceAutocomplete: React.FC<GooglePlaceAutocompleteProps> = ({
     return () => window.removeEventListener('google-maps-api-ready', handleGoogleMapsApiReady);
   }, []);
 
-  const handlePlaceSelect = (event: CustomEvent<{ place: google.maps.places.PlaceResult }>) => {
-    const place = event.detail.place;
-    const placeName = place.name || place.displayName || '';
-    const formattedAddress = place.formatted_address || '';
-    
-    form.setValue(name, placeName, { shouldValidate: true });
-    form.setValue(addressName, formattedAddress, { shouldValidate: true });
-
-    const extractedState = extractAustralianState(formattedAddress);
-    form.setValue(stateName, extractedState || '', { shouldValidate: true });
-  };
-
   useEffect(() => {
+    const handlePlaceSelect = (event: CustomEvent<{ place: google.maps.places.PlaceResult }>) => {
+      const place = event.detail.place;
+      const placeName = place.name || place.displayName || '';
+      const formattedAddress = place.formatted_address || '';
+      
+      form.setValue(name, placeName, { shouldValidate: true });
+      form.setValue(addressName, formattedAddress, { shouldValidate: true });
+
+      const extractedState = extractAustralianState(formattedAddress);
+      form.setValue(stateName, extractedState || '', { shouldValidate: true });
+    };
+
     const element = autocompleteRef.current;
     if (element && mapApiLoaded && window.google?.maps?.places) {
       element.addEventListener('gmp-placeselect', handlePlaceSelect as EventListener);
       return () => element.removeEventListener('gmp-placeselect', handlePlaceSelect as EventListener);
     }
-  }, [mapApiLoaded]);
+  }, [mapApiLoaded, form, name, addressName, stateName]);
 
   const fieldValue = form.watch(name);
   
   useEffect(() => {
     if (autocompleteRef.current) {
-      (autocompleteRef.current as any).value = fieldValue || '';
+      (autocompleteRef.current as unknown as { value: string }).value = fieldValue || '';
     }
   }, [fieldValue]);
 

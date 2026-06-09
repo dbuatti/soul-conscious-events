@@ -101,7 +101,7 @@ const EventsList = () => {
       case 'Today':
         filtered = filtered.filter(event => format(parseISO(event.event_date), 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd'));
         break;
-      case 'This Week':
+      case 'This Week': {
         const startW = startOfWeek(now, { weekStartsOn: 1 });
         const endW = endOfWeek(now, { weekStartsOn: 1 });
         filtered = filtered.filter(event => {
@@ -109,7 +109,8 @@ const EventsList = () => {
           return eventDate >= startW && eventDate <= endW;
         });
         break;
-      case 'This Month':
+      }
+      case 'This Month': {
         const startM = startOfMonth(now);
         const endM = endOfMonth(now);
         filtered = filtered.filter(event => {
@@ -117,6 +118,7 @@ const EventsList = () => {
           return eventDate >= startM && eventDate <= endM;
         });
         break;
+      }
       case 'Past Events':
         filtered = filtered.filter(event => parseISO(event.event_date) < now);
         break;

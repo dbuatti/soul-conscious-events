@@ -181,9 +181,9 @@ const EventEditPage: React.FC = () => {
 
       toast.success(isDuplicating ? 'Event duplicated!' : 'Event updated!', { id: loadingToastId });
       navigate('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error during event submission:', error);
-      toast.error(`An error occurred: ${error.message}`, { id: loadingToastId });
+      toast.error(`An error occurred: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });
     }
   };
 

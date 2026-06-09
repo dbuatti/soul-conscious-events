@@ -41,30 +41,30 @@ export const useEventFilters = (allEvents: Event[]) => {
         case 'Tomorrow': 
           if (!isSameDay(eventDate, tomorrow)) return false; 
           break;
-        case 'This Weekend':
-          // Logic: Find the Friday of the current week. 
-          // If today is Mon-Thu, it's the upcoming Friday.
-          // If today is Fri-Sun, it's the current Friday.
-          const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+        case 'This Weekend': {
+          const dayOfWeek = now.getDay();
           let diffToFriday = (5 - dayOfWeek);
-          if (dayOfWeek === 0) diffToFriday = -2; // Sunday -> Friday was 2 days ago
-          if (dayOfWeek === 6) diffToFriday = -1; // Saturday -> Friday was 1 day ago
+          if (dayOfWeek === 0) diffToFriday = -2;
+          if (dayOfWeek === 6) diffToFriday = -1;
           
           const thisFri = addDays(now, diffToFriday);
           const thisSun = addDays(thisFri, 2);
           
           if (!(eventDate >= thisFri && eventDate <= thisSun)) return false;
           break;
-        case 'This Week':
+        }
+        case 'This Week': {
           const startW = startOfWeek(now, { weekStartsOn: 1 });
           const endW = endOfWeek(now, { weekStartsOn: 1 });
           if (!(eventDate >= startW && eventDate <= endW)) return false;
           break;
-        case 'This Month':
+        }
+        case 'This Month': {
           const startM = startOfMonth(now);
           const endM = endOfMonth(now);
           if (!(eventDate >= startM && eventDate <= endM)) return false;
           break;
+        }
         case 'All Upcoming':
           if (isPast(eventDate) && !isToday(eventDate)) return false;
           break;

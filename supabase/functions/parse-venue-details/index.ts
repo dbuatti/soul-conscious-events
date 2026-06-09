@@ -1,10 +1,13 @@
-// @ts-ignore: Deno standard library imports are not resolved by the local TS compiler
+// @ts-expect-error: Deno standard library imports are not resolved by the local TS compiler
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-// @ts-ignore: ESM imports are not resolved by the local TS compiler
+// @ts-expect-error: ESM imports are not resolved by the local TS compiler
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
-// Declare Deno global for the local TypeScript compiler
-declare const Deno: any;
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -123,9 +126,10 @@ serve(async (req: Request) => {
       status: 200,
     });
 
-  } catch (error: any) {
-    console.error("[parse-venue-details] Unexpected error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[parse-venue-details] Unexpected error:", message);
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });

@@ -25,7 +25,7 @@ interface AiLog {
   id: string;
   created_at: string;
   input_text: string;
-  parsed_data: any;
+  parsed_data: Record<string, unknown> | null;
   error_message: string | null;
 }
 

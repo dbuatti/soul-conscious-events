@@ -92,7 +92,7 @@ const EventsListV2 = () => {
     }
   }, [user]);
 
-  const processEventData = (data: any[]) => {
+  const processEventData = (data: Record<string, unknown>[]) => {
     const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
 
     let combinedEvents: Event[] = [];
@@ -150,9 +150,9 @@ const EventsListV2 = () => {
       if (error) throw error;
       setDbStatus('connected');
       processEventData(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setDbStatus('error');
-      toast.error(`Connection issue: ${err.message}`);
+      toast.error(`Connection issue: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }

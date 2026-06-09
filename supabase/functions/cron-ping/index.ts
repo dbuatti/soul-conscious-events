@@ -1,9 +1,13 @@
-// @ts-ignore: Deno standard library imports are not resolved by the local TS compiler
+// @ts-expect-error: Deno standard library imports are not resolved by the local TS compiler
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-// @ts-ignore: ESM imports are not resolved by the local TS compiler
+// @ts-expect-error: ESM imports are not resolved by the local TS compiler
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
-declare const Deno: any;
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,8 +47,8 @@ serve(async (req: Request) => {
         status: 200 
       }
     )
-  } catch (error: any) {
-    console.error("[cron-ping] Error processing ping:", error.message);
+  } catch (error: unknown) {
+    console.error("[cron-ping] Error processing ping:", error instanceof Error ? error.message : String(error));
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

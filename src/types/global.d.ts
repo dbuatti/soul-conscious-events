@@ -127,7 +127,7 @@ declare namespace google {
     class Marker {
       constructor(opts?: MarkerOptions);
       setMap(map: Map | null): void;
-      addListener(eventName: string, handler: Function): void;
+        addListener(eventName: string, handler: (...args: never[]) => void): void;
       // Add other methods/properties as needed
     }
 
@@ -204,7 +204,7 @@ declare namespace google {
 
       class Autocomplete {
         constructor(inputField: HTMLInputElement, options?: AutocompleteOptions);
-        addListener(eventName: string, handler: Function): void;
+      addListener(eventName: string, handler: (...args: never[]) => void): void;
         getPlace(): PlaceResult;
       }
 

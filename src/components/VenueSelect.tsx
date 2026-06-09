@@ -19,12 +19,12 @@ import {
 import { UseFormReturn } from 'react-hook-form';
 
 interface VenueSelectProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<Record<string, unknown>>;
 }
 
 const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
   const [open, setOpen] = useState(false);
-  const [venues, setVenues] = useState<any[]>([]);
+  const [venues, setVenues] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
 

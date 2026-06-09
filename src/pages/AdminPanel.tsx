@@ -114,9 +114,9 @@ const AdminPanel = () => {
 
       toast.success('User deleted successfully!', { id: loadingToastId });
       fetchUserProfiles();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting user:', error);
-      toast.error(`Failed to delete user: ${error.message}`, { id: loadingToastId });
+      toast.error(`Failed to delete user: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });
     }
   };
 
@@ -132,9 +132,9 @@ const AdminPanel = () => {
       }
 
       toast.success('Confirmation email sent!', { id: loadingToastId });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error resending confirmation:', error);
-      toast.error(`Failed to resend confirmation: ${error.message}`, { id: loadingToastId });
+      toast.error(`Failed to resend confirmation: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });
     }
   };
 
@@ -156,9 +156,9 @@ const AdminPanel = () => {
       }
 
       toast.success('Password reset successfully!', { id: loadingToastId });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error resetting password:', error);
-      toast.error(`Failed to reset password: ${error.message}`, { id: loadingToastId });
+      toast.error(`Failed to reset password: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });
     }
   };
 

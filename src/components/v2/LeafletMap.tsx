@@ -33,6 +33,9 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const initCenterRef = useRef(center);
+  const initZoomRef = useRef(zoom);
+  const initInteractiveRef = useRef(interactive);
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
   const [geocodingStatus, setGeocodingStatus] = useState<{
     total: number;
@@ -141,17 +144,17 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     return () => { isMounted = false; };
   }, [events]);
 
-  // 2. Map Initialization
+  // 2. Map Initialization (intentionally runs once; center/zoom/interactive are captured at init)
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapRef.current, {
-      center: center,
-      zoom: zoom,
-      scrollWheelZoom: interactive,
+      center: initCenterRef.current,
+      zoom: initZoomRef.current,
+      scrollWheelZoom: initInteractiveRef.current,
       zoomControl: false,
-      dragging: interactive,
-      touchZoom: interactive,
+      dragging: initInteractiveRef.current,
+      touchZoom: initInteractiveRef.current,
       attributionControl: false,
     });
 

@@ -71,7 +71,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       }]);
       if (error) console.error('Error logging dialog view:', error);
     })();
-  }, [isOpen, event?.id]);
+  }, [isOpen, event, user?.id]);
 
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);

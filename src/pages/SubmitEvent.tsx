@@ -53,8 +53,8 @@ const SubmitEvent = () => {
     logPageVisit();
   }, [user?.id]);
 
-  const handleAiParseComplete = (response: any) => {
-    const parsedData = response?.parsed_data;
+  const handleAiParseComplete = (response: Record<string, unknown>) => {
+    const parsedData = response?.parsed_data as Record<string, unknown> | undefined;
     if (!parsedData) {
       toast.error('AI parsing returned no data.');
       return;
@@ -175,9 +175,9 @@ const SubmitEvent = () => {
 
       toast.success('Your event has been submitted! It will appear in the listing shortly.', { id: loadingToastId, duration: 5000 });
       navigate('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error during event submission:', error);
-      toast.error(`An unexpected error occurred: ${error.message}`, { id: loadingToastId });
+      toast.error(`An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });
     }
   };
 
