@@ -27,17 +27,19 @@ const Footer = () => {
           </nav>
         </div>
 
-        <div className="space-y-4 flex flex-col items-center md:items-start">
-          <h3 className="text-lg font-semibold text-foreground">Support Us</h3>
-          <a
-            href="https://buymeacoffee.com/danielebuatti"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex flex-col items-center gap-2 hover:text-primary transition-colors"
-          >
-            <img src="/buy-me-a-coffee.png" alt="Buy Me a Coffee" className="h-10 w-auto" />
-            <span className="text-xs">Buy me a coffee</span>
-          </a>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground">Support</h3>
+          <div className="pt-2">
+            <a
+              href="https://buymeacoffee.com/danielebuatti"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-col items-center gap-2 hover:text-primary transition-colors"
+            >
+              <img src="/buy-me-a-coffee.png" alt="Buy Me a Coffee" className="h-10 w-auto" />
+              <span className="text-xs">Buy me a coffee</span>
+            </a>
+          </div>
         </div>
       </div>
 

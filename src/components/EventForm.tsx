@@ -215,6 +215,14 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
+        {/* Cover Image */}
+        <div className="space-y-2">
+          <FormLabel className="flex items-center gap-1">
+            Cover Image
+          </FormLabel>
+          <ImageUploadInput form={form} currentImageUrl={currentImageUrl} name="imageFile" />
+        </div>
+
         {/* Start Date */}
         <FormField
           control={form.control}
@@ -654,8 +662,6 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             </FormItem>
           )}
         />
-
-        <ImageUploadInput form={form} currentImageUrl={currentImageUrl} name="imageFile" />
 
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="outline" onClick={onBack} className="transition-all duration-300 ease-in-out transform hover:scale-105">

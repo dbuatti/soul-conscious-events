@@ -96,6 +96,9 @@ const AdminPanel = () => {
     fetchUserProfiles();
   }, []);
 
+  const handleTabChange = (_value: string) => {
+  };
+
   const handleEditUser = (user: UserProfile) => {
     setSelectedUser(user);
     setIsEditUserDialogOpen(true);
@@ -169,7 +172,7 @@ const AdminPanel = () => {
         Manage contact submissions, events, analytics, and users from here.
       </p>
 
-      <Tabs defaultValue="events" className="w-full">
+      <Tabs defaultValue="events" className="w-full" onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-secondary/50 p-1 rounded-2xl mb-8">
           <TabsTrigger value="events" className="rounded-xl">Events</TabsTrigger>
           <TabsTrigger value="venues" className="rounded-xl flex items-center gap-2">
@@ -190,7 +193,7 @@ const AdminPanel = () => {
         <TabsContent value="venues" className="mt-0">
           <VenueManagementTable />
         </TabsContent>
-        
+
         <TabsContent value="submissions" className="mt-0">
           {loadingSubmissions ? (
             <div className="grid grid-cols-1 gap-6">

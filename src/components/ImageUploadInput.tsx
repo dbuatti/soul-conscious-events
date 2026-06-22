@@ -5,22 +5,49 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { cn } from '@/lib/utils';
 import { z } from 'zod';
+
+const defaultImages = [
+  {
+    url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80',
+    label: 'Forest',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
+    label: 'Beach',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80',
+    label: 'Mountains',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=600&q=80',
+    label: 'Forest Path',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1470071459604-7b8ec44ffd5b?w=600&q=80',
+    label: 'Sunbeams',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80',
+    label: 'Desert',
+  },
+];
 
 interface ImageUploadInputProps {
   form: UseFormReturn<Record<string, unknown>>;
-  currentImageUrl?: string | null; // Existing image URL from the database
-  name: 'imageFile' | 'imageUrl'; // Field names for react-hook-form
+  currentImageUrl?: string | null;
+  name: 'imageFile' | 'imageUrl';
 }
 
 const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageUrl, name }) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(currentImageUrl || null);
-  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>(
+  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url' | 'defaults'>(
     currentImageUrl && !currentImageUrl.includes('supabase.co/storage/v1/object/public/event-images') ? 'url' : 'upload'
   );
 
-  // Effect to update internal state when currentImageUrl prop changes (e.g., on initial load or event data refresh)
   useEffect(() => {
     setImagePreviewUrl(currentImageUrl || null);
     if (currentImageUrl && !currentImageUrl.includes('supabase.co/storage/v1/object/public/event-images')) {
@@ -28,10 +55,18 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
     } else {
       setImageInputMode('upload');
     }
-    setSelectedImage(null); // Clear any pending file selection
-    form.setValue(name, undefined); // Clear form's imageFile field
-    form.setValue('imageUrl', currentImageUrl || ''); // Set form's imageUrl field
+    setSelectedImage(null);
+    form.setValue(name, undefined);
+    form.setValue('imageUrl', currentImageUrl || '');
   }, [currentImageUrl, form, name]);
+
+  const isDefaultImage = (url: string) => defaultImages.some((img) => img.url === url);
+
+  useEffect(() => {
+    if (currentImageUrl && isDefaultImage(currentImageUrl)) {
+      setImageInputMode('defaults');
+    }
+  }, [currentImageUrl]);
 
   const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -39,10 +74,10 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
       setSelectedImage(file);
       setImagePreviewUrl(URL.createObjectURL(file));
       form.setValue('imageFile', file, { shouldValidate: true });
-      form.setValue('imageUrl', '', { shouldValidate: true }); // Clear URL field if file is selected
+      form.setValue('imageUrl', '', { shouldValidate: true });
     } else {
       setSelectedImage(null);
-      setImagePreviewUrl(currentImageUrl || null); // Revert to original if cleared
+      setImagePreviewUrl(currentImageUrl || null);
       form.setValue('imageFile', undefined, { shouldValidate: true });
     }
   };
@@ -52,18 +87,25 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
     form.setValue('imageUrl', url, { shouldValidate: true });
     if (url) {
       setImagePreviewUrl(url);
-      setSelectedImage(null); // Clear file if URL is entered
+      setSelectedImage(null);
       form.setValue('imageFile', undefined, { shouldValidate: true });
     } else {
       setImagePreviewUrl(null);
     }
   };
 
+  const handleSelectDefault = (url: string) => {
+    setImagePreviewUrl(url);
+    setSelectedImage(null);
+    form.setValue('imageFile', undefined, { shouldValidate: true });
+    form.setValue('imageUrl', url, { shouldValidate: true });
+  };
+
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreviewUrl(null);
     form.setValue('imageFile', undefined, { shouldValidate: true });
-    form.setValue('imageUrl', '', { shouldValidate: true }); // Clear the URL field
+    form.setValue('imageUrl', '', { shouldValidate: true });
   };
 
   const displayFileName = () => {
@@ -71,7 +113,7 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
       return selectedImage.name;
     }
     if (currentImageUrl && currentImageUrl.includes('supabase.co/storage/v1/object/public/event-images')) {
-      return currentImageUrl.split('/').pop(); // Extract filename from Supabase URL
+      return currentImageUrl.split('/').pop();
     }
     return 'No file chosen';
   };
@@ -81,11 +123,11 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
       <Tabs
         value={imageInputMode}
         onValueChange={(value) => {
-          setImageInputMode(value as 'upload' | 'url');
+          setImageInputMode(value as 'upload' | 'url' | 'defaults');
           if (value === 'upload') {
             form.setValue('imageUrl', '', { shouldValidate: true });
             setImagePreviewUrl(selectedImage ? URL.createObjectURL(selectedImage) : currentImageUrl || null);
-          } else {
+          } else if (value === 'url') {
             setSelectedImage(null);
             form.setValue('imageFile', undefined, { shouldValidate: true });
             setImagePreviewUrl(form.getValues('imageUrl') || currentImageUrl || null);
@@ -93,9 +135,10 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
         }}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-2 dark:bg-secondary">
-          <TabsTrigger value="upload">Upload Image</TabsTrigger>
-          <TabsTrigger value="url">Image URL</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 dark:bg-secondary">
+          <TabsTrigger value="upload" className="text-xs sm:text-sm">Upload</TabsTrigger>
+          <TabsTrigger value="url" className="text-xs sm:text-sm">URL</TabsTrigger>
+          <TabsTrigger value="defaults" className="text-xs sm:text-sm">Defaults</TabsTrigger>
         </TabsList>
         <TabsContent value="upload" className="mt-4">
           <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-md border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
@@ -138,8 +181,37 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
             )}
           />
         </TabsContent>
+        <TabsContent value="defaults" className="mt-4">
+          <p className="text-xs text-muted-foreground mb-3">Choose a default cover image</p>
+          <div className="grid grid-cols-3 gap-2">
+            {defaultImages.map((img) => (
+              <button
+                key={img.url}
+                type="button"
+                onClick={() => handleSelectDefault(img.url)}
+                className={cn(
+                  "relative rounded-lg overflow-hidden border-2 transition-all duration-200",
+                  "hover:border-primary hover:shadow-md",
+                  imagePreviewUrl === img.url
+                    ? "border-primary ring-2 ring-primary/30"
+                    : "border-border"
+                )}
+              >
+                <img
+                  src={img.url}
+                  alt={img.label}
+                  className="w-full h-16 sm:h-20 object-cover"
+                  loading="lazy"
+                />
+                <span className="block text-[10px] font-medium text-center py-1 text-muted-foreground truncate">
+                  {img.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </TabsContent>
       </Tabs>
-      {imagePreviewUrl && (
+      {imagePreviewUrl && !isDefaultImage(imagePreviewUrl) && (
         <div className="mt-2 flex items-center space-x-2">
           <img src={imagePreviewUrl} alt="Current Event Image" className="h-20 w-20 object-cover rounded-md border border-border shadow-md" />
           <Button
