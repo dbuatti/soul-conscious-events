@@ -211,6 +211,14 @@ const EventEditPage: React.FC = () => {
     );
   }
 
+  if (!currentEvent) {
+    return (
+      <div className="w-full max-w-6xl px-4 text-center py-20">
+        <p className="text-muted-foreground">Event not found.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-6xl px-4">
       <div className="mb-12 text-center">
@@ -226,7 +234,7 @@ const EventEditPage: React.FC = () => {
           isSubmitting={form.formState.isSubmitting}
           onBack={() => navigate(-1)}
           onPreview={handlePreview}
-          currentImageUrl={currentEvent?.image_url}
+          currentImageUrl={currentEvent.image_url}
         />
       </div>
 

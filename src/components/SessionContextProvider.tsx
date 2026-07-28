@@ -27,6 +27,8 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   profileRef.current = profile;
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchProfile = async (userId: string) => {
       if (isFetching.current) return;
 
@@ -49,7 +51,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
           if (error) throw error;
 
           if (data) {
-            setProfile(data);
+            if (!cancelled) setProfile(data);
             break;
           }
         } catch (err) {
@@ -63,7 +65,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       }
 
       isFetching.current = false;
-      setIsProfileLoading(false);
+      if (!cancelled) setIsProfileLoading(false);
     };
 
     const clearAuthHash = () => {
@@ -73,21 +75,27 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     };
 
     supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+      if (cancelled) return;
       if (initialSession) {
         setSession(initialSession);
         setUser(initialSession.user);
+        setIsLoading(false);
         await fetchProfile(initialSession.user.id);
+      } else {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }).catch(err => {
+      if (cancelled) return;
       console.error('[SessionContext] getSession error:', err);
       setIsLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      if (cancelled) return;
       const newUser = currentSession?.user || null;
       setSession(currentSession);
       setUser(newUser);
+      setIsLoading(false);
       
       if (newUser) {
         if (newUser.id !== lastFetchedUserId.current || !profileRef.current) {
@@ -96,10 +104,8 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       } else {
         setProfile(null);
         lastFetchedUserId.current = null;
+        setIsProfileLoading(false);
       }
-
-      setIsLoading(false);
-      setIsProfileLoading(false);
 
       if (currentSession && (window.location.pathname === '/login' || window.location.pathname === '/old/login')) {
         clearAuthHash();
@@ -109,6 +115,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     });
 
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
     };
   }, [navigate]);
