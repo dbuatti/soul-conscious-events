@@ -27,17 +27,19 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   profileRef.current = profile;
 
   useEffect(() => {
-    const fetchProfile = async (userId: string) => {
-      if (isFetching.current || (lastFetchedUserId.current === userId && profileRef.current)) {
-        return;
+    const fetchProfile = async (userId: string, attempt = 1): Promise<boolean> => {
+      if (isFetching.current && attempt === 1) {
+        return false;
       }
 
-      isFetching.current = true;
-      setIsProfileLoading(true);
-      lastFetchedUserId.current = userId;
+      if (attempt === 1) {
+        isFetching.current = true;
+        setIsProfileLoading(true);
+        lastFetchedUserId.current = userId;
+      }
       
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 20000)
       );
 
       try {
@@ -53,15 +55,22 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
           console.error('[SessionContext] Error fetching profile:', error);
         } else if (data) {
           setProfile(data);
+          return true;
         }
       } catch (err) {
-        console.error('[SessionContext] Profile fetch failed or timed out:', err);
-        lastFetchedUserId.current = null;
-      } finally {
-        isFetching.current = false;
-        setIsProfileLoading(false);
-        setIsLoading(false);
+        console.error(`[SessionContext] Profile fetch attempt ${attempt} failed:`, err);
       }
+
+      // Retry up to 2 more times with backoff
+      if (attempt < 3) {
+        const delay = attempt * 2000;
+        await new Promise((r) => setTimeout(r, delay));
+        return fetchProfile(userId, attempt + 1);
+      }
+
+      // All retries exhausted — allow future re-fetches
+      lastFetchedUserId.current = null;
+      return false;
     };
 
     const clearAuthHash = () => {
@@ -70,14 +79,13 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
       if (initialSession) {
         setSession(initialSession);
         setUser(initialSession.user);
-        fetchProfile(initialSession.user.id);
-      } else {
-        setIsLoading(false);
+        await fetchProfile(initialSession.user.id);
       }
+      setIsLoading(false);
     }).catch(err => {
       console.error('[SessionContext] getSession error:', err);
       setIsLoading(false);
@@ -89,15 +97,16 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       setUser(newUser);
       
       if (newUser) {
-        if (newUser.id !== lastFetchedUserId.current) {
+        if (newUser.id !== lastFetchedUserId.current || !profileRef.current) {
           await fetchProfile(newUser.id);
         }
       } else {
         setProfile(null);
         lastFetchedUserId.current = null;
-        setIsLoading(false);
-        setIsProfileLoading(false);
       }
+
+      setIsLoading(false);
+      setIsProfileLoading(false);
 
       if (currentSession && (window.location.pathname === '/login' || window.location.pathname === '/old/login')) {
         clearAuthHash();
