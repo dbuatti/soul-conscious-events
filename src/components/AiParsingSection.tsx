@@ -23,6 +23,10 @@ const DEBUG_SAMPLES = [
   {
     label: "Multi-day",
     text: "Spring Retreat 2024. Nov 10-12. Byron Bay Healing Centre. $550 all inclusive. Contact Sarah at sarah@retreats.com"
+  },
+  {
+    label: "URL + Image Scrape",
+    text: "Journey Symphonic Breathwork. 06:30pm, Wed 5th Aug 2026. The Timber Yard, 351 Plummer St, Port Melbourne VIC 3207. Tickets from $79. Book at https://megatix.com.au/events/journey-symphonic-breathwork"
   }
 ];
 
@@ -68,7 +72,7 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
         </div>
         <div>
           <h3 className="text-xl font-bold text-foreground font-heading">AI Event Assistant</h3>
-          <p className="text-sm text-muted-foreground">Paste flyer text or an email to auto-fill the form.</p>
+          <p className="text-sm text-muted-foreground">Paste flyer text, an email, or an event URL to auto-fill the form (images are scraped automatically).</p>
         </div>
       </div>
       
@@ -76,7 +80,7 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
         <div className="space-y-2">
           <Textarea
             id="ai-text"
-            placeholder="Paste event details here (e.g. 'Yoga at the park this Sunday at 10am...')"
+            placeholder="Paste event details or a URL (e.g. 'Yoga at the park this Sunday at 10am...' or 'https://megatix.com.au/events/my-event')"
             value={aiText}
             onChange={(e) => setAiText(e.target.value)}
             className="min-h-[140px] rounded-2xl bg-background border-none focus-visible:ring-primary text-base p-4"

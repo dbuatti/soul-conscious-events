@@ -64,9 +64,59 @@ serve(async (req: Request) => {
       });
     }
 
-    const currentYear = new Date().getFullYear();
+    // Extract URLs from the text to scrape hero images
+    const urlRegex = /https?:\/\/[^\s"'<>)\]]+/g;
+    const urls = text.match(urlRegex) || [];
 
-    const prompt = `
+    // Scrape hero images from URLs in parallel with Gemini call
+    const scrapeImageFromUrl = async (url: string): Promise<string | null> => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SoulFlow/1.0)' },
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) return null;
+        const html = await response.text();
+
+        // 1. Try og:image meta tag
+        const ogMatch = html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+          || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+        if (ogMatch?.[1]) return ogMatch[1];
+
+        // 2. Try twitter:image meta tag
+        const twMatch = html.match(/<meta\s+[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
+          || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
+        if (twMatch?.[1]) return twMatch[1];
+
+        // 3. Try JSON-LD schema.org image
+        const ldMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
+        if (ldMatch?.[1]) {
+          try {
+            const ld = JSON.parse(ldMatch[1]);
+            if (ld.image) {
+              const img = Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
+              if (img) return img;
+            }
+          } catch { /* ignore parse errors */ }
+        }
+
+        return null;
+      } catch {
+        return null;
+      }
+    };
+
+    // Run image scraping and Gemini call in parallel
+    const [scrapedImages, geminiResult] = await Promise.all([
+      Promise.all(urls.map(scrapeImageFromUrl)),
+      (async () => {
+        const currentYear = new Date().getFullYear();
+
+        const prompt = `
       You are an expert event coordinator for "SoulFlow", a platform for conscious and soulful events in Australia.
       Your task is to parse the provided text (which could be a flyer, email, or social post) and extract event details into a clean JSON object.
 
@@ -104,26 +154,37 @@ serve(async (req: Request) => {
       "${text}"
     `;
 
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
-    });
+        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+          }),
+        });
 
-    if (!geminiResponse.ok) {
-      throw new Error(`Gemini API error: ${geminiResponse.status}`);
-    }
+        if (!geminiResponse.ok) {
+          throw new Error(`Gemini API error: ${geminiResponse.status}`);
+        }
 
-    const geminiData = await geminiResponse.json();
-    const generatedText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+        return await geminiResponse.json();
+      })(),
+    ]);
+
+    // Use the first successfully scraped image
+    const heroImage = scrapedImages.find((img) => img !== null) || null;
+
+    const generatedText = geminiResult?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (generatedText) {
       const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         parsed_data = JSON.parse(jsonMatch[0]);
       }
+    }
+
+    // Attach scraped image URL to parsed data
+    if (parsed_data && heroImage) {
+      parsed_data.imageUrl = heroImage;
     }
 
     return new Response(JSON.stringify({ parsed_data }), {
