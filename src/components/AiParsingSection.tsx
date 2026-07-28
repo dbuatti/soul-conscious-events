@@ -71,8 +71,11 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
           <Sparkles className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-foreground font-heading">AI Event Assistant</h3>
-          <p className="text-sm text-muted-foreground">Paste flyer text, an email, or an event URL to auto-fill the form (images are scraped automatically).</p>
+          <h3 className="text-xl font-bold text-foreground font-heading flex items-center gap-2">
+            AI Event Assistant
+            <span className="text-[10px] font-bold uppercase tracking-widest bg-primary/15 text-primary px-2 py-0.5 rounded-full">Beta</span>
+          </h3>
+          <p className="text-sm text-muted-foreground">Paste an event link (e.g. Megatix, Humanitix, Eventbrite) and we'll auto-fill everything — details, date, venue, and cover image. You can also paste flyer text or an email.</p>
         </div>
       </div>
       
@@ -80,7 +83,7 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
         <div className="space-y-2">
           <Textarea
             id="ai-text"
-            placeholder="Paste event details or a URL (e.g. 'Yoga at the park this Sunday at 10am...' or 'https://megatix.com.au/events/my-event')"
+            placeholder="Paste a ticketing link, flyer text, or email (e.g. 'https://megatix.com.au/events/my-event')"
             value={aiText}
             onChange={(e) => setAiText(e.target.value)}
             className="min-h-[140px] rounded-2xl bg-background border-none focus-visible:ring-primary text-base p-4"

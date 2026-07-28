@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getBaseEventId } from '@/utils/event-utils';
+import EventCardFallback from '@/components/EventCardFallback';
 
 interface EventCardV2Props {
   event: Event;
@@ -111,9 +112,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             loading="lazy" 
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-secondary flex items-center justify-center">
-            <span className="text-primary/30 font-heading text-2xl sm:text-4xl italic font-bold tracking-tighter">SoulFlow</span>
-          </div>
+          <EventCardFallback event={event} />
         )}
         
         <div className="absolute top-3 left-3 sm:top-6 sm:left-6 flex flex-wrap gap-1.5 sm:gap-2 z-20">

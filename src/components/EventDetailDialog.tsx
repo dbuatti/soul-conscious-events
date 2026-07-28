@@ -48,6 +48,7 @@ import { formatPrice, getGoogleCalendarUrl, downloadIcalFile, getBaseEventId } f
 import { useIsMobile } from '@/hooks/use-mobile';
 import { openInMaps } from '@/lib/utils';
 import LeafletMap from '@/components/v2/LeafletMap';
+import EventCardFallback from '@/components/EventCardFallback';
 
 interface EventDetailDialogProps {
   event: Event | null;
@@ -178,8 +179,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
           </div>
         ) : (
-          <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary flex items-center justify-center">
-            <span className="text-primary/30 font-heading text-3xl sm:text-5xl italic font-bold tracking-tighter">SoulFlow</span>
+          <div className="w-full h-32 sm:h-40">
+            <EventCardFallback event={event} />
           </div>
         )}
         

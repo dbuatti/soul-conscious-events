@@ -12,6 +12,46 @@ import { format } from 'date-fns';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
 import SEO from '@/components/SEO';
 
+const defaultCoverImages = [
+  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
+  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80',
+  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=600&q=80',
+  'https://images.unsplash.com/photo-1470071459604-7b8ec44ffd5b?w=600&q=80',
+  'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80',
+];
+
+const scrapeOgImage = async (url: string): Promise<string | null> => {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SoulFlow/1.0)' },
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return null;
+    const html = await response.text();
+
+    const ogMatch = html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+      || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+    if (ogMatch?.[1]) return ogMatch[1];
+
+    const ldMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
+    if (ldMatch?.[1]) {
+      try {
+        const ld = JSON.parse(ldMatch[1]);
+        if (ld.image) {
+          return Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
+        }
+      } catch { /* ignore */ }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 const SubmitEvent = () => {
   const navigate = useNavigate();
   const { user } = useSession();
@@ -143,6 +183,20 @@ const SubmitEvent = () => {
       let formattedTicketLink = values.ticketLink;
       if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
         formattedTicketLink = `https://${formattedTicketLink}`;
+      }
+
+      // Auto-scrape ticket link for image if no cover image is set
+      if (!finalImageUrl && formattedTicketLink) {
+        toast.loading('Looking for event image...', { id: loadingToastId });
+        const scrapedImage = await scrapeOgImage(formattedTicketLink);
+        if (scrapedImage) {
+          finalImageUrl = scrapedImage;
+        }
+      }
+
+      // Final fallback: assign a random default cover image
+      if (!finalImageUrl) {
+        finalImageUrl = defaultCoverImages[Math.floor(Math.random() * defaultCoverImages.length)];
       }
 
       const recurringPattern = values.recurringPattern === 'NONE' ? null : values.recurringPattern;

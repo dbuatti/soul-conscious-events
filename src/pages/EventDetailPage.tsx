@@ -24,6 +24,7 @@ import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { getBaseEventId } from '@/utils/event-utils';
 import SEO from '@/components/SEO';
+import EventCardFallback from '@/components/EventCardFallback';
 
 const formatPrice = (price?: string | null) => {
   if (!price) return 'N/A';
@@ -198,8 +199,8 @@ const EventDetailPage: React.FC = () => {
               <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover" />
             </div>
           ) : (
-            <div className="w-full aspect-video bg-gradient-to-br from-primary/20 via-accent/10 to-secondary rounded-[3rem] flex items-center justify-center">
-              <span className="text-primary/30 font-heading text-6xl italic font-bold tracking-tighter">SoulFlow</span>
+            <div className="w-full aspect-video rounded-[3rem] overflow-hidden">
+              <EventCardFallback event={event} />
             </div>
           )}
 
