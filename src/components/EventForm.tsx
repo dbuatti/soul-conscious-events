@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { format, eachDayOfInterval, parseISO, differenceInDays } from 'date-fns';
-import { CalendarIcon, Loader2, Sparkles } from 'lucide-react';
+import { CalendarIcon, Loader2, Sparkles, ImageIcon } from 'lucide-react';
 import { cn, extractAustralianState } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -216,10 +216,12 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
         />
 
         {/* Cover Image */}
-        <div className="space-y-2">
-          <FormLabel className="flex items-center gap-1">
+        <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5">
+          <FormLabel className="flex items-center gap-2 text-base font-semibold mb-3">
+            <ImageIcon className="h-4 w-4 text-primary" />
             Cover Image
           </FormLabel>
+          <p className="text-xs text-muted-foreground mb-3 -mt-1">Events with images get 3x more views. Add one from your device, a URL, or pick a default below.</p>
           <ImageUploadInput form={form} currentImageUrl={currentImageUrl} name="imageFile" />
         </div>
 
