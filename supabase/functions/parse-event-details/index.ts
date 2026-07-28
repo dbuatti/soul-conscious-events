@@ -68,8 +68,8 @@ serve(async (req: Request) => {
     const urlRegex = /https?:\/\/[^\s"'<>)\]]+/g;
     const urls = text.match(urlRegex) || [];
 
-    // Scrape a URL: extract hero image + clean page text for Gemini
-    const scrapeUrl = async (url: string): Promise<{ image: string | null; pageText: string }> => {
+    // Scrape a URL: extract hero image + clean page text + structured data for Gemini
+    const scrapeUrl = async (url: string): Promise<{ image: string | null; pageText: string; structuredData: string }> => {
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
@@ -79,7 +79,7 @@ serve(async (req: Request) => {
         });
         clearTimeout(timeout);
 
-        if (!response.ok) return { image: null, pageText: '' };
+        if (!response.ok) return { image: null, pageText: '', structuredData: '' };
         const html = await response.text();
 
         // Extract hero image
@@ -93,17 +93,23 @@ serve(async (req: Request) => {
             || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
           if (twMatch?.[1]) {
             image = twMatch[1];
-          } else {
-            const ldMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
-            if (ldMatch?.[1]) {
-              try {
-                const ld = JSON.parse(ldMatch[1]);
-                if (ld.image) {
-                  image = Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
-                }
-              } catch { /* ignore */ }
-            }
           }
+        }
+
+        // Extract ALL JSON-LD blocks (may contain Event schema with price, dates, location)
+        let structuredData = '';
+        const ldMatches = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+        for (const match of ldMatches) {
+          try {
+            const ld = JSON.parse(match[1]);
+            if (ld['@type'] === 'Event' || ld['@type'] === 'MusicEvent' || (Array.isArray(ld['@graph']) && ld['@graph'].some((n: Record<string, string>) => n['@type'] === 'Event'))) {
+              structuredData = JSON.stringify(ld, null, 2);
+              if (!image && ld.image) {
+                image = Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
+              }
+              break;
+            }
+          } catch { /* ignore */ }
         }
 
         // Extract clean text from HTML for Gemini
@@ -121,9 +127,9 @@ serve(async (req: Request) => {
         // Cap at ~4000 chars to stay within token limits
         if (pageText.length > 4000) pageText = pageText.substring(0, 4000);
 
-        return { image, pageText };
+        return { image, pageText, structuredData };
       } catch {
-        return { image: null, pageText: '' };
+        return { image: null, pageText: '', structuredData: '' };
       }
     };
 
@@ -131,15 +137,24 @@ serve(async (req: Request) => {
     const scrapedResults = await Promise.all(urls.map(scrapeUrl));
     const heroImage = scrapedResults.find((r) => r.image !== null)?.image || null;
 
-    // Combine user text with any scraped page content
+    // Combine user text with any scraped page content and structured data
     const scrapedContent = scrapedResults
       .map((r) => r.pageText)
       .filter((t) => t.length > 0)
       .join('\n\n---\n\n');
 
-    const textForGemini = scrapedContent
-      ? `${text}\n\n---\nContent from event page:\n${scrapedContent}`
-      : text;
+    const structuredData = scrapedResults
+      .map((r) => r.structuredData)
+      .filter((t) => t.length > 0)
+      .join('\n\n');
+
+    let textForGemini = text;
+    if (structuredData) {
+      textForGemini += `\n\n---\nStructured data from event page (JSON-LD):\n${structuredData}`;
+    }
+    if (scrapedContent) {
+      textForGemini += `\n\n---\nContent from event page:\n${scrapedContent}`;
+    }
 
     // Step 2: Send enriched text to Gemini
     const currentYear = new Date().getFullYear();
@@ -149,19 +164,28 @@ serve(async (req: Request) => {
       Your task is to parse the provided text (which could be a flyer, email, social post, or scraped web page content) and extract event details into a clean JSON object.
 
       **Extraction Rules:**
-      1. **Dates:** Use 'YYYY-MM-DD' format. Assume the current year is ${currentYear} unless specified.
-      2. **Event Type:** MUST be one of: [Music, Workshop, Meditation, Open Mic, Sound Bath, Foraging, Community Gathering, Other].
+      1. **Dates:** Use 'YYYY-MM-DD' format. Assume the current year is ${currentYear} unless specified. Only set "endDate" if the text explicitly mentions multiple distinct dates (e.g. "Nov 10-12" or "runs from Monday to Wednesday"). A single event on one day should NOT have an endDate.
+      2. **Event Type:** MUST be one of: [Music, Workshop, Meditation, Open Mic, Sound Bath, Foraging, Community Gathering, Other]. Infer from keywords:
+         - Music: live music, concert, gig, symphony, orchestra, band, DJ, vocals, singing
+         - Workshop: workshop, class, training, course, hands-on, learn
+         - Meditation: meditation, mindfulness, breathwork, breath, yoga nidra
+         - Sound Bath: sound bath, sound healing, gong, singing bowls
+         - Open Mic: open mic, open stage, spoken word, poetry slam
+         - Foraging: foraging, wild food, bush tucker, mushroom walk
+         - Community Gathering: market, fair, gathering, ceremony, circle, retreat
+         - Other: anything that doesn't fit above
       3. **State:** MUST be one of: [ACT, NSW, NT, QLD, SA, TAS, VIC, WA]. Look for state names or abbreviations in the text.
       4. **Full Address:** Format this for optimal geocoding by OpenStreetMap. It should ideally look like: "Street Number Street Name, Suburb, STATE Postcode, Australia". If only a suburb is mentioned, use "Suburb, STATE, Australia".
       5. **Description:** Keep the original paragraph structure. Extract the main event description — ignore navigation, headers, footers, and boilerplate.
-      6. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
-      7. **Google Maps:** Look for links starting with "maps.app.goo.gl" or "google.com/maps".
+      6. **Price:** Look for dollar amounts ($XX), "from $X", price ranges, "Free", "by donation", "Gold coin", "Koha". Use the lowest available ticket price. Format as a string like "$79", "Free", "$15-25 sliding scale", "Gold coin donation".
+      7. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
+      8. **Google Maps:** Look for links starting with "maps.app.goo.gl" or "google.com/maps".
 
       **Expected JSON Format:**
       {
         "eventName": "string",
         "eventDate": "YYYY-MM-DD",
-        "endDate": "YYYY-MM-DD (optional)",
+        "endDate": "YYYY-MM-DD (optional, only for multi-day events)",
         "eventTime": "string",
         "placeName": "string",
         "fullAddress": "string",
