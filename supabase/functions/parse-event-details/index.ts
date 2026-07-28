@@ -64,68 +64,96 @@ serve(async (req: Request) => {
       });
     }
 
-    // Extract URLs from the text to scrape hero images
+    // Extract URLs from the text to scrape page content and hero images
     const urlRegex = /https?:\/\/[^\s"'<>)\]]+/g;
     const urls = text.match(urlRegex) || [];
 
-    // Scrape hero images from URLs in parallel with Gemini call
-    const scrapeImageFromUrl = async (url: string): Promise<string | null> => {
+    // Scrape a URL: extract hero image + clean page text for Gemini
+    const scrapeUrl = async (url: string): Promise<{ image: string | null; pageText: string }> => {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
+        const timeout = setTimeout(() => controller.abort(), 10000);
         const response = await fetch(url, {
           signal: controller.signal,
           headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SoulFlow/1.0)' },
         });
         clearTimeout(timeout);
 
-        if (!response.ok) return null;
+        if (!response.ok) return { image: null, pageText: '' };
         const html = await response.text();
 
-        // 1. Try og:image meta tag
+        // Extract hero image
+        let image: string | null = null;
         const ogMatch = html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
           || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-        if (ogMatch?.[1]) return ogMatch[1];
-
-        // 2. Try twitter:image meta tag
-        const twMatch = html.match(/<meta\s+[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
-          || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
-        if (twMatch?.[1]) return twMatch[1];
-
-        // 3. Try JSON-LD schema.org image
-        const ldMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
-        if (ldMatch?.[1]) {
-          try {
-            const ld = JSON.parse(ldMatch[1]);
-            if (ld.image) {
-              const img = Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
-              if (img) return img;
+        if (ogMatch?.[1]) {
+          image = ogMatch[1];
+        } else {
+          const twMatch = html.match(/<meta\s+[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
+            || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
+          if (twMatch?.[1]) {
+            image = twMatch[1];
+          } else {
+            const ldMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
+            if (ldMatch?.[1]) {
+              try {
+                const ld = JSON.parse(ldMatch[1]);
+                if (ld.image) {
+                  image = Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
+                }
+              } catch { /* ignore */ }
             }
-          } catch { /* ignore parse errors */ }
+          }
         }
 
-        return null;
+        // Extract clean text from HTML for Gemini
+        let pageText = html
+          .replace(/<script[\s\S]*?<\/script>/gi, '')
+          .replace(/<style[\s\S]*?<\/style>/gi, '')
+          .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+          .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+          .replace(/<header[\s\S]*?<\/header>/gi, '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/&[a-z]+;/gi, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        // Cap at ~4000 chars to stay within token limits
+        if (pageText.length > 4000) pageText = pageText.substring(0, 4000);
+
+        return { image, pageText };
       } catch {
-        return null;
+        return { image: null, pageText: '' };
       }
     };
 
-    // Run image scraping and Gemini call in parallel
-    const [scrapedImages, geminiResult] = await Promise.all([
-      Promise.all(urls.map(scrapeImageFromUrl)),
-      (async () => {
-        const currentYear = new Date().getFullYear();
+    // Step 1: Scrape all URLs first (fast, in parallel)
+    const scrapedResults = await Promise.all(urls.map(scrapeUrl));
+    const heroImage = scrapedResults.find((r) => r.image !== null)?.image || null;
 
-        const prompt = `
+    // Combine user text with any scraped page content
+    const scrapedContent = scrapedResults
+      .map((r) => r.pageText)
+      .filter((t) => t.length > 0)
+      .join('\n\n---\n\n');
+
+    const textForGemini = scrapedContent
+      ? `${text}\n\n---\nContent from event page:\n${scrapedContent}`
+      : text;
+
+    // Step 2: Send enriched text to Gemini
+    const currentYear = new Date().getFullYear();
+
+    const prompt = `
       You are an expert event coordinator for "SoulFlow", a platform for conscious and soulful events in Australia.
-      Your task is to parse the provided text (which could be a flyer, email, or social post) and extract event details into a clean JSON object.
+      Your task is to parse the provided text (which could be a flyer, email, social post, or scraped web page content) and extract event details into a clean JSON object.
 
       **Extraction Rules:**
       1. **Dates:** Use 'YYYY-MM-DD' format. Assume the current year is ${currentYear} unless specified.
       2. **Event Type:** MUST be one of: [Music, Workshop, Meditation, Open Mic, Sound Bath, Foraging, Community Gathering, Other].
       3. **State:** MUST be one of: [ACT, NSW, NT, QLD, SA, TAS, VIC, WA]. Look for state names or abbreviations in the text.
       4. **Full Address:** Format this for optimal geocoding by OpenStreetMap. It should ideally look like: "Street Number Street Name, Suburb, STATE Postcode, Australia". If only a suburb is mentioned, use "Suburb, STATE, Australia".
-      5. **Description:** Keep the original paragraph structure.
+      5. **Description:** Keep the original paragraph structure. Extract the main event description — ignore navigation, headers, footers, and boilerplate.
       6. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
       7. **Google Maps:** Look for links starting with "maps.app.goo.gl" or "google.com/maps".
 
@@ -151,28 +179,22 @@ serve(async (req: Request) => {
       Return ONLY the JSON object. No markdown, no explanations.
 
       Text to parse:
-      "${text}"
+      "${textForGemini}"
     `;
 
-        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-          }),
-        });
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+      }),
+    });
 
-        if (!geminiResponse.ok) {
-          throw new Error(`Gemini API error: ${geminiResponse.status}`);
-        }
+    if (!geminiResponse.ok) {
+      throw new Error(`Gemini API error: ${geminiResponse.status}`);
+    }
 
-        return await geminiResponse.json();
-      })(),
-    ]);
-
-    // Use the first successfully scraped image
-    const heroImage = scrapedImages.find((img) => img !== null) || null;
-
+    const geminiResult = await geminiResponse.json();
     const generatedText = geminiResult?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (generatedText) {
