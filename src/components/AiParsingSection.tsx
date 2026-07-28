@@ -65,49 +65,66 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
   };
 
   return (
-    <div className="mb-8 p-6 sm:p-8 bg-secondary/30 border border-border/50 rounded-[2.5rem] shadow-xl">
-      <div className="flex items-center mb-4">
-        <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center mr-4">
-          <Sparkles className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-xl font-bold text-foreground font-heading flex items-center gap-2">
-            AI Event Assistant
-            <span className="text-[10px] font-bold uppercase tracking-widest bg-primary/15 text-primary px-2 py-0.5 rounded-full">Beta</span>
-          </h3>
-          <p className="text-sm text-muted-foreground">Paste an event link (e.g. Megatix, Humanitix, Eventbrite) and we'll auto-fill everything — details, date, venue, and cover image. You can also paste flyer text or an email.</p>
-        </div>
-      </div>
+    <div className="mb-8 relative overflow-hidden rounded-[2.5rem] shadow-xl border border-primary/20">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/20" />
+      <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/5" />
+      <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-accent/10" />
       
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Textarea
-            id="ai-text"
-            placeholder="Paste a ticketing link, flyer text, or email (e.g. 'https://megatix.com.au/events/my-event')"
-            value={aiText}
-            onChange={(e) => setAiText(e.target.value)}
-            className="min-h-[140px] rounded-2xl bg-background border-none focus-visible:ring-primary text-base p-4"
-          />
+      <div className="relative p-6 sm:p-8">
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-5">
+          <div className="h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-xl sm:text-2xl font-black text-foreground font-heading flex items-center gap-2">
+              AI Event Assistant
+              <span className="text-[9px] font-black uppercase tracking-widest bg-primary text-white px-2.5 py-1 rounded-full">Beta</span>
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">Paste a ticketing link and we'll fill in everything for you.</p>
+          </div>
         </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            onClick={() => handleAiParse()}
-            disabled={isAiParsing}
-            className="flex-grow bg-primary hover:bg-primary/80 text-primary-foreground h-12 rounded-xl font-bold shadow-lg transition-all transform hover:scale-[1.02]"
-          >
-            {isAiParsing ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Parsing...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-5 w-5" />
-                Auto-Fill Form
-              </>
-            )}
-          </Button>
+
+        {/* URL hint callout */}
+        <div className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-4 py-3 mb-5">
+          <div className="text-2xl">🔗</div>
+          <div>
+            <p className="text-sm font-bold text-foreground">Just paste a link!</p>
+            <p className="text-xs text-muted-foreground">Works with Megatix, Humanitix, Eventbrite, and most event pages. We'll grab the event details, date, venue, and cover image automatically.</p>
+          </div>
+        </div>
+      
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Textarea
+              id="ai-text"
+              placeholder="Paste a ticketing link here... (e.g. https://megatix.com.au/events/my-event)"
+              value={aiText}
+              onChange={(e) => setAiText(e.target.value)}
+              className="min-h-[100px] rounded-2xl bg-background/80 border border-border/50 focus-visible:ring-primary text-base p-4 placeholder:text-muted-foreground/50"
+            />
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={() => handleAiParse()}
+              disabled={isAiParsing}
+              className="flex-grow bg-primary hover:bg-primary/80 text-primary-foreground h-12 rounded-xl font-bold shadow-lg transition-all transform hover:scale-[1.02]"
+            >
+              {isAiParsing ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Parsing...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Auto-Fill Form
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {isAdmin && (

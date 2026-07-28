@@ -27,50 +27,43 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   profileRef.current = profile;
 
   useEffect(() => {
-    const fetchProfile = async (userId: string, attempt = 1): Promise<boolean> => {
-      if (isFetching.current && attempt === 1) {
-        return false;
-      }
+    const fetchProfile = async (userId: string) => {
+      if (isFetching.current) return;
 
-      if (attempt === 1) {
-        isFetching.current = true;
-        setIsProfileLoading(true);
-        lastFetchedUserId.current = userId;
-      }
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 20000)
-      );
+      isFetching.current = true;
+      setIsProfileLoading(true);
+      lastFetchedUserId.current = userId;
 
-      try {
-        const fetchPromise = supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
+      const maxAttempts = 3;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Profile fetch timeout')), 15000)
+          );
 
-        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as { data: Record<string, unknown> | null; error: unknown };
-        
-        if (error) {
-          console.error('[SessionContext] Error fetching profile:', error);
-        } else if (data) {
-          setProfile(data);
-          return true;
+          const { data, error } = await Promise.race([
+            supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+            timeoutPromise,
+          ]) as { data: Record<string, unknown> | null; error: unknown };
+
+          if (error) throw error;
+
+          if (data) {
+            setProfile(data);
+            break;
+          }
+        } catch (err) {
+          console.error(`[SessionContext] Profile fetch attempt ${attempt}/${maxAttempts} failed:`, err);
+          if (attempt < maxAttempts) {
+            await new Promise((r) => setTimeout(r, attempt * 2000));
+          } else {
+            lastFetchedUserId.current = null;
+          }
         }
-      } catch (err) {
-        console.error(`[SessionContext] Profile fetch attempt ${attempt} failed:`, err);
       }
 
-      // Retry up to 2 more times with backoff
-      if (attempt < 3) {
-        const delay = attempt * 2000;
-        await new Promise((r) => setTimeout(r, delay));
-        return fetchProfile(userId, attempt + 1);
-      }
-
-      // All retries exhausted — allow future re-fetches
-      lastFetchedUserId.current = null;
-      return false;
+      isFetching.current = false;
+      setIsProfileLoading(false);
     };
 
     const clearAuthHash = () => {
