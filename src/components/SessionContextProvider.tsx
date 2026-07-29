@@ -30,42 +30,30 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     let cancelled = false;
 
     const fetchProfile = async (userId: string) => {
-      if (isFetching.current) return;
-
+      if (isFetching.current || cancelled) return;
       isFetching.current = true;
       setIsProfileLoading(true);
       lastFetchedUserId.current = userId;
 
-      const maxAttempts = 3;
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Profile fetch timeout')), 15000)
-          );
+      try {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 8000)
+        );
 
-          const { data, error } = await Promise.race([
-            supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-            timeoutPromise,
-          ]) as { data: Record<string, unknown> | null; error: unknown };
+        const { data, error } = await Promise.race([
+          supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+          timeoutPromise,
+        ]) as { data: Record<string, unknown> | null; error: unknown };
 
-          if (error) throw error;
-
-          if (data) {
-            if (!cancelled) setProfile(data);
-            break;
-          }
-        } catch (err) {
-          console.error(`[SessionContext] Profile fetch attempt ${attempt}/${maxAttempts} failed:`, err);
-          if (attempt < maxAttempts) {
-            await new Promise((r) => setTimeout(r, attempt * 2000));
-          } else {
-            lastFetchedUserId.current = null;
-          }
-        }
+        if (error) throw error;
+        if (data && !cancelled) setProfile(data);
+      } catch (err) {
+        console.error('[SessionContext] Profile fetch failed:', err);
+        lastFetchedUserId.current = null;
+      } finally {
+        isFetching.current = false;
+        if (!cancelled) setIsProfileLoading(false);
       }
-
-      isFetching.current = false;
-      if (!cancelled) setIsProfileLoading(false);
     };
 
     const clearAuthHash = () => {
@@ -74,32 +62,30 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       }
     };
 
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (cancelled) return;
       if (initialSession) {
         setSession(initialSession);
         setUser(initialSession.user);
-        setIsLoading(false);
-        await fetchProfile(initialSession.user.id);
-      } else {
-        setIsLoading(false);
+        fetchProfile(initialSession.user.id);
       }
+      setIsLoading(false);
     }).catch(err => {
       if (cancelled) return;
       console.error('[SessionContext] getSession error:', err);
       setIsLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
       if (cancelled) return;
       const newUser = currentSession?.user || null;
       setSession(currentSession);
       setUser(newUser);
       setIsLoading(false);
-      
+
       if (newUser) {
         if (newUser.id !== lastFetchedUserId.current || !profileRef.current) {
-          await fetchProfile(newUser.id);
+          fetchProfile(newUser.id);
         }
       } else {
         setProfile(null);
