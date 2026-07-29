@@ -121,11 +121,18 @@ serve(async (req: Request) => {
           .replace(/<header[\s\S]*?<\/header>/gi, '')
           .replace(/<[^>]+>/g, ' ')
           .replace(/&[a-z]+;/gi, ' ')
+          .replace(/Skip to (Content|Tickets|Footer)/gi, '')
+          .replace(/Powered by.*?(?=\s{2}|$)/gi, '')
+          .replace(/Tickets for good[^.]*\./gi, '')
+          .replace(/Get tickets.*?(?=\s{2}|$)/gi, '')
+          .replace(/Follow|View profile|Contact host|Share\b/gi, '')
+          .replace(/Add to calendar|Get directions|Refund policy|Footer information/gi, '')
+          .replace(/Your privacy choices|Privacy policy|Terms of use|Terms and conditions/gi, '')
           .replace(/\s+/g, ' ')
           .trim();
 
-        // Cap at ~4000 chars to stay within token limits
-        if (pageText.length > 4000) pageText = pageText.substring(0, 4000);
+        // Cap at ~6000 chars to stay within token limits
+        if (pageText.length > 6000) pageText = pageText.substring(0, 6000);
 
         return { image, pageText, structuredData };
       } catch {
@@ -163,23 +170,40 @@ serve(async (req: Request) => {
       You are an expert event coordinator for "SoulFlow", a platform for conscious and soulful events in Australia.
       Your task is to parse the provided text (which could be a flyer, email, social post, or scraped web page content) and extract event details into a clean JSON object.
 
+      The input may include:
+      - The user's raw text (flyer, email, URL)
+      - Structured data (JSON-LD) from the event page — this is the most accurate source for price, dates, and location
+      - Scraped page content
+
+      **CONSULT THE STRUCTURED DATA FIRST** for fields like price, date, location, and name before falling back to page text.
+
       **Extraction Rules:**
-      1. **Dates:** Use 'YYYY-MM-DD' format. Assume the current year is ${currentYear} unless specified. Only set "endDate" if the text explicitly mentions multiple distinct dates (e.g. "Nov 10-12" or "runs from Monday to Wednesday"). A single event on one day should NOT have an endDate.
-      2. **Event Type:** MUST be one of: [Music, Workshop, Meditation, Open Mic, Sound Bath, Foraging, Community Gathering, Other]. Infer from keywords:
-         - Music: live music, concert, gig, symphony, orchestra, band, DJ, vocals, singing
-         - Workshop: workshop, class, training, course, hands-on, learn
-         - Meditation: meditation, mindfulness, breathwork, breath, yoga nidra
-         - Sound Bath: sound bath, sound healing, gong, singing bowls
-         - Open Mic: open mic, open stage, spoken word, poetry slam
-         - Foraging: foraging, wild food, bush tucker, mushroom walk
-         - Community Gathering: market, fair, gathering, ceremony, circle, retreat
-         - Other: anything that doesn't fit above
-      3. **State:** MUST be one of: [ACT, NSW, NT, QLD, SA, TAS, VIC, WA]. Look for state names or abbreviations in the text.
-      4. **Full Address:** Format this for optimal geocoding by OpenStreetMap. It should ideally look like: "Street Number Street Name, Suburb, STATE Postcode, Australia". If only a suburb is mentioned, use "Suburb, STATE, Australia".
-      5. **Description:** Keep the original paragraph structure. Extract the main event description — ignore navigation, headers, footers, and boilerplate.
-      6. **Price:** Look for dollar amounts ($XX), "from $X", price ranges, "Free", "by donation", "Gold coin", "Koha". Use the lowest available ticket price. Format as a string like "$79", "Free", "$15-25 sliding scale", "Gold coin donation".
-      7. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
-      8. **Google Maps:** Look for links starting with "maps.app.goo.gl" or "google.com/maps".
+      1. **Dates:** Use 'YYYY-MM-DD' format. Assume the current year is ${currentYear} unless specified. Set "endDate" only for multi-day events (explicit date range like "Aug 8-9" or "Saturday to Sunday"). Check the structured data's startDate/endDate fields.
+
+      2. **Event Type:** MUST be one of: [Music, Workshop, Meditation, Open Mic, Sound Bath, Foraging, Community Gathering, Other].
+         Use thorough keyword matching to infer the best fit:
+         - **Music** — keywords: live music, concert, gig, symphony, orchestra, band, DJ, vocals, singer, singing, performance, instrumental, acoustic, rhythm, blues, jazz, folk, choir, classical, jam, open deck, dance music
+         - **Workshop** — keywords: workshop, class, training, course, masterclass, intensive, learn how, educational, seminar, lecture, tutorial, certification, program, session (when structured as learning)
+         - **Meditation** — keywords: meditation, mindfulness, breathwork, breath, yoga nidra, pranayama, stillness, silent retreat, guided meditation, zen, vipassana, mantra, chakra, healing meditation, inner peace, conscious, presence
+         - **Sound Bath** — keywords: sound bath, sound healing, gong, singing bowls, crystal bowls, sound journey, soundscape, vibrational, harmonic, alchemy, frequency
+         - **Open Mic** — keywords: open mic, open stage, open deck, spoken word, poetry slam, rap battle, showcase
+         - **Foraging** — keywords: foraging, wild food, bush tucker, mushroom walk, wild plants, native food, bushcraft
+         - **Community Gathering** — keywords: retreat, festival, ceremony, circle, market, fair, gathering, community, meetup, network, celebration, fundraiser, charity, cultural, festival, group, social, kirtan, satsang, puja, ritual
+         - **Other** — anything that doesn't fit above
+
+      3. **State:** MUST be one of: [ACT, NSW, NT, QLD, SA, TAS, VIC, WA]. Look for state names or abbreviations in the text. Check the structured data's addressRegion.
+
+      4. **Full Address:** Format this for optimal geocoding by OpenStreetMap. It should ideally look like: "Street Number Street Name, Suburb, STATE Postcode, Australia". If only a suburb is mentioned, use "Suburb, STATE, Australia". Use address data from JSON-LD if available.
+
+      5. **Description:** Extract the main event description — the actual content about what the event is. Remove navigation text, headers, footers, cookie notices, sponsor logos, and boilerplate. Keep paragraph structure.
+
+      6. **Price:** Look for dollar amounts in JSON-LD (offers.price) or in the page text. Use the lowest available ticket price. Format as "$75", "Free", "Donation", "$50-$100". Extract from structured data's offers section when present.
+
+      7. **Organizer Contact:** Look for organizer/host name, email, or contact info. Combine with the platform name if known (e.g. "Nanda Das (via Humanitix)", "Book via eventbrite.com.au").
+
+      8. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
+
+      9. **Google Maps Link:** If a Google Maps link is present in the text, use it. If the full address is available but no maps link, generate one using: "https://maps.google.com/maps?q=<encoded_address>".
 
       **Expected JSON Format:**
       {
