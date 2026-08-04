@@ -120,7 +120,7 @@ serve(async (req: Request) => {
           .replace(/<footer[\s\S]*?<\/footer>/gi, '')
           .replace(/<header[\s\S]*?<\/header>/gi, '')
           .replace(/<[^>]+>/g, ' ')
-          .replace(/&[a-z]+;/gi, ' ')
+          .replace(/&[a-z]+;|&#\d+;|&#x[0-9a-f]+;/gi, ' ')
           .replace(/Skip to (Content|Tickets|Footer)/gi, '')
           .replace(/Powered by.*?(?=\s{2}|$)/gi, '')
           .replace(/Tickets for good[^.]*\./gi, '')
