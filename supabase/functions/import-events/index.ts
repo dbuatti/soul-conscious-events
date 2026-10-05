@@ -248,6 +248,11 @@ serve(async (req) => {
 
   const db = createAdminClient();
   const body = await req.json().catch(() => ({}));
+  // The workflow states which kind of run this is; otherwise fall back to
+  // guessing from the caller. Manual runs were being recorded as scheduled ones.
+  if (body.triggered_by === 'manual' || body.triggered_by === 'schedule') {
+    triggeredBy = body.triggered_by;
+  }
   const sourceId: string | undefined = typeof body?.sourceId === 'string' ? body.sourceId : undefined;
 
   let query = db.from('event_sources').select('id, url, label').order('last_run_at', { ascending: true, nullsFirst: true });
@@ -366,19 +371,27 @@ serve(async (req) => {
     let added = 0;
     if (fresh.length) {
       const now = new Date().toISOString();
-      const { error } = await db.from('events').insert(fresh.map((e) => ({
-        ...e,
-        source_id: source.id,
-        imported_at: now,
-        approval_status: 'pending',
-        is_deleted: false,
-        user_id: null,
-      })));
+      // Ask for the rows back so the count comes from the database rather than
+      // from what we hoped to write. A silent no-op insert would otherwise be
+      // reported as a success and leave the admin staring at an empty inbox.
+      const { data: inserted, error } = await db.from('events')
+        .insert(fresh.map((e) => ({
+          ...e,
+          source_id: source.id,
+          imported_at: now,
+          approval_status: 'pending',
+          is_deleted: false,
+          user_id: null,
+        })))
+        .select('id');
       if (error) {
         status = 'error';
         notes.push(`saving failed: ${error.message}`);
       } else {
-        added = fresh.length;
+        added = inserted?.length ?? 0;
+        if (added < fresh.length) {
+          notes.push(`only ${added} of ${fresh.length} were saved`);
+        }
       }
     }
 

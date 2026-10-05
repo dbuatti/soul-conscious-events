@@ -61,7 +61,7 @@ jobs:
             "https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/import-events" \
             -H "Authorization: Bearer $KEY" \
             -H "Content-Type: application/json" \
-            -d '{}')
+            -d "{\"triggered_by\":\"${{ github.event_name == 'schedule' && 'schedule' || 'manual' }}\"}")
           STATUS=$(tail -n1 <<<"$RESPONSE")
           BODY=$(sed '$d' <<<"$RESPONSE")
 
