@@ -154,6 +154,7 @@ serve(async (req) => {
   let limit = DEFAULT_BATCH;
   let retry = false;
   let wantProbe = false;
+  let probeQuery = '';
   try {
     const body = await req.json();
     if (typeof body?.limit === 'number' && body.limit > 0) {
@@ -161,12 +162,16 @@ serve(async (req) => {
     }
     retry = body?.retry === true;
     wantProbe = body?.probe === true;
+    if (typeof body?.query === 'string') probeQuery = body.query;
   } catch {
     // No body is fine; the defaults apply.
   }
 
+  // The query rides in the body rather than a custom header: Access-Control-
+  // Allow-Headers is fixed in _shared/auth.ts and a header the preflight does
+  // not allow blocks the request before the function is ever invoked.
   if (wantProbe) {
-    return jsonResponse(await probe(req.headers.get('x-probe-query') || 'Fortress Melbourne, VIC'));
+    return jsonResponse(await probe(probeQuery || 'Fortress Melbourne, VIC'));
   }
 
   // Addresses that were fixed after the fact are worth another look.
