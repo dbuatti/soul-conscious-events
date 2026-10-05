@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {
   classifyEventType, detectState, eventsFromHtml, eventsFromIcs, eventUrlsFromSitemap,
   findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, extractJsonLdNodes,
-  looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, parseSitemap, priceFromOffers,
+  looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, orderSitemapsByLikelihood,
+  parseSitemap, priceFromOffers,
   robotsAllows, sitemapsFromRobots,
 } from './event-import.ts';
 
@@ -252,6 +253,17 @@ Deno.test('recognises event paths on sites it has never seen', () => {
   assert.equal(looksLikeEventPath('/whats-on'), false);
 });
 
+Deno.test('ignores faceted browse pages that hide a location slug first', () => {
+  // Humanitix and similar sites nest filters under a location slug, so the
+  // facet word is never the immediate parent. Matching the whole path prefix
+  // would treat /events/<location>/foodanddrink as an event.
+  assert.equal(looksLikeEventPath('/au/events/au--melbourne--3000/foodanddrink'), false);
+  assert.equal(looksLikeEventPath('/au/events/au--melbourne--3000/trending--music'), false);
+  assert.equal(looksLikeEventPath('/au/events/au--melbourne--3000/foryou'), false);
+  // The location page itself is still a valid candidate.
+  assert.equal(looksLikeEventPath('/au/events/au--vic--melbourne'), true);
+});
+
 Deno.test('ignores faceted, utility and non-event paths', () => {
   for (const path of [
     '/events/category/yoga',           // facet, not a single event
@@ -366,6 +378,22 @@ Deno.test('parses a sitemap index into its child sitemaps', () => {
   assert.deepEqual(urls, [
     'https://mysite.com.au/sitemaps/posts.xml',
     'https://mysite.com.au/sitemaps/events-1.xml',
+  ]);
+});
+
+Deno.test('reaches event sitemaps even when the index lists other maps first', () => {
+  const urls = [
+    'https://mysite.com.au/page-sitemap.xml',
+    'https://mysite.com.au/tenant-sitemap.xml',
+    'https://mysite.com.au/product-sitemap.xml',
+    'https://mysite.com.au/event-sitemap.xml',
+    'https://mysite.com.au/news-sitemap.xml',
+  ];
+  // With a budget of four sitemaps, "event" has to come first to be reachable.
+  assert.deepEqual(orderSitemapsByLikelihood(urls).slice(0, 3), [
+    'https://mysite.com.au/event-sitemap.xml',
+    'https://mysite.com.au/page-sitemap.xml',
+    'https://mysite.com.au/tenant-sitemap.xml',
   ]);
 });
 

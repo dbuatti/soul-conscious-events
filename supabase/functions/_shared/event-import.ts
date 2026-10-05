@@ -155,18 +155,21 @@ const EVENT_TOKEN_RE = new RegExp(
 
 /**
  * Site-agnostic test for "this URL probably describes one event": an
- * event-ish section with a slug after it, and no facet word in between.
- * Purely structural, so sites we've never seen still match.
+ * event-ish section with a slug hanging directly off it. Purely structural, so
+ * sites we've never seen still match.
+ *
+ * The slug must be the section's *immediate* child. Checking the whole prefix
+ * instead would accept faceted browse pages like
+ * /au/events/au--melbourne--3000/foodanddrink, where a location slug sits
+ * between the section and the facet and hides it from a word match.
  */
 export const looksLikeEventPath = (pathname: string): boolean => {
   const segments = pathname.toLowerCase().split('/').filter(Boolean);
   // Needs at least a section and a slug; "/events" alone is a listing page.
   if (segments.length < 2) return false;
   if (NON_EVENT_SEGMENT_RE.test(segments[segments.length - 1])) return false;
-  // The slug must sit under an events-ish section.
-  if (!EVENT_TOKEN_RE.test(segments.slice(0, -1).join('/'))) return false;
-  // "/events/category/yoga" lists; it doesn't describe.
-  if (NON_EVENT_SEGMENT_RE.test(segments[segments.length - 2])) return false;
+  // The parent must be the events-ish section itself.
+  if (!EVENT_TOKEN_RE.test(segments[segments.length - 2])) return false;
   return true;
 };
 
@@ -301,6 +304,30 @@ export const parseSitemap = (xml: string): { urls: string[]; isIndex: boolean } 
   return isIndex
     ? { urls: urls.filter((l) => /\.xml(\?|$)/i.test(l)), isIndex: true }
     : { urls, isIndex: false };
+};
+
+/**
+ * Orders a sitemap index's children so the ones most likely to hold event pages
+ * are fetched first. A crawl budget spent on products.xml and category maps
+ * before events.xml would find nothing, and index order is the site's choice
+ * rather than a signal about content.
+ */
+export const orderSitemapsByLikelihood = (urls: string[]): string[] => {
+  const score = (raw: string): number => {
+    let name = raw;
+    try {
+      const p = new URL(raw).pathname;
+      name = p.split('/').filter(Boolean).pop() ?? p;
+    } catch { /* keep the raw string */ }
+    name = decodeURIComponent(name).toLowerCase();
+    if (/event|whats-?on|programme|program|calendar|class|workshop|retreat|session/.test(name)) return 0;
+    if (/news|blog|post|article|product|shop|store|page|tag|categor|tenant|space|capacity|brand/.test(name)) return 2;
+    return 1;
+  };
+  return urls
+    .map((url, order) => ({ url, order, s: score(url) }))
+    .sort((a, b) => a.s - b.s || a.order - b.order)
+    .map((x) => x.url);
 };
 
 /**

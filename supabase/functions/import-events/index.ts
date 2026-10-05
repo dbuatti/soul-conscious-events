@@ -4,6 +4,7 @@ import {
   eventsFromHtml, eventsFromIcs, extractJsonLdNodes, findEventLinks, findPaginationLinks,
   htmlToText, isPublicHttpUrl, jsonLdListUrls, looksLikeIcs, normalizeUrl, robotsAllows,
   classifyEventType, detectState, parseSitemap, sitemapsFromRobots, eventUrlsFromSitemap,
+  orderSitemapsByLikelihood,
   type ImportedEvent, type MapOptions,
 } from '../_shared/event-import.ts';
 
@@ -163,7 +164,7 @@ async function collectCandidateLinks(
     if (!page.ok) continue; // most small sites have no sitemap; that's normal
     const { urls, isIndex } = parseSitemap(page.text);
     if (isIndex) {
-      pending = [...urls, ...pending].slice(0, MAX_SITEMAPS * 2);
+      pending = [...orderSitemapsByLikelihood(urls), ...pending].slice(0, MAX_SITEMAPS * 2);
     } else {
       for (const u of eventUrlsFromSitemap(urls, startUrl)) {
         take(u, fromSiteMap);
