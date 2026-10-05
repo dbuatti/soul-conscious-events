@@ -30,7 +30,10 @@ jobs:
       - uses: supabase/setup-cli@v1
         if: steps.guard.outputs.skip != 'true'
         with:
-          version: latest
+          # Pinned: resolving "latest" hits the GitHub API and fails with
+          # "rate limit exceeded" from shared runner IPs, which broke the first
+          # scheduled run. Bump this deliberately.
+          version: 2.119.0
 
       - name: Run importer
         if: steps.guard.outputs.skip != 'true'

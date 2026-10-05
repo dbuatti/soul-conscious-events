@@ -31,7 +31,9 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned for the same reason as import-events.yml: "latest" resolves
+          # via the GitHub API and gets rate limited. Bump deliberately.
+          version: 2.119.0
 
       - name: Deploy functions
         run: |
