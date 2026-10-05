@@ -13,7 +13,7 @@ pnpm typecheck    # Type-check (Vite builds do not type-check)
 pnpm preview      # Preview production build locally
 ```
 
-There are no automated tests in this project.
+The only automated tests cover the event importer's parsing (Deno): `deno test supabase/functions/_shared/event-import.test.ts`.
 
 ## Architecture Overview
 
@@ -40,6 +40,7 @@ Key tables:
 - `contact_submissions` — contact form submissions.
 - `ai_parsing_logs` — logs each call to the AI event-parsing edge function.
 - `user_favourite_venues` — maps `user_id` → `place_name`.
+- `event_sources` / `event_import_runs` — importer sources and run log (admin-only RLS). Imported events carry `source_id`, `external_id` and `imported_at`.
 
 The Supabase client is a singleton at `src/integrations/supabase/client.ts`. Import it as `import { supabase } from "@/integrations/supabase/client"`.
 
@@ -62,6 +63,8 @@ All written in Deno TypeScript. Key functions:
 - `parse-event-details` — calls Google Gemini API (`gemini-2.5-flash`) to parse raw event text into structured JSON. Requires `GEMINI_API_KEY` env var.
 - `parse-venue-details` — similar AI parsing for venues.
 - `delete-user` / `update-user-metadata` / `resend-confirmation` / `reset-password-admin` / `create-test-user` — admin user management utilities. These run with the service-role key, so each must authorize the caller via `supabase/functions/_shared/auth.ts` (`requireAdmin` / `requireUser`).
+
+- `import-events` — the event importer. Reads the admin-managed `event_sources` list (organiser pages, venue "what's on" pages, public `.ics` calendars), extracts events from schema.org JSON-LD or iCal (Gemini only as a capped fallback), skips anything already known by `external_id`/`ticket_link` (including rejected/deleted events), and inserts the rest with `approval_status = 'pending'`. Parsing lives in `_shared/event-import.ts` (pure, unit-tested); fetching obeys robots.txt and blocks private hosts. Admins review imports in the admin panel's **Imports** tab (`src/components/admin/EventImports.tsx`). `.github/workflows/import-events.yml` runs it daily, fetching the service-role key with `SUPABASE_ACCESS_TOKEN`.
 
 Deployment: `.github/workflows/deploy-edge-functions.yml` deploys every function on push to `main` that touches `supabase/functions/**` (needs the `SUPABASE_ACCESS_TOKEN` repo secret). `cron-ping` is deployed with `--no-verify-jwt`; all others require a JWT. Migrations are **not** auto-applied — run them manually.
 

@@ -9,9 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EventManagementTable from '@/components/EventManagementTable';
 import AnalyticsDashboard from '@/components/AnalyticsDashboard';
 import AiLogsTable from '@/components/AiLogsTable';
-import VenueManagementTable from '@/components/VenueManagementTable'; // New import
+import VenueManagementTable from '@/components/VenueManagementTable';
+import EventImports from '@/components/admin/EventImports';
+import PageHeader from '@/components/v2/PageHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin } from 'lucide-react';
+import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -167,13 +169,17 @@ const AdminPanel = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
-      <h2 className="text-4xl font-bold text-foreground text-center mb-6 font-heading">Admin Panel</h2>
-      <p className="text-center text-muted-foreground mb-12 leading-relaxed max-w-2xl mx-auto">
-        Manage contact submissions, events, analytics, and users from here.
-      </p>
+      <PageHeader
+        eyebrow="Admin"
+        title="Admin panel"
+        description="Review imported events, manage listings, venues and users, and see how the site is doing."
+      />
 
-      <Tabs defaultValue="events" className="w-full" onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-secondary/50 p-1 rounded-2xl mb-8">
+      <Tabs defaultValue="imports" className="w-full" onValueChange={handleTabChange}>
+        <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-7 bg-secondary/50 p-1 rounded-2xl mb-8">
+          <TabsTrigger value="imports" className="rounded-xl flex items-center gap-2">
+            <Inbox className="h-3.5 w-3.5" /> Imports
+          </TabsTrigger>
           <TabsTrigger value="events" className="rounded-xl">Events</TabsTrigger>
           <TabsTrigger value="venues" className="rounded-xl flex items-center gap-2">
             <MapPin className="h-3.5 w-3.5" /> Venues
@@ -186,6 +192,10 @@ const AdminPanel = () => {
           </TabsTrigger>
         </TabsList>
         
+        <TabsContent value="imports" className="mt-0">
+          <EventImports />
+        </TabsContent>
+
         <TabsContent value="events" className="mt-0">
           <EventManagementTable />
         </TabsContent>

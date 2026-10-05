@@ -1,0 +1,231 @@
+// Run with: deno test supabase/functions/_shared/event-import.test.ts
+import assert from 'node:assert/strict';
+import {
+  classifyEventType, detectState, eventsFromHtml, eventsFromIcs, findEventLinks,
+  isoToLocalParts, jsonLdListUrls, extractJsonLdNodes, nextOccurrenceOnOrAfter, normalizeUrl, priceFromOffers, robotsAllows,
+} from './event-import.ts';
+
+const OPTS = { today: '2026-10-05', maxDate: '2027-10-05' };
+
+const humanitixPage = `<!doctype html><html><head>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Event",
+ "name":"Full Moon Crystal Bowl Sound Bath &amp; Cacao",
+ "startDate":"2026-10-12T19:00:00+11:00","endDate":"2026-10-12T20:30:00+11:00",
+ "eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode",
+ "location":{"@type":"Place","name":"The Yoga Space","address":{"@type":"PostalAddress","streetAddress":"123 Smith St","addressLocality":"Fitzroy","addressRegion":"VIC","postalCode":"3065","addressCountry":"AU"}},
+ "image":["https://images.humanitix.com/abc.jpg"],
+ "description":"<p>Drift into deep rest.</p><p>Bring a blanket.</p>",
+ "offers":[{"@type":"Offer","price":"45.00","priceCurrency":"AUD","url":"https://events.humanitix.com/full-moon-sound-bath/tickets"},{"@type":"Offer","price":"35","priceCurrency":"AUD"}],
+ "organizer":{"@type":"Organization","name":"Maya Lin"}}</script>
+</head><body></body></html>`;
+
+Deno.test('maps a ticketing page JSON-LD event', () => {
+  const { events } = eventsFromHtml(humanitixPage, 'https://events.humanitix.com/full-moon-sound-bath', OPTS);
+  assert.equal(events.length, 1);
+  const e = events[0];
+  assert.equal(e.event_name, 'Full Moon Crystal Bowl Sound Bath & Cacao');
+  assert.equal(e.event_date, '2026-10-12');
+  assert.equal(e.end_date, null);
+  assert.equal(e.event_time, '7:00pm – 8:30pm');
+  assert.equal(e.place_name, 'The Yoga Space');
+  assert.equal(e.full_address, '123 Smith St, Fitzroy, VIC 3065, AU');
+  assert.equal(e.geographical_state, 'VIC');
+  assert.equal(e.price, '$35–$45');
+  assert.equal(e.ticket_link, 'https://events.humanitix.com/full-moon-sound-bath/tickets');
+  assert.equal(e.organizer_contact, 'Maya Lin (via Humanitix)');
+  assert.equal(e.event_type, 'Sound Bath');
+  assert.equal(e.image_url, 'https://images.humanitix.com/abc.jpg');
+  assert.equal(e.description, 'Drift into deep rest.\nBring a blanket.');
+  assert.equal(e.external_id, 'events.humanitix.com/full-moon-sound-bath/tickets');
+});
+
+const organiserPage = `<html><head><script type="application/ld+json">
+[{"@context":"https://schema.org","@type":"ItemList","itemListElement":[
+  {"@type":"ListItem","position":1,"item":{"@type":"Event","name":"Ecstatic Dance Journey","startDate":"2026-10-11T10:00:00+11:00","endDate":"2026-10-11T12:30:00+11:00","url":"https://www.eventbrite.com.au/e/ecstatic-dance-journey-tickets-111","location":{"@type":"Place","name":"Abbotsford Convent","address":"1 St Heliers St, Abbotsford VIC 3067"},"offers":{"@type":"AggregateOffer","lowPrice":"25","highPrice":"30"}}},
+  {"@type":"ListItem","position":2,"item":{"@type":"Event","name":"Old Gathering","startDate":"2026-09-01T10:00:00+10:00","location":{"@type":"Place","name":"Hall"}}},
+  {"@type":"ListItem","position":3,"item":{"@type":"MusicEvent","name":"London Kirtan","startDate":"2026-11-01T19:00:00Z","location":{"@type":"Place","name":"Hall","address":{"@type":"PostalAddress","addressLocality":"London","addressCountry":"GB"}}}},
+  {"@type":"ListItem","position":4,"url":"https://www.eventbrite.com.au/e/breathwork-tickets-222"}
+]}]</script></head><body>
+<a href="https://www.eventbrite.com.au/e/breathwork-tickets-222?aff=ebdsoporgprofile">Breathwork</a>
+<a href="https://www.eventbrite.com.au/e/ecstatic-dance-journey-tickets-111">Dance</a>
+<a href="https://www.eventbrite.com.au/o/some-organiser-123">Organiser</a>
+<a href="/help">Help</a>
+</body></html>`;
+
+Deno.test('reads events listed on an organiser page and skips past or overseas ones', () => {
+  const url = 'https://www.eventbrite.com.au/o/some-organiser-123';
+  const { events, skipped } = eventsFromHtml(organiserPage, url, OPTS);
+  assert.deepEqual(events.map((e) => e.event_name), ['Ecstatic Dance Journey']);
+  assert.equal(events[0].price, '$25–$30');
+  assert.equal(events[0].geographical_state, 'VIC');
+  assert.equal(events[0].event_type, 'Music');
+  assert.equal(skipped.past, 1);
+  assert.equal(skipped['not-australian'], 1);
+
+  const links = findEventLinks(organiserPage, url);
+  assert.deepEqual(links, [
+    'https://www.eventbrite.com.au/e/breathwork-tickets-222',
+    'https://www.eventbrite.com.au/e/ecstatic-dance-journey-tickets-111',
+  ]);
+  assert.deepEqual(jsonLdListUrls(extractJsonLdNodes(organiserPage), url), ['https://www.eventbrite.com.au/e/breathwork-tickets-222']);
+});
+
+const venuePage = `<html><body>
+<a href="https://venue.example.com.au/event/kirtan-circle/">Kirtan</a>
+<a href="/event/foraging-walk/?utm_source=x">Foraging</a>
+<a href="/events/category/music/">Music category</a>
+<a href="/events/">All events</a>
+<a href="https://megatix.com.au/events/sunset-sound-journey">Sound journey</a>
+<a href="https://other.example.com/event/elsewhere/">Elsewhere</a>
+</body></html>`;
+
+Deno.test('finds event links on a venue listing page', () => {
+  assert.deepEqual(findEventLinks(venuePage, 'https://venue.example.com.au/events/'), [
+    'https://venue.example.com.au/event/kirtan-circle/',
+    'https://venue.example.com.au/event/foraging-walk/',
+    'https://megatix.com.au/events/sunset-sound-journey',
+  ]);
+});
+
+Deno.test('converts UTC timestamps into Australian local time', () => {
+  // 08:00Z on 12 Oct is 7pm in Sydney (AEDT, UTC+11).
+  assert.deepEqual(isoToLocalParts('2026-10-12T08:00:00Z'), { date: '2026-10-12', time: '19:00' });
+  // ...and 6pm in Brisbane, which has no daylight saving.
+  assert.deepEqual(isoToLocalParts('2026-10-12T08:00:00Z', 'Australia/Brisbane'), { date: '2026-10-12', time: '18:00' });
+  assert.deepEqual(isoToLocalParts('2026-10-12'), { date: '2026-10-12', time: null });
+  assert.equal(isoToLocalParts('not a date'), null);
+});
+
+const ics = [
+  'BEGIN:VCALENDAR',
+  'VERSION:2.0',
+  'X-WR-TIMEZONE:Australia/Melbourne',
+  'BEGIN:VEVENT',
+  'UID:abc-123@google.com',
+  'DTSTART;TZID=Australia/Melbourne:20261014T183000',
+  'DTEND;TZID=Australia/Melbourne:20261014T200000',
+  'RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=20261231T000000Z',
+  'SUMMARY:Breathwork Circle\\, Northcote',
+  'LOCATION:Northcote Town Hall\\, 189 High St\\, Northcote VIC 3070',
+  'DESCRIPTION:A gentle guided breathwork session.\\nBook: https://events.humanitix.com/breath',
+  ' work-circle',
+  'END:VEVENT',
+  'BEGIN:VEVENT',
+  'UID:allday-1',
+  'DTSTART;VALUE=DATE:20261024',
+  'DTEND;VALUE=DATE:20261026',
+  'SUMMARY:Weekend Retreat',
+  'LOCATION:Daylesford',
+  'END:VEVENT',
+  'BEGIN:VEVENT',
+  'UID:utc-1',
+  'DTSTART:20261020T083000Z',
+  'SUMMARY:Sound Healing',
+  'URL:https://example.com/sound',
+  'END:VEVENT',
+  'BEGIN:VEVENT',
+  'UID:past-1',
+  'DTSTART:20260101T090000Z',
+  'SUMMARY:Old thing',
+  'END:VEVENT',
+  'BEGIN:VEVENT',
+  'UID:cancel-1',
+  'DTSTART:20261101T090000Z',
+  'STATUS:CANCELLED',
+  'SUMMARY:Cancelled thing',
+  'END:VEVENT',
+  'BEGIN:VEVENT',
+  'UID:abc-123@google.com',
+  'RECURRENCE-ID;TZID=Australia/Melbourne:20261028T183000',
+  'DTSTART;TZID=Australia/Melbourne:20261028T190000',
+  'SUMMARY:Breathwork Circle (moved)',
+  'END:VEVENT',
+  'END:VCALENDAR',
+].join('\r\n');
+
+Deno.test('parses a calendar feed', () => {
+  const { events, skipped } = eventsFromIcs(ics, 'https://calendar.example.com/feed.ics', OPTS);
+  assert.deepEqual(events.map((e) => e.event_name), ['Breathwork Circle, Northcote', 'Weekend Retreat', 'Sound Healing']);
+
+  const [circle, retreat, sound] = events;
+  assert.equal(circle.event_date, '2026-10-14');
+  assert.equal(circle.event_time, '6:30pm – 8:00pm');
+  assert.equal(circle.recurring_pattern, 'FORTNIGHTLY');
+  assert.equal(circle.recurring_end_date, '2026-12-31');
+  assert.equal(circle.place_name, 'Northcote Town Hall');
+  assert.equal(circle.geographical_state, 'VIC');
+  assert.equal(circle.ticket_link, 'https://events.humanitix.com/breathwork-circle');
+  assert.equal(circle.event_type, 'Meditation');
+  assert.equal(circle.external_id, 'abc-123@google.com');
+
+  assert.equal(retreat.event_date, '2026-10-24');
+  assert.equal(retreat.end_date, '2026-10-25');
+  assert.equal(retreat.event_time, null);
+  assert.equal(retreat.event_type, 'Community Gathering');
+
+  // 08:30Z is 7:30pm in Melbourne (the calendar's zone).
+  assert.equal(sound.event_time, '7:30pm');
+  assert.equal(sound.ticket_link, 'https://example.com/sound');
+
+  assert.equal(skipped.past, 1);
+  assert.equal(skipped.invalid, 1);
+});
+
+Deno.test('detects states from names, abbreviations and postcodes', () => {
+  assert.equal(detectState('Victoria'), 'VIC');
+  assert.equal(detectState('12 Jonson St, Byron Bay 2481'), 'NSW');
+  assert.equal(detectState('Canberra 2601'), 'ACT');
+  assert.equal(detectState('Darwin 0800'), 'NT');
+  assert.equal(detectState('South Australia'), 'SA');
+  assert.equal(detectState('Somewhere'), null);
+});
+
+Deno.test('formats prices', () => {
+  assert.equal(priceFromOffers([{ price: '0' }]), 'Free');
+  assert.equal(priceFromOffers({ price: 20.5 }), '$20.50');
+  assert.equal(priceFromOffers(undefined), null);
+});
+
+Deno.test('classifies event types', () => {
+  assert.equal(classifyEventType('Gong bath under the stars'), 'Sound Bath');
+  assert.equal(classifyEventType('Poetry open mic night'), 'Open Mic');
+  assert.equal(classifyEventType('Intro to pottery class'), 'Workshop');
+  assert.equal(classifyEventType('Something else entirely'), 'Other');
+});
+
+Deno.test('normalises URLs for duplicate detection', () => {
+  assert.equal(normalizeUrl('https://WWW.Eventbrite.com.au/e/x-tickets-1/?aff=1#top'), 'eventbrite.com.au/e/x-tickets-1');
+  assert.equal(normalizeUrl('mailto:hi@example.com'), null);
+});
+
+Deno.test('respects robots.txt', () => {
+  const robots = 'User-agent: *\nDisallow: /private\nAllow: /private/events\n\nUser-agent: BadBot\nDisallow: /';
+  assert.equal(robotsAllows(robots, '/events/x'), true);
+  assert.equal(robotsAllows(robots, '/private/x'), false);
+  assert.equal(robotsAllows(robots, '/private/events/x'), true);
+  assert.equal(robotsAllows('User-agent: *\nDisallow: /', '/anything'), false);
+  assert.equal(robotsAllows('', '/anything'), true);
+});
+
+Deno.test('moves long-running recurring series to their next occurrence', () => {
+  assert.equal(nextOccurrenceOnOrAfter('2026-09-07', 'WEEKLY', '2026-10-05'), '2026-10-05');
+  assert.equal(nextOccurrenceOnOrAfter('2026-09-08', 'WEEKLY', '2026-10-05'), '2026-10-06');
+  assert.equal(nextOccurrenceOnOrAfter('2026-09-01', 'FORTNIGHTLY', '2026-10-05'), '2026-10-13');
+  assert.equal(nextOccurrenceOnOrAfter('2026-01-31', 'MONTHLY', '2026-10-05'), '2026-10-31');
+  assert.equal(nextOccurrenceOnOrAfter('2026-01-31', 'MONTHLY', '2026-11-05'), '2026-11-30');
+  assert.equal(nextOccurrenceOnOrAfter('2026-12-01', 'DAILY', '2026-10-05'), '2026-12-01');
+
+  const feed = [
+    'BEGIN:VCALENDAR',
+    'BEGIN:VEVENT', 'UID:w1', 'DTSTART;TZID=Australia/Melbourne:20260908T183000',
+    'DTEND;TZID=Australia/Melbourne:20260908T200000', 'RRULE:FREQ=WEEKLY', 'SUMMARY:Weekly Breathwork', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:w2', 'DTSTART:20260101T090000Z', 'RRULE:FREQ=WEEKLY;UNTIL=20260301T000000Z', 'SUMMARY:Finished series', 'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+  const { events, skipped } = eventsFromIcs(feed, 'https://cal.example.com/x.ics', OPTS);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].event_date, '2026-10-06');
+  assert.equal(events[0].event_time, '6:30pm – 8:00pm');
+  assert.equal(events[0].recurring_pattern, 'WEEKLY');
+  assert.equal(skipped.past, 1);
+});

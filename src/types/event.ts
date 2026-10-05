@@ -25,4 +25,6 @@ export interface Event {
   is_recurring_instance?: boolean;
   created_at?: string; // Added to support 'NEW' badge logic
   event_days?: Array<{ date: string; start_time: string; end_time: string; notes?: string }>;
+  source_id?: string | null; // set when brought in by the event importer
+  imported_at?: string | null;
 }
