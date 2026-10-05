@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders, createAdminClient, jsonResponse, requireAdmin } from '../_shared/auth.ts';
 import {
-  eventsFromHtml, eventsFromIcs, extractJsonLdNodes, findEventLinks, htmlToText, isPublicHttpUrl,
-  jsonLdListUrls, looksLikeIcs, normalizeUrl, robotsAllows, classifyEventType, detectState,
+  eventsFromHtml, eventsFromIcs, extractJsonLdNodes, findEventLinks, findPaginationLinks,
+  htmlToText, isPublicHttpUrl, jsonLdListUrls, looksLikeIcs, normalizeUrl, robotsAllows,
+  classifyEventType, detectState, parseSitemap, sitemapsFromRobots, eventUrlsFromSitemap,
   type ImportedEvent, type MapOptions,
 } from '../_shared/event-import.ts';
 
@@ -16,6 +17,10 @@ const DETAIL_PAGES_PER_RUN = 40;
 const AI_FALLBACKS_PER_RUN = 5;
 const SAME_HOST_DELAY_MS = 600;
 const USER_AGENT = 'SoulFlowBot/1.0 (+https://soulflowevents.vercel.app/about; community events guide)';
+// Sitemaps let one source expose a whole site instead of just one page.
+const MAX_SITEMAPS = 4;
+const MAX_CANDIDATE_LINKS = 60;
+const MAX_PAGINATION_HOPS = 1;
 
 interface Source { id: string; url: string; label: string | null }
 
@@ -41,23 +46,28 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const robotsCache = new Map<string, string>();
 const lastHit = new Map<string, number>();
 
+/** robots.txt body for an origin, cached for the run. Empty string = allow all. */
+async function robotsFor(origin: string): Promise<string> {
+  if (robotsCache.has(origin)) return robotsCache.get(origin)!;
+  let body = '';
+  try {
+    const r = await fetch(`${origin}/robots.txt`, {
+      headers: { 'User-Agent': USER_AGENT },
+      signal: AbortSignal.timeout(6_000),
+    });
+    if (r.ok) body = (await r.text()).slice(0, 200_000);
+  } catch { /* unreachable robots.txt: treat as allow-all */ }
+  robotsCache.set(origin, body);
+  return body;
+}
+
 /** Fetches a public URL as text, honouring robots.txt and pacing per host. */
 async function politeFetch(url: string): Promise<{ ok: true; text: string; finalUrl: string } | { ok: false; reason: string }> {
   if (!isPublicHttpUrl(url)) return { ok: false, reason: 'not a public http(s) URL' };
   const u = new URL(url);
 
-  if (!robotsCache.has(u.origin)) {
-    let body = '';
-    try {
-      const r = await fetch(`${u.origin}/robots.txt`, {
-        headers: { 'User-Agent': USER_AGENT },
-        signal: AbortSignal.timeout(6_000),
-      });
-      if (r.ok) body = (await r.text()).slice(0, 200_000);
-    } catch { /* unreachable robots.txt: treat as allow-all */ }
-    robotsCache.set(u.origin, body);
-  }
-  if (!robotsAllows(robotsCache.get(u.origin)!, u.pathname + u.search)) {
+  const robots = await robotsFor(u.origin);
+  if (!robotsAllows(robots, u.pathname + u.search)) {
     return { ok: false, reason: 'blocked by robots.txt' };
   }
 
@@ -85,6 +95,84 @@ async function politeFetch(url: string): Promise<{ ok: true; text: string; final
     const reason = err instanceof Error && err.name === 'TimeoutError' ? 'timed out' : (err instanceof Error ? err.message : String(err));
     return { ok: false, reason };
   }
+}
+
+/**
+ * Collects candidate event pages for a site. Three site-agnostic sources, in
+ * order of reliability: the sitemap (every URL the site publishes, which is
+ * what most sites exist to be crawled for), then links on the page itself, then
+ * JSON-LD list entries. Pagination links are followed once so page two and
+ * beyond aren't invisible.
+ */
+async function collectCandidateLinks(
+  startUrl: string,
+  budget: Budget,
+): Promise<{ links: string[]; fromSitemap: number; paginationPages: number }> {
+  const seen = new Set<string>();
+  // On-page and sitemap candidates are kept apart: links found on the listing
+  // page are proven to work, so the sitemap only tops up the queue rather than
+  // crowding it out.
+  const fromPage: string[] = [];
+  const fromSiteMap: string[] = [];
+  let fromSitemap = 0;
+  let paginationPages = 0;
+
+  const take = (raw: string, bucket: string[]) => {
+    if (bucket.length >= MAX_CANDIDATE_LINKS) return;
+    const key = normalizeUrl(raw);
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      bucket.push(raw);
+    }
+  };
+
+  // 1. Links on the listing page itself, plus one hop of pagination.
+  const first = await politeFetch(startUrl);
+  if (first.ok) {
+    const pageUrl = first.finalUrl || startUrl;
+    for (const u of jsonLdListUrls(extractJsonLdNodes(first.text), pageUrl)) take(u, fromPage);
+    for (const u of findEventLinks(first.text, pageUrl)) take(u, fromPage);
+
+    for (const nextUrl of findPaginationLinks(first.text, pageUrl)) {
+      if (paginationPages >= MAX_PAGINATION_HOPS || budget.expired()) break;
+      const next = await politeFetch(nextUrl);
+      if (!next.ok) continue;
+      paginationPages++;
+      for (const u of findEventLinks(next.text, next.finalUrl || nextUrl)) take(u, fromPage);
+    }
+  }
+
+  // 2. Sitemaps as a top-up: robots.txt declarations first, then the
+  // conventional paths.
+  const origin = new URL(startUrl).origin;
+  const robots = await robotsFor(origin);
+  const sitemapUrls = new Set(sitemapsFromRobots(robots));
+  for (const guess of ['/sitemap.xml', '/sitemap_index.xml', '/sitemap-index.xml']) {
+    if (sitemapUrls.size >= MAX_SITEMAPS) break;
+    sitemapUrls.add(`${origin}${guess}`);
+  }
+
+  let pending = [...sitemapUrls];
+  const seenSitemap = new Set<string>();
+  while (pending.length && seenSitemap.size < MAX_SITEMAPS && !budget.expired()) {
+    const sitemapUrl = pending.shift()!;
+    const key = normalizeUrl(sitemapUrl);
+    if (key && seenSitemap.has(key)) continue;
+    if (key) seenSitemap.add(key);
+    const page = await politeFetch(sitemapUrl);
+    if (!page.ok) continue; // most small sites have no sitemap; that's normal
+    const { urls, isIndex } = parseSitemap(page.text);
+    if (isIndex) {
+      pending = [...urls, ...pending].slice(0, MAX_SITEMAPS * 2);
+    } else {
+      for (const u of eventUrlsFromSitemap(urls, startUrl)) {
+        take(u, fromSiteMap);
+        fromSitemap++;
+      }
+    }
+  }
+
+  return { links: [...fromPage, ...fromSiteMap], fromSitemap, paginationPages };
 }
 
 /** Last resort for event pages without structured data: ask Gemini to read the page text. */
@@ -221,13 +309,14 @@ serve(async (req) => {
       onPage.events.forEach((event) => candidates.push({ event, strictLinkDedupe: true }));
       const seenLinks = new Set(onPage.events.map((e) => normalizeUrl(e.ticket_link)).filter(Boolean) as string[]);
 
-      const links = [...new Set([
-        ...jsonLdListUrls(extractJsonLdNodes(page.text), page.finalUrl),
-        ...findEventLinks(page.text, page.finalUrl),
-      ])].filter((link) => {
+      // Sitemap + on-page links + one page of pagination, in one helper.
+      const { links: candidatesFound, fromSitemap, paginationPages } = await collectCandidateLinks(source.url, budget);
+      const links = candidatesFound.filter((link) => {
         const key = normalizeUrl(link);
         return key && !seenLinks.has(key) && !knownLinks.has(key) && !knownExternalIds.has(key);
       });
+      if (fromSitemap) notes.push(`${fromSitemap} from the sitemap`);
+      if (paginationPages) notes.push(`followed ${paginationPages} page${paginationPages === 1 ? '' : 's'} of listings`);
 
       // A single event page (not a listing) is fine too.
       if (onPage.events.length === 0 && links.length === 0 && budget.aiCalls < AI_FALLBACKS_PER_RUN) {

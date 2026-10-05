@@ -1,8 +1,10 @@
 // Run with: deno test supabase/functions/_shared/event-import.test.ts
 import assert from 'node:assert/strict';
 import {
-  classifyEventType, detectState, eventsFromHtml, eventsFromIcs, findEventLinks,
-  isoToLocalParts, jsonLdListUrls, extractJsonLdNodes, nextOccurrenceOnOrAfter, normalizeUrl, priceFromOffers, robotsAllows,
+  classifyEventType, detectState, eventsFromHtml, eventsFromIcs, eventUrlsFromSitemap,
+  findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, extractJsonLdNodes,
+  looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, parseSitemap, priceFromOffers,
+  robotsAllows, sitemapsFromRobots,
 } from './event-import.ts';
 
 const OPTS = { today: '2026-10-05', maxDate: '2027-10-05' };
@@ -228,4 +230,147 @@ Deno.test('moves long-running recurring series to their next occurrence', () => 
   assert.equal(events[0].event_time, '6:30pm – 8:00pm');
   assert.equal(events[0].recurring_pattern, 'WEEKLY');
   assert.equal(skipped.past, 1);
+});
+
+// ---------------------------------------------------------------------------
+// Site-agnostic discovery: sitemaps, pagination, unfamiliar URL shapes
+// ---------------------------------------------------------------------------
+
+Deno.test('recognises event paths on sites it has never seen', () => {
+  for (const path of [
+    '/events/morning-yoga',            // plain WordPress-ish
+    '/classes/sound-bath',
+    '/programs/retreat-2027',
+    '/calendar/meditation-circle',
+    '/event/1234',
+    '/workshops/tibetan-buddhism-intro',
+    '/whatson/guided-sit',             // hyphen-free variant
+  ]) {
+    assert.equal(looksLikeEventPath(path), true, `expected ${path} to match`);
+  }
+  // A bare section is a listing page, not an event.
+  assert.equal(looksLikeEventPath('/whats-on'), false);
+});
+
+Deno.test('ignores faceted, utility and non-event paths', () => {
+  for (const path of [
+    '/events/category/yoga',           // facet, not a single event
+    '/events/tag/music',
+    '/events/page/2',
+    '/events/venue/123',
+    '/events/search',
+    '/about',
+    '/shop',
+    '/',
+  ]) {
+    assert.equal(looksLikeEventPath(path), false, `expected ${path} not to match`);
+  }
+});
+
+Deno.test('finds event links on an unfamiliar venue site, skipping chrome', () => {
+  const html = `<a href="/">Home</a>
+    <a href="/events/guided-meditation-march">Guided Meditation</a>
+    <a href="/events/sound-bath-intro">Sound Bath</a>
+    <a href="/classes/yoga-flow">Yoga Flow</a>
+    <a href="/news/new-studio">News</a>
+    <a href="/donate">Donate</a>
+    <a href="https://www.instagram.com/abbotsford">Instagram</a>
+    <a href="/events?utm_source=facebook&x=1">Tracked link</a>`;
+  const found = findEventLinks(html, 'https://abbotsfordconvent.org.au/whats-on');
+  assert.deepEqual(found.map((u) => new URL(u).pathname), [
+    '/events/guided-meditation-march',
+    '/events/sound-bath-intro',
+    '/classes/yoga-flow',
+  ]);
+  // The tracked duplicate collapses onto the same normalised URL, and a bare
+  // "/events" section link is a listing rather than an event.
+  assert.ok(!found.some((u) => u.includes('utm_source')));
+  assert.ok(!found.some((u) => new URL(u).pathname === '/events'));
+});
+
+Deno.test('does not re-queue the listing page it is already on', () => {
+  const pageUrl = 'https://mysite.com.au/au/events/au--melbourne--3000';
+  const html = `<a href="/au/events/au--melbourne--3000">All Melbourne</a>
+    <a href="/au/events/morning-yoga-12345">Morning Yoga</a>`;
+  assert.deepEqual(findEventLinks(html, pageUrl), ['https://mysite.com.au/au/events/morning-yoga-12345']);
+});
+
+Deno.test('still follows known ticketing links pointing off-site', () => {
+  const html = `<a href="https://events.humanitix.com/dreaming-big">Humanitix</a>
+    <a href="https://www.eventbrite.com.au/e/some-event-tickets">Eventbrite</a>
+    <a href="https://random-blog.example/post/1">Unrelated</a>`;
+  const found = findEventLinks(html, 'https://mysite.com.au/events');
+  assert.equal(found.length, 2);
+});
+
+Deno.test('picks up pagination links to walk past page one', () => {
+  const html = `<a href="/whats-on?page=2">2</a>
+    <a href="/whats-on">Home</a>
+    <a href="/about">About</a>
+    <a href="/whats-on?page=3" rel="next">Next</a>
+    <a href="https://elsewhere.example/x">Elsewhere</a>`;
+  const pages = findPaginationLinks(html, 'https://mysite.com.au/whats-on');
+  assert.deepEqual(pages.map((u) => new URL(u).search), ['?page=2', '?page=3']);
+  assert.ok(!pages.some((u) => u.includes('elsewhere')));
+});
+
+Deno.test('reads sitemap declarations out of robots.txt', () => {
+  const robots = `User-agent: *\nAllow: /\nSitemap: https://mysite.com.au/sitemap.xml\n# comment\nSitemap: https://mysite.com.au/sitemaps/events.xml\n`;
+  assert.deepEqual(sitemapsFromRobots(robots), [
+    'https://mysite.com.au/sitemap.xml',
+    'https://mysite.com.au/sitemaps/events.xml',
+  ]);
+});
+
+Deno.test('parses a urlset sitemap and keeps its event pages', () => {
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://mysite.com.au/</loc></url>
+  <url><loc>https://mysite.com.au/events/meditation-retreat?x=1</loc></url>
+  <url><loc>https://mysite.com.au/events/yoga-teacher-training</loc></url>
+  <url><loc>https://mysite.com.au/events/past/2024</loc></url>
+  <url><loc>https://mysite.com.au/events/online</loc></url>
+  <url><loc>https://other-site.com/events/somewhere-else</loc></url>
+</urlset>`;
+  const { urls, isIndex } = parseSitemap(xml);
+  assert.equal(isIndex, false);
+  assert.equal(urls.length, 6);
+  const events = eventUrlsFromSitemap(urls, 'https://mysite.com.au/whats-on');
+  // Archive and browse pages are dropped even though they sit under /events/.
+  assert.deepEqual(events.map((u) => new URL(u).pathname), [
+    '/events/meditation-retreat',
+    '/events/yoga-teacher-training',
+  ]);
+});
+
+Deno.test('spends a capped sitemap budget on the most event-like pages first', () => {
+  const xml = `<urlset>
+  <url><loc>https://mysite.com.au/events/yoga</loc></url>
+  <url><loc>https://mysite.com.au/events/morning-yoga</loc></url>
+  <url><loc>https://mysite.com.au/events/12345</loc></url>
+</urlset>`;
+  const { urls } = parseSitemap(xml);
+  assert.deepEqual(
+    eventUrlsFromSitemap(urls, 'https://mysite.com.au').map((u) => new URL(u).pathname),
+    ['/events/12345', '/events/morning-yoga', '/events/yoga'],
+  );
+});
+
+Deno.test('parses a sitemap index into its child sitemaps', () => {
+  const xml = `<sitemapindex>
+  <sitemap><loc>https://mysite.com.au/sitemaps/posts.xml</loc></sitemap>
+  <sitemap><loc>https://mysite.com.au/sitemaps/events-1.xml</loc></sitemap>
+</sitemapindex>`;
+  const { urls, isIndex } = parseSitemap(xml);
+  assert.equal(isIndex, true);
+  assert.deepEqual(urls, [
+    'https://mysite.com.au/sitemaps/posts.xml',
+    'https://mysite.com.au/sitemaps/events-1.xml',
+  ]);
+});
+
+Deno.test('unescapes entities inside sitemap URLs', () => {
+  const xml = `<urlset><url><loc>https://mysite.com.au/events/dawn&amp;dusk-retreat</loc></url></urlset>`;
+  const { urls } = parseSitemap(xml);
+  assert.deepEqual(urls, ['https://mysite.com.au/events/dawn&dusk-retreat']);
 });

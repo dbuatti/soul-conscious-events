@@ -127,9 +127,54 @@ const TICKETING_EVENT_PATTERNS: RegExp[] = [
 ];
 
 /**
+ * Path segments that list or navigate rather than describe one event. Matched
+ * against a whole segment, so hyphenated variants ("past-events") are covered by
+ * including them.
+ */
+const NON_EVENT_SEGMENT_RE = new RegExp(
+  '^(?:categor(?:y|ies)|tags?|lists?|months?|weeks?|days?|today|thisweek(?:end)?|nextweek|'
+  + 'nextmonth|trending|free|search|browse|pages?|feeds?|ical|photos?|maps?|venues?|hosts?|'
+  + 'organisers?|organizers?|past-?events|archive|login|signin|signup|register|account|cart|'
+  + 'checkout|donate|newsletter|contact|about|privacy|terms|faq|news|blog|shop|store|jobs|'
+  + 'careers|sponsor|sponsors|partners|online|offline|all|upcoming|past|featured|popular|'
+  + 'nearby|near|directory|home|index|start|view|more|tomorrow|yesterday|this-?month)$',
+  'i',
+);
+
+/**
+ * An events-ish section anywhere in the path. Written as tolerant patterns
+ * rather than an exact segment list so unfamiliar sites match: /whats-on,
+ * /whatson, /programs, /programme all count.
+ */
+const EVENT_TOKEN_RE = new RegExp(
+  '(?:^|[\\/\\-_.\\s])(?:events?|what\'?s?[\\s-]?on|programs?(?:me|mes)?|calendars?|classes?|'
+  + 'sessions?|workshops?|retreats?|courses?|meet[\\s-]?ups?|schedules?|happenings?|diary|'
+  + 'festivals?|yoga|meditat\\w*|sound-?heal\\w*)(?:[\\/.\\s-]|$)',
+  'i',
+);
+
+/**
+ * Site-agnostic test for "this URL probably describes one event": an
+ * event-ish section with a slug after it, and no facet word in between.
+ * Purely structural, so sites we've never seen still match.
+ */
+export const looksLikeEventPath = (pathname: string): boolean => {
+  const segments = pathname.toLowerCase().split('/').filter(Boolean);
+  // Needs at least a section and a slug; "/events" alone is a listing page.
+  if (segments.length < 2) return false;
+  if (NON_EVENT_SEGMENT_RE.test(segments[segments.length - 1])) return false;
+  // The slug must sit under an events-ish section.
+  if (!EVENT_TOKEN_RE.test(segments.slice(0, -1).join('/'))) return false;
+  // "/events/category/yoga" lists; it doesn't describe.
+  if (NON_EVENT_SEGMENT_RE.test(segments[segments.length - 2])) return false;
+  return true;
+};
+
+/**
  * Finds links on a listing/organiser page that look like individual event
- * pages: known ticketing URLs, or same-site /event(s)/<slug> pages (the
- * pattern used by WordPress event plugins and most venue sites).
+ * pages: known ticketing shapes, or same-site paths under an events section.
+ * Off-site links only count for platforms we recognise, to avoid wandering
+ * into unrelated corners of the web.
  */
 export const findEventLinks = (html: string, pageUrl: string): string[] => {
   let base: URL;
@@ -137,7 +182,7 @@ export const findEventLinks = (html: string, pageUrl: string): string[] => {
     base = new URL(pageUrl);
   } catch {
     return [];
-  }
+  };
   const found = new Map<string, string>();
   for (const match of html.matchAll(/<a\b[^>]*\bhref\s*=\s*["']([^"'#]+)["']/gi)) {
     let abs: URL;
@@ -152,16 +197,160 @@ export const findEventLinks = (html: string, pageUrl: string): string[] => {
       if (/^(utm_|aff|ref|fbclid|gclid|_gl)/i.test(key)) abs.searchParams.delete(key);
     }
     const href = abs.toString();
+    // Known platforms win outright: their URL shapes aren't always structural
+    // (Eventbrite uses /e/<slug>, which no section keyword would catch).
     const isTicketing = TICKETING_EVENT_PATTERNS.some((re) => re.test(href));
-    const isSameSiteEvent = abs.hostname === base.hostname
-      && /\/events?\/[^/]+\/?$/i.test(abs.pathname)
-      && !/\/events?\/(category|tag|list|month|week|day|page|feed|ical|photo|map)\b/i.test(abs.pathname)
-      && abs.pathname.replace(/\/+$/, '') !== base.pathname.replace(/\/+$/, '');
-    if (!isTicketing && !isSameSiteEvent) continue;
+    if (!isTicketing) {
+      if (abs.hostname !== base.hostname) continue;
+      if (!looksLikeEventPath(abs.pathname)) continue;
+      // A link back to the listing we came from isn't an event.
+      if (abs.pathname.replace(/\/+$/, '') === base.pathname.replace(/\/+$/, '')) continue;
+    }
     const key = normalizeUrl(href);
     if (key && !found.has(key)) found.set(key, href);
   }
   return [...found.values()];
+};
+
+/**
+ * Same as normalizeUrl but keeps the query. Pagination lives entirely in the
+ * query string, so ?page=2 and ?page=3 are different pages and must not
+ * collapse onto one key.
+ */
+const paginatedKey = (raw: string): string | null => {
+  try {
+    const u = new URL(raw);
+    const pairs = [...u.searchParams.entries()]
+      .filter(([k]) => !/^(utm_|aff|ref|fbclid|gclid|_gl)/i.test(k))
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`);
+    return `${u.hostname.replace(/^www\./, '')}${u.pathname.replace(/\/+$/, '')}${pairs.length ? `?${pairs.join('&')}` : ''}`;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * The same site's other listing pages, so we can walk past page one: rel="next"
+ * plus common "2 / next / older" link labels and ?page=2 style targets.
+ */
+export const findPaginationLinks = (html: string, pageUrl: string): string[] => {
+  let base: URL;
+  try {
+    base = new URL(pageUrl);
+  } catch {
+    return [];
+  };
+  const out = new Set<string>();
+  const seen = new Set<string>([paginatedKey(pageUrl) ?? pageUrl]);
+  for (const match of html.matchAll(/<a\b([^>]*)>([^<]{0,24})</gi)) {
+    const attrs = match[1];
+    const label = match[2].toLowerCase().replace(/\s+/g, ' ').trim();
+    const href = attrs.match(/\bhref\s*=\s*["']([^"']+)["']/i)?.[1];
+    if (!href) continue;
+    const isNext = /\brel\s*=\s*["'][^"']*\bnext\b/i.test(attrs);
+    const looksPaged = /^(next|next page|older|more|show more|load more|2|>>|›|»|>|\+)$/i.test(label)
+      || /[?&](page|paged|p|pg|offset|start)=2\b/i.test(href);
+    if (!isNext && !looksPaged) continue;
+    try {
+      const abs = new URL(decodeEntities(href), base);
+      abs.hash = '';
+      for (const key of [...abs.searchParams.keys()]) {
+        if (/^(utm_|aff|ref|fbclid|gclid|_gl)/i.test(key)) abs.searchParams.delete(key);
+      }
+      if (abs.hostname !== base.hostname) continue;
+      const key = paginatedKey(abs.toString());
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.add(abs.toString());
+    } catch { /* not a usable URL */ }
+  }
+  return [...out];
+};
+
+// ---------------------------------------------------------------------------
+// Sitemaps
+// ---------------------------------------------------------------------------
+
+/** Sitemap URLs advertised in robots.txt ("Sitemap:" lines). */
+export const sitemapsFromRobots = (robotsTxt: string): string[] => {
+  const out = new Set<string>();
+  for (const line of robotsTxt.split(/\r?\n/)) {
+    const m = line.replace(/#.*/, '').match(/^\s*sitemap\s*:\s*(\S+)/i);
+    if (m && /^https?:\/\//i.test(m[1])) out.add(m[1]);
+  }
+  return [...out];
+};
+
+const xmlUnescape = (s: string): string =>
+  s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&amp;/g, '&');
+
+/**
+ * Parses a sitemap or sitemap index. For an index the returned URLs are further
+ * sitemap files rather than pages.
+ */
+export const parseSitemap = (xml: string): { urls: string[]; isIndex: boolean } => {
+  const isIndex = /<sitemapindex[\s>]/i.test(xml);
+  const urls: string[] = [];
+  for (const m of xml.matchAll(/<loc>\s*([\s\S]*?)\s*<\/loc>/gi)) {
+    const loc = xmlUnescape(m[1]).trim();
+    if (/^https?:\/\//i.test(loc)) urls.push(loc);
+  }
+  return isIndex
+    ? { urls: urls.filter((l) => /\.xml(\?|$)/i.test(l)), isIndex: true }
+    : { urls, isIndex: false };
+};
+
+/**
+ * How event-like a URL's final slug is. Real event pages carry an id or a
+ * hyphenated title ("/events/12345", "/events/morning-yoga"); browse pages that
+ * survive the filter above tend to be single plain words. Used to spend a
+ * capped page budget on the likeliest events first.
+ */
+const slugSpecificity = (pathname: string): number => {
+  const slug = pathname.split('/').filter(Boolean).pop() ?? '';
+  const decoded = (() => { try { return decodeURIComponent(slug); } catch { return slug; } })();
+  if (/\d/.test(decoded)) return 3;
+  if (decoded.includes('-')) return 2;
+  return 1;
+};
+
+/**
+ * Same-host URLs from a sitemap that sit under an event-ish path, most
+ * event-like first.
+ */
+export const eventUrlsFromSitemap = (urls: string[], siteUrl: string): string[] => {
+  let host: string;
+  try {
+    host = new URL(siteUrl).hostname.replace(/^www\./, '');
+  } catch {
+    return [];
+  }
+  const scored: { url: string; score: number; order: number }[] = [];
+  const seen = new Set<string>();
+  urls.forEach((raw, order) => {
+    let u: URL;
+    try {
+      u = new URL(raw);
+    } catch {
+      return;
+    }
+    if (u.hostname.replace(/^www\./, '') !== host) return;
+    u.hash = '';
+    for (const key of [...u.searchParams.keys()]) {
+      if (/^(utm_|aff|ref|fbclid|gclid|_gl)/i.test(key)) u.searchParams.delete(key);
+    }
+    if (!looksLikeEventPath(u.pathname)) return;
+    const key = `${u.pathname}${u.search}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    scored.push({ url: u.toString(), score: slugSpecificity(u.pathname), order });
+  });
+  return scored
+    .sort((a, b) => b.score - a.score || a.order - b.order)
+    .map((s) => s.url);
 };
 
 // ---------------------------------------------------------------------------
