@@ -40,23 +40,30 @@ const createRateGate = (intervalMs: number) => {
   };
 };
 
-/** Nominatim, then a progressively broader address, then the venue name. */
+/** Nominatim, then the venue name. Rejections are never a verdict on the address. */
 const candidatesFor = (event: { full_address?: string | null; place_name?: string | null; geographical_state?: string | null }): string[] => {
   const queries: string[] = [];
   const full = event.full_address?.trim();
   if (full) {
     queries.push(full);
-    // "12 Smith St, Collingwood VIC 3066" -> "Collingwood VIC 3066"
-    const withoutStreet = full.split(',').slice(1).join(',').trim();
-    if (withoutStreet && withoutStreet !== full) queries.push(withoutStreet);
-    // "Collingwood VIC 3066" -> "Collingwood VIC"
-    const withoutPostcode = withoutStreet.replace(/\s+\d{4}\s*$/, '').trim();
-    if (withoutPostcode && withoutPostcode !== withoutStreet) queries.push(withoutPostcode);
+    // "12 Smith St, Collingwood VIC 3066" -> "Collingwood VIC 3066". Only worth
+    // trying when the leading part is still an address: venue calendars often
+    // store a bare name, and stripping the comma off "Fortress Melbourne, VIC"
+    // leaves "VIC", which matches nothing.
+    const parts = full.split(',').map((part) => part.trim()).filter(Boolean);
+    if (parts.length > 1) {
+      const withoutStreet = parts.slice(1).join(', ');
+      const withoutPostcode = withoutStreet.replace(/\s+\d{4}$/, '').trim();
+      // A bare state or country is not a location.
+      if (withoutStreet.split(' ').length > 1 && withoutStreet !== full) queries.push(withoutStreet);
+      if (withoutPostcode.split(' ').length > 1 && withoutPostcode !== withoutStreet) {
+        queries.push(withoutPostcode);
+      }
+    }
   }
-  if (event.place_name?.trim()) {
-    queries.push(`${event.place_name.trim()}, ${event.geographical_state ?? 'Australia'}`);
-  }
-  return [...new Set(queries.filter(Boolean))];
+  const place = event.place_name?.trim();
+  if (place && place !== full) queries.push(place);
+  return [...new Set(queries.filter((q) => q.length > 3))];
 };
 
 type GeocodeResult =
@@ -69,28 +76,47 @@ const geocode = async (query: string, gate: () => Promise<void>): Promise<Geocod
   const url = `${NOMINATIM}?format=json&limit=1&countrycodes=au&q=${encodeURIComponent(query)}`;
   let response: Response;
   try {
-    response = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+    response = await fetch(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } });
   } catch (err) {
-    // Transient: worth another run, so it must not be recorded as a dead end.
-    return { kind: 'error', detail: String(err) };
+    return { kind: 'error', detail: `network: ${String(err)}` };
   }
-  if (response.status === 429 || response.status >= 500) {
-    return { kind: 'error', detail: `nominatim ${response.status}` };
+
+  // Only a clean 200 counts as "Nominatim says this address does not exist".
+  // Every rejection -- 403 from bot filtering, 429 from rate limiting, 5xx --
+  // is a statement about the request, not the address, so it must stay
+  // retryable. Recording these as misses permanently buried good addresses.
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    return { kind: 'error', detail: `HTTP ${response.status}: ${body.slice(0, 120)}` };
   }
-  if (!response.ok) return { kind: 'miss' };
 
   let data: unknown;
   try {
     data = await response.json();
-  } catch {
-    return { kind: 'error', detail: 'unreadable response' };
+  } catch (err) {
+    return { kind: 'error', detail: `unreadable body: ${String(err)}` };
   }
   if (!Array.isArray(data) || data.length === 0) return { kind: 'miss' };
 
   const lat = Number.parseFloat(data[0].lat);
   const lng = Number.parseFloat(data[0].lon);
-  if (Number.isNaN(lat) || Number.isNaN(lng) || !IN_BOUNDS(lat, lng)) return { kind: 'miss' };
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return { kind: 'miss' };
+  if (!IN_BOUNDS(lat, lng)) return { kind: 'miss' };
   return { kind: 'hit', lat, lng };
+};
+
+/** One request, reported verbatim. Cheaper than a 100-second batch of guesses. */
+const probe = async (query: string): Promise<Record<string, unknown>> => {
+  const url = `${NOMINATIM}?format=json&limit=1&countrycodes=au&q=${encodeURIComponent(query)}`;
+  const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } });
+  const body = await response.text().catch(() => '');
+  return {
+    query,
+    status: response.status,
+    ok: response.ok,
+    headers: Object.fromEntries(response.headers.entries()),
+    body: body.slice(0, 400),
+  };
 };
 
 interface PendingEvent {
@@ -127,14 +153,20 @@ serve(async (req) => {
 
   let limit = DEFAULT_BATCH;
   let retry = false;
+  let wantProbe = false;
   try {
     const body = await req.json();
     if (typeof body?.limit === 'number' && body.limit > 0) {
       limit = Math.min(Math.floor(body.limit), MAX_BATCH);
     }
     retry = body?.retry === true;
+    wantProbe = body?.probe === true;
   } catch {
     // No body is fine; the defaults apply.
+  }
+
+  if (wantProbe) {
+    return jsonResponse(await probe(req.headers.get('x-probe-query') || 'Fortress Melbourne, VIC'));
   }
 
   // Addresses that were fixed after the fact are worth another look.
@@ -162,25 +194,42 @@ serve(async (req) => {
   let cursor = 0;
   let located = 0;
   let stoppedEarly = false;
+  let blocked = false;
 
   const process = async (event: PendingEvent) => {
+    const candidates = candidatesFor(event);
+    if (candidates.length === 0) {
+      failed.push({ id: event.id, event_name: event.event_name, reason: 'no usable address' });
+      await db.from('events').update({ geocode_failed_at: new Date().toISOString() }).eq('id', event.id);
+      return;
+    }
+
     let hit: { lat: number; lng: number } | null = null;
-    let lastQuery = '';
-    for (const query of candidatesFor(event)) {
-      lastQuery = query;
+    let transientDetail: string | null = null;
+    for (const query of candidates) {
       const result = await geocode(query, gate);
       if (result.kind === 'hit') {
         hit = { lat: result.lat, lng: result.lng };
         break;
       }
       if (result.kind === 'error') {
-        transient.push({ id: event.id, event_name: event.event_name, reason: result.detail });
-        return;
+        transientDetail = `${result.detail} (q="${query}")`;
+        break;
       }
     }
 
+    if (transientDetail) {
+      transient.push({ id: event.id, event_name: event.event_name, reason: transientDetail });
+      return;
+    }
+
     if (!hit) {
-      failed.push({ id: event.id, event_name: event.event_name, reason: `no match for "${lastQuery}"` });
+      // Every candidate came back a clean 200 with nothing in it.
+      failed.push({
+        id: event.id,
+        event_name: event.event_name,
+        reason: `no match for ${candidates.map((q) => `"${q}"`).join(' | ')}`,
+      });
       // Remember the dead end. Without this the row looks untouched and every
       // rerun spends its budget re-failing the same hopeless addresses.
       await db.from('events').update({ geocode_failed_at: new Date().toISOString() }).eq('id', event.id);
@@ -202,6 +251,12 @@ serve(async (req) => {
     while (cursor < events.length) {
       if (Date.now() - startedAt > TIME_BUDGET_MS) {
         stoppedEarly = true;
+        return;
+      }
+      // Repeated rejections mean Nominatim is refusing us outright. Grinding on
+      // would just burn the budget, so bail and let a human retry later.
+      if (transient.length >= 3) {
+        blocked = true;
         return;
       }
       await process(events[cursor++]);
@@ -241,6 +296,7 @@ serve(async (req) => {
     remaining: remaining ?? null,
     deadEnds: deadEnds ?? null,
     stoppedEarly,
+    blocked,
     message: `${parts.join(', ')}.`,
   });
 });
