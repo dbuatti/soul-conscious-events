@@ -126,11 +126,11 @@ const AdminPanel = () => {
     }
   };
 
-  const handleResendConfirmation = async (email: string) => {
+  const handleResendConfirmation = async (userId: string, email?: string | null) => {
     const loadingToastId = toast.loading('Resending confirmation...');
     try {
       const response = await supabase.functions.invoke('resend-confirmation', {
-        body: { email },
+        body: { userId, email: email || undefined },
       });
 
       if (response.error) {
@@ -323,7 +323,7 @@ const AdminPanel = () => {
                           <Button variant="ghost" size="icon" title="Edit User" onClick={() => handleEditUser(profile)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Resend Confirmation" onClick={() => handleResendConfirmation(profile.email)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
+                          <Button variant="ghost" size="icon" title="Resend Confirmation" onClick={() => handleResendConfirmation(profile.id, profile.email)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
                             <RefreshCw className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" title="Reset Password" onClick={() => handleResetPassword(profile.id)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
