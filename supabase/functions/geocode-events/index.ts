@@ -15,6 +15,14 @@ const IN_BOUNDS = (lat: number, lng: number) =>
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// A hosted function is killed at its wall-clock limit, and at one request per
+// second a few hundred addresses will not fit in one invocation. So each run
+// spends a fixed budget, writes what it finds, and reports what is left. Running
+// it again picks up exactly where it stopped.
+const TIME_BUDGET_MS = 100_000;
+const DEFAULT_BATCH = 60;
+const MAX_BATCH = 300;
+
 /** Nominatim, then a progressively broader address, then the venue name. */
 const candidatesFor = (event: { full_address?: string | null; place_name?: string | null; geographical_state?: string | null }): string[] => {
   const queries: string[] = [];
@@ -56,6 +64,16 @@ serve(async (req) => {
 
   const db = auth.admin;
 
+  let limit = DEFAULT_BATCH;
+  try {
+    const body = await req.json();
+    if (typeof body?.limit === 'number' && body.limit > 0) {
+      limit = Math.min(Math.floor(body.limit), MAX_BATCH);
+    }
+  } catch {
+    // No body is fine; the defaults apply.
+  }
+
   // Only rows that still need work, so a rerun costs nothing.
   const { data: pending, error } = await db
     .from('events')
@@ -63,17 +81,24 @@ serve(async (req) => {
     .is('latitude', null)
     .not('full_address', 'is', null)
     .eq('is_deleted', false)
-    .limit(1000);
+    .order('event_date', { ascending: true })
+    .limit(limit);
 
   if (error) return jsonResponse({ error: error.message }, 400);
 
   const events = pending ?? [];
   const failed: Array<{ id: string; event_name: string; reason: string }> = [];
+  const startedAt = Date.now();
   let located = 0;
+  let stoppedEarly = false;
 
   for (const event of events) {
     // One request per second for the whole run, including the misses.
     await sleep(REQUEST_INTERVAL_MS);
+    if (Date.now() - startedAt > TIME_BUDGET_MS) {
+      stoppedEarly = true;
+      break;
+    }
 
     let hit: { lat: number; lng: number } | null = null;
     let lastQuery = '';
@@ -104,10 +129,19 @@ serve(async (req) => {
     located++;
   }
 
+  const { count: remaining } = await db
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .is('latitude', null)
+    .not('full_address', 'is', null)
+    .eq('is_deleted', false);
+
   return jsonResponse({
-    checked: events.length,
+    attempted: located + failed.length,
     located,
     failed,
-    message: `${located} of ${events.length} events now have coordinates.`,
+    remaining: remaining ?? null,
+    stoppedEarly,
+    message: `${located} located, ${failed.length} unmatched, ${remaining ?? '?'} still to do.`,
   });
 });
