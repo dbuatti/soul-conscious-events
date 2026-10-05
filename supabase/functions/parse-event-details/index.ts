@@ -14,6 +14,34 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const MAX_INPUT_CHARS = 20000;
+const MAX_SCRAPED_URLS = 3;
+
+// Only scrape public http(s) URLs so user-supplied text can't point the
+// function at loopback, link-local (cloud metadata) or private-network hosts.
+const isPublicHttpUrl = (raw: string): boolean => {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal') || host.endsWith('.local')) return false;
+  if (host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80')) return false;
+  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4) {
+    const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
+    if (a === 0 || a === 10 || a === 127) return false;
+    if (a === 169 && b === 254) return false;
+    if (a === 172 && b >= 16 && b <= 31) return false;
+    if (a === 192 && b === 168) return false;
+    if (a === 100 && b >= 64 && b <= 127) return false;
+  }
+  return true;
+};
+
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -55,6 +83,22 @@ serve(async (req: Request) => {
     const { text } = await req.json();
     input_text = text;
 
+    if (typeof text !== 'string' || !text.trim()) {
+      error_message = 'No text provided to parse.';
+      return new Response(JSON.stringify({ error: error_message }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    if (text.length > MAX_INPUT_CHARS) {
+      error_message = `Text is too long (max ${MAX_INPUT_CHARS} characters).`;
+      return new Response(JSON.stringify({ error: error_message }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 413,
+      });
+    }
+
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
       error_message = 'GEMINI_API_KEY is not set in environment variables.';
@@ -66,7 +110,9 @@ serve(async (req: Request) => {
 
     // Extract URLs from the text to scrape page content and hero images
     const urlRegex = /https?:\/\/[^\s"'<>)\]]+/g;
-    const urls = text.match(urlRegex) || [];
+    const urls = [...new Set<string>(text.match(urlRegex) || [])]
+      .filter(isPublicHttpUrl)
+      .slice(0, MAX_SCRAPED_URLS);
 
     // Scrape a URL: extract hero image + clean page text + structured data for Gemini
     const scrapeUrl = async (url: string): Promise<{ image: string | null; pageText: string; structuredData: string }> => {

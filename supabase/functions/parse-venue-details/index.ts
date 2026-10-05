@@ -53,10 +53,17 @@ serve(async (req: Request) => {
 
     // 2. Parse Request Body
     const { text } = await req.json();
-    if (!text) {
+    if (typeof text !== 'string' || !text.trim()) {
       return new Response(JSON.stringify({ error: 'No text provided to parse' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
+      });
+    }
+
+    if (text.length > 20000) {
+      return new Response(JSON.stringify({ error: 'Text is too long (max 20000 characters).' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 413,
       });
     }
 

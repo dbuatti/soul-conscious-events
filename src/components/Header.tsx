@@ -27,7 +27,7 @@ interface NavItem {
 const Header = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { user, profile } = useSession();
+  const { user, isAdmin } = useSession();
 
   const getButtonClass = (path: string) => {
     const isActive = location.pathname === path || (path !== "/old" && location.pathname.startsWith(path));
@@ -47,7 +47,7 @@ const Header = () => {
     }
   };
 
-  const isAdminUser = profile?.role === 'admin' || user?.email === 'daniele.buatti@gmail.com';
+  const isAdminUser = isAdmin;
 
   const handleAddEventClick = async () => {
     const { error } = await supabase.from('page_visit_logs').insert([

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import EventDetailDialog from './EventDetailDialog';
-import { getBaseEventId } from '@/utils/event-utils';
+import { getBaseEventId, formatPrice } from '@/utils/event-utils';
 import { Event } from '@/types/event';
 
 interface UserEventCardProps {
@@ -27,17 +27,6 @@ interface UserEventCardProps {
   onEventDeleted: () => void; // Callback to refresh the list after deletion
 }
 
-const formatPrice = (price?: string | null) => {
-  if (!price) return 'N/A';
-  const lowerCasePrice = price.toLowerCase();
-  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
-    return price;
-  }
-  if (/\d/.test(price) && !price.startsWith('$')) {
-    return `$${price}`;
-  }
-  return price;
-};
 
 const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) => {
   const location = useLocation();

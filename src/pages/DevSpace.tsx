@@ -22,7 +22,7 @@ const DevSpace = () => {
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
-  const { user: currentUser } = useSession();
+  const { user: currentUser, isAdmin } = useSession();
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
@@ -45,7 +45,7 @@ const DevSpace = () => {
   }, [fetchTasks]);
 
   const handleCreateTestUser = async () => {
-    if (!currentUser || currentUser.email !== 'daniele.buatti@gmail.com') {
+    if (!currentUser || !isAdmin) {
       toast.error('Only the admin can create test users.');
       return;
     }

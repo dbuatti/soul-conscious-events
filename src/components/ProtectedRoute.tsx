@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail, requireAdmin }) => {
-  const { user, profile, isLoading, isProfileLoading } = useSession();
+  const { user, isAdmin, isLoading, isProfileLoading } = useSession();
   const location = useLocation();
 
   // We are "loading" if the session is loading OR if we need an admin role and the profile is still loading
@@ -39,8 +39,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail,
     toast.error('You need to be logged in to access this page.');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-
-  const isAdmin = profile?.role === 'admin' || user.email === 'daniele.buatti@gmail.com';
 
   if (requireAdmin && !isAdmin) {
     console.error('[ProtectedRoute] Admin access denied for user:', user.email);

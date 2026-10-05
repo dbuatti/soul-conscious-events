@@ -95,13 +95,21 @@ const AccountSettings = () => {
           userId: user.id,
           firstName: values.firstName,
           lastName: values.lastName,
-          email: values.email,
           username: values.username,
           country: values.country,
         },
       });
 
       if (response.error) throw new Error(response.error.message);
+
+      // Email changes go through Supabase's confirmation flow rather than the admin API.
+      if (values.email && values.email !== user.email) {
+        const { error: emailError } = await supabase.auth.updateUser({ email: values.email });
+        if (emailError) throw emailError;
+        toast.success('Profile updated! Check your inbox to confirm your new email address.', { id: loadingToastId, duration: 6000 });
+        return;
+      }
+
       toast.success('Profile updated!', { id: loadingToastId });
     } catch (error: unknown) {
       toast.error(`Failed to update: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });

@@ -7,8 +7,33 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
 
+/** Shape returned by the parse-event-details edge function. All fields are best-effort. */
+export interface ParsedEventData {
+  eventName?: string;
+  eventDate?: string;
+  endDate?: string;
+  eventTime?: string;
+  placeName?: string;
+  fullAddress?: string;
+  description?: string;
+  ticketLink?: string;
+  price?: string;
+  specialNotes?: string;
+  organizerContact?: string;
+  eventType?: string;
+  geographicalState?: string;
+  imageUrl?: string;
+  discountCode?: string;
+  googleMapsLink?: string;
+  recurringPattern?: string;
+}
+
+export interface AiParseResponse {
+  parsed_data?: ParsedEventData | null;
+}
+
 interface AiParsingSectionProps {
-  onAiParseComplete: (parsedData: Record<string, unknown>) => void;
+  onAiParseComplete: (response: AiParseResponse) => void;
 }
 
 const DEBUG_SAMPLES = [
@@ -33,8 +58,7 @@ const DEBUG_SAMPLES = [
 const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }) => {
   const [aiText, setAiText] = useState('');
   const [isAiParsing, setIsAiParsing] = useState(false);
-  const { user } = useSession();
-  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
+  const { isAdmin } = useSession();
 
   const handleAiParse = async (textToParse: string = aiText) => {
     const text = textToParse.trim();

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Venue } from '@/types/database';
 import { Check, ChevronsUpDown, MapPin, Plus } from "lucide-react";
 import { cn, extractAustralianState } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,14 +18,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { UseFormReturn } from 'react-hook-form';
+import { EventFormValues } from '@/lib/schemas';
 
 interface VenueSelectProps {
-  form: UseFormReturn<Record<string, unknown>>;
+  form: UseFormReturn<EventFormValues>;
 }
 
 const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
   const [open, setOpen] = useState(false);
-  const [venues, setVenues] = useState<Record<string, unknown>[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
 

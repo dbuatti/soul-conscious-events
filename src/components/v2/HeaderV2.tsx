@@ -17,7 +17,7 @@ import {
 
 const HeaderV2 = () => {
   const location = useLocation();
-  const { user, profile } = useSession();
+  const { user, isAdmin } = useSession();
 
   const handleCreateEventClick = async () => {
     const { error } = await supabase.from('page_visit_logs').insert([{
@@ -38,7 +38,7 @@ const HeaderV2 = () => {
     }
   };
 
-  const isAdminUser = profile?.role === 'admin' || user?.email === 'daniele.buatti@gmail.com';
+  const isAdminUser = isAdmin;
 
   const navItems = user ? [
     { to: "/", label: "Home", icon: Home },

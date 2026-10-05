@@ -1,59 +1,67 @@
-import { format, parseISO, isToday, isFuture, addDays, addWeeks, addMonths } from 'date-fns';
+import {
+  format, parseISO, addDays, addMonths, startOfToday,
+  differenceInCalendarDays, differenceInCalendarMonths,
+} from 'date-fns';
 import { Event } from '@/types/event';
 
 const MAX_RECURRENCE_INSTANCES = 10;
 
-export const generateRecurringInstances = (event: Event): Event[] => {
-  if (!event.recurring_pattern) return [];
+const RECURRENCE_STEP_DAYS: Partial<Record<NonNullable<Event['recurring_pattern']>, number>> = {
+  DAILY: 1,
+  WEEKLY: 7,
+  FORTNIGHTLY: 14,
+};
 
-  const originalStartDate = parseISO(event.event_date);
-  const originalEndDate = event.end_date ? parseISO(event.end_date) : originalStartDate;
-  const duration = originalEndDate.getTime() - originalStartDate.getTime();
+/** The nth occurrence after `start`, computed from the start to avoid month-end drift. */
+const nthOccurrence = (start: Date, pattern: Event['recurring_pattern'], n: number): Date | null => {
+  if (pattern === 'MONTHLY') return addMonths(start, n);
+  const step = pattern ? RECURRENCE_STEP_DAYS[pattern] : undefined;
+  return step ? addDays(start, step * n) : null;
+};
+
+/**
+ * Expands a recurring event into its next upcoming occurrences (excluding the
+ * base event itself), up to MAX_RECURRENCE_INSTANCES and no later than
+ * recurring_end_date (or 3 months from today when unset).
+ */
+export const generateRecurringInstances = (event: Event): Event[] => {
+  const pattern = event.recurring_pattern;
+  if (!pattern || !nthOccurrence(new Date(0), pattern, 1)) return [];
+
+  const start = parseISO(event.event_date);
+  if (isNaN(start.getTime())) return [];
+
+  const originalEndDate = event.end_date ? parseISO(event.end_date) : start;
+  const durationDays = differenceInCalendarDays(originalEndDate, start);
+  const today = startOfToday();
   const endCap = event.recurring_end_date
     ? parseISO(event.recurring_end_date)
-    : addMonths(new Date(), 3);
+    : addMonths(today, 3);
+
+  // Jump close to today so long-running series still produce upcoming
+  // instances instead of exhausting the cap on past dates.
+  let n = 1;
+  if (start < today) {
+    const step = RECURRENCE_STEP_DAYS[pattern];
+    const elapsed = step
+      ? Math.floor(differenceInCalendarDays(today, start) / step)
+      : differenceInCalendarMonths(today, start);
+    n = Math.max(1, elapsed);
+  }
 
   const instances: Event[] = [];
-  let currentDate = originalStartDate;
-  let count = 0;
+  while (instances.length < MAX_RECURRENCE_INSTANCES) {
+    const nextDate = nthOccurrence(start, pattern, n++)!;
+    if (nextDate > endCap) break;
+    if (nextDate < today) continue;
 
-  while (count < MAX_RECURRENCE_INSTANCES) {
-    let nextDate: Date;
-
-    switch (event.recurring_pattern) {
-      case 'DAILY':
-        nextDate = addDays(currentDate, 1);
-        break;
-      case 'WEEKLY':
-        nextDate = addWeeks(currentDate, 1);
-        break;
-      case 'FORTNIGHTLY':
-        nextDate = addWeeks(currentDate, 2);
-        break;
-      case 'MONTHLY':
-        nextDate = addMonths(currentDate, 1);
-        break;
-      default:
-        return instances;
-    }
-
-    if (nextDate > endCap) {
-      break;
-    }
-
-    if (isFuture(nextDate) || isToday(nextDate)) {
-      const newEvent: Event = {
-        ...event,
-        id: `${event.id}-${format(nextDate, 'yyyyMMdd')}`,
-        event_date: format(nextDate, 'yyyy-MM-dd'),
-        end_date: event.end_date ? format(new Date(nextDate.getTime() + duration), 'yyyy-MM-dd') : undefined,
-        is_recurring_instance: true,
-      };
-      instances.push(newEvent);
-    }
-    
-    currentDate = nextDate;
-    count++;
+    instances.push({
+      ...event,
+      id: `${event.id}-${format(nextDate, 'yyyyMMdd')}`,
+      event_date: format(nextDate, 'yyyy-MM-dd'),
+      end_date: event.end_date ? format(addDays(nextDate, durationDays), 'yyyy-MM-dd') : undefined,
+      is_recurring_instance: true,
+    });
   }
   return instances;
 };
@@ -92,16 +100,29 @@ export const isValidEventId = (id: string): boolean => {
 };
 
 // Calendar Export Utilities
+// Event times are free text, so exports are all-day events. All-day ranges
+// use bare dates (no time or 'Z'), with an exclusive end date.
+const getAllDayRange = (event: Event) => {
+  const start = parseISO(event.event_date);
+  const lastDay = event.end_date ? parseISO(event.end_date) : start;
+  return {
+    start: format(start, 'yyyyMMdd'),
+    end: format(addDays(lastDay, 1), 'yyyyMMdd'),
+  };
+};
+
+const getCalendarDetails = (event: Event) =>
+  [event.event_time && `Time: ${event.event_time}`, event.description, event.ticket_link]
+    .filter(Boolean)
+    .join('\n\n');
+
 export const getGoogleCalendarUrl = (event: Event) => {
-  const start = format(parseISO(event.event_date), "yyyyMMdd'T'HHmm00'Z'");
-  const end = event.end_date 
-    ? format(parseISO(event.end_date), "yyyyMMdd'T'HHmm00'Z'")
-    : format(addDays(parseISO(event.event_date), 1), "yyyyMMdd'T'HHmm00'Z'");
-  
+  const { start, end } = getAllDayRange(event);
+
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: event.event_name,
-    details: event.description || '',
+    details: getCalendarDetails(event),
     location: event.full_address || event.place_name || '',
     dates: `${start}/${end}`,
   });
@@ -109,30 +130,42 @@ export const getGoogleCalendarUrl = (event: Event) => {
   return `https://www.google.com/calendar/render?${params.toString()}`;
 };
 
+const escapeIcsText = (value: string) =>
+  value
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
+
 export const downloadIcalFile = (event: Event) => {
-  const start = format(parseISO(event.event_date), "yyyyMMdd'T'HHmm00'Z'");
-  const end = event.end_date 
-    ? format(parseISO(event.end_date), "yyyyMMdd'T'HHmm00'Z'")
-    : format(addDays(parseISO(event.event_date), 1), "yyyyMMdd'T'HHmm00'Z'");
+  const { start, end } = getAllDayRange(event);
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
+    'PRODID:-//SoulFlow//Events//EN',
+    'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
-    `SUMMARY:${event.event_name}`,
-    `DTSTART:${start}`,
-    `DTEND:${end}`,
-    `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
-    `LOCATION:${event.full_address || event.place_name || ''}`,
+    `UID:${event.id}@soulflow`,
+    `DTSTAMP:${stamp}`,
+    `SUMMARY:${escapeIcsText(event.event_name)}`,
+    `DTSTART;VALUE=DATE:${start}`,
+    `DTEND;VALUE=DATE:${end}`,
+    `DESCRIPTION:${escapeIcsText(getCalendarDetails(event))}`,
+    `LOCATION:${escapeIcsText(event.full_address || event.place_name || '')}`,
+    ...(event.ticket_link ? [`URL:${event.ticket_link}`] : []),
     'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\n');
+    'END:VCALENDAR',
+  ].join('\r\n');
 
   const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.href = window.URL.createObjectURL(blob);
-  link.setAttribute('download', `${event.event_name.replace(/\s+/g, '_')}.ics`);
+  link.href = url;
+  link.setAttribute('download', `${event.event_name.replace(/[^\w-]+/g, '_')}.ics`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 };

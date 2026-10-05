@@ -31,9 +31,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   isFeaturedToday = false,
   additionalDatesCount = 0,
 }) => {
-  const { user } = useSession();
-  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
-  const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
+  const { user, isAdmin } = useSession();
+  const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const isFree = event.price?.toLowerCase().includes('free');

@@ -10,25 +10,16 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { formatPrice } from '@/utils/event-utils';
+import { EventFormValues } from '@/lib/schemas';
 
 interface EventPreviewDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  previewData: Record<string, unknown> | null;
+  previewData: EventFormValues | null;
   imagePreviewUrl: string | null;
 }
 
-const formatPrice = (price?: string | null) => {
-  if (!price) return 'N/A';
-  const lowerCasePrice = price.toLowerCase();
-  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
-    return price;
-  }
-  if (/\d/.test(price) && !price.startsWith('$')) {
-    return `$${price}`;
-  }
-  return price;
-};
 
 const EventPreviewDialog: React.FC<EventPreviewDialogProps> = ({ isOpen, onClose, previewData, imagePreviewUrl }) => {
   if (!previewData) return null;

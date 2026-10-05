@@ -6,6 +6,20 @@ import { Calendar, MapPin, Loader2, CheckCircle2, AlertCircle } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { createRoot } from 'react-dom/client';
 
+// Geocodes rarely change, so persist them across visits to spare Nominatim.
+// Storage can throw (private mode, blocked site data), so failures are ignored.
+const geoCache = {
+  get(key: string): string | null {
+    try { return localStorage.getItem(key); } catch { return null; }
+  },
+  set(key: string, value: string) {
+    try { localStorage.setItem(key, value); } catch { /* ignore */ }
+  },
+  remove(key: string) {
+    try { localStorage.removeItem(key); } catch { /* ignore */ }
+  },
+};
+
 interface GeocodedEvent extends Event {
   lat: number;
   lng: number;
@@ -63,7 +77,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         if (!isMounted) break;
 
         const cacheKey = `geo_v6_${event.full_address}`;
-        const cached = sessionStorage.getItem(cacheKey);
+        const cached = geoCache.get(cacheKey);
         
         if (cached) {
           try {
@@ -77,7 +91,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
               continue;
             }
           } catch (e) {
-            sessionStorage.removeItem(cacheKey);
+            geoCache.remove(cacheKey);
           }
         }
 
@@ -113,7 +127,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
             const lng = parseFloat(data[0].lon);
             if (!isNaN(lat) && !isNaN(lng)) {
               results.push({ ...event, lat, lng });
-              sessionStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
+              geoCache.set(cacheKey, JSON.stringify({ lat, lng }));
               if (isMounted) {
                 setGeocodedEvents([...results]);
                 setGeocodingStatus(prev => ({ ...prev, completed: prev.completed + 1 }));

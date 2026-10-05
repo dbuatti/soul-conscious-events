@@ -22,26 +22,15 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
-import { getBaseEventId } from '@/utils/event-utils';
+import { getBaseEventId, formatPrice } from '@/utils/event-utils';
 import SEO from '@/components/SEO';
 import EventCardFallback from '@/components/EventCardFallback';
 
-const formatPrice = (price?: string | null) => {
-  if (!price) return 'N/A';
-  const lowerCasePrice = price.toLowerCase();
-  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
-    return price;
-  }
-  if (/\d/.test(price) && !price.startsWith('$')) {
-    return `$${price}`;
-  }
-  return price;
-};
 
 const EventDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isLoading: isSessionLoading } = useSession();
+  const { user, isAdmin, isLoading: isSessionLoading } = useSession();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -171,7 +160,7 @@ const EventDetailPage: React.FC = () => {
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
     : '#');
 
-  const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
+  const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
   const startDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
   const dateDisplay = endDate && !isSameDay(startDate, endDate)

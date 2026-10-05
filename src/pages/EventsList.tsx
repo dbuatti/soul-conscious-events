@@ -49,8 +49,7 @@ const EventsList = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
 
-  const { user, isLoading: isSessionLoading } = useSession();
-  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
+  const { user, isAdmin, isLoading: isSessionLoading } = useSession();
   const location = useLocation();
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { EventFormValues } from '@/lib/schemas';
 import { format, addMonths, isFuture, isToday } from 'date-fns';
 import { Repeat, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,7 +13,7 @@ import { generateRecurringInstances } from '@/utils/event-utils';
 import { Event } from '@/types/event';
 
 interface RecurringEventFieldsProps {
-  form: UseFormReturn<Record<string, unknown>>;
+  form: UseFormReturn<EventFormValues>;
 }
 
 const recurrenceOptions = [
@@ -39,7 +40,7 @@ const RecurringEventFields: React.FC<RecurringEventFieldsProps> = ({ form }) => 
   const eventDate: Date | undefined = form.watch('eventDate');
   const recurringEndDate: Date | undefined = form.watch('recurringEndDate');
 
-  const isRecurring = !!(recurringPattern && recurringPattern !== 'NONE' && recurringPattern !== '');
+  const isRecurring = !!(recurringPattern && recurringPattern !== 'NONE');
 
   const occurrencePreview = useMemo(() => {
     if (!isRecurring || !(eventDate instanceof Date)) return null;

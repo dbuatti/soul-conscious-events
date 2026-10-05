@@ -1,19 +1,7 @@
-import { australianStates } from '@/lib/constants';
+import { australianStates, eventTypes } from '@/lib/constants';
 
-export const v2EventCategories = [
-  'Wellness',
-  'Dance & Movement',
-  'Consciousness & Spirituality',
-  'Arts & Creativity',
-  'Community & Social',
-  'Music',
-  'Food & Drink',
-  'Relationships & Connection',
-  'Talks & Learning',
-  'Local Culture',
-  'Nature & Outdoors',
-  'Other',
-];
+// Must match the categories events are saved with (EventForm, admin table, AI parser).
+export const v2EventCategories = eventTypes.filter((type) => type !== 'All');
 
 export const v2PriceOptions = [
   'Free',

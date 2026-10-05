@@ -6,9 +6,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import EventForm from '@/components/EventForm';
-import AiParsingSection from '@/components/AiParsingSection';
+import AiParsingSection, { AiParseResponse } from '@/components/AiParsingSection';
 import EventPreviewDialog from '@/components/EventPreviewDialog';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
 import SEO from '@/components/SEO';
 
@@ -93,30 +93,26 @@ const SubmitEvent = () => {
     logPageVisit();
   }, [user?.id]);
 
-  const handleAiParseComplete = (response: Record<string, unknown>) => {
-    const parsedData = response?.parsed_data as Record<string, unknown> | undefined;
+  const handleAiParseComplete = (response: AiParseResponse) => {
+    const parsedData = response?.parsed_data;
     if (!parsedData) {
       toast.error('AI parsing returned no data.');
       return;
     }
 
-    let eventDate: Date | undefined;
-    let endDate: Date | undefined;
-
-    if (parsedData.eventDate) {
-      eventDate = new Date(parsedData.eventDate);
-    }
-    if (parsedData.endDate) {
-      endDate = new Date(parsedData.endDate);
-    }
-
-    if (eventDate && isNaN(eventDate.getTime())) eventDate = undefined;
-    if (endDate && isNaN(endDate.getTime())) endDate = undefined;
+    // parseISO treats 'YYYY-MM-DD' as local midnight; new Date() would use UTC.
+    const toDate = (value?: string) => {
+      if (!value) return undefined;
+      const date = parseISO(value);
+      return isNaN(date.getTime()) ? undefined : date;
+    };
+    const recurringPatterns = ['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY'] as const;
+    const recurringPattern = recurringPatterns.find((p) => p === parsedData.recurringPattern) ?? 'NONE';
 
     form.reset({
       eventName: parsedData.eventName || '',
-      eventDate: eventDate,
-      endDate: endDate,
+      eventDate: toDate(parsedData.eventDate),
+      endDate: toDate(parsedData.endDate),
       eventTime: parsedData.eventTime || '',
       placeName: parsedData.placeName || '',
       fullAddress: parsedData.fullAddress || '',
@@ -130,7 +126,7 @@ const SubmitEvent = () => {
       imageUrl: parsedData.imageUrl || '',
       discountCode: parsedData.discountCode || '',
       googleMapsLink: parsedData.googleMapsLink || '',
-      recurringPattern: parsedData.recurringPattern || 'NONE',
+      recurringPattern,
     });
 
     if (parsedData.imageUrl) {

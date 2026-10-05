@@ -54,7 +54,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Link, useLocation } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import EventDetailDialog from './EventDetailDialog';
-import { getBaseEventId, isValidEventId } from '@/utils/event-utils';
+import { getBaseEventId, isValidEventId, formatPrice } from '@/utils/event-utils';
 
 interface Event {
   id: string;
@@ -107,17 +107,6 @@ const eventApprovalStatuses = [
   'approved', 'pending', 'rejected'
 ];
 
-const formatPrice = (price?: string | null) => {
-  if (!price) return 'N/A';
-  const lowerCasePrice = price.toLowerCase();
-  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
-    return price;
-  }
-  if (/\d/.test(price) && !price.startsWith('$')) {
-    return `$${price}`;
-  }
-  return price;
-};
 
 const EventManagementTable = () => {
   const [events, setEvents] = useState<Event[]>([]);

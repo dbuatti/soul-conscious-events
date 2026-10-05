@@ -59,7 +59,7 @@ interface EventDetailDialogProps {
 
 const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose, cameFromCalendar = false }) => {
   const navigate = useNavigate();
-  const { user } = useSession();
+  const { user, isAdmin } = useSession();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -168,7 +168,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   const startDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
   const dateDisplay = endDate && !isSameDay(startDate, endDate) ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}` : format(startDate, 'MMM d, yyyy');
-  const isCreatorOrAdmin = user?.id === event.user_id || user?.email === 'daniele.buatti@gmail.com';
+  const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
 
   const Content = (
     <div className="flex flex-col h-full min-h-0">

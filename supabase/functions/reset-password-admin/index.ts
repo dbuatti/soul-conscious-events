@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, jsonResponse, requireAdmin } from '../_shared/auth.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,50 +7,30 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await requireAdmin(req);
+    if (!auth.ok) return auth.response;
+
     const { userId, newPassword } = await req.json();
 
     if (!userId || !newPassword) {
-      return new Response(JSON.stringify({ error: 'User ID and new password are required.' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
+      return jsonResponse({ error: 'User ID and new password are required.' }, 400);
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    if (typeof newPassword !== 'string' || newPassword.length < 6) {
+      return jsonResponse({ error: 'Password must be at least 6 characters long.' }, 400);
+    }
 
-    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
-      userId,
-      { password: newPassword }
-    );
+    const { error } = await auth.admin.auth.admin.updateUserById(userId, { password: newPassword });
 
     if (error) {
       console.error('Error resetting user password:', error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
+      return jsonResponse({ error: error.message }, 400);
     }
 
-    return new Response(JSON.stringify({ message: 'User password reset successfully', data }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
-
+    return jsonResponse({ message: 'User password reset successfully' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('Unexpected error in reset-password-admin function:', error);
-    return new Response(JSON.stringify({ error: message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return jsonResponse({ error: message }, 500);
   }
 });

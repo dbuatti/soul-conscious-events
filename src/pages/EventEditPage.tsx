@@ -17,7 +17,7 @@ const EventEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isLoading: isSessionLoading } = useSession();
+  const { user, isAdmin, isLoading: isSessionLoading } = useSession();
   const [loadingEvent, setLoadingEvent] = useState(true);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -159,18 +159,23 @@ const EventEditPage: React.FC = () => {
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
         google_maps_link: values.googleMapsLink || null,
-        recurring_pattern: values.recurringPattern === 'NONE' ? null : values.recurringPattern,
+        recurring_pattern: !values.recurringPattern || values.recurringPattern === 'NONE' ? null : values.recurringPattern,
         recurring_end_date: values.recurringEndDate ? format(values.recurringEndDate, 'yyyy-MM-dd') : null,
         event_days: values.eventDays || null,
-        user_id: user?.id || null,
-        approval_status: 'approved',
       };
 
       let error;
       if (isDuplicating) {
-        const { error: insertError } = await supabase.from('events').insert([eventData]);
+        // A duplicate is a new event owned by whoever made the copy.
+        const { error: insertError } = await supabase.from('events').insert([{
+          ...eventData,
+          user_id: user?.id || null,
+          approval_status: 'approved',
+        }]);
         error = insertError;
       } else {
+        // Keep the original owner and moderation status: an admin editing someone
+        // else's event must not take ownership, and editing must not un-reject an event.
         const { error: updateError } = await supabase.from('events').update(eventData).eq('id', baseId);
         error = updateError;
       }
@@ -215,6 +220,15 @@ const EventEditPage: React.FC = () => {
     return (
       <div className="w-full max-w-6xl px-4 text-center py-20">
         <p className="text-muted-foreground">Event not found.</p>
+      </div>
+    );
+  }
+
+  const canEdit = isDuplicating || isAdmin || (!!user && user.id === currentEvent.user_id);
+  if (!canEdit) {
+    return (
+      <div className="w-full max-w-6xl px-4 text-center py-20">
+        <p className="text-muted-foreground">You don't have permission to edit this event.</p>
       </div>
     );
   }

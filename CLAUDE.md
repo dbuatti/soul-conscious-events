@@ -9,6 +9,7 @@ pnpm dev          # Start local dev server (Vite)
 pnpm build        # Production build
 pnpm build:dev    # Build in development mode
 pnpm lint         # Run ESLint
+pnpm typecheck    # Type-check (Vite builds do not type-check)
 pnpm preview      # Preview production build locally
 ```
 
@@ -25,7 +26,7 @@ The app has two coexisting UI generations sharing the same Supabase backend:
 - **V2 (active, default)** — all routes under `/` use `LayoutV2` with `HeaderV2` and `Footer`. This is the production UI.
 - **Legacy (kept for reference)** — all routes under `/old` use the original `Layout`. Not actively developed.
 
-Route protection is handled by `ProtectedRoute`, which supports `requireAdmin` for admin-only pages. Admin access is granted when `profile.role === 'admin'` **or** the user's email is `daniele.buatti@gmail.com`.
+Route protection is handled by `ProtectedRoute`, which supports `requireAdmin` for admin-only pages. Admin access is granted when `profile.role === 'admin'` **or** the user's email is `daniele.buatti@gmail.com`. Use `isAdmin` from `useSession()` rather than re-implementing this check.
 
 ### Auth & Session (`src/components/SessionContextProvider.tsx`)
 
@@ -45,7 +46,7 @@ The Supabase client is a singleton at `src/integrations/supabase/client.ts`. Imp
 ### Event Data Flow
 
 1. `EventsListV2` fetches all approved, non-deleted events from Supabase on mount (using the raw REST API first for resilience, falling back to the JS client).
-2. Recurring events: events with a `recurring_pattern` field (`DAILY/WEEKLY/FORTNIGHTLY/MONTHLY`) are expanded client-side into up to 10 future instances (max 3 months out) by `generateRecurringInstances()` in `src/utils/event-utils.ts`. Recurring instances get synthetic IDs in the format `{uuid}-{yyyyMMdd}`.
+2. Recurring events: events with a `recurring_pattern` field (`DAILY/WEEKLY/FORTNIGHTLY/MONTHLY`) are expanded client-side into up to 10 upcoming instances (until `recurring_end_date`, or 3 months out when unset) by `generateRecurringInstances()` in `src/utils/event-utils.ts`. Recurring instances get synthetic IDs in the format `{uuid}-{yyyyMMdd}`.
 3. `getBaseEventId()` strips the date suffix from recurring instance IDs to recover the real database UUID before any DB write.
 4. Filtering is entirely client-side via the `useEventFilters` hook, which memoizes results against `allEvents`, `filters`, and `searchTerm`.
 
@@ -60,7 +61,7 @@ The Supabase client is a singleton at `src/integrations/supabase/client.ts`. Imp
 All written in Deno TypeScript. Key functions:
 - `parse-event-details` — calls Google Gemini API (`gemini-2.5-flash`) to parse raw event text into structured JSON. Requires `GEMINI_API_KEY` env var.
 - `parse-venue-details` — similar AI parsing for venues.
-- `delete-user` / `update-user-metadata` / `resend-confirmation` / `reset-password-admin` — admin user management utilities.
+- `delete-user` / `update-user-metadata` / `resend-confirmation` / `reset-password-admin` / `create-test-user` — admin user management utilities. These run with the service-role key, so each must authorize the caller via `supabase/functions/_shared/auth.ts` (`requireAdmin` / `requireUser`).
 
 ### Views
 

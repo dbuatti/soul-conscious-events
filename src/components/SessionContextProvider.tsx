@@ -1,14 +1,19 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { Profile } from '@/types/database';
 import { useNavigate } from 'react-router-dom';
+
+// The site owner is always an admin, even before their profile row has loaded.
+export const SUPER_ADMIN_EMAIL = 'daniele.buatti@gmail.com';
 
 interface SessionContextType {
   session: Session | null;
   user: User | null;
-  profile: Record<string, unknown> | null;
+  profile: Profile | null;
   isLoading: boolean;
   isProfileLoading: boolean;
+  isAdmin: boolean;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -16,7 +21,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const navigate = useNavigate();
@@ -43,7 +48,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
         const { data, error } = await Promise.race([
           supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
           timeoutPromise,
-        ]) as { data: Record<string, unknown> | null; error: unknown };
+        ]) as { data: Profile | null; error: unknown };
 
         if (error) throw error;
         if (data && !cancelled) setProfile(data);
@@ -106,8 +111,10 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     };
   }, [navigate]);
 
+  const isAdmin = profile?.role === 'admin' || user?.email === SUPER_ADMIN_EMAIL;
+
   return (
-    <SessionContext.Provider value={{ session, user, profile, isLoading, isProfileLoading }}>
+    <SessionContext.Provider value={{ session, user, profile, isLoading, isProfileLoading, isAdmin }}>
       {children}
     </SessionContext.Provider>
   );

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { EventAnalyticsLog, DiscountCodeUsageLog } from '@/types/database';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -83,14 +84,14 @@ const Dashboard: React.FC = () => {
       metrics[e.id] = { views: 0, ticketClicks: 0, discountCopies: 0 };
     });
 
-    analyticsLogs.forEach((log: Record<string, unknown>) => {
+    analyticsLogs.forEach((log: EventAnalyticsLog) => {
       const eventId = log.event_id as string;
       if (!metrics[eventId]) return;
       if (log.log_type === 'view') metrics[eventId].views++;
       else if (log.log_type === 'ticket_click') metrics[eventId].ticketClicks++;
     });
 
-    discountLogs.forEach((log: Record<string, unknown>) => {
+    discountLogs.forEach((log: DiscountCodeUsageLog) => {
       const eventId = log.event_id as string;
       if (metrics[eventId]) metrics[eventId].discountCopies++;
     });
@@ -106,7 +107,7 @@ const Dashboard: React.FC = () => {
 
     let thisWeek = 0;
     let lastWeek = 0;
-    analyticsLogs.forEach((log: Record<string, unknown>) => {
+    analyticsLogs.forEach((log: EventAnalyticsLog) => {
       if (log.log_type !== 'view') return;
       const d = parseISO(log.logged_at);
       if (d >= thisWeekStart && d <= thisWeekEnd) thisWeek++;

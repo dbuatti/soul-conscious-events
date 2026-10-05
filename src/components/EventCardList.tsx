@@ -9,7 +9,7 @@ import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, PlusCircle } from 'lucide-react';
-import { getBaseEventId } from '@/utils/event-utils';
+import { getBaseEventId, formatPrice } from '@/utils/event-utils';
 
 interface EventCardListProps {
   events: Event[];
@@ -21,17 +21,6 @@ interface EventCardListProps {
   onClearFilters?: () => void;
 }
 
-const formatPrice = (price?: string | null) => {
-  if (!price) return 'N/A';
-  const lowerCasePrice = price.toLowerCase();
-  if (lowerCasePrice === 'free' || lowerCasePrice === 'donation') {
-    return price;
-  }
-  if (/\d/.test(price) && !price.startsWith('$')) {
-    return `$${price}`;
-  }
-  return price;
-};
 
 const EventCardList: React.FC<EventCardListProps> = ({
   events,
@@ -42,8 +31,7 @@ const EventCardList: React.FC<EventCardListProps> = ({
   hasActiveFilters = false,
   onClearFilters,
 }) => {
-  const { user } = useSession();
-  const isAdmin = user?.email === 'daniele.buatti@gmail.com';
+  const { user, isAdmin } = useSession();
 
   if (loading) {
     return (
@@ -91,7 +79,7 @@ const EventCardList: React.FC<EventCardListProps> = ({
   }
 
   const renderEventCard = (event: Event) => {
-    const isCreatorOrAdmin = user?.id === event.user_id || isAdmin;
+    const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
     const dateDisplay = event.end_date && event.event_date !== event.end_date
       ? `${format(parseISO(event.event_date), 'PPP')} - ${format(parseISO(event.end_date), 'PPP')}`
       : format(parseISO(event.event_date), 'PPP');

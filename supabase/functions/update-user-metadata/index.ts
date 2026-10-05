@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, jsonResponse, requireUser } from '../_shared/auth.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,74 +7,60 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await requireUser(req);
+    if (!auth.ok) return auth.response;
+
     const { userId, firstName, lastName, email, username, country } = await req.json();
 
     if (!userId) {
-      return new Response(JSON.stringify({ error: 'User ID is required.' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
+      return jsonResponse({ error: 'User ID is required.' }, 400);
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    // Users may only edit themselves; admins may edit anyone.
+    const isSelf = userId === auth.user.id;
+    if (!isSelf && !auth.isAdmin) {
+      return jsonResponse({ error: 'Forbidden' }, 403);
+    }
 
-    // Update auth.users table (for email and user_metadata)
-    const { data: authUpdateData, error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
+    // Changing email through the admin API skips the confirmation step, so only
+    // admins may do it here. Users change their email via supabase.auth.updateUser.
+    const emailChanged = typeof email === 'string' && email !== '' && email !== (isSelf ? auth.user.email : undefined);
+    if (emailChanged && !auth.isAdmin) {
+      return jsonResponse({ error: 'Email changes must be confirmed via the account settings page.' }, 403);
+    }
+
+    const { data: authUpdateData, error: authUpdateError } = await auth.admin.auth.admin.updateUserById(
       userId,
       {
-        email: email,
+        ...(emailChanged ? { email } : {}),
         user_metadata: { first_name: firstName, last_name: lastName },
       }
     );
 
     if (authUpdateError) {
       console.error('Error updating user in auth.users:', authUpdateError);
-      return new Response(JSON.stringify({ error: authUpdateError.message }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
+      return jsonResponse({ error: authUpdateError.message }, 400);
     }
 
-    // Update public.profiles table (for first_name, last_name, email, username, country)
-    const { data: profileUpdateData, error: profileUpdateError } = await supabaseAdmin
+    const profileUpdate: Record<string, unknown> = { first_name: firstName, last_name: lastName };
+    if (emailChanged) profileUpdate.email = email;
+    if (username !== undefined) profileUpdate.username = username;
+    if (country !== undefined) profileUpdate.country = country;
+
+    const { error: profileUpdateError } = await auth.admin
       .from('profiles')
-      .update({
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-        username: username,
-        country: country,
-      })
+      .update(profileUpdate)
       .eq('id', userId);
 
     if (profileUpdateError) {
       console.error('Error updating user in public.profiles:', profileUpdateError);
-      return new Response(JSON.stringify({ error: profileUpdateError.message }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
+      return jsonResponse({ error: profileUpdateError.message }, 400);
     }
 
-    return new Response(JSON.stringify({ message: 'User updated successfully', authData: authUpdateData, profileData: profileUpdateData }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
-
+    return jsonResponse({ message: 'User updated successfully', authData: authUpdateData });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('Unexpected error in update-user-metadata function:', error);
-    return new Response(JSON.stringify({ error: message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return jsonResponse({ error: message }, 500);
   }
 });

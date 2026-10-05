@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Venue } from '@/types/database';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -24,11 +25,11 @@ const venueSchema = z.object({
 type VenueFormValues = z.infer<typeof venueSchema>;
 
 const VenueManagementTable = () => {
-  const [venues, setVenues] = useState<Record<string, unknown>[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAiParsing, setIsAiParsing] = useState(false);
   const [rawText, setRawText] = useState('');
-  const [editingVenue, setEditingVenue] = useState<Record<string, unknown> | null>(null);
+  const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
 
   const form = useForm<VenueFormValues>({
     resolver: zodResolver(venueSchema),
@@ -73,7 +74,7 @@ const VenueManagementTable = () => {
     }
   };
 
-  const handleEdit = (venue: Record<string, unknown>) => {
+  const handleEdit = (venue: Venue) => {
     setEditingVenue(venue);
     form.reset({
       name: venue.name || '',

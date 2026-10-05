@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { EventAnalyticsLog, DiscountCodeUsageLog, PageVisitLog } from '@/types/database';
 import { toast } from 'sonner';
 import {
   Table,
@@ -98,8 +99,9 @@ const AnalyticsDashboard: React.FC = () => {
 
     const aggregatedData: { [key: string]: EventAnalytics } = {};
 
-    logs.forEach((log: Record<string, unknown>) => {
-      const eventId = log.event_id as string;
+    // Supabase types the joined `events` relation as an array; at runtime it's a single row.
+    (logs as unknown as EventAnalyticsLog[]).forEach((log) => {
+      const eventId = log.event_id;
       const eventName = log.events?.event_name || 'Unknown Event';
 
       if (!aggregatedData[eventId]) {
@@ -119,7 +121,7 @@ const AnalyticsDashboard: React.FC = () => {
       }
     });
 
-    discountLogs.forEach((log: Record<string, unknown>) => {
+    discountLogs.forEach((log: DiscountCodeUsageLog) => {
       const eventId = log.event_id;
       if (aggregatedData[eventId]) {
         aggregatedData[eventId].total_discount_copies++;
@@ -172,7 +174,7 @@ const AnalyticsDashboard: React.FC = () => {
 
     const aggregatedData: { [key: string]: PageAnalytics } = {};
 
-    logs.forEach((log: Record<string, unknown>) => {
+    logs.forEach((log: PageVisitLog) => {
       const pagePath = log.page_path as string;
 
       if (!aggregatedData[pagePath]) {

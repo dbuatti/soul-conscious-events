@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { EventFormValues } from '@/lib/schemas';
 import { Image as ImageIcon, XCircle, Upload, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +36,7 @@ const defaultImages = [
 ];
 
 interface ImageUploadInputProps {
-  form: UseFormReturn<Record<string, unknown>>;
+  form: UseFormReturn<EventFormValues>;
   currentImageUrl?: string | null;
   name: 'imageFile' | 'imageUrl';
 }

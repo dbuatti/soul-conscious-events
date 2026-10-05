@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY as ANON_KEY } from '@/integrations/supabase/client';
 import { format, parseISO, isToday, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,11 +23,11 @@ import SEO from '@/components/SEO';
 const EVENTS_PER_LOAD = 8;
 
 const QUICK_FILTERS = [
-  { label: 'Wellness', value: 'Wellness' },
   { label: 'Music', value: 'Music' },
   { label: 'Meditation', value: 'Meditation' },
-  { label: 'Dance', value: 'Dance & Movement' },
-  { label: 'Social', value: 'Community & Social' },
+  { label: 'Sound Bath', value: 'Sound Bath' },
+  { label: 'Workshops', value: 'Workshop' },
+  { label: 'Community', value: 'Community Gathering' },
 ];
 
 const EventsListV2 = () => {
@@ -92,8 +92,8 @@ const EventsListV2 = () => {
     }
   }, [user]);
 
-  const processEventData = (data: Record<string, unknown>[]) => {
-    const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
+  const processEventData = (data: Event[]) => {
+    const validEvents = (data || []).filter(event => typeof event.id === 'string' && event.id.length > 30);
 
     let combinedEvents: Event[] = [];
     validEvents.forEach(event => {
@@ -115,9 +115,6 @@ const EventsListV2 = () => {
     setLoading(true);
     setDbStatus('checking');
     
-    const SUPABASE_URL = "https://tbyjdhxpbfvqsrzzdjwi.supabase.co";
-    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieWpkaHhwYmZ2cXNyenpkandpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzYyNzIsImV4cCI6MjA2OTE1MjI3Mn0.1BpuFdmZnV_-jjncopxWODAGn7-Coh716jzbYeTrNT4";
-
     try {
       const rawResponse = await fetch(`${SUPABASE_URL}/rest/v1/events?approval_status=eq.approved&is_deleted=eq.false&order=event_date.asc`, {
         method: 'GET',
