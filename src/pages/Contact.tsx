@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import SEO from '@/components/SEO';
+import PageHeader from '@/components/v2/PageHeader';
 
 const contactFormSchema = z.object({
   name: z.string().optional(),
@@ -62,11 +63,13 @@ const Contact = () => {
         title="Contact Us | SoulFlow Australia"
         description="Get in touch with the SoulFlow team. Share your suggestions, feedback, or recommendations to help us co-create a better conscious community platform."
       />
-      <div className="mb-16 text-center">
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Contact Us</h1>
-      </div>
+      <PageHeader
+        eyebrow="Get in touch"
+        title="Say hello"
+        description="Questions, ideas, a bug, or an event you think we should feature? Every message is read by a real person."
+      />
 
-      <div className="max-w-2xl mx-auto organic-card p-8 sm:p-12 rounded-[3rem]">
+      <div className="max-w-2xl mx-auto organic-card p-8 sm:p-12 rounded-[2rem]">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -147,7 +150,7 @@ const Contact = () => {
           <Mail className="h-8 w-8 text-primary" />
         </div>
         <p className="text-lg font-medium text-muted-foreground">For direct inquiries, reach us at:</p>
-        <p className="text-3xl font-black text-foreground font-heading">daniele.buatti@gmail.com</p>
+        <p className="text-3xl font-semibold text-foreground font-heading">daniele.buatti@gmail.com</p>
       </div>
     </div>
   );

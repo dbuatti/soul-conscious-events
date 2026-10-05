@@ -89,7 +89,7 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
   };
 
   return (
-    <div className="mb-8 relative overflow-hidden rounded-[2.5rem] shadow-xl border border-primary/20">
+    <div className="mb-8 relative overflow-hidden rounded-[1.75rem] shadow-xl border border-primary/20">
       {/* Gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/20" />
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/5" />
@@ -102,7 +102,7 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h3 className="text-xl sm:text-2xl font-black text-foreground font-heading flex items-center gap-2">
+            <h3 className="text-xl sm:text-2xl font-semibold text-foreground font-heading flex items-center gap-2">
               AI Event Assistant
               <span className="text-[9px] font-black uppercase tracking-widest bg-primary text-white px-2.5 py-1 rounded-full">Beta</span>
             </h3>

@@ -61,7 +61,7 @@ const EventCardFallback: React.FC<EventCardFallbackProps> = ({ event }) => {
           </span>
         )}
         
-        <h3 className="font-heading font-black text-lg sm:text-3xl leading-tight tracking-tight max-w-[90%] line-clamp-2">
+        <h3 className="font-heading font-semibold text-lg sm:text-3xl leading-tight tracking-tight max-w-[90%] line-clamp-2">
           {event.event_name}
         </h3>
 

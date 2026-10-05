@@ -11,6 +11,7 @@ import SEO from '@/components/SEO';
 import { format, parseISO, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 import { TrendingUp, TrendingDown, Minus, PlusCircle, Eye, MousePointerClick, Tag, Frown, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import PageHeader from '@/components/v2/PageHeader';
 
 interface EventMetrics {
   views: number;
@@ -156,13 +157,14 @@ const Dashboard: React.FC = () => {
         description="Track views, ticket clicks, and engagement for your SoulFlow events."
       />
 
-      <div className="mb-10 sm:mb-16 text-center">
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Your Dashboard</h1>
-        <p className="text-muted-foreground mt-4 font-medium">Track how your events are performing.</p>
-      </div>
+      <PageHeader
+        eyebrow="Host dashboard"
+        title="How your events are doing"
+        description="Views, ticket clicks and discount-code copies across your listings."
+      />
 
       {events.length === 0 ? (
-        <div className="p-16 sm:p-24 organic-card rounded-[3rem] sm:rounded-[4rem] text-center border-dashed border-primary/20">
+        <div className="p-16 sm:p-24 organic-card rounded-[2rem] sm:rounded-[2rem] text-center border-dashed border-primary/20">
           <Frown className="h-16 w-16 sm:h-24 sm:w-24 text-primary/20 mx-auto mb-8" />
           <h3 className="text-3xl sm:text-4xl font-heading font-bold text-foreground mb-4">No events yet</h3>
           <p className="text-muted-foreground mb-10 text-lg max-w-sm mx-auto font-medium">
@@ -177,12 +179,12 @@ const Dashboard: React.FC = () => {
       ) : (
         <>
           {/* Weekly summary card */}
-          <div className="organic-card rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 mb-10 sm:mb-16">
+          <div className="organic-card rounded-[2rem] sm:rounded-[2rem] p-6 sm:p-10 mb-10 sm:mb-16">
             <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.3em] mb-6">Views — This Week vs Last Week</p>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-10">
               <div className="space-y-1">
                 <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">This Week</p>
-                <p className="text-5xl sm:text-6xl font-black font-heading text-foreground leading-none">{thisWeekViews}</p>
+                <p className="text-5xl sm:text-6xl font-semibold font-heading text-foreground leading-none">{thisWeekViews}</p>
                 <p className="text-xs text-muted-foreground font-medium">views</p>
               </div>
 
@@ -190,7 +192,7 @@ const Dashboard: React.FC = () => {
 
               <div className="space-y-1">
                 <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Last Week</p>
-                <p className="text-5xl sm:text-6xl font-black font-heading text-foreground leading-none">{lastWeekViews}</p>
+                <p className="text-5xl sm:text-6xl font-semibold font-heading text-foreground leading-none">{lastWeekViews}</p>
                 <p className="text-xs text-muted-foreground font-medium">views</p>
               </div>
 
@@ -246,7 +248,7 @@ const Dashboard: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <h3 className="text-lg sm:text-xl font-black font-heading text-foreground leading-snug truncate">
+                      <h3 className="text-lg sm:text-xl font-semibold font-heading text-foreground leading-snug truncate">
                         {event.event_name}
                       </h3>
                       <p className="text-xs text-muted-foreground font-medium">

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import UserEventCard from '@/components/UserEventCard';
 import { Event } from '@/types/event';
 import SEO from '@/components/SEO';
+import PageHeader from '@/components/v2/PageHeader';
 
 const MyEvents: React.FC = () => {
   const { user, isLoading: isSessionLoading } = useSession();
@@ -52,7 +53,7 @@ const MyEvents: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex flex-col space-y-8">
-              <Skeleton className="h-[400px] w-full rounded-[3rem]" />
+              <Skeleton className="h-[400px] w-full rounded-[2rem]" />
               <Skeleton className="h-12 w-3/4" />
             </div>
           ))}
@@ -63,7 +64,7 @@ const MyEvents: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="w-full max-w-2xl text-center p-12 organic-card rounded-[3rem] shadow-2xl">
+      <div className="w-full max-w-2xl text-center p-12 organic-card rounded-[2rem] shadow-2xl">
         <UserPlus className="h-20 w-20 text-primary/20 mx-auto mb-8" />
         <h2 className="text-4xl font-heading font-bold mb-6">Manage Your Events</h2>
         <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
@@ -84,14 +85,11 @@ const MyEvents: React.FC = () => {
         title="My Events | SoulFlow Australia"
         description="Manage your submitted events, edit details, duplicate listings, or add new soulful gatherings to the SoulFlow platform."
       />
-      <div className="mb-16 text-center">
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">
-          My Events
-          {events.length > 0 && (
-            <span className="text-3xl sm:text-4xl font-normal text-muted-foreground/50 ml-3">({events.length})</span>
-          )}
-        </h1>
-      </div>
+      <PageHeader
+        eyebrow="Your listings"
+        title={<>My events{events.length > 0 && <span className="text-muted-foreground/50 font-medium"> ({events.length})</span>}</>}
+        description="Edit, duplicate or remove the gatherings you've shared."
+      />
 
       <div className="flex justify-end mb-12">
         <Link to="/submit-event">
@@ -102,7 +100,7 @@ const MyEvents: React.FC = () => {
       </div>
 
       {events.length === 0 ? (
-        <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20">
+        <div className="p-24 organic-card rounded-[2rem] text-center border-dashed border-primary/20">
           <Frown className="h-24 w-24 text-primary/20 mx-auto mb-10" />
           <h3 className="text-4xl font-heading font-bold text-foreground mb-6">No events yet</h3>
           <p className="text-muted-foreground mb-12 text-xl max-w-sm mx-auto font-medium">You haven't submitted any events to SoulFlow yet.</p>

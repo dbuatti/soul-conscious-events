@@ -56,6 +56,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        sage: "hsl(var(--sage))",
+        ink: {
+          DEFAULT: "hsl(var(--ink))",
+          foreground: "hsl(var(--ink-foreground))",
+        },
         link: {
           DEFAULT: "hsl(var(--link))",
           hover: "hsl(var(--link-hover))",

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarDays, Heart, MessageSquare, Compass, Search, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
+import PageHeader from '@/components/v2/PageHeader';
 
 const About = () => {
   return (
@@ -12,15 +13,14 @@ const About = () => {
         title="About Us | SoulFlow Australia"
         description="Learn about the vision behind SoulFlow, our collaboration with HeartBeats, and how we are co-creating a space for conscious gatherings across Australia."
       />
-      <div className="mb-16 text-center space-y-4">
-        <h1 className="text-5xl sm:text-7xl font-black font-heading tracking-tight text-foreground">About SoulFlow</h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-medium leading-relaxed">
-          SoulFlow was born from a simple desire: to find and share the moments that make us feel truly alive.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="About"
+        title={<>About <span className="italic font-medium text-primary">SoulFlow</span></>}
+        description="SoulFlow was born from a simple desire: to find and share the moments that make us feel truly alive."
+      />
 
       <div className="space-y-12 mb-16">
-        <Card className="organic-card rounded-[3rem] p-8 sm:p-12">
+        <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <div className="inline-flex items-center justify-center h-16 w-16 rounded-3xl bg-primary/10 mb-2">
@@ -36,7 +36,7 @@ const About = () => {
                 </p>
               </div>
             </div>
-            <div className="bg-secondary/30 rounded-[2.5rem] p-8 border border-border/50">
+            <div className="bg-secondary/30 rounded-[1.75rem] p-8 border border-border/50">
               <h3 className="text-2xl font-bold mb-8 font-heading text-center">Your Journey Starts Here</h3>
               <div className="grid grid-cols-1 gap-8">
                 <div className="flex gap-4">
@@ -56,7 +56,7 @@ const About = () => {
           </div>
         </Card>
 
-        <Card className="organic-card rounded-[3rem] p-8 sm:p-12">
+        <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
           <CardHeader className="text-center mb-8">
             <CardTitle className="text-4xl font-bold text-primary flex items-center justify-center font-heading">
               <Heart className="mr-3 h-10 w-10 text-primary" /> SoulFlow x HeartBeats
@@ -79,7 +79,7 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[3rem] p-8 sm:p-12 bg-secondary/30 border-dashed">
+        <Card className="organic-card rounded-[2rem] p-8 sm:p-12 bg-secondary/30 border-dashed">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-foreground flex items-center font-heading">
               <MessageSquare className="mr-3 h-8 w-8 text-accent" /> A Co-Created Space

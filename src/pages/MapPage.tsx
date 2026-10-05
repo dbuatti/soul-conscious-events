@@ -78,7 +78,7 @@ const MapPage = () => {
         <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
           <Sparkles className="h-3 w-3 mr-2" /> Explore Nearby
         </div>
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Event Map</h1>
+        <h1 className="text-5xl sm:text-6xl font-semibold font-heading tracking-tight text-foreground">Event Map</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
           Discover soulful gatherings vibrating in your local area.
         </p>
@@ -87,7 +87,7 @@ const MapPage = () => {
       {loading ? (
         <div className="w-full h-[600px] rounded-[3rem] bg-secondary/30 flex flex-col items-center justify-center border border-border">
           <Loader2 className="h-16 w-16 text-primary animate-spin mb-6" />
-          <p className="text-2xl font-black font-heading text-foreground">
+          <p className="text-2xl font-semibold font-heading text-foreground">
             {dbStatus === 'checking' ? 'Connecting to Database...' : 'Loading Map Data...'}
           </p>
         </div>

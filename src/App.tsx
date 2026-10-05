@@ -55,7 +55,7 @@ const LayoutV2 = () => {
     <div className="min-h-screen flex flex-col items-center bg-background">
       <ScrollProgress />
       <HeaderV2 />
-      <main className="flex-grow w-full px-2 flex flex-col items-center py-8">
+      <main className="flex-grow w-full px-2 flex flex-col items-center pt-4 sm:pt-6 pb-8">
         <Outlet />
       </main>
       <Footer />

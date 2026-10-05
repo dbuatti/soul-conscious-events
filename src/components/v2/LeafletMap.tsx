@@ -265,7 +265,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   }, [geocodedEvents, onViewDetails]);
 
   return (
-    <div className={`w-full relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl bg-[#fdfbf7] border-none ${className || 'h-[500px] sm:h-[600px]'}`}>
+    <div className={`w-full relative overflow-hidden rounded-[2rem] sm:rounded-[1.75rem] shadow-2xl bg-[#fdfbf7] border-none ${className || 'h-[500px] sm:h-[600px]'}`}>
       <div ref={mapRef} className="w-full h-full z-0" />
       
       {interactive && (

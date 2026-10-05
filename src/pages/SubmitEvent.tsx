@@ -11,6 +11,7 @@ import EventPreviewDialog from '@/components/EventPreviewDialog';
 import { format, parseISO } from 'date-fns';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
 import SEO from '@/components/SEO';
+import PageHeader from '@/components/v2/PageHeader';
 
 const defaultCoverImages = [
   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80',
@@ -237,14 +238,16 @@ const SubmitEvent = () => {
         title="Submit Your Event | SoulFlow Australia"
         description="Share your soulful gathering with the community. Use our AI Event Assistant to auto-fill details from flyers or emails instantly."
       />
-      <div className="mb-12 text-center">
-        <h2 className="text-5xl font-black text-foreground font-heading tracking-tight">Submit Your Event</h2>
-      </div>
+      <PageHeader
+        eyebrow="For hosts & facilitators"
+        title={<>List your <span className="italic font-medium text-primary">gathering</span></>}
+        description="Free, and it takes under a minute. Paste a ticketing link or your flyer text below and we'll fill in the details for you to review."
+      />
 
       <div className="grid grid-cols-1 gap-8">
         <AiParsingSection onAiParseComplete={handleAiParseComplete} />
 
-        <div className="bg-card p-8 sm:p-12 rounded-[3rem] shadow-xl border border-border organic-card">
+        <div className="bg-card p-8 sm:p-12 rounded-[2rem] shadow-xl border border-border organic-card">
           <EventForm
             form={form}
             onSubmit={onSubmit}

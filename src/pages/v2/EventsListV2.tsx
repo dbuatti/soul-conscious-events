@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY as ANON_KEY } from '@/integrations/supabase/client';
-import { format, parseISO, isToday, isSameDay } from 'date-fns';
+import { format, parseISO, isToday, isSameDay, isWeekend, addDays, startOfToday, endOfWeek } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, PlusCircle, Search, Sparkles, X, Database, WifiOff, ShieldAlert, Bookmark } from 'lucide-react';
+import { Frown, Loader2, Plus, Search, X, Database, WifiOff, ShieldAlert, ArrowRight, Link2, Wand2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -15,7 +15,6 @@ import { useSession } from '@/components/SessionContextProvider';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import { generateRecurringInstances, getBaseEventId } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import LeafletMap from '@/components/v2/LeafletMap';
 import SEO from '@/components/SEO';
@@ -248,213 +247,296 @@ const EventsListV2 = () => {
   const selectedDayEvents = filteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
   const hasActiveFilters = searchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
 
+  // Group the visible list into time buckets so the page reads like a "what's on" guide.
+  const dayGroups = useMemo(() => {
+    const today = startOfToday();
+    const tomorrow = addDays(today, 1);
+    const thisWeekEnd = endOfWeek(today, { weekStartsOn: 1 });
+    const nextWeekEnd = addDays(thisWeekEnd, 7);
+
+    const bucketFor = (date: Date): { key: string; label: string; sublabel?: string } => {
+      if (isSameDay(date, today)) return { key: 'today', label: 'Today', sublabel: format(date, 'EEEE d MMMM') };
+      if (isSameDay(date, tomorrow)) return { key: 'tomorrow', label: 'Tomorrow', sublabel: format(date, 'EEEE d MMMM') };
+      if (date <= thisWeekEnd) {
+        return isWeekend(date)
+          ? { key: 'weekend', label: 'This weekend' }
+          : { key: 'week', label: 'Later this week' };
+      }
+      if (date <= nextWeekEnd) return { key: 'next-week', label: 'Next week' };
+      const sameMonth = date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+      return sameMonth
+        ? { key: 'month', label: `Later in ${format(date, 'MMMM')}` }
+        : { key: format(date, 'yyyy-MM'), label: format(date, 'MMMM'), sublabel: date.getFullYear() !== today.getFullYear() ? format(date, 'yyyy') : undefined };
+    };
+
+    const groups: { key: string; label: string; sublabel?: string; events: Event[] }[] = [];
+    for (const event of displayedEvents) {
+      const bucket = bucketFor(parseISO(event.event_date));
+      const last = groups[groups.length - 1];
+      if (last && last.key === bucket.key) last.events.push(event);
+      else groups.push({ ...bucket, events: [event] });
+    }
+    return groups;
+  }, [displayedEvents]);
+
+  const comingUp = useMemo(() => listSource.slice(0, 3), [listSource]);
+
+  const nextWeekCount = useMemo(() => {
+    const today = startOfToday();
+    const weekOut = addDays(today, 7);
+    return listSource.filter((e) => {
+      const d = parseISO(e.event_date);
+      return d >= today && d < weekOut;
+    }).length;
+  }, [listSource]);
+
+  const filterBadges: { type: keyof typeof filters; value?: string; label: string }[] = [
+    ...(filters.date !== 'All Upcoming' ? [{ type: 'date' as const, label: filters.date }] : []),
+    ...filters.category.map((v) => ({ type: 'category' as const, value: v, label: v })),
+    ...filters.venue.map((v) => ({ type: 'venue' as const, value: v, label: v })),
+    ...filters.price.map((v) => ({ type: 'price' as const, value: v, label: v })),
+    ...filters.state.map((v) => ({ type: 'state' as const, value: v, label: v })),
+  ];
+
+  const statusPanel = (Icon: React.ElementType, title: string, message: React.ReactNode, action: React.ReactNode) => (
+    <div className="py-16 sm:py-24 px-6 organic-card rounded-[2rem] text-center">
+      <Icon className="h-12 w-12 text-primary/30 mx-auto mb-6" />
+      <h3 className="text-3xl font-heading font-semibold text-foreground mb-3">{title}</h3>
+      <p className="text-muted-foreground mb-8 max-w-md mx-auto">{message}</p>
+      {action}
+    </div>
+  );
+
   return (
-    <div className="w-full max-w-6xl px-4">
-      <SEO 
+    <div className="w-full max-w-6xl px-2 sm:px-4">
+      <SEO
         title="SoulFlow | Discover Soulful Events in Australia"
         description="Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, sound baths, and conscious gatherings."
       />
-      <div className="mb-8 sm:mb-20 text-center space-y-3 sm:space-y-6 animate-in fade-in slide-in-from-top-4 duration-1000">
-        <h1 className="text-3xl sm:text-6xl md:text-8xl font-black font-heading tracking-tight text-foreground leading-[1.1] sm:leading-[1.05]">
-          Soulful Gatherings <br />
-          <span className="text-primary italic font-normal">Across Australia</span>
-        </h1>
-        <p className="text-sm sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium px-4">
-          Find workshops, meditations, and community events that nourish your spirit.
-        </p>
-      </div>
 
-      <div className="mb-8 sm:mb-16 space-y-4 sm:space-y-8 organic-card p-4 sm:p-12 rounded-[1.5rem] sm:rounded-[3rem]">
-        <div className="space-y-4 sm:space-y-6">
-          <div className="relative group">
-            <Search className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+      {/* Hero */}
+      <section className="hero-glow relative overflow-hidden rounded-[2rem] px-5 py-10 sm:px-12 sm:py-14 mb-6 animate-in fade-in duration-700 lg:grid lg:grid-cols-[1fr_20rem] lg:gap-12 lg:items-center">
+        <div>
+        <div className="max-w-3xl">
+          <p className="eyebrow mb-4">Conscious events across Australia</p>
+          <h1 className="text-[2.6rem] leading-[1.02] sm:text-6xl xl:text-[4.25rem] font-heading font-semibold text-foreground">
+            Find your people.
+            <br />
+            <span className="italic font-medium text-primary">Soulful gatherings</span> near you.
+          </h1>
+          <p className="mt-5 text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
+            Sound baths, breathwork, ecstatic dance, kirtan, circles and workshops, gathered in one calm place.
+          </p>
+        </div>
+
+        <div className="mt-8 max-w-2xl">
+          <div className="relative">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Search by name, venue or location..."
+              placeholder="Search events, venues or suburbs"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 sm:pl-20 pr-10 sm:pr-16 h-12 sm:h-20 rounded-xl sm:rounded-[2rem] border-none bg-secondary/50 focus-visible:ring-primary text-base sm:text-2xl placeholder:text-muted-foreground/40 font-medium"
+              aria-label="Search events"
+              className="h-14 pl-14 pr-12 rounded-full border-border/80 bg-card text-base shadow-[0_10px_30px_-12px_hsl(20_40%_25%/0.25)] focus-visible:ring-primary"
             />
             {searchTerm && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <button
+                type="button"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary"
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
               >
-                <X className="h-4 w-4 sm:h-6 sm:w-6" />
-              </Button>
+                <X className="h-4 w-4" />
+              </button>
             )}
           </div>
 
-          <div className="flex items-center gap-2 px-1">
-            <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1 -mx-1 px-1">
-              {QUICK_FILTERS.map((qf) => (
+          <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
+            {QUICK_FILTERS.map((qf) => {
+              const active = filters.category.includes(qf.value);
+              return (
                 <button
                   key={qf.value}
+                  type="button"
                   onClick={() => toggleQuickFilter(qf.value)}
+                  aria-pressed={active}
                   className={cn(
-                    "whitespace-nowrap px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 border",
-                    filters.category.includes(qf.value)
-                      ? "bg-primary border-primary text-white shadow-md scale-105"
-                      : "bg-background border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+                    "whitespace-nowrap px-4 h-9 rounded-full text-sm font-medium transition-all border",
+                    active
+                      ? "bg-foreground border-foreground text-background"
+                      : "bg-card/70 border-border/80 text-foreground/80 hover:border-primary/50 hover:text-primary"
                   )}
                 >
                   {qf.label}
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
-        
-        <div className="space-y-4 sm:space-y-6">
-          <FilterDropdownsV2
-            currentFilters={filters}
-            onFilterChange={setFilters}
-            availableVenues={availableVenues}
-            favouriteVenues={favouriteVenues}
-            onToggleFavouriteVenue={handleToggleFavouriteVenue}
-            isUserLoggedIn={!!user}
-            viewMode={viewMode}
-            onViewModeChange={(mode) => setViewMode(mode)}
-          />
 
-          {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-border/40 animate-in fade-in slide-in-from-bottom-2">
-              <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest mr-1">Active:</span>
-              {filters.date !== 'All Upcoming' && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
-                  {filters.date}
-                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('date')} />
-                </Badge>
-              )}
-              {filters.category.map(cat => (
-                <Badge key={cat} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
-                  {cat}
-                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('category', cat)} />
-                </Badge>
-              ))}
-              {filters.venue.map(v => (
-                <Badge key={v} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
-                  {v}
-                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('venue', v)} />
-                </Badge>
-              ))}
-              {filters.price.map(p => (
-                <Badge key={p} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
-                  {p}
-                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('price', p)} />
-                </Badge>
-              ))}
-              {filters.state.map(s => (
-                <Badge key={s} variant="secondary" className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
-                  {s}
-                  <X className="h-3.5 w-3.5 cursor-pointer hover:text-primary/60" onClick={() => removeFilter('state', s)} />
-                </Badge>
-              ))}
-              <Button variant="link" size="sm" onClick={handleClearFilters} className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest p-0 h-auto ml-1">
-                Clear All
-              </Button>
-            </div>
-          )}
+        {!loading && dbStatus === 'connected' && (
+          <p className="mt-8 text-sm text-muted-foreground">
+            <span className="font-heading text-2xl font-semibold text-foreground mr-1.5">{nextWeekCount}</span>
+            gatherings in the next 7 days
+          </p>
+        )}
         </div>
+
+        {comingUp.length > 0 && (
+          <aside className="hidden lg:block" aria-label="Coming up">
+            <p className="eyebrow mb-3">Coming up</p>
+            <ul className="space-y-3">
+              {comingUp.map((event) => {
+                const date = parseISO(event.event_date);
+                return (
+                  <li key={event.id}>
+                    <button
+                      type="button"
+                      onClick={() => handleViewDetails(event)}
+                      className="group w-full flex items-center gap-3 rounded-2xl bg-card/80 backdrop-blur border border-border/60 p-2.5 pr-4 text-left shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+                    >
+                      <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
+                        {event.image_url && <img src={event.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-primary">
+                          {isToday(date) ? 'Today' : format(date, 'EEE d MMM')}{event.event_time ? ` · ${event.event_time.split(/\s*[–-]\s*/)[0]}` : ''}
+                        </span>
+                        <span className="block font-heading text-lg font-semibold leading-tight text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                          {event.event_name}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+        )}
+      </section>
+
+      {/* Toolbar */}
+      <div className="sticky top-16 z-30 -mx-2 sm:-mx-4 px-2 sm:px-4 py-3 mb-6 bg-background/85 backdrop-blur-xl border-b border-border/50">
+        <FilterDropdownsV2
+          currentFilters={filters}
+          onFilterChange={setFilters}
+          availableVenues={availableVenues}
+          favouriteVenues={favouriteVenues}
+          onToggleFavouriteVenue={handleToggleFavouriteVenue}
+          isUserLoggedIn={!!user}
+          viewMode={viewMode}
+          onViewModeChange={(mode) => setViewMode(mode)}
+        />
+
+        {hasActiveFilters && (
+          <div className="flex flex-wrap items-center gap-2 pt-3 animate-in fade-in">
+            {searchTerm && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary pl-3 pr-1.5 py-1 text-xs font-medium">
+                “{searchTerm}”
+                <button type="button" onClick={() => setSearchTerm('')} aria-label="Clear search" className="rounded-full p-0.5 hover:bg-primary/15"><X className="h-3.5 w-3.5" /></button>
+              </span>
+            )}
+            {filterBadges.map((b) => (
+              <span key={`${b.type}-${b.label}`} className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary pl-3 pr-1.5 py-1 text-xs font-medium">
+                {b.label}
+                <button type="button" onClick={() => removeFilter(b.type, b.value)} aria-label={`Remove ${b.label} filter`} className="rounded-full p-0.5 hover:bg-primary/15"><X className="h-3.5 w-3.5" /></button>
+              </span>
+            ))}
+            <button type="button" onClick={handleClearFilters} className="text-xs font-medium text-muted-foreground hover:text-primary underline-offset-4 hover:underline ml-1">
+              Clear all
+            </button>
+            <span className="ml-auto text-xs text-muted-foreground">
+              {paginationSource.length} of {totalCount}
+            </span>
+          </div>
+        )}
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 space-y-6">
-          <Loader2 className="h-12 w-12 text-primary animate-spin" />
-          <p className="text-xl font-black font-heading text-foreground">
-            {dbStatus === 'checking' ? 'Connecting to SoulFlow...' : 'Gathering Events...'}
-          </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6" aria-busy="true" aria-label="Loading events">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="organic-card rounded-[var(--radius)] overflow-hidden">
+              <Skeleton className="aspect-[3/2] rounded-none" />
+              <div className="p-5 space-y-3">
+                <Skeleton className="h-6 w-4/5" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : dbStatus === 'auth_error' ? (
-        <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
-          <ShieldAlert className="h-12 w-12 sm:h-24 sm:w-24 text-destructive/20 mx-auto mb-4 sm:mb-10" />
-          <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">Authentication Issue</h3>
-          <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-12 max-w-md mx-auto font-medium">
-            The database rejected our request. This usually happens if the API keys are misconfigured or if a browser extension is stripping security headers.
-          </p>
-          <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-6 py-4 sm:px-12 sm:py-8 text-base sm:text-xl font-black shadow-xl">
-            Refresh Page
-          </Button>
-        </div>
+        statusPanel(ShieldAlert, 'Authentication issue',
+          'The database rejected our request. This can happen if a browser extension is stripping security headers.',
+          <Button onClick={() => window.location.reload()} className="rounded-full px-6">Refresh page</Button>)
       ) : dbStatus === 'blocked' ? (
-        <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
-          <WifiOff className="h-12 w-12 sm:h-24 sm:w-24 text-destructive/20 mx-auto mb-4 sm:mb-10" />
-          <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">Connection Blocked</h3>
-          <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-12 max-w-md mx-auto font-medium">
-            Your browser is unable to reach our database. This is usually caused by an **Ad-Blocker**, **VPN**, or **Privacy Extension**. 
-            Please try disabling them for this site and refresh.
-          </p>
-          <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-6 py-4 sm:px-12 sm:py-8 text-base sm:text-xl font-black shadow-xl">
-            Refresh Page
-          </Button>
-        </div>
+        statusPanel(WifiOff, 'Connection blocked',
+          'Your browser can’t reach our database. This is usually an ad-blocker, VPN or privacy extension. Try disabling it for this site.',
+          <Button onClick={() => window.location.reload()} className="rounded-full px-6">Refresh page</Button>)
       ) : dbStatus === 'error' || dbStatus === 'timeout' ? (
-        <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
-          <Database className="h-12 w-12 sm:h-24 sm:w-24 text-destructive/20 mx-auto mb-4 sm:mb-10" />
-          <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">Connection Issue</h3>
-          <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-12 max-w-sm mx-auto font-medium">We're having trouble reaching the database. Please check your internet connection.</p>
-          <Button onClick={() => fetchInitialEvents()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-6 py-4 sm:px-12 sm:py-8 text-base sm:text-xl font-black shadow-xl">
-            Retry Connection
-          </Button>
-        </div>
+        statusPanel(Database, 'We couldn’t load events',
+          'We’re having trouble reaching the database. Please check your connection and try again.',
+          <Button onClick={() => fetchInitialEvents()} className="rounded-full px-6">Try again</Button>)
       ) : (
         <>
           {viewMode === 'list' ? (
-            <section className="mb-16 sm:mb-32">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-12 border-b pb-4 sm:pb-8 border-border/40 gap-2">
-                <h2 className="text-2xl sm:text-5xl font-heading font-bold text-foreground tracking-tight">Upcoming Events</h2>
-                <div className="flex items-center gap-2">
-                  <div className="text-[10px] sm:text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 rounded-full">
-                    {hasActiveFilters ? `Showing ${paginationSource.length} of ${totalCount}` : `${paginationSource.length} ${paginationSource.length === 1 ? 'Event' : 'Events'}`}
-                  </div>
-                </div>
-              </div>
-              
+            <section aria-label="Upcoming events">
               {displayedEvents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
-                  {displayedEvents.map(event => (
-                    <EventCardV2
-                      key={event.id}
-                      event={event}
-                      onShare={handleShare}
-                      onDelete={handleDelete}
-                      onViewDetails={handleViewDetails}
-                      isFeaturedToday={isToday(parseISO(event.event_date))}
-                      additionalDatesCount={extraCountMap[getBaseEventId(event.id)] || 0}
-                    />
+                <div className="space-y-10 sm:space-y-14">
+                  {dayGroups.map((group) => (
+                    <div key={group.key}>
+                      <div className="flex items-baseline gap-3 mb-4 sm:mb-5">
+                        <h2 className={cn(
+                          "text-3xl sm:text-4xl font-heading font-semibold",
+                          group.label === 'Today' ? "text-primary" : "text-foreground"
+                        )}>
+                          {group.label}
+                        </h2>
+                        {group.sublabel && <span className="text-sm text-muted-foreground">{group.sublabel}</span>}
+                        <span className="flex-1 h-px bg-border/70 translate-y-[-0.3rem]" />
+                        <span className="text-xs text-muted-foreground">{group.events.length} {group.events.length === 1 ? 'event' : 'events'}</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                        {group.events.map((event) => (
+                          <EventCardV2
+                            key={event.id}
+                            event={event}
+                            onShare={handleShare}
+                            onDelete={handleDelete}
+                            onViewDetails={handleViewDetails}
+                            isFeaturedToday={isToday(parseISO(event.event_date))}
+                            additionalDatesCount={extraCountMap[getBaseEventId(event.id)] || 0}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
-                <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-dashed border-primary/20">
-                  <Frown className="h-12 w-12 sm:h-24 sm:w-24 text-primary/20 mx-auto mb-4 sm:mb-10" />
-                  <h3 className="text-xl sm:text-4xl font-heading font-bold text-foreground mb-2 sm:mb-6">No events found</h3>
-                  <p className="text-sm sm:text-xl text-muted-foreground mb-6 sm:mb-12 max-w-sm mx-auto font-medium">Try adjusting your filters or share your own event.</p>
-                  <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-6">
+                statusPanel(Frown, 'Nothing matches… yet',
+                  'Try widening your filters, or be the first to list a gathering like this.',
+                  <div className="flex flex-col sm:flex-row justify-center gap-3">
                     {hasActiveFilters && (
-                      <Button variant="outline" onClick={handleClearFilters} className="rounded-xl px-6 py-4 sm:px-10 sm:py-8 text-base sm:text-xl font-black">
-                        Clear Filters
-                      </Button>
+                      <Button variant="outline" onClick={handleClearFilters} className="rounded-full px-6">Clear filters</Button>
                     )}
-                    <Link to="/submit-event">
-                      <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl px-6 py-4 sm:px-12 sm:py-8 text-base sm:text-xl font-black shadow-xl">
-                        <PlusCircle className="mr-2 h-5 w-5 sm:h-7 sm:w-7" /> Add Your Event
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+                    <Button asChild className="rounded-full px-6">
+                      <Link to="/submit-event"><Plus className="mr-1.5 h-4 w-4" /> List an event</Link>
+                    </Button>
+                  </div>)
               )}
 
               {hasMore && displayedEvents.length > 0 && (
-                <div className="flex justify-center mt-12 sm:mt-24">
-                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="w-full sm:min-w-[300px] h-12 sm:h-20 rounded-xl sm:rounded-[2rem] font-black text-base sm:text-2xl shadow-lg">
-                    {loadingMore ? <Loader2 className="mr-2 h-4 w-4 sm:h-6 sm:w-6 animate-spin" /> : 'Load More'}
+                <div className="flex flex-col items-center gap-2 mt-12">
+                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="rounded-full h-12 px-8 font-semibold bg-card">
+                    {loadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Show more events
                   </Button>
+                  <span className="text-xs text-muted-foreground">Showing {displayedEvents.length} of {paginationSource.length}</span>
                 </div>
               )}
             </section>
           ) : viewMode === 'calendar' ? (
-            <div className="animate-in fade-in duration-1000">
+            <div className="animate-in fade-in duration-500">
               <AdvancedEventCalendar
                 events={filteredEvents}
                 onEventSelect={handleViewDetails}
@@ -463,36 +545,36 @@ const EventsListV2 = () => {
                 currentMonth={currentMonth}
                 onMonthChange={setCurrentMonth}
               />
-              <div className="mt-12 sm:mt-24">
-                <h3 className="text-2xl sm:text-5xl font-heading font-bold text-foreground mb-6 sm:mb-12 border-b pb-4 sm:pb-8 border-border/40 tracking-tight">Events for {format(selectedDay, 'MMMM d, yyyy')}</h3>
+              <div className="mt-12">
+                <div className="flex items-baseline gap-3 mb-5">
+                  <h2 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground">{format(selectedDay, 'EEEE')}</h2>
+                  <span className="text-sm text-muted-foreground">{format(selectedDay, 'd MMMM yyyy')}</span>
+                  <span className="flex-1 h-px bg-border/70 translate-y-[-0.3rem]" />
+                </div>
                 {selectedDayEvents.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                     {selectedDayEvents.map(event => (
-                      <EventCardV2 
-                        key={event.id} 
-                        event={event} 
-                        onShare={handleShare} 
-                        onDelete={handleDelete} 
+                      <EventCardV2
+                        key={event.id}
+                        event={event}
+                        onShare={handleShare}
+                        onDelete={handleDelete}
                         onViewDetails={handleViewDetails}
                         isFeaturedToday={isToday(parseISO(event.event_date))}
                       />
                     ))}
                   </div>
                 ) : (
-                  <div className="p-10 sm:p-24 organic-card rounded-[2rem] sm:rounded-[4rem] text-center border-dashed border-primary/20">
-                    <Frown className="h-12 w-12 sm:h-20 sm:w-20 text-primary/20 mx-auto mb-4 sm:mb-8" />
-                    <p className="text-lg sm:text-2xl font-bold text-muted-foreground">No events scheduled for this day.</p>
-                  </div>
+                  <p className="py-12 text-center text-muted-foreground organic-card rounded-[var(--radius)]">No events on this day. Pick another date in the calendar.</p>
                 )}
               </div>
             </div>
           ) : (
-            <div className="animate-in fade-in duration-1000 mb-16 sm:mb-32">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-12 border-b pb-4 sm:pb-8 border-border/40 gap-2">
-                <h2 className="text-2xl sm:text-5xl font-heading font-bold text-foreground tracking-tight">Event Map</h2>
-                <div className="text-[10px] sm:text-sm font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 rounded-full w-fit">
-                  {filteredEvents.length} Locations
-                </div>
+            <div className="animate-in fade-in duration-500">
+              <div className="flex items-baseline gap-3 mb-5">
+                <h2 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground">On the map</h2>
+                <span className="text-sm text-muted-foreground">{filteredEvents.length} events</span>
+                <span className="flex-1 h-px bg-border/70 translate-y-[-0.3rem]" />
               </div>
               <LeafletMap events={filteredEvents} onViewDetails={handleViewDetails} />
             </div>
@@ -500,38 +582,48 @@ const EventsListV2 = () => {
         </>
       )}
 
-      {!user && !loading && (
-        <section className="mt-16 sm:mt-40 mb-12 sm:mb-24 organic-card p-6 sm:p-20 rounded-[2rem] sm:rounded-[4rem] text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
-          <h2 className="text-2xl sm:text-5xl font-heading font-bold text-foreground mb-6 sm:mb-12">Join the SoulFlow Community</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-12 mb-8 sm:mb-16">
-            <div className="space-y-2 sm:space-y-6">
-              <div className="h-10 w-10 sm:h-16 sm:w-16 bg-primary/10 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto">
-                <Bookmark className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
-              </div>
-              <h3 className="font-black text-lg sm:text-2xl">Save Favourites</h3>
-              <p className="text-muted-foreground text-xs sm:text-base font-medium">Bookmark events you love and never miss a gathering.</p>
-            </div>
-            <div className="space-y-2 sm:space-y-6">
-              <div className="h-10 w-10 sm:h-16 sm:w-16 bg-primary/10 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto">
-                <Sparkles className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
-              </div>
-              <h3 className="font-black text-lg sm:text-2xl">Share Events</h3>
-              <p className="text-muted-foreground text-xs sm:text-base font-medium">Submit your own workshops or circles to our community.</p>
-            </div>
-            <div className="space-y-2 sm:space-y-6">
-              <div className="h-10 w-10 sm:h-16 sm:w-16 bg-primary/10 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto">
-                <PlusCircle className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
-              </div>
-              <h3 className="font-black text-lg sm:text-2xl">Manage Listings</h3>
-              <p className="text-muted-foreground text-xs sm:text-base font-medium">Easily edit or update your event details at any time.</p>
+      {/* Host call to action */}
+      {!loading && (
+        <section className="night-band mt-20 rounded-[2rem] overflow-hidden px-6 py-12 sm:px-12 sm:py-16 grid gap-10 lg:grid-cols-[1.1fr_1fr] items-center">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent mb-4">For hosts &amp; facilitators</p>
+            <h2 className="text-4xl sm:text-5xl font-heading font-semibold leading-[1.05] text-ink-foreground">
+              Hosting a gathering?
+              <br />
+              <span className="italic font-medium text-accent">List it in under a minute.</span>
+            </h2>
+            <p className="mt-5 text-ink-foreground/70 max-w-md leading-relaxed">
+              Paste your Humanitix, Eventbrite or Megatix link, or just your flyer text. Our assistant fills in the details for you. Free, always.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <Button asChild size="lg" className="rounded-full h-12 px-7 font-semibold bg-primary hover:bg-primary/90">
+                <Link to="/submit-event">List your event <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+              {!user && (
+                <Button asChild size="lg" variant="ghost" className="rounded-full h-12 px-7 font-semibold text-ink-foreground hover:bg-ink-foreground/10 hover:text-ink-foreground">
+                  <Link to="/login">Create a free account</Link>
+                </Button>
+              )}
             </div>
           </div>
-          <Link to="/login">
-            <Button className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground rounded-xl sm:rounded-[2rem] px-8 py-6 sm:px-16 sm:py-10 text-lg sm:text-2xl font-black shadow-xl">
-              Sign Up for Free
-            </Button>
-          </Link>
+
+          <ol className="space-y-3">
+            {[
+              { icon: Link2, title: 'Paste a link or flyer', body: 'Ticketing page, Instagram caption or email. Anything works.' },
+              { icon: Wand2, title: 'We fill in the details', body: 'Date, time, venue, price and a cover image, ready to review.' },
+              { icon: Send, title: 'Publish & share', body: 'Your event appears in the guide and on the map straight away.' },
+            ].map((step, i) => (
+              <li key={step.title} className="flex gap-4 items-start rounded-2xl bg-ink-foreground/[0.06] border border-ink-foreground/10 p-4 sm:p-5">
+                <span className="h-10 w-10 shrink-0 rounded-full bg-accent/15 text-accent flex items-center justify-center">
+                  <step.icon className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="font-semibold text-ink-foreground"><span className="text-ink-foreground/40 mr-1.5">{i + 1}.</span>{step.title}</p>
+                  <p className="text-sm text-ink-foreground/60 mt-0.5">{step.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 

@@ -236,12 +236,12 @@ const EventEditPage: React.FC = () => {
   return (
     <div className="w-full max-w-6xl px-4">
       <div className="mb-12 text-center">
-        <h2 className="text-5xl font-black text-foreground font-heading tracking-tight">
+        <h2 className="text-5xl font-semibold text-foreground font-heading tracking-tight">
           {isDuplicating ? 'Duplicate Event' : 'Edit Event'}
         </h2>
       </div>
 
-      <div className="bg-card p-8 sm:p-12 rounded-[3rem] shadow-xl border border-border organic-card">
+      <div className="bg-card p-8 sm:p-12 rounded-[2rem] shadow-xl border border-border organic-card">
         <EventForm
           form={form}
           onSubmit={onSubmit}

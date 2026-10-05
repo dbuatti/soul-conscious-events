@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, PlusCircle, Settings, Info, Home, LayoutDashboard } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, Plus, Settings, Info, Home, LayoutDashboard, Map as MapIcon, Mail } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -15,8 +15,22 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 
+export const SoulFlowMark = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 32 32" aria-hidden="true" className={className}>
+    <circle cx="16" cy="18" r="9" className="fill-primary" />
+    <circle cx="16" cy="18" r="13.5" className="fill-none stroke-accent" strokeWidth="1.5" strokeDasharray="2 3.2" />
+    <rect x="0" y="22" width="32" height="10" className="fill-background" />
+    <path d="M3 22.5h26" className="stroke-foreground/70" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
+const desktopLinks = [
+  { to: '/', label: 'Events', end: true },
+  { to: '/map', label: 'Map' },
+  { to: '/about', label: 'About' },
+];
+
 const HeaderV2 = () => {
-  const location = useLocation();
   const { user, isAdmin } = useSession();
 
   const handleCreateEventClick = async () => {
@@ -38,95 +52,122 @@ const HeaderV2 = () => {
     }
   };
 
-  const isAdminUser = isAdmin;
-
-  const navItems = user ? [
-    { to: "/", label: "Home", icon: Home },
-    { to: "/submit-event", label: "Create Event", icon: PlusCircle },
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/my-events", label: "My Events", icon: CalendarCheck },
-    { to: "/my-bookmarks", label: "My Bookmarks", icon: Bookmark },
-    { to: "/account-settings", label: "Settings", icon: Settings },
-    { to: "/about", label: "About", icon: Info },
+  const menuItems = user ? [
+    { to: '/', label: 'Events', icon: Home },
+    { to: '/map', label: 'Map', icon: MapIcon },
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/my-events', label: 'My Events', icon: CalendarCheck },
+    { to: '/my-bookmarks', label: 'Saved Events', icon: Bookmark },
+    { to: '/account-settings', label: 'Settings', icon: Settings },
+    { to: '/about', label: 'About', icon: Info },
+    { to: '/contact', label: 'Contact', icon: Mail },
   ] : [
-    { to: "/", label: "Home", icon: Home },
-    { to: "/login", label: "Login / Sign Up", icon: LogIn },
-    { to: "/about", label: "About", icon: Info },
+    { to: '/', label: 'Events', icon: Home },
+    { to: '/map', label: 'Map', icon: MapIcon },
+    { to: '/about', label: 'About', icon: Info },
+    { to: '/contact', label: 'Contact', icon: Mail },
+    { to: '/login', label: 'Sign in / Sign up', icon: LogIn },
   ];
 
+  const initials = (user?.user_metadata?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase();
+
   return (
-    <header className="w-full py-6 px-4 md:px-8 flex justify-center sticky top-0 z-50">
-      <div className="w-full max-w-6xl flex justify-between items-center floating-nav px-8 py-4 rounded-full">
-        <Link to="/" className="flex flex-col items-start group">
-          <span className="text-2xl font-bold leading-none font-heading tracking-tight text-primary group-hover:text-primary/80 transition-all duration-500 group-hover:tracking-widest">SoulFlow</span>
-          <span className="text-[10px] uppercase tracking-[0.4em] font-black text-muted-foreground/60 leading-none mt-1.5 group-hover:text-primary/40 transition-colors duration-500">Australia</span>
+    <header className="w-full sticky top-0 z-50 floating-nav">
+      <div className="mx-auto w-full max-w-6xl flex items-center justify-between gap-4 px-4 sm:px-6 h-16">
+        <Link to="/" className="flex items-center gap-2.5 group" aria-label="SoulFlow home">
+          <SoulFlowMark className="h-8 w-8 transition-transform duration-500 group-hover:-translate-y-0.5" />
+          <span className="flex flex-col">
+            <span className="text-[1.6rem] font-semibold leading-none font-heading tracking-tight text-foreground">SoulFlow</span>
+            <span className="text-[9px] uppercase tracking-[0.35em] font-semibold text-muted-foreground leading-none mt-1">Australia</span>
+          </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-2">
-          {navItems.slice(0, 3).map((item) => (
-            <Link key={item.to} to={item.to} onClick={item.to === '/submit-event' ? handleCreateEventClick : undefined}>
-              <Button variant="ghost" className={cn(
-                "rounded-full px-5 font-medium transition-all",
-                location.pathname === item.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary"
-              )}>
-                {item.label}
-              </Button>
-            </Link>
+        <nav className="hidden md:flex items-center gap-1" aria-label="Main">
+          {desktopLinks.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) => cn(
+                'relative px-4 py-2 text-sm font-medium rounded-full transition-colors',
+                isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {({ isActive }) => (
+                <>
+                  {item.label}
+                  <span className={cn(
+                    'absolute left-4 right-4 -bottom-0.5 h-0.5 rounded-full bg-primary transition-transform origin-left',
+                    isActive ? 'scale-x-100' : 'scale-x-0'
+                  )} />
+                </>
+              )}
+            </NavLink>
           ))}
-          
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Button asChild className="rounded-full h-10 px-4 sm:px-5 shadow-sm shadow-primary/20 font-semibold">
+            <Link to="/submit-event" onClick={handleCreateEventClick}>
+              <Plus className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">List your event</span>
+            </Link>
+          </Button>
+
+          {!user && (
+            <Button asChild variant="ghost" className="hidden md:inline-flex rounded-full h-10 px-4 text-sm font-medium text-muted-foreground hover:text-foreground">
+              <Link to="/login">Sign in</Link>
+            </Button>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="hover:bg-primary/10 rounded-full h-10 w-10 ml-2">
-                <Menu className="h-5 w-5 text-primary" />
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open menu"
+                className={cn('rounded-full h-10 w-10', user ? 'bg-secondary hover:bg-secondary/70' : 'md:hidden hover:bg-secondary')}
+              >
+                {user ? (
+                  <span className="text-sm font-semibold text-primary">{initials}</span>
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[240px] p-2 rounded-2xl shadow-2xl mt-4">
-              <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground/60 px-3 py-2 uppercase tracking-widest">Menu</DropdownMenuLabel>
-              {navItems.map((item) => (
+            <DropdownMenuContent align="end" className="w-60 p-2 rounded-2xl shadow-xl mt-2">
+              {user && (
+                <DropdownMenuLabel className="px-3 py-2 font-normal">
+                  <span className="block text-xs text-muted-foreground">Signed in as</span>
+                  <span className="block text-sm font-medium truncate">{user.email}</span>
+                </DropdownMenuLabel>
+              )}
+              {user && <DropdownMenuSeparator className="my-1" />}
+              {menuItems.map((item) => (
                 <DropdownMenuItem key={item.to} asChild className="rounded-xl cursor-pointer">
-                  <Link to={item.to} onClick={item.to === '/submit-event' ? handleCreateEventClick : undefined} className="flex items-center py-2.5 px-3">
-                    <item.icon className="mr-3 h-4 w-4 text-primary/60" /> {item.label}
+                  <Link to={item.to} className="flex items-center py-2.5 px-3">
+                    <item.icon className="mr-3 h-4 w-4 text-muted-foreground" /> {item.label}
                   </Link>
                 </DropdownMenuItem>
               ))}
-              {isAdminUser && (
+              {isAdmin && (
                 <>
-                  <DropdownMenuSeparator className="my-2" />
-                  <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground/60 px-3 py-2 uppercase tracking-widest">Admin</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="my-1" />
                   <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
                     <Link to="/admin/panel" className="flex items-center py-2.5 px-3">
-                      <UserCog className="mr-3 h-4 w-4 text-primary/60" /> Admin Panel
+                      <UserCog className="mr-3 h-4 w-4 text-muted-foreground" /> Admin Panel
                     </Link>
                   </DropdownMenuItem>
                 </>
               )}
               {user && (
                 <>
-                  <DropdownMenuSeparator className="my-2" />
+                  <DropdownMenuSeparator className="my-1" />
                   <DropdownMenuItem onClick={handleLogout} className="flex items-center py-2.5 px-3 text-destructive rounded-xl cursor-pointer">
-                    <LogOut className="mr-3 h-4 w-4" /> Logout
+                    <LogOut className="mr-3 h-4 w-4" /> Log out
                   </DropdownMenuItem>
                 </>
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <div className="md:hidden">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="hover:bg-primary/10 rounded-full h-10 w-10">
-                <Menu className="h-5 w-5 text-primary" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[260px] p-2 rounded-2xl shadow-2xl mt-4">
-              {navItems.map((item) => (
-                <DropdownMenuItem key={item.to} asChild className="rounded-xl cursor-pointer">
-                  <Link to={item.to} onClick={item.to === '/submit-event' ? handleCreateEventClick : undefined} className="flex items-center py-3 px-3">
-                    <item.icon className="mr-3 h-5 w-5 text-primary/60" /> {item.label}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

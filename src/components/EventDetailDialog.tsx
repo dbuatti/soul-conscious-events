@@ -193,12 +193,12 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         <div className={event.image_url ? "absolute bottom-0 left-0 p-4 sm:p-6 w-full" : "p-4 sm:p-6 pt-6 sm:pt-8"}>
           <div className="flex flex-wrap gap-2 mb-2">
             {event.event_type && (
-              <Badge variant="secondary" className="bg-primary/20 text-primary border-none font-bold px-2 py-0.5 text-[10px] sm:text-xs">
-                {event.event_type.toUpperCase()}
+              <Badge variant="secondary" className="bg-background/90 text-primary border-none font-semibold px-2.5 py-0.5 text-xs">
+                {event.event_type}
               </Badge>
             )}
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2 font-heading tracking-tight text-foreground leading-tight">
+          <h2 className="text-3xl sm:text-4xl font-semibold mb-2 font-heading tracking-tight text-foreground leading-[1.05]">
             {event.event_name}
           </h2>
           <div className="flex flex-wrap items-center text-xs sm:text-sm gap-x-3 gap-y-1 text-muted-foreground font-medium">
@@ -211,7 +211,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-6 overflow-y-auto flex-grow min-h-0">
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Location & Price</h3>
+            <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">Location & Price</h3>
             {event.full_address && (
               <div className="space-y-3">
                 <div className="flex items-start text-foreground group relative">
@@ -224,7 +224,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                   </div>
                 </div>
                 
-                <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden border border-border shadow-sm">
+                <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden border border-border shadow-sm bg-secondary">
                   <LeafletMap 
                     events={[event]} 
                     onViewDetails={() => {}} 
@@ -252,7 +252,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             )}
           </div>
           <div className="space-y-4">
-            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Organizer & Details</h3>
+            <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">Organizer & Details</h3>
             {event.organizer_contact && (
               <div className="flex items-center text-foreground">
                 <User className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
@@ -268,7 +268,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             <div className="flex flex-wrap gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="rounded-xl h-9 px-3 text-[10px] font-bold">
+                  <Button variant="outline" size="sm" className="rounded-full h-9 px-3.5 text-xs font-medium">
                     <CalendarPlus className="mr-1.5 h-3.5 w-3.5" /> Add to Calendar <ChevronDown className="ml-1.5 h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -283,7 +283,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               </DropdownMenu>
               
               {event.full_address && (
-                <Button variant="outline" size="sm" onClick={handleCopyAddress} className="rounded-xl h-9 px-3 text-[10px] font-bold">
+                <Button variant="outline" size="sm" onClick={handleCopyAddress} className="rounded-full h-9 px-3.5 text-xs font-medium">
                   {copiedAddress ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
                   {copiedAddress ? 'Copied!' : 'Copy Address'}
                 </Button>
@@ -294,7 +294,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
         {event.description && (
           <section className="space-y-2">
-            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">About this event</h3>
+            <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">About this event</h3>
             <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
               {event.description}
             </p>
@@ -303,7 +303,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
         {event.event_days && event.event_days.length > 0 && (
           <section className="space-y-3">
-            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Daily Schedule</h3>
+            <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">Daily Schedule</h3>
             <div className="space-y-2">
               {event.event_days.map((day) => (
                 <div key={day.date} className="p-3 rounded-xl bg-secondary/30 space-y-1">
@@ -322,26 +322,17 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
           </section>
         )}
 
-        {(event.ticket_link || event.special_notes || event.discount_code) && (
-          <section className="bg-secondary/30 rounded-2xl p-5 space-y-5 border border-border/50">
-            <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/70">Booking Information</h3>
-            
-            {event.ticket_link && (
-              <Button 
-                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-black py-6 rounded-xl shadow-lg transition-all transform hover:scale-[1.01]" 
-                onClick={handleTicketLinkClick}
-              >
-                <LinkIcon className="mr-2 h-5 w-5" /> Get Your Tickets
-              </Button>
-            )}
+        {(event.special_notes || event.discount_code) && (
+          <section className="bg-secondary/40 rounded-2xl p-5 space-y-4 border border-border/50">
+            <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">Good to know</h3>
 
             {event.discount_code && (
               <div className="flex flex-col sm:flex-row items-center gap-3 p-4 bg-background rounded-xl border border-dashed border-primary/30">
                 <div className="flex-1 text-center sm:text-left">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase mb-0.5">Discount Code</p>
-                  <code className="text-xl font-black text-primary tracking-wider">{event.discount_code}</code>
+                  <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.18em] mb-0.5">SoulFlow code</p>
+                  <code className="text-xl font-semibold text-foreground tracking-wider">{event.discount_code}</code>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)} className="rounded-lg min-w-[120px] h-10 text-xs font-bold">
+                <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)} className="rounded-full min-w-[110px] h-9 text-xs font-medium">
                   {copiedCode ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
                   {copiedCode ? 'Copied!' : 'Copy Code'}
                 </Button>
@@ -358,43 +349,51 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         )}
       </div>
 
-      <div className="flex flex-wrap justify-between items-center p-4 sm:p-6 border-t bg-secondary/20 gap-4 mt-auto flex-shrink-0">
-        <div className="flex gap-2">
-          <div onClick={(e) => e.stopPropagation()}>
-            <BookmarkButton eventId={event.id} size="default" className="rounded-xl px-4 h-10" />
-          </div>
-          
-          <Button variant="ghost" className="rounded-xl px-4 h-10 text-xs sm:text-sm font-bold" onClick={handleShare}>
-            <Share2 className="mr-2 h-4 w-4" /> Share
+      {isCreatorOrAdmin && (
+        <div className="flex items-center gap-2 px-4 sm:px-6 py-2 border-t border-border/60 text-xs text-muted-foreground flex-shrink-0">
+          <span className="mr-auto">You can manage this listing</span>
+          <Button variant="ghost" size="sm" className="rounded-full h-8" onClick={() => { onClose(); navigate(`/edit-event/${getBaseEventId(event.id)}`); }}>
+            <Edit className="mr-1.5 h-3.5 w-3.5" /> Edit
           </Button>
-        </div>
-        <div className="flex gap-2">
-          {isCreatorOrAdmin && (
-            <>
-              <Button variant="outline" className="rounded-xl h-10 text-xs sm:text-sm font-bold" onClick={() => { onClose(); navigate(`/edit-event/${getBaseEventId(event.id)}`); }}>
-                <Edit className="mr-2 h-4 w-4" /> Edit
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="rounded-full h-8 text-destructive hover:text-destructive hover:bg-destructive/10">
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
               </Button>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="rounded-xl h-10 text-xs sm:text-sm font-bold">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-[2rem] w-[90vw] max-w-md">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="font-heading text-2xl">Delete Event?</AlertDialogTitle>
-                    <AlertDialogDescription>This action cannot be undone. This event will be permanently removed.</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                    <AlertDialogCancel className="rounded-xl mt-0">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive rounded-xl">Delete</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
-          )}
+            </AlertDialogTrigger>
+            <AlertDialogContent className="rounded-[1.75rem] w-[90vw] max-w-md">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-heading text-2xl">Delete this event?</AlertDialogTitle>
+                <AlertDialogDescription>It will be removed from SoulFlow for everyone.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                <AlertDialogCancel className="rounded-full mt-0">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive rounded-full">Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
+      )}
+
+      <div className="flex items-center gap-2 p-4 sm:px-6 border-t border-border/60 bg-card mt-auto flex-shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div onClick={(e) => e.stopPropagation()}>
+          <BookmarkButton eventId={event.id} size="icon" className="rounded-full h-11 w-11 bg-secondary" />
+        </div>
+        <Button variant="secondary" size="icon" className="rounded-full h-11 w-11 shrink-0" onClick={handleShare} aria-label="Share event">
+          <Share2 className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" className="rounded-full h-11 px-4 text-sm hidden sm:inline-flex" onClick={() => { onClose(); navigate(`/events/${getBaseEventId(event.id)}`); }}>
+          Full page
+        </Button>
+        {event.ticket_link ? (
+          <Button className="ml-auto rounded-full h-11 px-6 font-semibold shadow-md shadow-primary/25" onClick={handleTicketLinkClick}>
+            {event.price ? `Get tickets · ${formatPrice(event.price)}` : 'Get tickets'} <LinkIcon className="ml-2 h-4 w-4" />
+          </Button>
+        ) : (
+          <Button variant="outline" className="ml-auto rounded-full h-11 px-6" onClick={() => { onClose(); navigate(`/events/${getBaseEventId(event.id)}`); }}>
+            View event page
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -403,9 +402,8 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="h-[94vh] rounded-t-[2.5rem] border-none shadow-2xl">
-          <div className="flex items-center justify-between px-5 pt-3 pb-1 flex-shrink-0">
+          <div className="flex items-center justify-between px-5 pt-1 pb-1 flex-shrink-0">
             <div className="w-8" />
-            <div className="w-12 h-1.5 rounded-full bg-muted" />
             <DrawerClose asChild>
               <button className="rounded-full bg-muted/60 hover:bg-muted p-2 transition-colors">
                 <X className="h-4 w-4 text-muted-foreground" />
@@ -424,7 +422,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] h-[90vh] max-h-[90vh] overflow-hidden dark:bg-card dark:border-border p-0 border-none shadow-2xl flex flex-col">
+      <DialogContent className="sm:max-w-[720px] h-[90vh] max-h-[90vh] overflow-hidden bg-card p-0 border-none shadow-2xl flex flex-col rounded-[1.75rem] [&>button:last-child]:hidden">
         <DialogHeader className="sr-only">
           <DialogTitle>{event.event_name}</DialogTitle>
           <DialogDescription>Event details for {event.event_name}</DialogDescription>

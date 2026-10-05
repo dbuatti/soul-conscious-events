@@ -113,7 +113,7 @@ const DevSpace = () => {
     <div className="w-full max-w-6xl mx-auto px-4">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-12 gap-6">
         <div className="space-y-2 text-center sm:text-left">
-          <h1 className="text-5xl font-black text-foreground font-heading tracking-tight">Dev Space</h1>
+          <h1 className="text-5xl font-semibold text-foreground font-heading tracking-tight">Dev Space</h1>
           <p className="text-muted-foreground font-medium">Internal roadmap and testing tools.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">

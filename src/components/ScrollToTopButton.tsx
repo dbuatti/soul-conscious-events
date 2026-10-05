@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLocation } from 'react-router-dom';
 
 const ScrollToTopButton: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
+  // Event pages have a fixed ticket bar on small screens in this corner.
+  const hasMobileTicketBar = useLocation().pathname.startsWith('/events/');
 
   const toggleVisibility = () => {
     if (window.pageYOffset > 300) { // Show button after scrolling down 300px
@@ -34,7 +37,8 @@ const ScrollToTopButton: React.FC = () => {
       size="icon"
       onClick={scrollToTop}
       className={cn(
-        "fixed bottom-8 right-8 z-50 rounded-full shadow-2xl transition-all duration-500 transform hover:scale-110 bg-white/90 dark:bg-black/60 backdrop-blur-md border-white/20",
+        "fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 rounded-full shadow-lg transition-all duration-500 transform hover:scale-110 bg-card/90 backdrop-blur-md border-border",
+        hasMobileTicketBar && "max-lg:hidden",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
       )}
       title="Scroll to top"

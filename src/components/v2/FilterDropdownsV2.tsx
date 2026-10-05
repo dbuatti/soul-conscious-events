@@ -173,11 +173,11 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
     );
   };
 
-  const buttonClasses = "flex items-center gap-2 rounded-xl px-4 py-2 h-10 bg-secondary/50 border-none hover:bg-secondary transition-all text-sm font-medium whitespace-nowrap";
+  const buttonClasses = "flex items-center gap-1.5 rounded-full pl-4 pr-3 h-9 bg-card border-border/80 hover:border-primary/40 hover:bg-card transition-colors text-sm font-medium whitespace-nowrap shrink-0";
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between gap-6 w-full">
-      <div className="flex flex-wrap items-center gap-2 w-full md:flex-1 justify-center md:justify-start">
+    <div className="flex items-center justify-between gap-3 w-full">
+      <div className="flex items-center gap-2 min-w-0 flex-1 overflow-x-auto no-scrollbar -my-1 py-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
@@ -235,19 +235,19 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
         </DropdownMenu>
       </div>
 
-      <div className="flex items-center bg-secondary/50 p-1 rounded-xl shrink-0">
+      <div className="flex items-center bg-card border border-border/80 p-1 rounded-full shrink-0">
         <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && onViewModeChange(value)}>
-          <ToggleGroupItem value="list" className="rounded-lg h-8 px-3 gap-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="List View">
+          <ToggleGroupItem value="list" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="List View">
             <List className="h-3.5 w-3.5" />
-            <span className="text-[10px] font-bold">List</span>
+            <span className="hidden sm:inline text-xs font-semibold">List</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="calendar" className="rounded-lg h-8 px-3 gap-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="Calendar View">
+          <ToggleGroupItem value="calendar" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="Calendar View">
             <CalendarDays className="h-3.5 w-3.5" />
-            <span className="text-[10px] font-bold">Calendar</span>
+            <span className="hidden sm:inline text-xs font-semibold">Calendar</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="map" className="rounded-lg h-8 px-3 gap-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground" title="Map View">
+          <ToggleGroupItem value="map" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="Map View">
             <MapIcon className="h-3.5 w-3.5" />
-            <span className="text-[10px] font-bold">Map</span>
+            <span className="hidden sm:inline text-xs font-semibold">Map</span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

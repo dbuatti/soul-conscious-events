@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ListChecks, Ban, Handshake, MessageCircleWarning, Heart, Users, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
+import PageHeader from '@/components/v2/PageHeader';
 
 const CommunityGuidelines = () => {
   return (
@@ -12,15 +13,14 @@ const CommunityGuidelines = () => {
         title="Community Guidelines | SoulFlow Australia"
         description="Read the guidelines that keep SoulFlow a safe, positive, and soulful space for personal growth, community connection, and conscious gatherings."
       />
-      <div className="mb-16 text-center space-y-4">
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Community Guidelines</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-          SoulFlow is a space dedicated to fostering personal growth, community connection, creativity, and well-being.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Community"
+        title="Community guidelines"
+        description="SoulFlow is a space dedicated to fostering personal growth, community connection, creativity, and well-being."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        <Card className="organic-card rounded-[2.5rem] p-6 border-destructive/20">
+        <Card className="organic-card rounded-[1.75rem] p-6 border-destructive/20">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-destructive flex items-center font-heading">
               <Ban className="mr-3 h-8 w-8" /> Not Allowed
@@ -39,7 +39,7 @@ const CommunityGuidelines = () => {
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-6 border-green-500/20">
+        <Card className="organic-card rounded-[1.75rem] p-6 border-green-500/20">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-green-600 flex items-center font-heading">
               <Handshake className="mr-3 h-8 w-8" /> We Welcome
@@ -61,7 +61,7 @@ const CommunityGuidelines = () => {
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-8 md:col-span-2">
+        <Card className="organic-card rounded-[1.75rem] p-8 md:col-span-2">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
               <ListChecks className="mr-3 h-8 w-8 text-primary" /> Moderation
@@ -74,7 +74,7 @@ const CommunityGuidelines = () => {
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2.5rem] p-8 md:col-span-2 bg-secondary/30 border-dashed text-center">
+        <Card className="organic-card rounded-[1.75rem] p-8 md:col-span-2 bg-secondary/30 border-dashed text-center">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-foreground flex items-center justify-center font-heading">
               <MessageCircleWarning className="mr-3 h-8 w-8 text-accent" /> Report an Issue

@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { countries } from '@/lib/countries';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import SEO from '@/components/SEO';
+import PageHeader from '@/components/v2/PageHeader';
 
 const formSchema = z.object({
   firstName: z.string().optional().or(z.literal('')),
@@ -121,7 +122,7 @@ const AccountSettings = () => {
       <div className="w-full max-w-6xl px-4">
         <Skeleton className="h-16 w-1/3 mb-12" />
         <div className="max-w-2xl mx-auto space-y-8">
-          <Skeleton className="h-[400px] w-full rounded-[3rem]" />
+          <Skeleton className="h-[400px] w-full rounded-[2rem]" />
         </div>
       </div>
     );
@@ -133,12 +134,10 @@ const AccountSettings = () => {
         title="Account Settings | SoulFlow Australia"
         description="Manage your SoulFlow profile, update your personal information, and customize your appearance settings."
       />
-      <div className="mb-16 text-center">
-        <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-tight text-foreground">Account Settings</h1>
-      </div>
+      <PageHeader eyebrow="Account" title="Settings" description="Your profile details and appearance preferences." />
 
       <div className="max-w-2xl mx-auto space-y-8">
-        <Card className="organic-card rounded-[3rem] p-8 sm:p-12">
+        <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
           <CardHeader className="px-0 pt-0">
             <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
               <UserIcon className="mr-3 h-8 w-8 text-primary" /> General Info
@@ -236,7 +235,7 @@ const AccountSettings = () => {
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[3rem] p-8 sm:p-12">
+        <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
           <CardHeader className="px-0 pt-0">
             <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
               <SunMoon className="mr-3 h-8 w-8 text-primary" /> Appearance

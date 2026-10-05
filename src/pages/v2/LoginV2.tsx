@@ -34,7 +34,7 @@ const LoginV2 = () => {
       />
       <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
         <div className="space-y-4">
-          <h1 className="text-5xl font-black font-heading tracking-tight text-foreground leading-tight">
+          <h1 className="text-5xl font-semibold font-heading tracking-tight text-foreground leading-tight">
             Your Soulful <br />
             <span className="text-primary italic font-normal">Journey Awaits</span>
           </h1>
@@ -74,7 +74,7 @@ const LoginV2 = () => {
         </div>
       </div>
 
-      <div className="w-full max-w-md glass-card p-8 sm:p-10 rounded-[2.5rem] shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000">
+      <div className="w-full max-w-md glass-card p-8 sm:p-10 rounded-[1.75rem] shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000">
         <h2 className="text-3xl font-bold text-foreground text-center mb-8 font-heading">Sign In</h2>
         <Auth
           supabaseClient={supabase}

@@ -5,66 +5,75 @@
 @layer base {
   :root {
     /* Light Mode: Golden Hour */
-    --background: 35 30% 98%; /* Warm Sand #FDFBF7 */
-    --foreground: 20 20% 12%; /* Deep Earth */
+    --background: 36 33% 97%; /* Warm sand #FAF7F2 */
+    --foreground: 20 22% 12%; /* Deep earth */
 
     --card: 0 0% 100%;
-    --card-foreground: 20 20% 12%;
+    --card-foreground: 20 22% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 20% 12%;
+    --popover-foreground: 20 22% 12%;
 
-    --primary: 15 60% 45%; /* Terracotta #B34629 */
-    --primary-foreground: 35 30% 98%;
+    --primary: 13 63% 44%; /* Terracotta #B5462A */
+    --primary-foreground: 36 33% 98%;
 
-    --secondary: 35 25% 92%; /* Soft Clay */
-    --secondary-foreground: 20 20% 12%;
+    --secondary: 34 30% 92%; /* Soft clay */
+    --secondary-foreground: 20 22% 14%;
 
-    --muted: 35 15% 90%;
-    --muted-foreground: 20 10% 45%;
+    --muted: 34 22% 91%;
+    --muted-foreground: 20 9% 40%;
 
-    --accent: 40 70% 60%; /* Golden Ochre */
-    --accent-foreground: 35 30% 98%;
+    --accent: 38 72% 56%; /* Golden ochre */
+    --accent-foreground: 20 22% 12%;
 
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 35 20% 88%;
-    --input: 35 20% 88%;
-    --ring: 15 60% 45%;
+    --border: 32 22% 86%;
+    --input: 32 22% 84%;
+    --ring: 13 63% 44%;
 
-    --radius: 1.5rem;
+    --radius: 1.25rem;
+
+    /* Extra brand tokens */
+    --sage: 95 14% 42%;
+    --ink: 18 24% 10%; /* Night band backgrounds */
+    --ink-foreground: 34 30% 92%;
   }
 
   .dark {
     /* Dark Mode: Desert Night */
-    --background: 20 20% 4%;
-    --foreground: 35 20% 90%;
+    --background: 20 18% 6%;
+    --foreground: 34 25% 90%;
 
-    --card: 20 20% 7%;
-    --card-foreground: 35 20% 90%;
+    --card: 20 16% 9%;
+    --card-foreground: 34 25% 90%;
 
-    --popover: 20 20% 7%;
-    --popover-foreground: 35 20% 90%;
+    --popover: 20 16% 9%;
+    --popover-foreground: 34 25% 90%;
 
-    --primary: 15 50% 55%;
-    --primary-foreground: 20 20% 4%;
+    --primary: 14 62% 58%;
+    --primary-foreground: 20 18% 6%;
 
-    --secondary: 20 15% 12%;
-    --secondary-foreground: 35 20% 90%;
+    --secondary: 20 14% 14%;
+    --secondary-foreground: 34 25% 90%;
 
-    --muted: 20 15% 10%;
-    --muted-foreground: 20 5% 60%;
+    --muted: 20 13% 13%;
+    --muted-foreground: 30 8% 64%;
 
-    --accent: 40 60% 50%;
-    --accent-foreground: 35 20% 90%;
+    --accent: 38 62% 55%;
+    --accent-foreground: 20 18% 6%;
 
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 20 15% 16%;
-    --input: 20 15% 16%;
-    --ring: 15 50% 55%;
+    --border: 20 12% 18%;
+    --input: 20 12% 20%;
+    --ring: 14 62% 58%;
+
+    --sage: 95 14% 58%;
+    --ink: 20 20% 4%;
+    --ink-foreground: 34 25% 90%;
   }
 }
 
@@ -79,14 +88,30 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(15, 60%, 45%, 0.03) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(40, 70% , 60%, 0.03) 0px, transparent 50%);
-    background-attachment: fixed;
+    font-feature-settings: "cv11", "ss01";
+    background-image:
+      radial-gradient(60rem 30rem at 0% -10%, hsl(var(--primary) / 0.06), transparent 60%),
+      radial-gradient(50rem 30rem at 100% -10%, hsl(var(--accent) / 0.08), transparent 60%);
+    background-repeat: no-repeat;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
+    text-wrap: balance;
+  }
+
+  /* Cormorant defaults to old-style figures; dates and counts read better lining. */
+  .font-heading, h1, h2, h3, h4, h5, h6 {
+    font-variant-numeric: lining-nums;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   /* Custom Scrollbar */
@@ -101,14 +126,62 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-primary/30 rounded-full border-4 border-solid border-secondary hover:bg-primary/50 transition-colors;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
-.organic-card {
-  @apply bg-white dark:bg-white/5 border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500;
+@layer components {
+  .organic-card {
+    @apply bg-card border border-border/70 shadow-[0_1px_2px_hsl(20_30%_20%/0.04),0_8px_24px_-12px_hsl(20_30%_20%/0.12)] transition-[box-shadow,transform,border-color] duration-300;
+  }
+
+  .organic-card-hover {
+    @apply hover:shadow-[0_2px_4px_hsl(20_30%_20%/0.05),0_24px_48px_-20px_hsl(20_40%_25%/0.28)] hover:-translate-y-0.5 hover:border-primary/25;
+  }
+
+  .floating-nav {
+    @apply bg-background/80 backdrop-blur-xl border-b border-border/60;
+  }
+
+  .glass {
+    @apply bg-popover/95 backdrop-blur-xl;
+  }
+
+  /* Warm "golden hour" panel used behind page heroes */
+  .hero-glow {
+    background:
+      radial-gradient(40rem 22rem at 12% 0%, hsl(var(--accent) / 0.28), transparent 65%),
+      radial-gradient(36rem 24rem at 95% 15%, hsl(var(--primary) / 0.20), transparent 65%),
+      radial-gradient(30rem 20rem at 50% 120%, hsl(var(--sage) / 0.16), transparent 70%),
+      hsl(var(--secondary) / 0.55);
+  }
+
+  .night-band {
+    background:
+      radial-gradient(40rem 20rem at 85% 0%, hsl(var(--primary) / 0.35), transparent 70%),
+      radial-gradient(30rem 18rem at 0% 100%, hsl(var(--accent) / 0.18), transparent 70%),
+      hsl(var(--ink));
+    color: hsl(var(--ink-foreground));
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-primary;
+  }
 }
 
-.floating-nav {
-  @apply bg-white/90 dark:bg-black/60 backdrop-blur-lg border border-white/50 dark:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.1)];
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Leaflet Customizations */
