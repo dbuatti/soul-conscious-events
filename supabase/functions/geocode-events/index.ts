@@ -1,10 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders, jsonResponse, requireAdmin } from '../_shared/auth.ts';
 
-// Nominatim's usage policy requires an identifying User-Agent and at most one
+// The geocoder's usage policy requires an identifying User-Agent and at most one
 // request per second. A browser cannot satisfy either -- fetch() strips a
 // User-Agent header -- which is why this runs here instead of in LeafletMap.
-const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
+// Nominatim refuses hosted edge runtimes with "Access denied" -- it blocks
+// datacentre IPs, and Supabase functions run on Google Cloud. Verified from the
+// deployed function, so it cannot be used here. Photon is a Nominatim-derived
+// geocoder that answers the same queries without a key or an IP allowlist.
+const PHOTON = 'https://photon.komoot.io/api';
 const REQUEST_INTERVAL_MS = 1100;
 const USER_AGENT = 'SoulFlow-Australia-Community-App/1.0 (admin geocode-events)';
 
@@ -12,6 +16,10 @@ const USER_AGENT = 'SoulFlow-Australia-Community-App/1.0 (admin geocode-events)'
 // somewhere else entirely. Mirrors the events_coordinates_in_australia_check.
 const IN_BOUNDS = (lat: number, lng: number) =>
   lat >= -44.5 && lat <= -10 && lng >= 112 && lng <= 154;
+
+// Photon has no country parameter, so results are biased toward Australia
+// instead. Anything landing elsewhere still fails the bounds check above.
+const PHOTON_BBOX = '112,-44.5,154,-10';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -73,7 +81,7 @@ type GeocodeResult =
 
 const geocode = async (query: string, gate: () => Promise<void>): Promise<GeocodeResult> => {
   await gate();
-  const url = `${NOMINATIM}?format=json&limit=1&countrycodes=au&q=${encodeURIComponent(query)}`;
+  const url = `${PHOTON}?limit=1&lang=en&bbox=${PHOTON_BBOX}&q=${encodeURIComponent(query)}`;
   let response: Response;
   try {
     response = await fetch(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } });
@@ -81,7 +89,7 @@ const geocode = async (query: string, gate: () => Promise<void>): Promise<Geocod
     return { kind: 'error', detail: `network: ${String(err)}` };
   }
 
-  // Only a clean 200 counts as "Nominatim says this address does not exist".
+  // Only a clean 200 counts as "the geocoder says this address does not exist".
   // Every rejection -- 403 from bot filtering, 429 from rate limiting, 5xx --
   // is a statement about the request, not the address, so it must stay
   // retryable. Recording these as misses permanently buried good addresses.
@@ -90,16 +98,17 @@ const geocode = async (query: string, gate: () => Promise<void>): Promise<Geocod
     return { kind: 'error', detail: `HTTP ${response.status}: ${body.slice(0, 120)}` };
   }
 
-  let data: unknown;
+  let data: { features?: Array<{ geometry?: { coordinates?: number[] } }> };
   try {
     data = await response.json();
   } catch (err) {
     return { kind: 'error', detail: `unreadable body: ${String(err)}` };
   }
-  if (!Array.isArray(data) || data.length === 0) return { kind: 'miss' };
 
-  const lat = Number.parseFloat(data[0].lat);
-  const lng = Number.parseFloat(data[0].lon);
+  const coords = data.features?.[0]?.geometry?.coordinates;
+  if (!coords || coords.length < 2) return { kind: 'miss' };
+  // GeoJSON is [longitude, latitude], the opposite of what we store.
+  const [lng, lat] = coords;
   if (Number.isNaN(lat) || Number.isNaN(lng)) return { kind: 'miss' };
   if (!IN_BOUNDS(lat, lng)) return { kind: 'miss' };
   return { kind: 'hit', lat, lng };
@@ -107,11 +116,12 @@ const geocode = async (query: string, gate: () => Promise<void>): Promise<Geocod
 
 /** One request, reported verbatim. Cheaper than a 100-second batch of guesses. */
 const probe = async (query: string): Promise<Record<string, unknown>> => {
-  const url = `${NOMINATIM}?format=json&limit=1&countrycodes=au&q=${encodeURIComponent(query)}`;
+  const url = `${PHOTON}?limit=1&lang=en&bbox=${PHOTON_BBOX}&q=${encodeURIComponent(query)}`;
   const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } });
   const body = await response.text().catch(() => '');
   return {
     query,
+    provider: 'photon',
     status: response.status,
     ok: response.ok,
     headers: Object.fromEntries(response.headers.entries()),
