@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { functionErrorMessage } from '@/lib/function-errors';
 
 const venueSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -59,7 +60,7 @@ const VenueManagementTable = () => {
       const { data, error } = await supabase.functions.invoke('parse-venue-details', {
         body: { text: rawText }
       });
-      if (error) throw error;
+      if (error) throw new Error(await functionErrorMessage(error));
 
       const { error: insertError } = await supabase.from('venues').insert([data]);
       if (insertError) throw insertError;

@@ -18,6 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { UserProfile } from '@/pages/AdminPanel'; // Import UserProfile type
+import { functionErrorMessage } from '@/lib/function-errors';
 
 interface EditUserDialogProps {
   isOpen: boolean;
@@ -83,7 +84,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ isOpen, onClose, user, 
       });
 
       if (response.error) {
-        throw new Error(response.error.message);
+        throw new Error(await functionErrorMessage(response.error));
       }
 
       toast.success('User updated successfully!', { id: loadingToastId });

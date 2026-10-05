@@ -27,6 +27,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import EditUserDialog from '@/components/EditUserDialog';
+import { functionErrorMessage } from '@/lib/function-errors';
 
 export interface ContactSubmission {
   id: string;
@@ -114,7 +115,7 @@ const AdminPanel = () => {
       });
 
       if (response.error) {
-        throw new Error(response.error.message);
+        throw new Error(await functionErrorMessage(response.error));
       }
 
       toast.success('User deleted successfully!', { id: loadingToastId });
@@ -133,7 +134,7 @@ const AdminPanel = () => {
       });
 
       if (response.error) {
-        throw new Error(response.error.message);
+        throw new Error(await functionErrorMessage(response.error));
       }
 
       toast.success('Confirmation email sent!', { id: loadingToastId });
@@ -157,7 +158,7 @@ const AdminPanel = () => {
       });
 
       if (response.error) {
-        throw new Error(response.error.message);
+        throw new Error(await functionErrorMessage(response.error));
       }
 
       toast.success('Password reset successfully!', { id: loadingToastId });

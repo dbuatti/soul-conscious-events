@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { formatPrice } from '@/utils/event-utils';
 import { Event } from '@/types/event';
 import { EventImportRun, EventSource } from '@/types/database';
+import { functionErrorMessage } from '@/lib/function-errors';
 
 interface ImportResponse {
   events_added?: number;
@@ -101,7 +102,7 @@ const EventImports: React.FC = () => {
     const { data, error } = await supabase.functions.invoke<ImportResponse>('import-events', { body: sourceId ? { sourceId } : {} });
     setRunning(null);
     if (error || data?.error) {
-      toast.error(`Import failed: ${data?.error ?? error?.message}`);
+      toast.error(`Import failed: ${data?.error ?? await functionErrorMessage(error)}`);
     } else if (data?.message) {
       toast.info(data.message);
     } else {

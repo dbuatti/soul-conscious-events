@@ -24,6 +24,7 @@ import { countries } from '@/lib/countries';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
+import { functionErrorMessage } from '@/lib/function-errors';
 
 const formSchema = z.object({
   firstName: z.string().optional().or(z.literal('')),
@@ -101,7 +102,7 @@ const AccountSettings = () => {
         },
       });
 
-      if (response.error) throw new Error(response.error.message);
+      if (response.error) throw new Error(await functionErrorMessage(response.error));
 
       // Email changes go through Supabase's confirmation flow rather than the admin API.
       if (values.email && values.email !== user.email) {

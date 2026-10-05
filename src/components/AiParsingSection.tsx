@@ -6,6 +6,7 @@ import { Sparkles, Loader2, Bug } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
+import { functionErrorMessage } from '@/lib/function-errors';
 
 /** Shape returned by the parse-event-details edge function. All fields are best-effort. */
 export interface ParsedEventData {
@@ -74,7 +75,7 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
       });
 
       if (response.error) {
-        throw new Error(response.error.message);
+        throw new Error(await functionErrorMessage(response.error));
       }
 
       const parsedData = response.data;

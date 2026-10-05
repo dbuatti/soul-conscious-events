@@ -7,6 +7,7 @@ import AddDevTaskDialog from '@/components/AddDevTaskDialog';
 import DevTaskCard from '@/components/DevTaskCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/components/SessionContextProvider';
+import { functionErrorMessage } from '@/lib/function-errors';
 
 export interface DevTask {
   id: string;
@@ -64,7 +65,7 @@ const DevSpace = () => {
 
       if (error) {
         console.error('Error creating test user via Edge Function:', error);
-        toast.error(`Failed to create test user: ${error.message}`);
+        toast.error(`Failed to create test user: ${await functionErrorMessage(error)}`);
       } else {
         const { userId, email: createdEmail, password: createdPassword } = data;
         toast.success(`Test user created: ${createdEmail} (Password: ${createdPassword})`);
