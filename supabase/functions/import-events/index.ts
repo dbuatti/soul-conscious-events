@@ -395,8 +395,11 @@ serve(async (req) => {
       }
     }
 
+    // States what happened, not what the admin still has to do: by the time this
+    // is read the events may already be published, so promising a review here is
+    // how the source card ends up contradicting an empty inbox.
     const headline = added > 0
-      ? `${added} new event${added === 1 ? '' : 's'} waiting for your review`
+      ? `${added} new event${added === 1 ? '' : 's'} added`
       : candidates.length > 0
         ? `Nothing new — all ${candidates.length} already imported`
         : 'No events found on this page';

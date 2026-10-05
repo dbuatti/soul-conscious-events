@@ -66,6 +66,17 @@ const EventImports: React.FC = () => {
     return (id?: string | null) => (id ? map.get(id) ?? 'a removed source' : 'a user submission');
   }, [sources]);
 
+  // Live count per source, so a card can never claim events are waiting for
+  // review after they've been published or declined.
+  const waitingBySource = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const event of pending) {
+      if (!event.source_id) continue;
+      counts.set(event.source_id, (counts.get(event.source_id) ?? 0) + 1);
+    }
+    return counts;
+  }, [pending]);
+
   const load = useCallback(async () => {
     const [pendingRes, sourcesRes, runsRes] = await Promise.all([
       supabase.from('events').select('*').eq('approval_status', 'pending').eq('is_deleted', false).order('event_date', { ascending: true }),
@@ -114,7 +125,7 @@ const EventImports: React.FC = () => {
     } else if (data?.message) {
       toast.info(data.message);
     } else {
-      toast.success(`Checked ${data?.sources_checked ?? 0} source(s): ${data?.events_added ?? 0} new event(s) waiting for review.`);
+      toast.success(`Checked ${data?.sources_checked ?? 0} source(s): ${data?.events_added ?? 0} new event(s) added.`);
     }
     load();
   };
@@ -346,7 +357,11 @@ const EventImports: React.FC = () => {
                   <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary break-all">{source.url}</a>
                   <p className="text-xs text-muted-foreground mt-1">
                     {source.last_run_at
-                      ? <>Checked {formatDistanceToNow(parseISO(source.last_run_at), { addSuffix: true })} · {source.last_message}</>
+                      ? <>Checked {formatDistanceToNow(parseISO(source.last_run_at), { addSuffix: true })} · {source.last_message} ·{' '}
+                        <span className={cn((waitingBySource.get(source.id) ?? 0) > 0 && 'font-semibold text-foreground')}>
+                          {waitingBySource.get(source.id) ?? 0} waiting
+                        </span>
+                        </>
                       : 'Not checked yet'}
                   </p>
                 </div>
