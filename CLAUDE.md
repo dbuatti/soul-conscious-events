@@ -63,6 +63,8 @@ All written in Deno TypeScript. Key functions:
 - `parse-venue-details` — similar AI parsing for venues.
 - `delete-user` / `update-user-metadata` / `resend-confirmation` / `reset-password-admin` / `create-test-user` — admin user management utilities. These run with the service-role key, so each must authorize the caller via `supabase/functions/_shared/auth.ts` (`requireAdmin` / `requireUser`).
 
+Deployment: `.github/workflows/deploy-edge-functions.yml` deploys every function on push to `main` that touches `supabase/functions/**` (needs the `SUPABASE_ACCESS_TOKEN` repo secret). `cron-ping` is deployed with `--no-verify-jwt`; all others require a JWT. Migrations are **not** auto-applied — run them manually.
+
 ### Views
 
 Three view modes on the home page toggled in `EventsListV2`:
