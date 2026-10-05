@@ -27,4 +27,6 @@ export interface Event {
   event_days?: Array<{ date: string; start_time: string; end_time: string; notes?: string }>;
   source_id?: string | null; // set when brought in by the event importer
   imported_at?: string | null;
+  latitude?: number | null; // filled in by the geocode-events function, so the map never has to geocode
+  longitude?: number | null;
 }

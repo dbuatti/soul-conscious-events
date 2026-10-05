@@ -224,6 +224,10 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                   </div>
                 </div>
                 
+                {/* No stored coordinates means nothing to centre on, and the map no
+                    longer geocodes on the user's behalf. The address above still
+                    opens Google Maps. */}
+                {typeof event.latitude === 'number' && typeof event.longitude === 'number' && (
                 <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden border border-border shadow-sm bg-secondary">
                   <LeafletMap 
                     events={[event]} 
@@ -242,6 +246,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
             {event.price && (
