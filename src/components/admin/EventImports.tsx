@@ -29,8 +29,16 @@ interface ImportResponse {
 
 const statusStyles: Record<string, string> = {
   ok: 'bg-sage/15 text-sage',
-  partial: 'bg-accent/20 text-foreground/80',
+  partial: 'bg-secondary text-muted-foreground',
   error: 'bg-destructive/10 text-destructive',
+};
+
+// 'partial' only means this source has more pages than one run can check, so it
+// is expected rather than a fault. Only errors get an alarming label.
+const statusLabels: Record<string, string> = {
+  ok: 'Up to date',
+  partial: 'Working through it',
+  error: 'Problem',
 };
 
 const sectionTitle = (Icon: React.ElementType, title: string, sub?: string) => (
@@ -282,6 +290,16 @@ const EventImports: React.FC = () => {
           </Button>
         </div>
 
+        <p className="text-sm text-muted-foreground mb-4 -mt-2">
+          {pending.length > 0 ? (
+            <>You have <span className="font-semibold text-foreground">{pending.length}</span> event{pending.length === 1 ? '' : 's'} to review in the inbox above. Everything else is running on its own.</>
+          ) : sources.some((s) => s.last_status === 'error') ? (
+            <>Nothing to review. A source is having trouble — the reason is shown below.</>
+          ) : (
+            <>Nothing needs your attention. New events are checked every morning and land in the inbox above.</>
+          )}
+        </p>
+
         <form onSubmit={addSource} className="organic-card rounded-[var(--radius)] p-4 flex flex-col md:flex-row gap-2.5 mb-4">
           <Input
             value={newUrl}
@@ -320,7 +338,7 @@ const EventImports: React.FC = () => {
                     <p className="font-semibold text-foreground truncate">{source.label || new URL(source.url).hostname}</p>
                     {source.last_status && (
                       <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-semibold', statusStyles[source.last_status])}>
-                        {source.last_status === 'ok' ? 'OK' : source.last_status === 'partial' ? 'Partly done' : 'Problem'}
+                        {statusLabels[source.last_status] ?? source.last_status}
                       </span>
                     )}
                     {!source.is_active && <span className="rounded-full px-2 py-0.5 text-[11px] font-semibold bg-secondary text-muted-foreground">Paused</span>}

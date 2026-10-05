@@ -215,7 +215,7 @@ serve(async (req) => {
       const ics = eventsFromIcs(page.text, source.url, opts);
       // Calendar entries often share one booking link, so only their UID identifies them.
       ics.events.forEach((event) => candidates.push({ event, strictLinkDedupe: false }));
-      notes.push(`calendar feed: ${ics.events.length} upcoming`);
+      notes.push(`calendar feed with ${ics.events.length} upcoming`);
     } else {
       const onPage = eventsFromHtml(page.text, page.finalUrl, opts);
       onPage.events.forEach((event) => candidates.push({ event, strictLinkDedupe: true }));
@@ -238,10 +238,11 @@ serve(async (req) => {
 
       let visited = 0;
       let failed = 0;
+      let leftOver = 0;
       for (const link of links) {
         if (visited >= DETAIL_PAGES_PER_SOURCE || budget.detailPages >= DETAIL_PAGES_PER_RUN || budget.expired()) {
           status = 'partial';
-          notes.push(`${links.length - visited} more links left for the next run`);
+          leftOver = links.length - visited;
           break;
         }
         visited++;
@@ -257,7 +258,8 @@ serve(async (req) => {
           if (ai) candidates.push({ event: ai, strictLinkDedupe: true });
         }
       }
-      notes.push(`${onPage.events.length} on page, ${visited} event pages checked${failed ? ` (${failed} unreadable)` : ''}`);
+      notes.push(`checked ${visited} event page${visited === 1 ? '' : 's'}${failed ? `, ${failed} unreadable` : ''}`);
+      if (leftOver) notes.push(`${leftOver} more to check ${leftOver === 1 ? 'tomorrow' : 'over the coming days'}`);
     }
 
     // Drop anything already in SoulFlow, and duplicates within this batch.
@@ -290,11 +292,17 @@ serve(async (req) => {
       }
     }
 
+    const headline = added > 0
+      ? `${added} new event${added === 1 ? '' : 's'} waiting for your review`
+      : candidates.length > 0
+        ? `Nothing new — all ${candidates.length} already imported`
+        : 'No events found on this page';
+
     const result: SourceResult = {
       id: source.id,
       url: source.url,
       status,
-      message: `${added} new · ${notes.join(' · ')}`,
+      message: `${headline}${notes.length ? ` · ${notes.join(' · ')}` : ''}`,
       found: candidates.length,
       added,
     };

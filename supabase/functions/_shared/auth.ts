@@ -6,6 +6,13 @@ const SUPER_ADMIN_EMAIL = 'daniele.buatti@gmail.com';
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  // Required by the fetch spec whenever a preflight sends
+  // Access-Control-Request-Method with a non-safelisted method (POST). Without
+  // it, stricter browsers reject the preflight and the request never reaches
+  // the function.
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  // Cache the preflight for a minute so repeat calls skip it entirely.
+  'Access-Control-Max-Age': '60',
 };
 
 export const jsonResponse = (body: unknown, status = 200) =>
