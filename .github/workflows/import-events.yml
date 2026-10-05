@@ -12,7 +12,9 @@ concurrency:
 
 jobs:
   import:
-    runs-on: ubuntu-latest
+    # Pinned to the LTS image: "ubuntu-latest" moves to Ubuntu 26 on 19 Oct 2026,
+    # and an unexpected break here fails silently at 6:45am with nobody watching.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
       # Same token the deploy workflow uses; nothing extra to configure.
