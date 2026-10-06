@@ -97,13 +97,21 @@ export const extendTruncatedDescription = (html: string, description: string): s
     const candidate = text.slice(at).trim();
     if (candidate.length > best.length) best = candidate;
   };
-  // Paragraphs first -- descriptions live in them, and preferring them avoids
-  // swallowing a whole page-level wrapper div. Only a div match is scanned if
-  // no paragraph matched, which bounds the blast radius.
-  for (const tag of ['p', 'div']) {
-    const before = best;
-    for (const m of html.matchAll(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'gi'))) consider(m[1] ?? '');
-    if (best.length > before.length) return best;
+  // Paragraphs only, deliberately. A <div> wrapper that happens to open with
+  // the title also opens with share buttons and "Add to calendar" -- that
+  // stored 394 characters of page furniture as the description on a page with
+  // no blurb at all. Paragraphs are prose by definition.
+    // NB: <p(?=\s|>) -- a bare <p[^>]*> also matches SVG <path>, which on a
+  // Humanitix page swallowed 16,000 characters of page furniture.
+  for (const m of html.matchAll(/<p(?:\s[^>]*)?>([\s\S]*?)<\/p>/gi)) {
+    const inner = m[1] ?? '';
+    if (inner.length <= best.length) continue;
+    // Start at the needle, not zero: the paragraph can sit after a heading.
+    const text = htmlToText(inner);
+    const at = text.toLowerCase().indexOf(needle);
+    if (at === -1) continue;
+    const candidate = text.slice(at).trim();
+    if (candidate.length > best.length) best = candidate;
   }
   return best;
 };
@@ -240,7 +248,7 @@ export const findEventLinks = (html: string, pageUrl: string): string[] => {
     abs.hash = '';
     // Tracking params make the same event look like different URLs.
     for (const key of [...abs.searchParams.keys()]) {
-      if (/^(utm_|aff|ref|fbclid|gclid|_gl)/i.test(key)) abs.searchParams.delete(key);
+      if (/^(utm_|aff|ref|fbclid|gclid|_gl|hxchl)/i.test(key)) abs.searchParams.delete(key);
     }
     const href = abs.toString();
     // Known platforms win outright: their URL shapes aren't always structural
@@ -267,7 +275,7 @@ const paginatedKey = (raw: string): string | null => {
   try {
     const u = new URL(raw);
     const pairs = [...u.searchParams.entries()]
-      .filter(([k]) => !/^(utm_|aff|ref|fbclid|gclid|_gl)/i.test(k))
+      .filter(([k]) => !/^(utm_|aff|ref|fbclid|gclid|_gl|hxchl)/i.test(k))
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}=${v}`);
     return `${u.hostname.replace(/^www\./, '')}${u.pathname.replace(/\/+$/, '')}${pairs.length ? `?${pairs.join('&')}` : ''}`;
@@ -302,7 +310,7 @@ export const findPaginationLinks = (html: string, pageUrl: string): string[] => 
       const abs = new URL(decodeEntities(href), base);
       abs.hash = '';
       for (const key of [...abs.searchParams.keys()]) {
-        if (/^(utm_|aff|ref|fbclid|gclid|_gl)/i.test(key)) abs.searchParams.delete(key);
+        if (/^(utm_|aff|ref|fbclid|gclid|_gl|hxchl)/i.test(key)) abs.searchParams.delete(key);
       }
       if (abs.hostname !== base.hostname) continue;
       const key = paginatedKey(abs.toString());
@@ -410,7 +418,7 @@ export const eventUrlsFromSitemap = (urls: string[], siteUrl: string): string[] 
     if (u.hostname.replace(/^www\./, '') !== host) return;
     u.hash = '';
     for (const key of [...u.searchParams.keys()]) {
-      if (/^(utm_|aff|ref|fbclid|gclid|_gl)/i.test(key)) u.searchParams.delete(key);
+      if (/^(utm_|aff|ref|fbclid|gclid|_gl|hxchl)/i.test(key)) u.searchParams.delete(key);
     }
     if (!looksLikeEventPath(u.pathname)) return;
     const key = `${u.pathname}${u.search}`;
@@ -780,6 +788,7 @@ export interface MapOptions {
 export type SkipReason = 'past' | 'too-far' | 'not-australian' | 'invalid';
 
 export const jsonLdToEvent = (
+  html: string,
   node: JsonObject,
   pageUrl: string,
   opts: MapOptions,
@@ -798,7 +807,14 @@ export const jsonLdToEvent = (
   if (place.country && NON_AU_COUNTRY.test(place.country.trim())) return 'not-australian';
 
   const name = decodeEntities(str(node.name)!);
-  const description = clip(extendTruncatedDescription(html, htmlToText(str(node.description) ?? '')), 4000) || null;
+  const blurb = extendTruncatedDescription(html, htmlToText(str(node.description) ?? '')).trim();
+  // Some pages use the title as their description ("Evoke Sounds // Lounge
+  // Room Sessions" on Humanitix). Storing that would print the title twice on
+  // the public page, and would score relevance against the words we just read
+  // off the heading. Judge on letters and digits only so punctuation and case
+  // differences don't disguise a duplicate.
+  const bare = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const description = bare(blurb) && bare(blurb) !== bare(name) ? clip(blurb, 4000) : null;
   const eventUrl = str(node.url);
   const ticketLink = offerUrl(node.offers) || (eventUrl ? new URL(eventUrl, pageUrl).toString() : pageUrl);
   const organizer = organizerName(node.organizer);
@@ -831,7 +847,7 @@ export const eventsFromHtml = (html: string, pageUrl: string, opts: MapOptions) 
   const skipped: Partial<Record<SkipReason, number>> = {};
   for (const node of extractJsonLdNodes(html)) {
     if (!isEventNode(node)) continue;
-    const result = jsonLdToEvent(node, pageUrl, opts);
+    const result = jsonLdToEvent(html, node, pageUrl, opts);
     if (typeof result === 'string') skipped[result] = (skipped[result] ?? 0) + 1;
     else events.push(result);
   }

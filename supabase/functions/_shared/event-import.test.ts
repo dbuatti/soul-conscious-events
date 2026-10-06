@@ -508,3 +508,39 @@ Deno.test('leaves a complete description alone', () => {
   assert.equal(extendTruncatedDescription(`<p>${desc}</p>`, desc), desc);
   assert.equal(extendTruncatedDescription('', desc), desc);
 });
+
+// Regression: <p[^>]*> also matches SVG <path>, and Humanitix pages carry a
+// 16KB inline icon sprite. The truncated-description helper stayed green while
+// eventsFromHtml was swallowing the whole page as the description.
+Deno.test('a page of SVG icons does not become the description', () => {
+  const title = 'Evoke Sounds // Lounge Room Sessions';
+  const page = `<html><body>
+    <svg><path d="M11.782 4.032a.575.575 0 1 0-.813-.814L7.5 6.687 4.032 10.156"/>
+    <path d="M67.6084 91.1448C62.4393 96.1556 56.7955 95.3644 51 90.56"/></svg>
+    <p>Unrelated copy.</p>
+  </body></html>`;
+  assert.equal(extendTruncatedDescription(page, title), title);
+});
+
+// JSON-LD whose only "description" is a copy of its own title has nothing to
+// add. Storing it would print the title twice on the public page.
+Deno.test('a description that is just the title is dropped', () => {
+  const title = 'Evoke Sounds // Lounge Room Sessions (ft. AMIT BENITA)';
+  const page = `<html><head><script type="application/ld+json">
+    {"@type":"Event","name":"${title}","description":"${title}",
+     "startDate":"2026-11-07T19:30:00+1100",
+     "location":{"@type":"Place","name":"Evoke Sounds HQ",
+       "address":{"@type":"PostalAddress","streetAddress":"10 Cantala Ave, Caulfield North VIC 3161"}},
+     "offers":[{"@type":"Offer","price":55,"url":"https://events.humanitix.com/x/tickets"}]}
+  </script></head><body>
+    <svg><path d="M11.782 4.032a.575.575 0 1 0-.813-.814L7.5 6.687"/></svg>
+    <p>Evoke Sounds' mission is to champion musicians at every stage.</p>
+  </body></html>`;
+  const { events } = eventsFromHtml(page, 'https://events.humanitix.com/evoke-sounds-lounge', OPTS);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].description, null);
+  // The rest of the record is still good, and AggregateOffer-first is tolerated.
+  assert.equal(events[0].event_date, '2026-11-07');
+  assert.equal(events[0].price, '$55');
+  assert.match(events[0].ticket_link ?? '', /\/tickets$/);
+});

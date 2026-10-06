@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders, createAdminClient, jsonResponse, requireAdmin } from '../_shared/auth.ts';
+import { politeFetch, robotsFor } from '../_shared/page-fetch.ts';
 import {
   eventsFromHtml, eventsFromIcs, extractJsonLdNodes, findEventLinks, findPaginationLinks,
-  htmlToText, isPublicHttpUrl, jsonLdListUrls, looksLikeIcs, normalizeUrl, robotsAllows,
-  classifyEventType, detectState, parseSitemap, sitemapsFromRobots, eventUrlsFromSitemap,
+  htmlToText, jsonLdListUrls, looksLikeIcs, normalizeUrl,
+  classifyEventType, detectState, parseSitemap, scoreRelevance, sitemapsFromRobots, eventUrlsFromSitemap,
   orderSitemapsByLikelihood,
   type ImportedEvent, type MapOptions,
 } from '../_shared/event-import.ts';
@@ -11,13 +12,9 @@ import {
 // Limits keep a run well inside the edge function wall-clock limit and keep
 // us a light, polite visitor on other people's sites.
 const RUN_DEADLINE_MS = 110_000;
-const FETCH_TIMEOUT_MS = 12_000;
-const MAX_BODY_BYTES = 3_000_000;
 const DETAIL_PAGES_PER_SOURCE = 12;
 const DETAIL_PAGES_PER_RUN = 40;
 const AI_FALLBACKS_PER_RUN = 5;
-const SAME_HOST_DELAY_MS = 600;
-const USER_AGENT = 'SoulFlowBot/1.0 (+https://soulflowevents.vercel.app/about; community events guide)';
 // Sitemaps let one source expose a whole site instead of just one page.
 const MAX_SITEMAPS = 4;
 const MAX_CANDIDATE_LINKS = 60;
@@ -40,62 +37,6 @@ class Budget {
   aiCalls = 0;
   timeLeft() { return RUN_DEADLINE_MS - (Date.now() - this.start); }
   expired() { return this.timeLeft() <= 5_000; }
-}
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-const robotsCache = new Map<string, string>();
-const lastHit = new Map<string, number>();
-
-/** robots.txt body for an origin, cached for the run. Empty string = allow all. */
-async function robotsFor(origin: string): Promise<string> {
-  if (robotsCache.has(origin)) return robotsCache.get(origin)!;
-  let body = '';
-  try {
-    const r = await fetch(`${origin}/robots.txt`, {
-      headers: { 'User-Agent': USER_AGENT },
-      signal: AbortSignal.timeout(6_000),
-    });
-    if (r.ok) body = (await r.text()).slice(0, 200_000);
-  } catch { /* unreachable robots.txt: treat as allow-all */ }
-  robotsCache.set(origin, body);
-  return body;
-}
-
-/** Fetches a public URL as text, honouring robots.txt and pacing per host. */
-async function politeFetch(url: string): Promise<{ ok: true; text: string; finalUrl: string } | { ok: false; reason: string }> {
-  if (!isPublicHttpUrl(url)) return { ok: false, reason: 'not a public http(s) URL' };
-  const u = new URL(url);
-
-  const robots = await robotsFor(u.origin);
-  if (!robotsAllows(robots, u.pathname + u.search)) {
-    return { ok: false, reason: 'blocked by robots.txt' };
-  }
-
-  const wait = (lastHit.get(u.host) ?? 0) + SAME_HOST_DELAY_MS - Date.now();
-  if (wait > 0) await sleep(wait);
-  lastHit.set(u.host, Date.now());
-
-  try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': USER_AGENT,
-        'Accept': 'text/html,application/xhtml+xml,text/calendar;q=0.9,*/*;q=0.5',
-        'Accept-Language': 'en-AU,en;q=0.9',
-      },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) return { ok: false, reason: `HTTP ${res.status}` };
-    if (!isPublicHttpUrl(res.url || url)) return { ok: false, reason: 'redirected to a non-public URL' };
-    const length = Number(res.headers.get('content-length') ?? 0);
-    if (length > MAX_BODY_BYTES) return { ok: false, reason: 'page too large' };
-    const text = await res.text();
-    return { ok: true, text: text.slice(0, MAX_BODY_BYTES), finalUrl: res.url || url };
-  } catch (err) {
-    const reason = err instanceof Error && err.name === 'TimeoutError' ? 'timed out' : (err instanceof Error ? err.message : String(err));
-    return { ok: false, reason };
-  }
 }
 
 /**
@@ -224,6 +165,11 @@ Page text:
       recurring_pattern: null,
       recurring_end_date: null,
       external_id: normalizeUrl(url) ?? url,
+      import_relevance: scoreRelevance(
+        json.eventName.trim().slice(0, 200),
+        s(json.description),
+        s(json.organizerContact),
+      ),
     };
   } catch {
     return null;
