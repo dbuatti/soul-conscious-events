@@ -36,13 +36,18 @@ const MapPage = () => {
 
         setDbStatus('connected');
 
-        // Now fetch the specific events for the map
+        // Now fetch the specific events for the map. Two things matter here:
+        // a venue name alone is geocodable, so do not demand a full address --
+        // and only ever plot upcoming events, since the geocoder only queues
+        // future rows. Including past events inflated the denominator with
+        // things that will never have coordinates.
         const { data, error } = await supabase
           .from('events')
           .select('*')
-          .not('full_address', 'is', null)
+          .or('full_address.not.is.null,place_name.not.is.null')
           .eq('approval_status', 'approved')
           .eq('is_deleted', false)
+          .gte('event_date', new Date().toISOString().slice(0, 10))
           .order('event_date', { ascending: true });
 
         if (error) {
