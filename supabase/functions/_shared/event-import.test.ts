@@ -1,6 +1,6 @@
 // Run with: deno test supabase/functions/_shared/event-import.test.ts
 import assert from 'node:assert/strict';
-import { classifyEventType, detectState, eventUrlsFromSitemap, eventsFromHtml, eventsFromIcs, extendTruncatedDescription, extractJsonLdNodes, findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, orderSitemapsByLikelihood, parseSitemap, priceFromOffers, robotsAllows, scoreRelevance, sitemapsFromRobots } from './event-import.ts';
+import { approvalFor, classifyEventType, detectState, eventUrlsFromSitemap, eventsFromHtml, eventsFromIcs, extendTruncatedDescription, extractJsonLdNodes, findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, orderSitemapsByLikelihood, parseSitemap, priceFromOffers, robotsAllows, scoreRelevance, sitemapsFromRobots } from './event-import.ts';
 
 const OPTS = { today: '2026-10-05', maxDate: '2027-10-05' };
 
@@ -543,4 +543,85 @@ Deno.test('a description that is just the title is dropped', () => {
   assert.equal(events[0].event_date, '2026-11-07');
   assert.equal(events[0].price, '$55');
   assert.match(events[0].ticket_link ?? '', /\/tickets$/);
+});
+
+// --- Auto-triage: on-topic publishes, unsure reviews, off-topic rejects ---
+Deno.test('relevance maps onto an approval status', () => {
+  assert.equal(approvalFor('on-topic'), 'approved');
+  assert.equal(approvalFor('off-topic'), 'rejected');
+  assert.equal(approvalFor('unsure'), 'pending');
+  assert.equal(approvalFor(null), 'pending');
+  assert.equal(approvalFor(undefined), 'pending');
+});
+
+// --- TryBooking: all three real URL shapes must be followable ---
+Deno.test('TryBooking event links are recognised', () => {
+  const page = `<html><body>
+    <a href="https://www.trybooking.com/events/landing/1516040">a</a>
+    <a href="https://www.trybooking.com/au/event/1631234">b</a>
+    <a href="https://www.trybooking.com/uk/events/landing/100755">c</a>
+    <a href="https://book.trybooking.com/event/88771">d</a>
+    <a href="https://www.trybooking.com/eventlist/noosayogafestival">not an event</a>
+    <a href="https://www.trybooking.com/about">about</a>
+  </body></html>`;
+  const found = findEventLinks(page, 'https://www.trybooking.com/au/event/999');
+  assert.ok(found.some((u) => u.includes('/events/landing/1516040')), 'landing shape');
+  assert.ok(found.some((u) => u.includes('/au/event/1631234')), 'country/event shape');
+  assert.ok(found.some((u) => u.includes('/uk/events/landing/100755')), 'country landing shape');
+  assert.ok(found.some((u) => u.includes('book.trybooking.com/event/88771')), 'book subdomain');
+  assert.ok(!found.some((u) => u.includes('eventlist')), 'organiser listing is not an event');
+  assert.ok(!found.some((u) => u.includes('/about')), 'bare word paths stay out');
+});
+
+// --- Discovery: one broad listing fans out without hand-picked links ---
+Deno.test('an Eventbrite category listing yields event links', () => {
+  const page = `<html><body>
+    <a href="https://www.eventbrite.com.au/e/sound-bath-tickets-1?aff=ebdssbdestsearch">s1</a>
+    <a href="https://www.eventbrite.com.au/e/morning-yoga-tickets-2?aff=ebdssbdestsearch">s2</a>
+    <link rel="next" href="?page=2">
+  </body></html>`;
+  const found = findEventLinks(page, 'https://www.eventbrite.com.au/d/australia--melbourne/wellness/');
+  assert.equal(found.length, 2);
+  assert.ok(!found.some((u) => u.includes('aff=')), 'tracking params stripped so dedupe holds');
+  assert.match(found[0], /\/e\//);
+});
+
+// --- Humanitix organiser pages: host links must not be mistaken for events ---
+Deno.test('a Humanitix host page exposes its events, not itself', () => {
+  const page = `<html><body>
+    <a href="https://events.humanitix.com/host/evoke-sounds">the host</a>
+    <a href="https://events.humanitix.com/evoke-sounds-lounge-room-sessions-vol-17?hxchl=hex-pfl">vol 17</a>
+    <a href="https://events.humanitix.com/music-flows-x-evoke-sounds-songwriting-retreat?hxchl=hex-pfl">retreat</a>
+  </body></html>`;
+  const found = findEventLinks(page, 'https://events.humanitix.com/host/evoke-sounds');
+  assert.equal(found.length, 2, 'the two real events, not the host page');
+  assert.ok(found.every((u) => !u.includes('hxchl')), 'Humanitix channel param stripped');
+  assert.ok(found.every((u) => u.includes('events.humanitix.com/')), 'ticketing links win outright');
+});
+
+// Eventbrite composes streetAddress itself; appending locality and region again
+// printed the address twice on the card and fed it doubled to the geocoder.
+Deno.test('a pre-composed street address is not repeated', () => {
+  const page = `<html><head><script type="application/ld+json">
+  {"@type":"Event","name":"Rethinking High Performance","startDate":"2026-10-22T12:00:00+11:00",
+   "location":{"@type":"Place","name":"Hub Church Street","address":{"@type":"PostalAddress",
+   "streetAddress":"459 Church Street, #Level 4, Richmond, VIC 3121","addressLocality":"Richmond",
+   "addressRegion":"VIC","postalCode":"3121","addressCountry":"AU"}},
+   "offers":[{"@type":"AggregateOffer","lowPrice":"0","highPrice":"0","url":"https://www.eventbrite.com.au/e/x"}]}
+  </script></head><body></body></html>`;
+  const { events } = eventsFromHtml(page, 'https://www.eventbrite.com.au/e/x', OPTS);
+  assert.equal(events[0].full_address, '459 Church Street, #Level 4, Richmond, VIC 3121, AU');
+});
+
+// ...and a locality must still survive when it is genuinely separate.
+Deno.test('separate address parts are still joined', () => {
+  const page = `<html><head><script type="application/ld+json">
+  {"@type":"Event","name":"Sound Bath","startDate":"2026-11-12T12:00:00+11:00",
+   "location":{"@type":"Place","name":"The Yoga Space","address":{"@type":"PostalAddress",
+   "streetAddress":"123 Smith St","addressLocality":"Fitzroy","addressRegion":"VIC",
+   "postalCode":"3065","addressCountry":"AU"}},
+   "offers":[{"@type":"Offer","price":45,"url":"https://events.humanitix.com/x/tickets"}]}
+  </script></head><body></body></html>`;
+  const { events } = eventsFromHtml(page, 'https://events.humanitix.com/x', OPTS);
+  assert.equal(events[0].full_address, '123 Smith St, Fitzroy, VIC 3065, AU');
 });

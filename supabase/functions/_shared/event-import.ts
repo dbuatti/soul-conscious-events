@@ -86,7 +86,10 @@ export const extendTruncatedDescription = (html: string, description: string): s
   // Compare on a long-ish run: the stub can be reworded slightly in the page
   // copy, but the opening sentence is near-verbatim.
   const needle = seed.slice(0, Math.min(60, seed.length)).toLowerCase();
-  let best = seed;
+  // Seed from the caller's own text, not the flattened copy: a description
+  // that needs no extension must come back byte-identical, paragraph breaks
+  // and all. `seed` exists only for matching.
+  let best = description;
   const consider = (inner: string) => {
     if (inner.length <= best.length) return;
     // Start at the needle, not at zero: the paragraph is often preceded by a
@@ -101,7 +104,7 @@ export const extendTruncatedDescription = (html: string, description: string): s
   // the title also opens with share buttons and "Add to calendar" -- that
   // stored 394 characters of page furniture as the description on a page with
   // no blurb at all. Paragraphs are prose by definition.
-    // NB: <p(?=\s|>) -- a bare <p[^>]*> also matches SVG <path>, which on a
+  // NB: <p(?=\s|>) -- a bare <p[^>]*> also matches SVG <path>, which on a
   // Humanitix page swallowed 16,000 characters of page furniture.
   for (const m of html.matchAll(/<p(?:\s[^>]*)?>([\s\S]*?)<\/p>/gi)) {
     const inner = m[1] ?? '';
@@ -173,7 +176,12 @@ const TICKETING_EVENT_PATTERNS: RegExp[] = [
   /^https?:\/\/(www\.)?humanitix\.com\/[a-z]{2}\/events\/[^/?#]+\/?$/i,
   /^https?:\/\/(www\.)?eventbrite\.[a-z.]+\/e\/[^/?#]+\/?$/i,
   /^https?:\/\/(www\.)?megatix\.com\.au\/events\/[^/?#]+\/?$/i,
-  /^https?:\/\/(www\.)?trybooking\.com\/(?:[A-Z0-9]{4,8}|events\/\d+[^?#]*)\/?$/,
+  // Real TryBooking shapes: /events/landing/<id>, /<cc>/event/<id>,
+  // /<cc>/events/landing/<id>, and the short /<CODE> redirect. The old pattern
+  // was case-sensitive and required events/<digits>, so none of them matched
+  // and no TryBooking link was ever followed. /eventlist/<slug> is an organiser
+  // listing (JS-rendered, no JSON-LD) -- deliberately not an event link.
+  /^https?:\/\/(www\.)?trybooking\.com\/(?:[a-z]{2}\/)?(?:events\/(?:landing\/)?\d+|event\/\d+|[A-Z0-9]*[0-9][A-Z0-9]{3,7})\/?$/i,
   /^https?:\/\/book\.trybooking\.com\/event\/\d+/i,
 ];
 
@@ -532,10 +540,24 @@ const parseLocation = (loc: unknown): Place => {
     const addr = item.address;
     if (typeof addr === 'string') return { ...empty, name: str(item.name), address: addr };
     if (isObject(addr)) {
-      const parts = [addr.streetAddress, addr.addressLocality, [addr.addressRegion, addr.postalCode].filter(Boolean).join(' '), addr.addressCountry]
+      const raw = [addr.streetAddress, addr.addressLocality, [addr.addressRegion, addr.postalCode].filter(Boolean).join(' '), addr.addressCountry]
         .map((p) => (isObject(p) ? str(p.name) : str(p)))
         .filter(Boolean) as string[];
       const country = isObject(addr.addressCountry) ? str(addr.addressCountry.name) : str(addr.addressCountry);
+      // Eventbrite ships streetAddress already composed ("459 Church Street,
+      // #Level 4, Richmond, VIC 3121"), so appending locality and region printed
+      // every piece twice -- on the card and to the geocoder. Drop a piece only
+      // when it appears whole-word in what is already there, so a locality of
+      // "East" is not mistaken for the start of "Eastern Parade".
+      const parts: string[] = [];
+      for (const piece of raw) {
+        const clean = piece.trim().replace(/^[\s,]+|[\s,]+$/g, '');
+        if (!clean) continue;
+        const bag = parts.join(', ');
+        const escaped = clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (clean.length >= 3 && bag && new RegExp(`\\b${escaped}\\b`, 'i').test(bag)) continue;
+        parts.push(clean);
+      }
       return {
         name: str(item.name),
         address: parts.join(', ') || null,
@@ -709,6 +731,15 @@ export const scoreRelevance = (...texts: (string | null | undefined)[]): Relevan
   if (OFF_TOPIC_TERMS.some((re) => re.test(text))) return 'off-topic';
   return 'unsure';
 };
+
+/**
+ * Set-and-forget triage: a confident wellness match goes live immediately, an
+ * obvious miss is stored rejected so it is never re-imported, and anything in
+ * between waits for a human. Rejected is stored rather than skipped -- dropping
+ * it would make the daily run import the same noise forever.
+ */
+export const approvalFor = (relevance: Relevance | null | undefined): 'approved' | 'pending' | 'rejected' =>
+  relevance === 'on-topic' ? 'approved' : relevance === 'off-topic' ? 'rejected' : 'pending';
 
 // ---------------------------------------------------------------------------
 // JSON-LD

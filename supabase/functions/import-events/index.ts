@@ -6,7 +6,7 @@ import {
   htmlToText, jsonLdListUrls, looksLikeIcs, normalizeUrl,
   classifyEventType, detectState, parseSitemap, scoreRelevance, sitemapsFromRobots, eventUrlsFromSitemap,
   orderSitemapsByLikelihood,
-  type ImportedEvent, type MapOptions,
+  approvalFor, type ImportedEvent, type MapOptions,
 } from '../_shared/event-import.ts';
 
 // Limits keep a run well inside the edge function wall-clock limit and keep
@@ -176,6 +176,7 @@ Page text:
   }
 }
 
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -325,7 +326,7 @@ serve(async (req) => {
           ...e,
           source_id: source.id,
           imported_at: now,
-          approval_status: 'pending',
+          approval_status: approvalFor(e.import_relevance),
           is_deleted: false,
           user_id: null,
         })))

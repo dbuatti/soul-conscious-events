@@ -106,4 +106,4 @@ serve(async (req: Request) => {
     still_missing: Math.max(0, (rows?.length ?? 0) - filled.length - skipped.length),
     sample: filled.slice(0, 5),
   });
-}, { headers: corsHeaders });
+});

@@ -1,8 +1,5 @@
-// @ts-expect-error: Deno standard library imports are not resolved by the local TS compiler
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-// @ts-expect-error: ESM imports are not resolved by the local TS compiler
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
-// @ts-expect-error: local Deno imports are not resolved by the local TS compiler
 import { corsHeaders } from '../_shared/auth.ts'
 
 declare const Deno: {
