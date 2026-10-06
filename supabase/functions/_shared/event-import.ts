@@ -66,6 +66,48 @@ export const htmlToText = (html: string): string =>
 const clip = (s: string | null, max: number): string | null =>
   s && s.length > max ? `${s.slice(0, max - 1).trimEnd()}…` : s;
 
+/**
+ * Some sites truncate the schema.org description while printing the whole
+ * thing on the page -- Humanitix cuts at ~120 characters, which on Earth
+ * Frequency sliced the text off immediately before "healing", "transformational"
+ * and "intention". Those are exactly the words relevance scoring reads, so a
+ * truncated blurb silently downgraded good events to `unsure`.
+ *
+ * The truncated copy is always a prefix of the full one, so look for a block on
+ * the page that starts the same way and prefer it. Falls back to the original
+ * whenever nothing matches, so it can only ever recover text, never invent it.
+ */
+export const extendTruncatedDescription = (html: string, description: string): string => {
+  // Normalise the way htmlToText does, or the comparison silently fails on
+  // non-breaking spaces -- Humanitix writes "environmental\xa0festival" in
+  // JSON-LD and "environmental festival" on the page.
+  const seed = description.replace(/\s+/g, ' ').trim();
+  if (seed.length < 25) return description;
+  // Compare on a long-ish run: the stub can be reworded slightly in the page
+  // copy, but the opening sentence is near-verbatim.
+  const needle = seed.slice(0, Math.min(60, seed.length)).toLowerCase();
+  let best = seed;
+  const consider = (inner: string) => {
+    if (inner.length <= best.length) return;
+    // Start at the needle, not at zero: the paragraph is often preceded by a
+    // "Description" heading inside the same element.
+    const text = htmlToText(inner);
+    const at = text.toLowerCase().indexOf(needle);
+    if (at === -1) return;
+    const candidate = text.slice(at).trim();
+    if (candidate.length > best.length) best = candidate;
+  };
+  // Paragraphs first -- descriptions live in them, and preferring them avoids
+  // swallowing a whole page-level wrapper div. Only a div match is scanned if
+  // no paragraph matched, which bounds the blast radius.
+  for (const tag of ['p', 'div']) {
+    const before = best;
+    for (const m of html.matchAll(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'gi'))) consider(m[1] ?? '');
+    if (best.length > before.length) return best;
+  }
+  return best;
+};
+
 // ---------------------------------------------------------------------------
 // URLs
 
@@ -756,7 +798,7 @@ export const jsonLdToEvent = (
   if (place.country && NON_AU_COUNTRY.test(place.country.trim())) return 'not-australian';
 
   const name = decodeEntities(str(node.name)!);
-  const description = clip(htmlToText(str(node.description) ?? ''), 4000) || null;
+  const description = clip(extendTruncatedDescription(html, htmlToText(str(node.description) ?? '')), 4000) || null;
   const eventUrl = str(node.url);
   const ticketLink = offerUrl(node.offers) || (eventUrl ? new URL(eventUrl, pageUrl).toString() : pageUrl);
   const organizer = organizerName(node.organizer);

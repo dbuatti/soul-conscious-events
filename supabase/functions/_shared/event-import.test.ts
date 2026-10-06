@@ -1,12 +1,6 @@
 // Run with: deno test supabase/functions/_shared/event-import.test.ts
 import assert from 'node:assert/strict';
-import {
-  classifyEventType, detectState, eventsFromHtml, eventsFromIcs, eventUrlsFromSitemap,
-  findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, extractJsonLdNodes,
-  looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, orderSitemapsByLikelihood,
-  parseSitemap, priceFromOffers,
-  robotsAllows, scoreRelevance, sitemapsFromRobots,
-} from './event-import.ts';
+import { classifyEventType, detectState, eventUrlsFromSitemap, eventsFromHtml, eventsFromIcs, extendTruncatedDescription, extractJsonLdNodes, findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, orderSitemapsByLikelihood, parseSitemap, priceFromOffers, robotsAllows, scoreRelevance, sitemapsFromRobots } from './event-import.ts';
 
 const OPTS = { today: '2026-10-05', maxDate: '2027-10-05' };
 
@@ -488,4 +482,29 @@ Deno.test('imported events carry a relevance verdict', () => {
   const { events } = eventsFromHtml(html, 'https://example.org/events', OPTS);
   assert.equal(events.length, 1);
   assert.equal(events[0].import_relevance, 'on-topic');
+});
+
+Deno.test('recovers a description that JSON-LD truncated', () => {
+  // Humanitix cuts schema.org descriptions at ~120 characters, which on Earth
+  // Frequency sliced the text off just before "healing" and "intention" -- the
+  // exact words relevance scoring reads.
+  const stub =
+    'Earth Frequency Festival is a music, arts, lifestyle and environmental festival. based in South-East Queensland, Australia.';
+  const full =
+    stub +
+    ' with a strong focus on arts, education, healing and community spirit, focused on creativity, community, connection, intention and inspiration.';
+  const page = `<html><body><div><h2>Description</h2><p>${full}</p></div></body></html>`;
+
+  // The non-breaking space is what Humanitix actually writes in JSON-LD.
+  const got = extendTruncatedDescription(page, stub.replace('lifestyle and', 'lifestyle\u00a0and'));
+  assert.equal(got, full);
+});
+
+Deno.test('leaves a complete description alone', () => {
+  const desc = "A field arrives where it shouldn't. A fluorescent office building becomes a sunburnt landscape.";
+  const page = `<html><body><p>Some other paragraph entirely.</p></body></html>`;
+  assert.equal(extendTruncatedDescription(page, desc), desc);
+  // Idempotent: re-running over its own output must not grow it.
+  assert.equal(extendTruncatedDescription(`<p>${desc}</p>`, desc), desc);
+  assert.equal(extendTruncatedDescription('', desc), desc);
 });
