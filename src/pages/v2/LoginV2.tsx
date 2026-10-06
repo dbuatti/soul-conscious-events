@@ -1,22 +1,27 @@
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
-import { getRedirectUrl } from '@/lib/utils';
+import { consumeReturnTo, getRedirectUrl } from '@/lib/utils';
 import { Bookmark, CalendarCheck, PlusCircle } from 'lucide-react';
 import SEO from '@/components/SEO';
 
 const LoginV2 = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isLoading } = useSession();
 
+  // ProtectedRoute stores where the visitor was heading in state.from. Sending
+  // everyone to "/" instead dumped people who had been bounced here mid-task --
+  // an organiser part-way through listing an event lost everything they had typed.
   useEffect(() => {
     if (!isLoading && user) {
-      navigate('/');
+      const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      navigate(from ?? consumeReturnTo() ?? '/', { replace: true });
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, navigate, location.state]);
 
   if (isLoading) {
     return (

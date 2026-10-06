@@ -91,7 +91,10 @@ const App = () => (
               <Route element={<LayoutV2 />}>
                 <Route path="/" element={<EventsListV2 />} />
                 <Route path="/login" element={<LoginV2 />} />
-                <Route path="/submit-event" element={<SubmitEvent />} />
+                {/* The events insert policy is auth.uid() = user_id, so a guest
+                    can never save a submission. Gate the form up front rather
+                    than let them type it all in and be refused on submit. */}
+                <Route path="/submit-event" element={<ProtectedRoute message="Sign in to submit your event — it's free, and you'll be taken straight back to your form."><SubmitEvent /></ProtectedRoute>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/community-guidelines" element={<CommunityGuidelines />} />

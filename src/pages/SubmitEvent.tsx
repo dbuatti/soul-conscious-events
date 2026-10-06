@@ -53,6 +53,32 @@ const scrapeOgImage = async (url: string): Promise<string | null> => {
   }
 };
 
+/**
+ * Supabase client errors are plain objects, not Error instances, so template
+ * interpolation renders them as "[object Object]" -- which is how a failed
+ * submission ended up reporting nothing at all.
+ */
+const describeError = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object') {
+    const e = error as Record<string, unknown>;
+    const message = [e.message, e.hint, e.details].find((v) => typeof v === 'string' && v.trim());
+    const code = typeof e.code === 'string' && e.code.trim() ? ` (${e.code})` : '';
+    if (message) return `${message}${code}`;
+    try {
+      const json = JSON.stringify(error);
+      if (json && json !== '{}') return json;
+    } catch { /* not serialisable */ }
+  }
+  return String(error);
+};
+
+/** 42501 is Postgres for "row-level security policy", i.e. not signed in. */
+const isRlsDenial = (error: unknown): boolean => {
+  const e = error as { code?: unknown; message?: unknown } | null;
+  return e?.code === '42501' || /row-level security/i.test(String(e?.message ?? ''));
+};
+
 const SubmitEvent = () => {
   const navigate = useNavigate();
   const { user } = useSession();
@@ -228,7 +254,13 @@ const SubmitEvent = () => {
       navigate('/');
     } catch (error: unknown) {
       console.error('Error during event submission:', error);
-      toast.error(`An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}`, { id: loadingToastId });
+      // The insert policy is "auth.uid() = user_id", so a visitor who has not
+      // signed in is always refused. Say that plainly -- a Postgres error object
+      // interpolated into a toast used to arrive as "[object Object]".
+      const message = isRlsDenial(error)
+        ? 'You need to be signed in to submit an event. Please log in, then try again.'
+        : `Could not submit your event: ${describeError(error)}`;
+      toast.error(message, { id: loadingToastId, duration: 10000 });
     }
   };
 

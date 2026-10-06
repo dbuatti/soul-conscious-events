@@ -41,3 +41,31 @@ export const openInMaps = (address: string) => {
     : `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
   window.open(url, '_blank');
 };
+
+// Router state is dropped by a full-page redirect, and Google sign-in is one.
+// ProtectedRoute remembers the path it bounced from so the login screen can
+// send the visitor back to it -- an organiser part-way through listing an event
+// should not have to find the form again and retype it. Expires so a stale
+// entry cannot hijack a later, unrelated sign-in.
+const RETURN_TO_KEY = 'soulflow.returnTo';
+const RETURN_TO_TTL_MS = 15 * 60 * 1000;
+
+export function rememberReturnTo(pathname: string): void {
+  try {
+    sessionStorage.setItem(RETURN_TO_KEY, JSON.stringify({ pathname, at: Date.now() }));
+  } catch { /* private mode, disabled storage */ }
+}
+
+export function consumeReturnTo(): string | null {
+  try {
+    const raw = sessionStorage.getItem(RETURN_TO_KEY);
+    sessionStorage.removeItem(RETURN_TO_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { pathname?: unknown; at?: unknown };
+    if (typeof parsed.pathname !== 'string' || !parsed.pathname.startsWith('/')) return null;
+    if (typeof parsed.at !== 'number' || Date.now() - parsed.at > RETURN_TO_TTL_MS) return null;
+    return parsed.pathname;
+  } catch {
+    return null;
+  }
+}

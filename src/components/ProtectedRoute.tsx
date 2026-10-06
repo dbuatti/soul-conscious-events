@@ -2,15 +2,17 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/components/SessionContextProvider';
 import { toast } from 'sonner';
+import { rememberReturnTo } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedEmail?: string; // Optional email to restrict access
   requireAdmin?: boolean; // Optional flag to require admin role
+  message?: string; // Shown when bounced to the login screen, so the reason is specific
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail, requireAdmin }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail, requireAdmin, message }) => {
   const { user, isAdmin, isLoading, isProfileLoading } = useSession();
   const location = useLocation();
 
@@ -36,7 +38,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail,
 
   if (!user) {
     console.warn('[ProtectedRoute] User not authenticated, redirecting to login');
-    toast.error('You need to be logged in to access this page.');
+    // Survives an OAuth round-trip, which drops React Router state entirely.
+    rememberReturnTo(location.pathname + location.search);
+    toast.error(message ?? 'You need to be logged in to access this page.');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
