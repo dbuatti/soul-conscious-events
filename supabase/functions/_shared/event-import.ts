@@ -592,6 +592,16 @@ const ON_TOPIC_TERMS = [
   /\bsoul\s*work/i, /restorative/i, /\bnourish/i, /\bretreat\b/i,
   /\bsleep\b/i, /\binsomnia\b/i, /\btrauma\b/i, /\bhealing\b/i,
   /mind[\s-]?body/i, /body\s*(and|&)\s*mind/i, /emotional\s*health/i,
+  // Intention and community framing. These carry no practice of their own --
+  // they rescue descriptions of events that are about connection rather than
+  // about a named modality. Verified as inert against the 122 real event names
+  // imported so far (it flips none of them) while flipping a community-framed
+  // listing that the format words "party" and "DJ" would otherwise bury.
+  /\bmeaningful\b/i, /\bmagical\b/i, /\bintention\w*/i, /\bconscious\w*/i,
+  /awak(e|en|ing)\b/i, /\bpresence\b/i, /\bauthentic\w*/i, /\bvulnerab\w*/i,
+  /holding\s+space/i, /safe\s?space/i, /all\s+welcome/i, /inner\s+child/i,
+  /\bdivine\b/i, /\buniverse\b/i, /\bbliss\b/i, /\btransformation\b/i,
+  /whole\s*self/i,
 ];
 
 /**

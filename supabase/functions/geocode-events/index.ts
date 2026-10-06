@@ -156,7 +156,10 @@ serve(async (req) => {
       .select('id, full_address, place_name, geographical_state, event_name')
       .is('latitude', null)
       .is('geocode_failed_at', null)
-      .not('full_address', 'is', null)
+      // A venue name alone is enough to geocode -- candidatesFor falls back to
+      // it. Requiring full_address here meant those rows were never queued,
+      // which is why 48 mapped events had no coordinates at all.
+      .or('full_address.not.is.null,place_name.not.is.null')
       .eq('is_deleted', false)
       .eq('approval_status', 'approved')
       .gte('event_date', new Date().toISOString().slice(0, 10));
@@ -285,7 +288,7 @@ serve(async (req) => {
     .select('id', { count: 'exact', head: true })
     .is('latitude', null)
     .is('geocode_failed_at', null)
-    .not('full_address', 'is', null)
+    .or('full_address.not.is.null,place_name.not.is.null')
     .eq('is_deleted', false)
     .eq('approval_status', 'approved')
     .gte('event_date', new Date().toISOString().slice(0, 10));

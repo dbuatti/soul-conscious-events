@@ -455,15 +455,16 @@ Deno.test('unsure covers titles that simply give nothing away', () => {
   assert.equal(scoreRelevance('The BIG Event: Health through a DIFFERENT lens'), 'unsure');
 });
 
-Deno.test('reads a messy social description, not just the title', () => {
-  // A real Humanitix listing: community-framed but a party with a DJ. The
-  // format words decide it, and that is a call a human can override.
+Deno.test('intention language rescues a community-framed listing', () => {
+  // A real Humanitix listing whose only format words are "party" and "DJ", but
+  // whose description is framed entirely around meaning and community. The
+  // intention terms are checked first, so this stays visible in the inbox.
   const blurb = [
     'building our community based on the meaningful, the magical and everything inbetween',
     'we are having a freeeee party to celebrate!',
     'a welcome drink (nonalcoholic), snacks, a panel talk and a DJ playing',
   ].join(' ');
-  assert.equal(scoreRelevance('Wildly Human Podcast Launch Party', blurb), 'off-topic');
+  assert.equal(scoreRelevance('Wildly Human Podcast Launch Party', blurb), 'on-topic');
 });
 
 Deno.test('an on-topic signal wins when an event looks like both', () => {
