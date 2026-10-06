@@ -404,6 +404,15 @@ serve(async (req) => {
         ? `Nothing new — all ${candidates.length} already imported`
         : 'No events found on this page';
 
+    // How many of these look like the site's remit. Advisory only -- everything
+    // was still imported and is still pending -- but it tells an admin whether
+    // the inbox is about to grow by 5 relevant events or 100 concerts.
+    const onTopic = fresh.filter((e) => e.import_relevance === 'on-topic').length;
+    const offTopic = fresh.filter((e) => e.import_relevance === 'off-topic').length;
+    if (added > 0 && offTopic > 0) {
+      notes.push(`${offTopic} look off-topic${onTopic ? `, ${onTopic} on-topic` : ''}`);
+    }
+
     const result: SourceResult = {
       id: source.id,
       url: source.url,

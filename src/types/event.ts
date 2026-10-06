@@ -28,5 +28,7 @@ export interface Event {
   source_id?: string | null; // set when brought in by the event importer
   imported_at?: string | null;
   latitude?: number | null; // filled in by the geocode-events function, so the map never has to geocode
+  geocode_failed_at?: string | null;
+  import_relevance?: 'on-topic' | 'off-topic' | 'unsure' | null; // advisory verdict from the importer
   longitude?: number | null;
 }

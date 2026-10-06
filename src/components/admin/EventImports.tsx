@@ -58,6 +58,9 @@ const EventImports: React.FC = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [running, setRunning] = useState<string | 'all' | null>(null);
+  // Off-topic rows stay in the database and stay pending; the inbox just
+  // keeps them out of the way until someone asks to see them.
+  const [showOffTopic, setShowOffTopic] = useState(false);
   const [newUrl, setNewUrl] = useState('');
   const [newLabel, setNewLabel] = useState('');
 
@@ -68,6 +71,13 @@ const EventImports: React.FC = () => {
 
   // Live count per source, so a card can never claim events are waiting for
   // review after they've been published or declined.
+  const offTopicCount = useMemo(
+    () => pending.filter((e) => e.import_relevance === 'off-topic').length,
+    [pending]);
+  const visible = useMemo(
+    () => (showOffTopic ? pending : pending.filter((e) => e.import_relevance !== 'off-topic')),
+    [pending, showOffTopic]);
+
   const waitingBySource = useMemo(() => {
     const counts = new Map<string, number>();
     for (const event of pending) {
@@ -194,7 +204,7 @@ const EventImports: React.FC = () => {
     );
   }
 
-  const allSelected = pending.length > 0 && selected.size === pending.length;
+  const allSelected = visible.length > 0 && visible.every((e) => selected.has(e.id));
 
   return (
     <div className="space-y-12">
@@ -206,6 +216,17 @@ const EventImports: React.FC = () => {
             <Button variant="outline" size="sm" className="rounded-full bg-card" onClick={load}>
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Refresh
             </Button>
+            {offTopicCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full bg-card"
+                aria-pressed={showOffTopic}
+                onClick={() => setShowOffTopic((v) => !v)}
+              >
+                {showOffTopic ? 'Hide' : 'Show'} {offTopicCount} off-topic
+              </Button>
+            )}
             {selected.size > 0 && (
               <>
                 <Button size="sm" className="rounded-full" onClick={() => review([...selected], 'approved')}>
@@ -219,21 +240,23 @@ const EventImports: React.FC = () => {
           </div>
         </div>
 
-        {pending.length === 0 ? (
+        {visible.length === 0 ? (
           <p className="organic-card rounded-[var(--radius)] p-8 text-center text-muted-foreground">
-            Nothing to review. New imports and pending submissions will appear here.
+            {offTopicCount > 0
+              ? `Nothing to review here — the ${offTopicCount} waiting ${offTopicCount === 1 ? 'event looks' : 'events look'} off-topic and ${offTopicCount === 1 ? 'is' : 'are'} hidden. Use "Show ${offTopicCount} off-topic" above if you want to check anyway.`
+              : 'Nothing to review. New imports and pending submissions will appear here.'}
           </p>
         ) : (
           <div className="organic-card rounded-[var(--radius)] divide-y divide-border/70 overflow-hidden">
             <label className="flex items-center gap-3 px-4 py-2.5 bg-secondary/40 text-xs text-muted-foreground cursor-pointer">
               <Checkbox
                 checked={allSelected}
-                onCheckedChange={(v) => setSelected(v ? new Set(pending.map((e) => e.id)) : new Set())}
+                onCheckedChange={(v) => setSelected(v ? new Set(visible.map((e) => e.id)) : new Set())}
                 aria-label="Select all"
               />
               Select all
             </label>
-            {pending.map((event) => {
+            {visible.map((event) => {
               const busy = busyIds.has(event.id);
               return (
                 <div key={event.id} className={cn('flex gap-4 p-4 items-start', busy && 'opacity-50 pointer-events-none')}>

@@ -18,6 +18,7 @@ export interface ImportedEvent {
   recurring_pattern: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' | null;
   recurring_end_date: string | null;
   external_id: string;
+  import_relevance: Relevance;
 }
 
 // Used when a timestamp is in UTC and the source gives no zone of its own.
@@ -559,6 +560,97 @@ export const classifyEventType = (...texts: (string | null | undefined)[]): stri
 };
 
 // ---------------------------------------------------------------------------
+// Relevance
+//
+// A city-wide listing on a ticketing platform is mostly noise: one Melbourne
+// source yielded 114 events of which 17 were relevant. Nothing is dropped on
+// the strength of this -- every verdict is recorded and shown in the review
+// inbox behind a toggle -- but it lets an admin see the plausible events first.
+
+/** Terms that mark an event as belonging to the site's remit. */
+const ON_TOPIC_TERMS = [
+  // Practices and modalities
+  /sound\s*bath/i, /sound\s*healing/i, /sound\s*journey/i, /sound\s*meditation/i,
+  /sound\s*scape/i, /gong/i, /singing\s*bowl/i, /crystal\s*bowl/i,
+  /meditat/i, /mindful/i, /breath\s?work/i, /pranayama/i, /yoga/i, /pilates/i,
+  /kundalini/i, /reiki/i, /chiropract/i, /bodywork/i, /bowen/i, /somatic/i,
+  /craniosacral/i, /shiatsu/i, /ayurved/i, /naturopath/i, /homeopath/i,
+  /eurythmy/i, /healing/i, /chakra/i, /aura/i, /vibrational/i, /holistic/i,
+  /energy\s*healing/i, /tibetan/i, /ayurvedic/i, /herbal/i, /intuitive/i,
+  // Ritual, circle and community practice
+  /chant/i, /kirtan/i, /mantra/i, /drum\s*circle/i, /singing\s*circle/i,
+  /shamanic/i, /ritual/i, /ceremon(y|ies)/i, /sacred/i, /feminine/i, /womb/i,
+  /embodied/i, /tantra/i, /\bspiritual\b/i, /\bmythic\b/i, /transformational/i,
+  /healing\s*circle/i, /support\s*circle/i, /women[’']?s?\s*(circle|gathering|group)/i,
+  /\bcircles?\s+for\b/i, /big-hearted/i,
+  // Expression
+  /\bvoice\b/i, /\bvocal\b/i, /\bsinging\b/i, /\bchant\b/i,
+  /\bdance\b/i, /ecstatic/i, /belly\s*dance/i,
+  // Wellbeing framing. Deliberately generous: an on-topic signal beats an
+  // off-topic one, so a "sound bath at a music festival" survives.
+  /wellbeing/i, /\bwellness\b/i, /self\s*love/i, /inner\s*work/i,
+  /\bsoul\s*work/i, /restorative/i, /\bnourish/i, /\bretreat\b/i,
+  /\bsleep\b/i, /\binsomnia\b/i, /\btrauma\b/i, /\bhealing\b/i,
+  /mind[\s-]?body/i, /body\s*(and|&)\s*mind/i, /emotional\s*health/i,
+];
+
+/**
+ * Terms that mark an event as outside the remit. Deliberately narrow: these are
+ * genres and formats, not the venue words that legitimate events also use
+ * ("festival", "workshop" and "market" are absent -- "Battle of the Bands"
+ * arrives via "gig", and "Battle of the Bands" is caught by that).
+ */
+const OFF_TOPIC_TERMS = [
+  // Live music. "bands?" not "band": "Battle of the Bands" is the plural.
+  /\bgigs?\b/i, /concerts?\b/i, /\bbands?\b/i, /\bthe band\b/i, /\bdj\b/i,
+  /orchestra/i, /choir/i, /chorus/i, /quartet/i, /\btrio\b/i, /\bduo\b/i,
+  /violin|cello|viola|piano|trumpet|saxophone|clarinet|flute\b/i,
+  /jazz|blues|reggae|classical|hip.?hop|metal|punk|indie\b/i,
+  /\blive\b/i, /\btour\b/i, /tribute/i, /cover\s*band/i,
+  // Comedy and performance formats
+  /comedy/i, /stand\s?up/i, /open\s*mic/i, /poetry\s*slam/i, /\bdrag\b/i,
+  /pageant|parade|karaoke|cabaret/i, /magic\s*show/i, /murder\s*mystery/i,
+  // Trade, expo and professional
+  /\bexpos?\b/i, /trade\s*show/i, /careers?\s*(fair|expo|market)/i,
+  /seminar/i, /symposium/i, /congress/i, /convention/i, /\bconference\b/i,
+  /masterclass/i, /certification/i, /webinar/i, /\blecture\b/i, /\bsummit\b/i,
+  /career|networking|startup|\bb2b\b/i,
+  /exhibition|\bexhibit\b/i, /\bprize\b|\baward\b/i, /photograph/i,
+  /\bshowcase\b/i, /music\s*industry/i, /\bplush\b/i,
+  /silent\s*disco/i, /board\s*game/i, /yo-?yo/i, /\bskate\b/i,
+  // Clinical and medical
+  /neonat|obstetric|gynaec|gynec|oncolog|psychiatr|dermatolog|immunolog|cardio/i,
+  /diabet|celiac|coeliac|syndrome|\bpatients?\b/i, /\bclinical\b/i,
+  /blood\s*drive|vaccination|screening\s*clinic/i,
+  // Fashion, market and retail
+  /fashion/i, /runway/i, /\bbazaar\b/i, /\bmarket\b/i, /\bsale\b/i,
+  /\bpre-loved\b|\bsecond\s*hand\b/i, /swap\s*me/i,
+  // Party and club
+  /\brave\b/i, /\bdoof\b/i, /psytrance|\bedm\b/i, /club\s*night/i,
+  /\bparty\b/i, /\bhalloween\b/i, /takeover/i, /\bdj\s*set\b/i,
+  // Social and leisure
+  /wedding/i, /\bdinner\b/i, /brunch\b/i, /tasting/i, /ferris|wheel\b|carnival/i,
+  /film\s*(night|screening)|cinema/i, /quiz\s*night|trivia/i,
+  /garage\s*sale|market\s*day/i, /kids?\s*party/i,
+];
+
+export type Relevance = 'on-topic' | 'off-topic' | 'unsure';
+
+/**
+ * On-topic wins a tie: a "sound bath at a festival" stays, and only an event
+ * with off-topic signals and no on-topic signal at all is called off-topic.
+ * Everything without either signal is 'unsure', which is the honest verdict for
+ * the long tail and should not be hidden from a human.
+ */
+export const scoreRelevance = (...texts: (string | null | undefined)[]): Relevance => {
+  const text = texts.filter(Boolean).join(' \n ');
+  if (!text) return 'unsure';
+  if (ON_TOPIC_TERMS.some((re) => re.test(text))) return 'on-topic';
+  if (OFF_TOPIC_TERMS.some((re) => re.test(text))) return 'off-topic';
+  return 'unsure';
+};
+
+// ---------------------------------------------------------------------------
 // JSON-LD
 
 /** All JSON-LD objects on a page, flattened through arrays, @graph and ItemList. */
@@ -677,6 +769,7 @@ export const jsonLdToEvent = (
     recurring_pattern: null,
     recurring_end_date: null,
     external_id: normalizeUrl(ticketLink) ?? `${name}|${start.date}`,
+    import_relevance: scoreRelevance(name, description, organizer),
   };
 };
 
@@ -866,6 +959,7 @@ export const icsToEvent = (
     recurring_pattern: recurring,
     recurring_end_date: recurringEnd,
     external_id: uid ? `${uid}` : `${normalizeUrl(calendarUrl)}|${name}|${start.date}`,
+    import_relevance: scoreRelevance(name, description, organizer?.params.CN),
   };
 };
 

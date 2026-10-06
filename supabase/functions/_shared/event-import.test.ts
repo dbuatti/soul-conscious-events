@@ -5,7 +5,7 @@ import {
   findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, extractJsonLdNodes,
   looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, orderSitemapsByLikelihood,
   parseSitemap, priceFromOffers,
-  robotsAllows, sitemapsFromRobots,
+  robotsAllows, scoreRelevance, sitemapsFromRobots,
 } from './event-import.ts';
 
 const OPTS = { today: '2026-10-05', maxDate: '2027-10-05' };
@@ -401,4 +401,90 @@ Deno.test('unescapes entities inside sitemap URLs', () => {
   const xml = `<urlset><url><loc>https://mysite.com.au/events/dawn&amp;dusk-retreat</loc></url></urlset>`;
   const { urls } = parseSitemap(xml);
   assert.deepEqual(urls, ['https://mysite.com.au/events/dawn&dusk-retreat']);
+});
+
+// Relevance scoring. The on-topic names are real events kept from a Melbourne
+// ticketing-platform import that produced 97 off-topic rows out of 114; the
+// off-topic ones are what that same import also produced.
+Deno.test('keeps the real soul-conscious events from a noisy source', () => {
+  const kept = [
+    'Cosmic Mass: A Collective Vocal Experience',
+    'MYTHIC MOVEMENT',
+    'Sunday Soul Dance Creswick',
+    'Movement and Meditation Session',
+    'Curative Eurythmy Weekly Classes at MTS',
+    'Calmer Community Monthly Yoga Flow',
+    'The Joy Spiral: A Transformational Circle for Big-Hearted Women Who Care',
+    'MECCAVERSITY: Power Pilates with KICSTUDIO',
+    'Meditation Hour 2026',
+    'Wellbeing Toolkit for Exam Success',
+  ];
+  for (const name of kept) {
+    assert.equal(scoreRelevance(name), 'on-topic', `expected on-topic: ${name}`);
+  }
+});
+
+Deno.test('flags the noise a city-wide listing is mostly made of', () => {
+  const junk = [
+    'Battle of the Bands - Heats',
+    'Open Mic Comedy @ Newcastle Comedy Club',
+    'Wildlife Photographer of the Year',
+    'Exhibition tickets | Archibald Prize 2026',
+    'M/FW 26: CULT STATUS RUNWAY - 6.30pm',
+    '21st International Celiac Disease Symposium 2026- Patient Session',
+    'Diabetes Expo 2026',
+    'RIGGED: A Murder Mystery',
+  ];
+  for (const name of junk) {
+    assert.equal(scoreRelevance(name), 'off-topic', `expected off-topic: ${name}`);
+  }
+});
+
+Deno.test('reports unsure rather than guessing', () => {
+  // No signal either way: the honest verdict, and the one that stays visible.
+  assert.equal(scoreRelevance('Winter Solstice Potluck'), 'unsure');
+  assert.equal(scoreRelevance(''), 'unsure');
+  assert.equal(scoreRelevance(null, undefined), 'unsure');
+});
+
+Deno.test('unsure covers titles that simply give nothing away', () => {
+  // Three events a human kept from that import. Nothing in the title says
+  // whether they belong here, so guessing either way would be a lie.
+  assert.equal(scoreRelevance('RELICS: A New World Rises - October'), 'unsure');
+  assert.equal(scoreRelevance('VIVE BIEN - MELBOURNE'), 'unsure');
+  assert.equal(scoreRelevance('The BIG Event: Health through a DIFFERENT lens'), 'unsure');
+});
+
+Deno.test('reads a messy social description, not just the title', () => {
+  // A real Humanitix listing: community-framed but a party with a DJ. The
+  // format words decide it, and that is a call a human can override.
+  const blurb = [
+    'building our community based on the meaningful, the magical and everything inbetween',
+    'we are having a freeeee party to celebrate!',
+    'a welcome drink (nonalcoholic), snacks, a panel talk and a DJ playing',
+  ].join(' ');
+  assert.equal(scoreRelevance('Wildly Human Podcast Launch Party', blurb), 'off-topic');
+});
+
+Deno.test('an on-topic signal wins when an event looks like both', () => {
+  // A sound bath inside a festival is still a sound bath.
+  assert.equal(scoreRelevance('Sunrise Sound Bath at Earth Frequency Festival'), 'on-topic');
+});
+
+Deno.test('relevance reads the description, not just the title', () => {
+  assert.equal(scoreRelevance('Community evening', 'A guided breathwork session with gongs.'), 'on-topic');
+  assert.equal(scoreRelevance('Main Stage', 'Three live bands performing. A DJ set closes the night.'), 'off-topic');
+});
+
+Deno.test('imported events carry a relevance verdict', () => {
+  const html = `<script type="application/ld+json">${JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: 'Evening Sound Bath',
+    startDate: '2026-10-20T19:00:00+10:00',
+    location: { '@type': 'Place', address: { addressLocality: 'Fitzroy', addressRegion: 'VIC', addressCountry: 'AU' } },
+  })}</script>`;
+  const { events } = eventsFromHtml(html, 'https://example.org/events', OPTS);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].import_relevance, 'on-topic');
 });
