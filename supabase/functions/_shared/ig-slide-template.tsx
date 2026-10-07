@@ -330,7 +330,7 @@ export async function generateCoverSlideSvg(
   weekEndISO: string,
   count: number
 ): Promise<string> {
-  const { fonts } = await loadFonts();
+  const fonts = await loadFonts();
   await ensureWasm();
   const svg = await satori(
     <div
