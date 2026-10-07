@@ -42,7 +42,7 @@ serve(async (req: Request) => {
   if (req.method !== 'POST') return jsonResponse({ error: 'POST only' }, 405);
 
   const auth = await requireAdmin(req);
-  if (auth instanceof Response) return auth;
+  if (!auth.ok) return auth.response;
 
   let body: { limit?: number; dryRun?: boolean } = {};
   try {

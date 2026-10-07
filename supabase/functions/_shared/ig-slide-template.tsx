@@ -1,7 +1,6 @@
-// supabase/functions/_shared/ig-slide-template.tsx
-import React from "https://esm.sh/react@18.2.0";
+/** @jsxImportSource https://esm.sh/react@18.2.0 */
 import satori from "https://esm.sh/satori@0.10.13";
-import { Resvg } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
+import { initWasm, Resvg } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
 
 export interface EventSlideData {
   id: string;
@@ -9,7 +8,7 @@ export interface EventSlideData {
   event_date: string | null; // ISO
   event_time: string | null;
   place_name: string | null;
-  venue_name: string | null;
+  venue_name?: string | null;
   price: string | null;
   image_url: string | null;
   event_type: string | null;
@@ -21,19 +20,59 @@ const BRAND_TEXT = "#1C1C1C";
 const BRAND_SUBTEXT = "#4B3B2B";
 const ACCENT = "#D9B75B";
 
+const WIDTH = 1080;
+const HEIGHT = 1350;
+
+// @fontsource ships the woff satori can actually parse. rsms.me serves a woff2
+// at its old .woff path, which opentype rejects, and 404s the .woff outright.
+const FONT_BASE = "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.20/files";
+
+type FontWeight = 400 | 600 | 700 | 800;
+
+interface SatoriFont {
+  name: string;
+  data: ArrayBuffer;
+  weight: FontWeight;
+  style: "normal";
+}
+
+// A carousel renders up to ten slides in one invocation. Fetching the same four
+// font files and re-instantiating the resvg wasm for each would dominate the
+// run, so both are initialised once and shared.
+let fontsPromise: Promise<SatoriFont[]> | null = null;
+let wasmPromise: Promise<void> | null = null;
+
+const loadFonts = (): Promise<SatoriFont[]> => {
+  const weights: FontWeight[] = [400, 600, 700, 800];
+  fontsPromise ??= Promise.all(
+    weights.map(async (weight): Promise<SatoriFont> => ({
+      name: "Inter",
+      data: await fetch(`${FONT_BASE}/inter-latin-${weight}-normal.woff`).then((r) => r.arrayBuffer()),
+      weight,
+      style: "normal",
+    })),
+  );
+  return fontsPromise;
+};
+
+const ensureWasm = (): Promise<void> => {
+  wasmPromise ??= (async () => {
+    const data = await fetch("https://esm.sh/@resvg/resvg-wasm@2.6.2/index_bg.wasm").then((r) => r.arrayBuffer());
+    await initWasm(data);
+  })();
+  return wasmPromise;
+};
+
 function formatDate(d?: string | null) {
   if (!d) return "";
-  try {
-    const date = new Date(d);
-    return date.toLocaleDateString("en-AU", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return d;
-  }
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return d;
+  return date.toLocaleDateString("en-AU", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function formatTime(t?: string | null) {
@@ -41,16 +80,25 @@ function formatTime(t?: string | null) {
   return t;
 }
 
+// Deno 2's Blob() rejects a Uint8Array backed by ArrayBufferLike; copying into a
+// fresh view guarantees the ArrayBuffer-backed type BlobPart expects.
+const renderToPng = async (svg: string): Promise<Uint8Array<ArrayBuffer>> => {
+  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: WIDTH } });
+  return new Uint8Array(resvg.render().asPng());
+};
+
 export async function generateCoverSlide(
   weekStartISO: string,
   weekEndISO: string,
-  count: number
-): Promise<Uint8Array> {
+  count: number,
+): Promise<Uint8Array<ArrayBuffer>> {
+  await ensureWasm();
+
   const svg = await satori(
     <div
       style={{
-        width: 1080,
-        height: 1350,
+        width: WIDTH,
+        height: HEIGHT,
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -119,8 +167,7 @@ export async function generateCoverSlide(
         style={{
           fontSize: 24,
           color: BRAND_SUBTEXT,
-          marginTop: 12,
-          margin: 0,
+          margin: "12px 0 0 0",
         }}
       >
         {count} event{count === 1 ? "" : "s"}
@@ -138,44 +185,15 @@ export async function generateCoverSlide(
         Link in bio
       </p>
     </div>,
-    {
-      width: 1080,
-      height: 1350,
-      fonts: [
-        {
-          name: "Inter",
-          data: await fetch("https://rsms.me/inter/font-files/Inter-Regular.woff").then((r) => r.arrayBuffer()),
-          weight: 400,
-          style: "normal",
-        },
-        {
-          name: "Inter",
-          data: await fetch("https://rsms.me/inter/font-files/Inter-SemiBold.woff").then((r) => r.arrayBuffer()),
-          weight: 600,
-          style: "normal",
-        },
-        {
-          name: "Inter",
-          data: await fetch("https://rsms.me/inter/font-files/Inter-Bold.woff").then((r) => r.arrayBuffer()),
-          weight: 700,
-          style: "normal",
-        },
-        {
-          name: "Inter",
-          data: await fetch("https://rsms.me/inter/font-files/Inter-ExtraBold.woff").then((r) => r.arrayBuffer()),
-          weight: 800,
-          style: "normal",
-        },
-      ],
-    }
+    { width: WIDTH, height: HEIGHT, fonts: await loadFonts() },
   );
 
-  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: 1080 } });
-  const pngData = resvg.render();
-  return pngData.asPng();
+  return renderToPng(svg);
 }
 
-export async function generateEventSlide(ev: EventSlideData): Promise<Uint8Array> {
+export async function generateEventSlide(ev: EventSlideData): Promise<Uint8Array<ArrayBuffer>> {
+  await ensureWasm();
+
   const venue = ev.place_name || ev.venue_name || "";
   const dateStr = formatDate(ev.event_date);
   const timeStr = formatTime(ev.event_time);
@@ -185,8 +203,8 @@ export async function generateEventSlide(ev: EventSlideData): Promise<Uint8Array
   const svg = await satori(
     <div
       style={{
-        width: 1080,
-        height: 1350,
+        width: WIDTH,
+        height: HEIGHT,
         display: "flex",
         flexDirection: "column",
         background: BRAND_BG,
@@ -199,7 +217,10 @@ export async function generateEventSlide(ev: EventSlideData): Promise<Uint8Array
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             backgroundImage: `url(${ev.image_url})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
@@ -211,7 +232,10 @@ export async function generateEventSlide(ev: EventSlideData): Promise<Uint8Array
       <div
         style={{
           position: "absolute",
-          inset: 0,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           background: `linear-gradient(180deg, rgba(248,241,234,0.92) 0%, ${BRAND_BG} 100%)`,
         }}
       />
@@ -291,39 +315,8 @@ export async function generateEventSlide(ev: EventSlideData): Promise<Uint8Array
         <span style={{ fontSize: 20, color: BRAND_SUBTEXT, opacity: 0.8 }}>Link in bio</span>
       </div>
     </div>,
-    {
-      width: 1080,
-      height: 1350,
-      fonts: [
-        {
-          name: "Inter",
-          data: await fetch("https://rsms.me/inter/font-files/Inter-Regular.woff").then((r) => r.arrayBuffer()),
-          weight: 400,
-          style: "normal",
-        },
-        {
-          name: "Inter",
-          data: await fetch("https://rsms.me/inter/font-files/Inter-SemiBold.woff").then((r) => r.arrayBuffer()),
-          weight: 600,
-          style: "normal",
-        },
-        {
-          name: "Inter",
-          data: await fetch("https://rsms.me/inter/font-files/Inter-Bold.woff").then((r) => r.arrayBuffer()),
-          weight: 700,
-          style: "normal",
-        },
-        {
-          name: "Inter",
-          data: await fetch("https://rsms.me/inter/font-files/Inter-ExtraBold.woff").then((r) => r.arrayBuffer()),
-          weight: 800,
-          style: "normal",
-        },
-      ],
-    }
+    { width: WIDTH, height: HEIGHT, fonts: await loadFonts() },
   );
 
-  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: 1080 } });
-  const pngData = resvg.render();
-  return pngData.asPng();
+  return renderToPng(svg);
 }

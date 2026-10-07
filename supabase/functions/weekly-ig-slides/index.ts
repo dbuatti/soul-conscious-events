@@ -1,7 +1,7 @@
 // supabase/functions/weekly-ig-slides/index.ts
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { corsHeaders, jsonResponse } from "../_shared/auth.ts";
+import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
 import {
   generateCoverSlide,
   generateEventSlide,
@@ -98,6 +98,15 @@ serve(async (req) => {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
+  // This runs with the service-role key and sends email, so it is not public.
+  // The scheduled action calls it with that key; anyone else must be an admin.
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (!(serviceKey && token === serviceKey)) {
+    const auth = await requireAdmin(req);
+    if (!auth.ok) return auth.response;
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -115,7 +124,9 @@ serve(async (req) => {
     const { data: events, error } = await supabase
       .from("events")
       .select(
-        "id,event_name,event_date,event_time,place_name,venue_name,price,image_url,event_type"
+        // No venue_name: the events table has place_name, and selecting a column
+        // that does not exist makes PostgREST fail the whole query.
+        "id,event_name,event_date,event_time,place_name,price,image_url,event_type"
       )
       .eq("approval_status", "approved")
       .eq("is_deleted", false)
@@ -134,7 +145,7 @@ serve(async (req) => {
     const weekEndISO = addDays(weekStart, 6).toISOString();
 
     const cover = await generateCoverSlide(weekStartISO, weekEndISO, selected.length);
-    const eventSlides: Uint8Array[] = [];
+    const eventSlides: Uint8Array<ArrayBuffer>[] = [];
     for (const ev of selected) {
       eventSlides.push(await generateEventSlide(ev));
     }
