@@ -64,3 +64,17 @@ export interface EventImportRun {
   events_found: number;
   events_added: number;
 }
+
+export interface SlideBatchSlide {
+  path: string;
+  publicUrl: string;
+}
+
+export interface SlideBatch {
+  id: string;
+  week_start: string;
+  caption: string;
+  slides: SlideBatchSlide[];
+  event_count: number;
+  created_at: string;
+}

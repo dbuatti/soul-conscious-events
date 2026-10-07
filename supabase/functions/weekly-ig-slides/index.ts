@@ -1,4 +1,12 @@
 // supabase/functions/weekly-ig-slides/index.ts
+//
+// Builds the week's Instagram carousel: a cover slide plus one slide per
+// approved event in the next seven days. The PNGs go to the public
+// ig-weekly-slides bucket (public because a future Graph API publish step needs
+// publicly reachable image URLs) and a row is written to ig_slide_batches so the
+// admin panel can show the carousel and its caption for manual posting.
+//
+// Delivery is deliberately in-app -- no email provider, no third-party account.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
@@ -9,63 +17,6 @@ import {
 } from "../_shared/ig-slide-template.tsx";
 
 const BUCKET = "ig-weekly-slides";
-
-interface EmailAttachment {
-  content: string;
-  filename: string;
-  type: string;
-}
-
-function base64FromUint8Array(data: Uint8Array): string {
-  let binary = "";
-  const bytes = new Uint8Array(data);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-async function sendEmail(
-  to: string,
-  subject: string,
-  html: string,
-  text: string,
-  attachments: EmailAttachment[]
-) {
-  const key = Deno.env.get("RESEND_API_KEY");
-  if (!key) {
-    console.log("RESEND_API_KEY not set; skipping email send");
-    return { sent: false, reason: "no_key" as const };
-  }
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "SoulFlow <noreply@soulflow.events>",
-        to: [to],
-        subject,
-        html,
-        text,
-        attachments,
-      }),
-    });
-    if (!res.ok) {
-      const body = await res.text();
-      console.error("Resend error:", res.status, body);
-      return { sent: false, reason: "resend_error" as const, status: res.status };
-    }
-    const json = await res.json();
-    return { sent: true, id: json.id };
-  } catch (e) {
-    console.error("Email send failed", e);
-    return { sent: false, reason: "exception" as const };
-  }
-}
 
 function addDays(d: Date, days: number) {
   const nd = new Date(d);
@@ -98,8 +49,8 @@ serve(async (req) => {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
-  // This runs with the service-role key and sends email, so it is not public.
-  // The scheduled action calls it with that key; anyone else must be an admin.
+  // This runs with the service-role key, so it is not public. The scheduled
+  // action calls it with that key; anyone else must be an admin.
   const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   if (!(serviceKey && token === serviceKey)) {
@@ -110,7 +61,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const toEmail = Deno.env.get("SLIDES_EMAIL_TO") || "daniele.buatti@gmail.com";
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
@@ -152,7 +102,6 @@ serve(async (req) => {
 
     const uploaded: { path: string; publicUrl: string }[] = [];
     const dateFolder = isoDate(weekStart);
-    const attachments: EmailAttachment[] = [];
 
     const coverPath = `${dateFolder}/slide-01-cover.png`;
     const coverBlob = new Blob([cover], { type: "image/png" });
@@ -164,11 +113,6 @@ serve(async (req) => {
     if (coverPub?.publicUrl) {
       uploaded.push({ path: coverPath, publicUrl: coverPub.publicUrl });
     }
-    attachments.push({
-      content: base64FromUint8Array(cover),
-      filename: coverPath.split("/").pop() || "slide-01-cover.png",
-      type: "image/png",
-    });
 
     for (let i = 0; i < eventSlides.length; i++) {
       const path = `${dateFolder}/slide-${String(i + 2).padStart(2, "0")}-event.png`;
@@ -181,11 +125,6 @@ serve(async (req) => {
       if (pub?.publicUrl) {
         uploaded.push({ path, publicUrl: pub.publicUrl });
       }
-      attachments.push({
-        content: base64FromUint8Array(eventSlides[i]),
-        filename: path.split("/").pop() || `slide-${i + 2}.png`,
-        type: "image/png",
-      });
     }
 
     const lines = ["Soul Conscious Events this week:"];
@@ -201,19 +140,22 @@ serve(async (req) => {
     lines.push("Link in bio.");
     const caption = lines.join("\n");
 
-    const subject = `SoulFlow weekly slides – ${dateFolder}`;
-    const html = `
-      <div style="font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.6;color:#1C1C1C">
-        <h2>SoulFlow – Weekly IG Slides</h2>
-        <p>Week starting ${dateFolder}. ${selected.length} event${selected.length===1?"":"s"}.</p>
-        <pre style="background:#F8F1EA;padding:16px;border-radius:8px;white-space:pre-wrap">${caption}</pre>
-        <h3>Public URLs</h3>
-        <ul>
-          ${uploaded.map((u) => `<li><a href="${u.publicUrl}">${u.path}</a></li>`).join("")}
-        </ul>
-      </div>
-    `;
-    const emailRes = await sendEmail(toEmail, subject, html, caption, attachments);
+    const { error: batchError } = await supabase
+      .from("ig_slide_batches")
+      .upsert(
+        {
+          week_start: dateFolder,
+          caption,
+          slides: uploaded,
+          event_count: selected.length,
+        },
+        { onConflict: "week_start" }
+      );
+
+    if (batchError) {
+      console.error("Failed to record batch", batchError);
+      return jsonResponse({ error: "Failed to record batch" }, 500);
+    }
 
     return jsonResponse({
       ok: true,
@@ -221,7 +163,6 @@ serve(async (req) => {
       eventCount: selected.length,
       slides: uploaded,
       caption,
-      email: emailRes,
     });
   } catch (e) {
     console.error(e);

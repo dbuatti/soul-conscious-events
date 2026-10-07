@@ -75,7 +75,5 @@ jobs:
           COUNT=$(echo "$BODY" | jq -r '.eventCount // 0')
           echo "### Weekly IG slides" >> "$GITHUB_STEP_SUMMARY"
           echo "$COUNT event(s) rendered for the week starting $WEEK." >> "$GITHUB_STEP_SUMMARY"
+          echo "Review and post from the admin panel's **Slides** tab." >> "$GITHUB_STEP_SUMMARY"
           echo "$BODY" | jq -r '.slides[]? | "- \(.publicUrl)"' >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
-          if [ "$(echo "$BODY" | jq -r '.email.sent // false')" != "true" ]; then
-            echo "::warning::Slides rendered but the email was not sent (check RESEND_API_KEY and SLIDES_EMAIL_TO)."
-          fi
