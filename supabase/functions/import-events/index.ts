@@ -6,7 +6,7 @@ import {
   htmlToText, jsonLdListUrls, looksLikeIcs, normalizeUrl,
   classifyEventType, detectState, parseSitemap, scoreRelevance, sitemapsFromRobots, eventUrlsFromSitemap,
   orderSitemapsByLikelihood,
-  approvalFor, type ImportedEvent, type MapOptions,
+  approvalFor, splitListingEvents, type ImportedEvent, type MapOptions,
 } from '../_shared/event-import.ts';
 
 // Limits keep a run well inside the edge function wall-clock limit and keep
@@ -259,12 +259,16 @@ serve(async (req) => {
       notes.push(`calendar feed with ${ics.events.length} upcoming`);
     } else {
       const onPage = eventsFromHtml(page.text, page.finalUrl, opts);
-      onPage.events.forEach((event) => candidates.push({ event, strictLinkDedupe: true }));
-      const seenLinks = new Set(onPage.events.map((e) => normalizeUrl(e.ticket_link)).filter(Boolean) as string[]);
+      const { keep, deferred } = splitListingEvents(onPage.events, page.finalUrl);
+      keep.forEach((event) => candidates.push({ event, strictLinkDedupe: true }));
+      const seenLinks = new Set(keep.map((e) => normalizeUrl(e.ticket_link)).filter(Boolean) as string[]);
 
       // Sitemap + on-page links + one page of pagination, in one helper.
       const { links: candidatesFound, fromSitemap, paginationPages } = await collectCandidateLinks(source.url, budget);
-      const links = candidatesFound.filter((link) => {
+      // Anything held back above is fetched first: its own page carries the time
+      // the listing left out, and should not lose the budget to links discovery
+      // happens to order ahead of it.
+      const links = [...new Set([...deferred, ...candidatesFound])].filter((link) => {
         const key = normalizeUrl(link);
         return key && !seenLinks.has(key) && !knownLinks.has(key) && !knownExternalIds.has(key);
       });

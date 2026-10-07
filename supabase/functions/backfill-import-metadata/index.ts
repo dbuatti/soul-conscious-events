@@ -1,32 +1,40 @@
-// One-off backfill: fills in `description` and `import_relevance` for events the
-// importer already created. Everything here already exists in the database --
-// this only repairs the metadata those rows were born without.
+// One-off backfill: fills in what the importer left blank on events it already
+// created -- description, import_relevance, and the start time. Everything here
+// already exists on the page; this only repairs metadata those rows were born
+// without and never had revisited.
 //
 // Why it exists: sites routinely truncate the schema.org description (Humanitix
-// cuts at ~120 characters) and those rows were inserted with a stub, or with no
-// description at all, so the public event pages showed nothing and relevance
-// scoring had no text to read.
+// cuts at ~120 characters), and a listing page states only the date, so events
+// imported from one arrived with no time at all. Those rows showed "Time TBC"
+// on the public event pages, and relevance scoring had no text to read.
 //
-// Admin-only, opt-in, and safe to run twice: it only ever fills blanks and
+// Admin-only, opt-in, and safe to run twice: it only ever fills blanks, and
 // records what it changed.
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders, createAdminClient, jsonResponse, requireAdmin } from '../_shared/auth.ts';
 import { politeFetch } from '../_shared/page-fetch.ts';
-import { extractJsonLdNodes, extendTruncatedDescription, scoreRelevance } from '../_shared/event-import.ts';
+import { eventsFromHtml, scoreRelevance } from '../_shared/event-import.ts';
 
 const BUDGET_MS = 90_000;
 const MAX_LIMIT = 300;
 
-/** Pulls the description off an event page the same way the importer would. */
-const descriptionFrom = (html: string): string | null => {
-  for (const node of extractJsonLdNodes(html)) {
-    if (node['@type'] !== 'Event') continue;
-    const raw = typeof node.description === 'string' ? node.description : '';
-    const text = extendTruncatedDescription(html, raw);
-    if (text.trim()) return text.trim();
-  }
-  return null;
+/**
+ * Reads a page the same way the importer does.
+ *
+ * This used to hand-roll the extraction and match `@type === 'Event'` exactly,
+ * which silently skipped every Eventbrite page -- theirs are `EducationEvent` --
+ * so their descriptions were never filled either. Reusing the importer's own
+ * parser keeps the two from drifting apart again.
+ *
+ * `today` is set to the epoch so events that have already happened are still
+ * read: the rows being repaired may well be past.
+ */
+const metaFrom = (html: string, pageUrl: string) => {
+  const { events } = eventsFromHtml(html, pageUrl, { today: '1970-01-01' });
+  const event = events[0];
+  if (!event) return null;
+  return { description: event.description, time: event.event_time, endDate: event.end_date };
 };
 
 serve(async (req: Request) => {
@@ -45,13 +53,13 @@ serve(async (req: Request) => {
   const dryRun = body.dryRun === true;
   const supabase = createAdminClient();
 
-  // Only rows the importer created, and only where the text is actually
+  // Only rows the importer created, and only where something is actually
   // missing -- never overwrite a description a human wrote or AI parsed.
   const { data: rows, error } = await supabase
     .from('events')
-    .select('id, event_name, ticket_link, description, import_relevance, source_id')
+    .select('id, event_name, ticket_link, description, event_time, end_date, import_relevance, source_id')
     .not('source_id', 'is', null)
-    .is('description', null)
+    .or('description.is.null,event_time.is.null')
     .eq('is_deleted', false)
     // Declined events are never shown, so spending crawl budget on them is waste.
     .neq('approval_status', 'rejected')
@@ -64,6 +72,8 @@ serve(async (req: Request) => {
   const filled: string[] = [];
   const scored: Record<string, number> = {};
   const skipped: { event_name: string; reason: string }[] = [];
+  let descriptions = 0;
+  let times = 0;
 
   for (const row of rows ?? []) {
     if (Date.now() - started > BUDGET_MS) {
@@ -75,18 +85,34 @@ serve(async (req: Request) => {
       skipped.push({ event_name: row.event_name, reason: page.reason });
       continue;
     }
-    const description = descriptionFrom(page.text);
-    if (!description) {
-      skipped.push({ event_name: row.event_name, reason: 'no description on page' });
+    const meta = metaFrom(page.text, page.finalUrl);
+    if (!meta) {
+      skipped.push({ event_name: row.event_name, reason: 'no event data on page' });
       continue;
     }
 
-    const verdict = scoreRelevance(row.event_name, description, null);
-    scored[verdict] = (scored[verdict] ?? 0) + 1;
+    const patch: Record<string, unknown> = {};
+    if (!row.description && meta.description) {
+      patch.description = meta.description;
+      descriptions++;
+    }
+    if (!row.event_time && meta.time) {
+      patch.event_time = meta.time;
+      times++;
+    }
+    if (!row.end_date && meta.endDate) patch.end_date = meta.endDate;
+    if (!row.import_relevance) {
+      const verdict = scoreRelevance(row.event_name, meta.description ?? row.description ?? '', null);
+      patch.import_relevance = verdict;
+      scored[verdict] = (scored[verdict] ?? 0) + 1;
+    }
+
+    if (Object.keys(patch).length === 0) {
+      skipped.push({ event_name: row.event_name, reason: 'nothing to fill' });
+      continue;
+    }
 
     if (!dryRun) {
-      const patch: Record<string, unknown> = { description };
-      if (!row.import_relevance) patch.import_relevance = verdict;
       const { error: upErr } = await supabase.from('events').update(patch).eq('id', row.id);
       if (upErr) {
         skipped.push({ event_name: row.event_name, reason: `update failed: ${upErr.message}` });
@@ -99,7 +125,9 @@ serve(async (req: Request) => {
   return jsonResponse({
     dryRun,
     examined: rows?.length ?? 0,
-    descriptions_filled: filled.length,
+    rows_filled: filled.length,
+    descriptions_filled: descriptions,
+    times_filled: times,
     relevance_scores: scored,
     skipped: skipped.length,
     skipped_detail: skipped.slice(0, 10),

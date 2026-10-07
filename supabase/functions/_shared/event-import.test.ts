@@ -1,6 +1,6 @@
 // Run with: deno test supabase/functions/_shared/event-import.test.ts
 import assert from 'node:assert/strict';
-import { approvalFor, classifyEventType, detectState, eventUrlsFromSitemap, eventsFromHtml, eventsFromIcs, extendTruncatedDescription, extractJsonLdNodes, findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, orderSitemapsByLikelihood, parseSitemap, priceFromOffers, robotsAllows, scoreRelevance, sitemapsFromRobots } from './event-import.ts';
+import { approvalFor, classifyEventType, detectState, eventUrlsFromSitemap, eventsFromHtml, eventsFromIcs, extendTruncatedDescription, extractJsonLdNodes, findEventLinks, findPaginationLinks, isoToLocalParts, jsonLdListUrls, looksLikeEventPath, nextOccurrenceOnOrAfter, normalizeUrl, orderSitemapsByLikelihood, parseSitemap, priceFromOffers, robotsAllows, scoreRelevance, sitemapsFromRobots, splitListingEvents } from './event-import.ts';
 
 const OPTS = { today: '2026-10-05', maxDate: '2027-10-05' };
 
@@ -34,6 +34,65 @@ Deno.test('maps a ticketing page JSON-LD event', () => {
   assert.equal(e.image_url, 'https://images.humanitix.com/abc.jpg');
   assert.equal(e.description, 'Drift into deep rest.\nBring a blanket.');
   assert.equal(e.external_id, 'events.humanitix.com/full-moon-sound-bath/tickets');
+});
+
+const LISTING_URL = 'https://www.eventbrite.com.au/d/australia--melbourne/wellness/';
+const GROOV3_URL = 'https://www.eventbrite.com.au/e/groov3-open-level-tickets-2001154396670';
+
+// What a city listing embeds: the date, but no time.
+const listingSummary = `<html><head><script type="application/ld+json">
+{"@context":"https://schema.org","@type":"EducationEvent","name":"GROOV3 Open level",
+ "startDate":"2026-10-07","url":"${GROOV3_URL}",
+ "location":{"@type":"Place","name":"Studio Take Care"}}
+</script></head><body></body></html>`;
+
+// What the detail page it points at carries: same event, plus the time.
+const eventbriteDetail = `<html><head><script type="application/ld+json">
+{"@context":"https://schema.org","@type":"EducationEvent",
+ "name":"GROOV3 Open level: Wednesdays in Brunswick",
+ "startDate":"2026-10-07T18:30:00+11:00","endDate":"2026-10-07T19:30:00+11:00",
+ "url":"${GROOV3_URL}",
+ "location":{"@type":"Place","name":"Studio Take Care","address":{"@type":"PostalAddress","streetAddress":"1 Pitt St","addressLocality":"Brunswick","addressRegion":"VIC","postalCode":"3056","addressCountry":"AU"}}}
+</script></head><body></body></html>`;
+
+Deno.test('reads the time from an Eventbrite detail page whose type is EducationEvent', () => {
+  // Eventbrite does not use a bare "Event" node, so anything matching the type
+  // exactly -- the old backfill did -- silently skipped every one of them.
+  const { events } = eventsFromHtml(eventbriteDetail, GROOV3_URL, OPTS);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].event_date, '2026-10-07');
+  assert.equal(events[0].event_time, '6:30pm – 7:30pm');
+});
+
+Deno.test('a listing summary with no time defers to the page that has one', () => {
+  const { events } = eventsFromHtml(listingSummary, LISTING_URL, OPTS);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].event_time, null);
+
+  const { keep, deferred } = splitListingEvents(events, LISTING_URL);
+  assert.deepEqual(keep, []);
+  assert.deepEqual(deferred, [GROOV3_URL]);
+});
+
+Deno.test('a listing summary that already has a time is kept, not deferred', () => {
+  const { events } = eventsFromHtml(eventbriteDetail, LISTING_URL, OPTS);
+  const { keep, deferred } = splitListingEvents(events, LISTING_URL);
+  assert.equal(keep.length, 1);
+  assert.deepEqual(deferred, []);
+});
+
+Deno.test('a time-less event that links only to its own page is kept', () => {
+  const selfPage = `<html><head><script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Event","name":"Mystery Gathering",
+   "startDate":"2026-10-07","location":{"@type":"Place","name":"The Hall"}}
+  </script></head><body></body></html>`;
+  const url = 'https://example.com.au/events/mystery-gathering';
+  const { events } = eventsFromHtml(selfPage, url, OPTS);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].event_time, null);
+  const { keep, deferred } = splitListingEvents(events, url);
+  assert.equal(keep.length, 1);
+  assert.deepEqual(deferred, []);
 });
 
 const organiserPage = `<html><head><script type="application/ld+json">

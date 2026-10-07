@@ -885,6 +885,41 @@ export const eventsFromHtml = (html: string, pageUrl: string, opts: MapOptions) 
   return { events, skipped };
 };
 
+/**
+ * Splits what a page told us about its own events into what is safe to import
+ * now, and what is better read from somewhere else.
+ *
+ * A city-wide listing summarises its own detail pages, and summarises them with
+ * less: Eventbrite embeds an `Event` node per entry carrying the date but no
+ * time, while the detail page it links to carries both. Importing the summary
+ * would claim the event as "time TBC" forever, because its ticket link then
+ * counts as already seen and the page holding the time is never fetched.
+ *
+ * So an event with no time whose link points somewhere other than this page is
+ * handed back for its own page to supply. Everything else is kept: an event
+ * with a time is already complete, and one that links to itself cannot be
+ * improved by revisiting it.
+ */
+export const splitListingEvents = (
+  events: ImportedEvent[],
+  pageUrl: string,
+): { keep: ImportedEvent[]; deferred: string[] } => {
+  const pageKey = normalizeUrl(pageUrl);
+  const keep: ImportedEvent[] = [];
+  // Raw links, not normalized: these go back into the crawl queue, and a
+  // scheme-stripped key cannot be fetched.
+  const deferred: string[] = [];
+  for (const event of events) {
+    const key = event.ticket_link ? normalizeUrl(event.ticket_link) : null;
+    if (!event.event_time && event.ticket_link && key && key !== pageKey) {
+      deferred.push(event.ticket_link);
+      continue;
+    }
+    keep.push(event);
+  }
+  return { keep, deferred };
+};
+
 // ---------------------------------------------------------------------------
 // iCalendar (.ics)
 
