@@ -95,11 +95,6 @@ serve(async (req) => {
     const weekEndISO = addDays(weekStart, 6).toISOString();
 
     const cover = await generateCoverSlide(weekStartISO, weekEndISO, selected.length);
-    const eventSlides: Uint8Array<ArrayBuffer>[] = [];
-    for (const ev of selected) {
-      eventSlides.push(await generateEventSlide(ev));
-    }
-
     const uploaded: { path: string; publicUrl: string }[] = [];
     const dateFolder = isoDate(weekStart);
 
@@ -114,17 +109,7 @@ serve(async (req) => {
       uploaded.push({ path: coverPath, publicUrl: coverPub.publicUrl });
     }
 
-    for (let i = 0; i < eventSlides.length; i++) {
-      const path = `${dateFolder}/slide-${String(i + 2).padStart(2, "0")}-event.png`;
-      const blob = new Blob([eventSlides[i]], { type: "image/png" });
-      await supabase.storage.from(BUCKET).upload(path, blob, {
-        contentType: "image/png",
-        upsert: true,
-      });
-      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-      if (pub?.publicUrl) {
-        uploaded.push({ path, publicUrl: pub.publicUrl });
-      }
+
     }
 
     const lines = ["Soul Conscious Events this week:"];
