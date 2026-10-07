@@ -24,9 +24,6 @@ const ACCENT = "#D9B75B";
 const WIDTH = 1080;
 const HEIGHT = 1350;
 
-// @fontsource ships the woff satori can actually parse. rsms.me serves a woff2
-// at its old .woff path, which opentype rejects, and 404s the .woff outright.
-const FONT_BASE = "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.20/files";
 
 type FontWeight = 400 | 600 | 700 | 800;
 
