@@ -108,9 +108,6 @@ serve(async (req) => {
       uploaded.push({ path: coverPath, publicUrl: coverPub.publicUrl });
     }
 
-
-    }
-
     const lines = ["Soul Conscious Events this week:"];
     for (const ev of selected) {
       const d = formatAU(ev.event_date);
