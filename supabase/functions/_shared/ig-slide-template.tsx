@@ -331,7 +331,6 @@ export async function generateCoverSlideSvg(
   count: number
 ): Promise<string> {
   const fonts = await loadFonts();
-  await ensureWasm();
   const svg = await satori(
     <div
       style={{
