@@ -83,7 +83,7 @@ serve(async (req) => {
       .gte("event_date", isoDate(weekStart))
       .lt("event_date", isoDate(weekEnd))
       .order("event_date", { ascending: true })
-      .limit(6);
+      .limit(2);
 
     if (error) {
       console.error("Query error", error);
