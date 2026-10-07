@@ -324,3 +324,111 @@ export async function generateEventSlide(ev: EventSlideData): Promise<Uint8Array
 
   return renderToPng(svg);
 }
+
+export async function generateCoverSlideSvg(
+  weekStartISO: string,
+  weekEndISO: string,
+  count: number
+): Promise<string> {
+  const { fonts } = await loadFonts();
+  await ensureWasm();
+  const svg = await satori(
+    <div
+      style={{
+        width: WIDTH,
+        height: HEIGHT,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        background: `linear-gradient(135deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
+        position: "relative",
+        fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 80,
+          left: 80,
+          width: 160,
+          height: 6,
+          background: BRAND_PRIMARY,
+          borderRadius: 3,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: 80,
+          right: 80,
+          width: 80,
+          height: 80,
+          borderRadius: 40,
+          background: `${ACCENT}33`,
+        }}
+      />
+      <h1
+        style={{
+          fontSize: 72,
+          fontWeight: 800,
+          color: BRAND_TEXT,
+          margin: 0,
+          letterSpacing: "-0.02em",
+        }}
+      >
+        SoulFlow
+      </h1>
+      <h2
+        style={{
+          fontSize: 36,
+          fontWeight: 600,
+          color: BRAND_PRIMARY,
+          marginTop: 16,
+          marginBottom: 48,
+        }}
+      >
+        Conscious Events This Week
+      </h2>
+      <p
+        style={{
+          fontSize: 28,
+          color: BRAND_SUBTEXT,
+          margin: 0,
+          textAlign: "center",
+          lineHeight: 1.6,
+        }}
+      >
+        {formatDate(weekStartISO)} – {formatDate(weekEndISO)}
+      </p>
+      <p
+        style={{
+          fontSize: 24,
+          color: BRAND_SUBTEXT,
+          marginTop: 12,
+          margin: 0,
+        }}
+      >
+        {count} event{count === 1 ? "" : "s"}
+      </p>
+      <p
+        style={{
+          position: "absolute",
+          bottom: 80,
+          fontSize: 22,
+          color: BRAND_SUBTEXT,
+          margin: 0,
+          opacity: 0.8,
+        }}
+      >
+        Link in bio
+      </p>
+    </div>,
+    {
+      width: WIDTH,
+      height: HEIGHT,
+      fonts,
+    }
+  );
+  return svg;
+}

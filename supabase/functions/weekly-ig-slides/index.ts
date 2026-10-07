@@ -11,8 +11,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
 import {
-  generateCoverSlide,
-  generateEventSlide,
+  generateCoverSlideSvg,
   type EventSlideData,
 } from "../_shared/ig-slide-template.tsx";
 
@@ -94,14 +93,14 @@ serve(async (req) => {
     const weekStartISO = weekStart.toISOString();
     const weekEndISO = addDays(weekStart, 6).toISOString();
 
-    const cover = await generateCoverSlide(weekStartISO, weekEndISO, selected.length);
+    const coverSvg = await generateCoverSlideSvg(weekStartISO, weekEndISO, selected.length);
     const uploaded: { path: string; publicUrl: string }[] = [];
     const dateFolder = isoDate(weekStart);
 
-    const coverPath = `${dateFolder}/slide-01-cover.png`;
-    const coverBlob = new Blob([cover], { type: "image/png" });
-    await supabase.storage.from(BUCKET).upload(coverPath, coverBlob, {
-      contentType: "image/png",
+    const coverPath = `${dateFolder}/slide-01-cover.svg`;
+    const coverBlob = new Blob([new TextEncoder().encode(coverSvg)], { type: "image/svg+xml" });
+    await supabase.storage.from(BUCKET).upload(coverPath.replace(".png", ".svg"), coverBlob, {
+      contentType: "image/svg+xml",
       upsert: true,
     });
     const { data: coverPub } = supabase.storage.from(BUCKET).getPublicUrl(coverPath);
