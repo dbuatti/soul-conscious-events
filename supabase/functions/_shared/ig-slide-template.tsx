@@ -1,6 +1,7 @@
 /** @jsxImportSource https://esm.sh/react@18.2.0 */
 import satori from "https://esm.sh/satori@0.10.13";
 import { initWasm, Resvg } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
+import { Inter_Regular, Inter_SemiBold, Inter_Bold, Inter_ExtraBold } from "./fonts.ts";
 
 export interface EventSlideData {
   id: string;
@@ -43,15 +44,13 @@ let fontsPromise: Promise<SatoriFont[]> | null = null;
 let wasmPromise: Promise<void> | null = null;
 
 const loadFonts = (): Promise<SatoriFont[]> => {
-  const weights: FontWeight[] = [400, 600, 700, 800];
-  fontsPromise ??= Promise.all(
-    weights.map(async (weight): Promise<SatoriFont> => ({
-      name: "Inter",
-      data: await fetch(`${FONT_BASE}/inter-latin-${weight}-normal.woff`).then((r) => r.arrayBuffer()),
-      weight,
-      style: "normal",
-    })),
-  );
+  const fonts = [
+    { name: "Inter", data: new TextEncoder().encode(Inter_Regular), weight: 400 as FontWeight, style: "normal" as const },
+    { name: "Inter", data: new TextEncoder().encode(Inter_SemiBold), weight: 600 as FontWeight, style: "normal" as const },
+    { name: "Inter", data: new TextEncoder().encode(Inter_Bold), weight: 700 as FontWeight, style: "normal" as const },
+    { name: "Inter", data: new TextEncoder().encode(Inter_ExtraBold), weight: 800 as FontWeight, style: "normal" as const },
+  ];
+  fontsPromise ??= Promise.resolve(fonts.map((f) => ({ ...f, data: f.data.buffer as ArrayBuffer })));
   return fontsPromise;
 };
 
