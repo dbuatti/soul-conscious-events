@@ -1,0 +1,21 @@
+name: Weekly IG Slides (Phase 1)
+
+on:
+  schedule:
+    - cron: '0 0 * * MON'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call weekly-ig-slides function
+        env:
+          FUNCTION_URL: https://yiqkkfdwcgmggckdrkye.supabase.co/functions/v1/weekly-ig-slides
+          SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          curl -X POST "$FUNCTION_URL" \
+            -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "apikey: $SERVICE_ROLE_KEY" \
+            --fail-with-body
