@@ -40,14 +40,22 @@ interface SatoriFont {
 let fontsPromise: Promise<SatoriFont[]> | null = null;
 let wasmPromise: Promise<void> | null = null;
 
+function b64ToArrayBuffer(b64: string): ArrayBuffer {
+  const binary = atob(b64.split(",")[1] || b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
 const loadFonts = (): Promise<SatoriFont[]> => {
-  const fonts = [
-    { name: "Inter", data: new TextEncoder().encode(Inter_Regular), weight: 400 as FontWeight, style: "normal" as const },
-    { name: "Inter", data: new TextEncoder().encode(Inter_SemiBold), weight: 600 as FontWeight, style: "normal" as const },
-    { name: "Inter", data: new TextEncoder().encode(Inter_Bold), weight: 700 as FontWeight, style: "normal" as const },
-    { name: "Inter", data: new TextEncoder().encode(Inter_ExtraBold), weight: 800 as FontWeight, style: "normal" as const },
-  ];
-  fontsPromise ??= Promise.resolve(fonts.map((f) => ({ ...f, data: f.data.buffer as ArrayBuffer })));
+  fontsPromise ??= Promise.resolve([
+    { name: "Inter", data: b64ToArrayBuffer(Inter_Regular), weight: 400 as FontWeight, style: "normal" as const },
+    { name: "Inter", data: b64ToArrayBuffer(Inter_SemiBold), weight: 600 as FontWeight, style: "normal" as const },
+    { name: "Inter", data: b64ToArrayBuffer(Inter_Bold), weight: 700 as FontWeight, style: "normal" as const },
+    { name: "Inter", data: b64ToArrayBuffer(Inter_ExtraBold), weight: 800 as FontWeight, style: "normal" as const },
+  ]);
   return fontsPromise;
 };
 
