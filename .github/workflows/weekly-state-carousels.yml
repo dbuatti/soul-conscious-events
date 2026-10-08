@@ -76,5 +76,7 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         env:
           FORCE: ${{ github.event.inputs.force == 'true' && '1' || '' }}
-          STATES: ${{ github.event.inputs.states }}
+          # Start with Victoria only; add states here (e.g. "VIC,NSW,QLD") once
+          # the format is proven.
+          STATES: ${{ github.event.inputs.states || 'VIC' }}
         run: node scripts/weekly-state-carousels.mjs
