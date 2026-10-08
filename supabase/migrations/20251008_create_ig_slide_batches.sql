@@ -17,18 +17,8 @@ create policy "Admins can manage slide batches"
   on public.ig_slide_batches
   for all
   using (auth.uid() in (
-    select user_id from profiles where role = 'admin'
+    select id from profiles where role = 'admin'
   ))
   with check (auth.uid() in (
-    select user_id from profiles where role = 'admin'
+    select id from profiles where role = 'admin'
   ));
-
--- Allow anyone to read? Or just admins - admin panel needs to read
-create policy "Admins can read slide batches"
-  on public.ig_slide_batches
-  for select
-  using (auth.uid() in (
-    select user_id from profiles where role = 'admin'
-  ));
-
--- But service role needs to write; RLS not enforced for service role - that's fine
