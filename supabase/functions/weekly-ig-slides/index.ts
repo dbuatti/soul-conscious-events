@@ -11,7 +11,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
 import {
-  generateCoverSlideSvg,
+  generateCoverSlide,
+  generateEventSlide,
   type EventSlideData,
 } from "../_shared/ig-slide-template.tsx";
 
@@ -82,7 +83,7 @@ serve(async (req) => {
       .gte("event_date", isoDate(weekStart))
       .lt("event_date", isoDate(weekEnd))
       .order("event_date", { ascending: true })
-      .limit(2);
+      .limit(9);
 
     if (error) {
       console.error("Query error", error);
@@ -93,19 +94,28 @@ serve(async (req) => {
     const weekStartISO = weekStart.toISOString();
     const weekEndISO = addDays(weekStart, 6).toISOString();
 
-    const coverSvg = await generateCoverSlideSvg(weekStartISO, weekEndISO, selected.length);
+    const cover = await generateCoverSlide(weekStartISO, weekEndISO, selected.length);
     const uploaded: { path: string; publicUrl: string }[] = [];
     const dateFolder = isoDate(weekStart);
 
-    const coverPath = `${dateFolder}/slide-01-cover.svg`;
-    const coverBlob = new Blob([new TextEncoder().encode(coverSvg)], { type: "image/svg+xml" });
-    await supabase.storage.from(BUCKET).upload(coverPath.replace(".png", ".svg"), coverBlob, {
-      contentType: "image/svg+xml",
-      upsert: true,
-    });
-    const { data: coverPub } = supabase.storage.from(BUCKET).getPublicUrl(coverPath);
-    if (coverPub?.publicUrl) {
-      uploaded.push({ path: coverPath, publicUrl: coverPub.publicUrl });
+    const upload = async (path: string, png: Uint8Array<ArrayBuffer>) => {
+      const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, png, {
+        contentType: "image/png",
+        upsert: true,
+      });
+      if (uploadError) throw uploadError;
+      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      if (pub?.publicUrl) uploaded.push({ path, publicUrl: pub.publicUrl });
+    };
+
+    await upload(`${dateFolder}/slide-01-cover.png`, cover);
+
+    let n = 2;
+    for (const ev of selected) {
+      const png = await generateEventSlide(ev);
+      const label = String(n).padStart(2, "0");
+      await upload(`${dateFolder}/slide-${label}.png`, png);
+      n++;
     }
 
     const lines = ["Soul Conscious Events this week:"];
