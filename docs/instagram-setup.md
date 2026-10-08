@@ -77,8 +77,20 @@ for a non-expiring credential.)
 8. Set secrets `META_IG_USER_ID` + `META_ACCESS_TOKEN`. **Do not** set
    `META_GRAPH_BASE` (the function defaults to the Facebook host).
 
-For automation, generate a **System User token** in Business Suite → Settings →
-Users → System Users (never expires).
+For automation, generate a **System User token** (never expires):
+
+1. **business.facebook.com → Settings → Users → System Users → Add** (name it e.g. `soulflow-bot`, role **Admin**).
+2. **Add Assets** → assign the brand **Page** (the IG account is reached through it).
+3. **Generate New Token** → pick the app → **Token Expiration: Never** → scopes
+   `pages_show_list`, `pages_read_engagement`, `business_management`,
+   `instagram_basic`, `instagram_content_publish`.
+4. Copy the token and run:
+   ```bash
+   META_SYSTEM_USER_TOKEN=xxx PAGE_ID=<page-id> \
+     node scripts/facebook-login-token.mjs
+   ```
+   It validates the token and prints `META_IG_USER_ID` + `META_ACCESS_TOKEN`.
+   (Set the printed token as `META_ACCESS_TOKEN`; do **not** set `META_GRAPH_BASE`.)
 
 ---
 
@@ -109,6 +121,7 @@ POST /{ig-user-id}/media_publish  creation_id=<parent id>            -> live med
 |---|---|
 | `not_configured` | `META_IG_USER_ID` / `META_ACCESS_TOKEN` secrets not set. |
 | `Invalid OAuth access token` | Token expired (~60 days) — refresh or use a System User token. |
+| `The session is invalid because the user logged out` | The token wasn't a Page/System-User token, or the **app secret was rotated** (rotating it invalidates every existing token). Re-run `scripts/facebook-login-token.mjs`. |
 | `The user does not have an Instagram Business Account` | IG is still Personal, or not linked to a Page (Path B). |
 | `(#10) permission` | Missing scope, or app in dev mode without an app role for the account. |
 | `Media URI must be a valid URL` | Image URL isn't public HTTPS, or the bucket isn't public. |
