@@ -71,6 +71,7 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const rawState = (body?.state as string | undefined)?.toUpperCase();
     const state = rawState && STATE_NAMES[rawState] ? rawState : null;
+    const format = body?.format === "story" ? "story" : "feed";
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -83,7 +84,8 @@ serve(async (req) => {
     weekStart.setUTCHours(0, 0, 0, 0);
     const weekEnd = addDays(weekStart, 7);
     const dateFolder = isoDate(weekStart);
-    const kind = state ? `state-${state}` : "weekly";
+    const baseKind = state ? `state-${state}` : "weekly";
+    const kind = format === "story" ? `${baseKind}-story` : baseKind;
 
     let query = supabase
       .from("events")
@@ -125,27 +127,32 @@ serve(async (req) => {
       addDays(weekStart, 6).toISOString(),
       selected.length,
       label ?? undefined,
+      format,
     );
     await upload(`${dateFolder}/${kind}/slide-01-cover.svg`, coverSvg);
 
-    // Index slide (slide 2): a numbered overview of every event, so viewers can
-    // see the whole lineup up-front and swipe straight to the one they want.
-    if (selected.length > 0) {
-      const indexSvg = await generateIndexSlideSvg(selected);
-      await upload(`${dateFolder}/${kind}/slide-02-index.svg`, indexSvg);
-    }
-
-    let n = 3;
-    for (const ev of selected) {
-      let svg: string;
-      try {
-        svg = await generateEventSlideSvg(ev);
-      } catch (imgErr) {
-        console.error("Event slide image failed, retrying without", imgErr);
-        svg = await generateEventSlideSvg({ ...ev, image_url: null });
+    if (format === "story") {
+      // Stories are single-image only — the 9:16 cover is the whole story.
+    } else {
+      // Index slide (slide 2): a numbered overview of every event, so viewers
+      // can see the whole lineup up-front and swipe straight to the one they want.
+      if (selected.length > 0) {
+        const indexSvg = await generateIndexSlideSvg(selected);
+        await upload(`${dateFolder}/${kind}/slide-02-index.svg`, indexSvg);
       }
-      await upload(`${dateFolder}/${kind}/slide-${String(n).padStart(2, "0")}.svg`, svg);
-      n++;
+
+      let n = 3;
+      for (const ev of selected) {
+        let svg: string;
+        try {
+          svg = await generateEventSlideSvg(ev);
+        } catch (imgErr) {
+          console.error("Event slide image failed, retrying without", imgErr);
+          svg = await generateEventSlideSvg({ ...ev, image_url: null });
+        }
+        await upload(`${dateFolder}/${kind}/slide-${String(n).padStart(2, "0")}.svg`, svg);
+        n++;
+      }
     }
 
     const heading = label ? `${label} this week:` : "Soul Conscious Events this week:";

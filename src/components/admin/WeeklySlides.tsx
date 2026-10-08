@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import {
   CalendarClock,
   CheckCircle2,
+  ChevronDown,
   Copy,
   Download,
   Images,
@@ -141,6 +142,19 @@ const BatchCard: React.FC<{
   const [scheduleFor, setScheduleFor] = useState(batch.scheduled_for?.slice(0, 16) ?? '');
   const prefix = batch.kind;
   const isStory = batch.kind.endsWith('-story');
+  const [collapsed, setCollapsed] = useState(true);
+
+  const meta = `${batch.slides.length} slide${batch.slides.length === 1 ? '' : 's'}${
+    batch.event_count > 0 ? ` · ${batch.event_count} event${batch.event_count === 1 ? '' : 's'}` : ''
+  }${
+    batch.status === 'posted' && batch.posted_at
+      ? ` · posted ${format(parseISO(batch.posted_at), 'd MMM, h:mma')}`
+      : ''
+  }${
+    batch.status === 'scheduled' && batch.scheduled_for
+      ? ` · for ${format(parseISO(batch.scheduled_for), 'd MMM, h:mma')}`
+      : ''
+  }`;
 
   const update = async (patch: Partial<SlideBatch>) => {
     const { error } = await supabase.from('ig_slide_batches').update(patch).eq('id', batch.id);
@@ -205,30 +219,45 @@ const BatchCard: React.FC<{
   };
 
   return (
-    <div className="organic-card p-6 space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
+    <div className="organic-card p-5">
+      <button
+        type="button"
+        onClick={() => setCollapsed((c) => !c)}
+        className="flex w-full items-center gap-4 text-left"
+        aria-expanded={!collapsed}
+      >
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="font-heading text-lg text-foreground">{batch.title || batch.kind}</p>
+            <p className="font-heading text-lg text-foreground truncate">{batch.title || batch.kind}</p>
             <StatusBadge status={batch.status} />
           </div>
-          <p className="text-xs text-muted-foreground">
-            {batch.slides.length} slides
-            {batch.event_count > 0 ? ` · ${batch.event_count} event${batch.event_count === 1 ? '' : 's'}` : ''}
-            {batch.status === 'posted' && batch.posted_at
-              ? ` · posted ${format(parseISO(batch.posted_at), 'd MMM, h:mma')}`
-              : ''}
-            {batch.status === 'scheduled' && batch.scheduled_for
-              ? ` · for ${format(parseISO(batch.scheduled_for), 'd MMM, h:mma')}`
-              : ''}
-          </p>
+          <p className="text-xs text-muted-foreground">{meta}</p>
         </div>
-        <StatusBadge status={batch.status} />
-      </div>
+        <div className="hidden shrink-0 -space-x-3 sm:flex">
+          {batch.slides.slice(0, 5).map((slide) => (
+            <img
+              key={slide.path}
+              src={slide.publicUrl}
+              alt=""
+              className={`${isStory ? 'h-14 w-8' : 'h-14 w-11'} rounded-md border-2 border-background object-cover shadow-sm`}
+            />
+          ))}
+          {batch.slides.length > 5 && (
+            <span className="flex h-14 items-center rounded-md border-2 border-background bg-muted px-2 text-xs text-muted-foreground">
+              +{batch.slides.length - 5}
+            </span>
+          )}
+        </div>
+        <ChevronDown
+          className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${collapsed ? '' : 'rotate-180'}`}
+        />
+      </button>
 
-      {batch.error && <p className="text-xs text-destructive">Last error: {batch.error}</p>}
+      {!collapsed && (
+        <div className="mt-5 space-y-5">
+          {batch.error && <p className="text-xs text-destructive">Last error: {batch.error}</p>}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {batch.slides.map((slide, i) => (
           <button
             key={slide.path}
@@ -308,6 +337,8 @@ const BatchCard: React.FC<{
           </Button>
         )}
       </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -317,7 +348,7 @@ const WeeklySlides: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
   const [state, setState] = useState('VIC');
-  const [format, setFormat] = useState<'feed' | 'story'>('feed');
+  const [slideFormat, setSlideFormat] = useState<'feed' | 'story'>('feed');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -339,6 +370,28 @@ const WeeklySlides: React.FC = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  const scheduleSummary = useMemo(() => {
+    const lines: string[] = [];
+    lines.push('Automatic');
+    lines.push('• Every Monday, 8:00am (Sydney) — "this week" carousel + Story auto-post. Currently: Victoria.');
+    lines.push('');
+    const queued = batches
+      .filter((b) => b.status === 'scheduled' && b.scheduled_for)
+      .sort((a, b) => (a.scheduled_for! < b.scheduled_for! ? -1 : 1));
+    lines.push('Scheduled');
+    if (queued.length === 0) {
+      lines.push('• Nothing queued yet.');
+    } else {
+      for (const b of queued) {
+        lines.push(`• ${format(parseISO(b.scheduled_for!), 'EEE d MMM, h:mma')} — ${b.title || b.kind}`);
+      }
+    }
+    lines.push('');
+    lines.push('Suggested rhythm');
+    for (const item of CONTENT_PLAN) lines.push(`• ${item.when} — ${item.title}`);
+    return lines.join('\n');
+  }, [batches]);
 
   const generate = async (key: keyof typeof GENERATORS, body: Record<string, unknown> = {}) => {
     const gen = GENERATORS[key];
@@ -393,6 +446,17 @@ const WeeklySlides: React.FC = () => {
           <RefreshCw className="h-4 w-4 mr-2" /> Refresh
         </Button>
       </div>
+
+      {/* Schedule summary */}
+      <section className="space-y-5">
+        {sectionTitle(CalendarClock, 'Schedule', 'What goes out, and when')}
+        <div className="organic-card p-5">
+          <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">{scheduleSummary}</pre>
+          <Button variant="outline" size="sm" className="rounded-xl mt-4" onClick={() => copyCaption(scheduleSummary)}>
+            <Copy className="h-4 w-4 mr-2" /> Copy schedule
+          </Button>
+        </div>
+      </section>
 
       {/* Event carousels */}
       <section className="space-y-5">
@@ -457,7 +521,7 @@ const WeeklySlides: React.FC = () => {
               size="sm"
               variant="outline"
               className="rounded-xl"
-              onClick={() => generate(key, { format })}
+              onClick={() => generate(key, { format: slideFormat })}
               disabled={generating !== null}
             >
               {generating === key ? (
@@ -471,8 +535,8 @@ const WeeklySlides: React.FC = () => {
           <label className="text-xs text-muted-foreground flex flex-col gap-1 ml-auto">
             Format
             <select
-              value={format}
-              onChange={(e) => setFormat(e.target.value as 'feed' | 'story')}
+              value={slideFormat}
+              onChange={(e) => setSlideFormat(e.target.value as 'feed' | 'story')}
               className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground"
             >
               <option value="feed">Feed (4:5)</option>

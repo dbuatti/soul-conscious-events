@@ -67,12 +67,13 @@ async function invoke(fn, body) {
 
 async function rasteriseAndUpload(batch) {
   const urls = [];
+  const height = batch.kind.endsWith("-story") ? 1920 : 1350;
   for (let i = 0; i < batch.slides.length; i++) {
     const res = await fetch(batch.slides[i].publicUrl);
     if (!res.ok) throw new Error(`Could not fetch slide (${res.status})`);
     const svg = Buffer.from(await res.arrayBuffer());
     const jpeg = await sharp(svg, { density: 144 })
-      .resize(1080, 1350, { fit: "cover" })
+      .resize(1080, height, { fit: "cover" })
       .jpeg({ quality: 92 })
       .toBuffer();
     const path = `${batch.weekStart}/${batch.kind}/publish/slide-${String(i + 1).padStart(2, "0")}.jpg`;
@@ -106,15 +107,32 @@ async function run() {
       }
       const urls = await rasteriseAndUpload(batch);
       if (DRY_RUN) {
-        log(`${state}: ${batch.eventCount} events -> ${urls.length} slides (dry run)`);
-        continue;
+        log(`${state}: ${batch.eventCount} events -> ${urls.length} feed slides (dry run)`);
+      } else {
+        const result = await invoke("publish-instagram", {
+          imageUrls: urls,
+          caption: batch.caption,
+          batchId: batch.batchId,
+        });
+        log(`${state}: posted feed (${batch.eventCount} events) -> media ${result.mediaId}`);
       }
-      const result = await invoke("publish-instagram", {
-        imageUrls: urls,
-        caption: batch.caption,
-        batchId: batch.batchId,
-      });
-      log(`${state}: posted (${batch.eventCount} events) -> media ${result.mediaId}`);
+
+      // Instagram Stories accept a single image only, so the 9:16 cover doubles
+      // as an automatic Story for the same week.
+      const story = await invoke("weekly-ig-slides", { state, format: "story" });
+      if (story.slides?.length) {
+        const storyUrls = await rasteriseAndUpload(story);
+        if (DRY_RUN) {
+          log(`${state}: story slide ready (dry run)`);
+        } else {
+          const storyResult = await invoke("publish-instagram", {
+            imageUrls: storyUrls,
+            batchId: story.batchId,
+            story: true,
+          });
+          log(`${state}: posted story -> media ${storyResult.mediaId}`);
+        }
+      }
     } catch (e) {
       failures++;
       log(`${state}: FAILED - ${e.message}`);

@@ -103,12 +103,13 @@ export async function generateCoverSlideSvg(
   weekEndISO: string,
   count: number,
   location?: string,
+  format: SlideFormat = "feed",
 ): Promise<string> {
   const fonts = await loadFonts();
   return await satori(
     <div
       style={{
-        ...baseStyle(),
+        ...baseStyle(format),
         justifyContent: "center",
         alignItems: "center",
         background: `linear-gradient(135deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
@@ -135,7 +136,7 @@ export async function generateCoverSlideSvg(
         Link in bio
       </p>
     </div>,
-    { width: WIDTH, height: HEIGHT, fonts },
+    { width: DIMS[format].width, height: DIMS[format].height, fonts },
   );
 }
 

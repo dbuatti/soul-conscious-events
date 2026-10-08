@@ -113,6 +113,12 @@ POST /{ig-user-id}/media_publish  creation_id=<parent id>            -> live med
 `status='scheduled' AND scheduled_for <= now`, and publishes them. Requires the
 `SUPABASE_ACCESS_TOKEN` repo secret (to fetch the service-role key).
 
+`.github/workflows/weekly-state-carousels.yml` runs at 08:00 Monday
+(Australia/Sydney, DST-safe) and posts a "this week" carousel **plus a Story**
+for each configured state (currently Victoria). Stories accept a single image
+only, so the Story uses the 9:16 cover. Add states to the workflow's `STATES`
+value to expand it.
+
 ---
 
 ## Troubleshooting

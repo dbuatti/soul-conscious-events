@@ -75,6 +75,7 @@ serve(async (req) => {
     let imageUrls: string[] = Array.isArray(body?.imageUrls) ? body.imageUrls : [];
     let caption: string = body?.caption ?? "";
     const inlineImages: string[] = Array.isArray(body?.images) ? body.images : [];
+    const isStory = body?.story === true;
 
     // Resolve the batch up-front for its caption and storage folder.
     let batch: BatchRow | null = null;
@@ -117,11 +118,13 @@ serve(async (req) => {
     if (!caption && batch?.caption) caption = batch.caption;
 
     if (imageUrls.length === 0) return jsonResponse({ error: "No images to publish" }, 400);
-    if (imageUrls.length > 10) return jsonResponse({ error: "Instagram allows at most 10 carousel slides" }, 400);
+    if (!isStory && imageUrls.length > 10) return jsonResponse({ error: "Instagram allows at most 10 carousel slides" }, 400);
 
-    const mediaId = imageUrls.length === 1
-      ? await publishSingle(igUserId, accessToken, imageUrls[0], caption)
-      : await publishCarousel(igUserId, accessToken, imageUrls, caption);
+    const mediaId = isStory
+      ? await publishStory(igUserId, accessToken, imageUrls)
+      : imageUrls.length === 1
+        ? await publishSingle(igUserId, accessToken, imageUrls[0], caption)
+        : await publishCarousel(igUserId, accessToken, imageUrls, caption);
 
     if (batchId) {
       await admin
@@ -202,4 +205,16 @@ async function publishCarousel(igUserId: string, token: string, imageUrls: strin
   return (await graph(`${igUserId}/media_publish`, { creation_id: parent.id }, token)).id;
 }
 
-export { publishSingle, publishCarousel, graph };
+// Stories accept a single image each (no carousels, no captions), so we publish
+// every supplied image as its own story and return the last media id.
+async function publishStory(igUserId: string, token: string, imageUrls: string[]) {
+  let last = "";
+  for (const url of imageUrls) {
+    const container = await graph(`${igUserId}/media`, { media_type: "STORIES", image_url: url }, token);
+    await waitForContainer(container.id, token);
+    last = (await graph(`${igUserId}/media_publish`, { creation_id: container.id }, token)).id;
+  }
+  return last;
+}
+
+export { publishSingle, publishCarousel, publishStory, graph };
