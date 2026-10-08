@@ -193,6 +193,7 @@ export async function generateStorySlideSvg(
               border: "1px solid rgba(75,59,43,0.12)",
               padding: "20px 24px",
               marginBottom: 20,
+              overflow: "hidden",
             }}
           >
             <span
@@ -213,7 +214,7 @@ export async function generateStorySlideSvg(
             >
               {i + 1}
             </span>
-            <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+            <div style={{ display: "flex", flexDirection: "column", width: 760 }}>
               <p style={{ fontSize: 38, fontWeight: 700, color: BRAND_TEXT, margin: 0, lineHeight: 1.15 }}>
                 {ev.event_name || "Event"}
               </p>
