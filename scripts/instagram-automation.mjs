@@ -46,13 +46,14 @@ async function fetchDueBatchIds() {
 
 async function rasteriseAndUpload(batch) {
   const urls = [];
+  const height = batch.kind.endsWith('-story') ? 1920 : 1350;
   for (let i = 0; i < batch.slides.length; i++) {
     const slide = batch.slides[i];
     const res = await fetch(slide.publicUrl);
     if (!res.ok) throw new Error(`Could not fetch ${slide.publicUrl} (${res.status})`);
     const svg = Buffer.from(await res.arrayBuffer());
     const jpeg = await sharp(svg, { density: 144 })
-      .resize(1080, 1350, { fit: 'cover' })
+      .resize(1080, height, { fit: 'cover' })
       .jpeg({ quality: 92 })
       .toBuffer();
 
@@ -82,7 +83,12 @@ async function publish(batch, imageUrls) {
       apikey: SERVICE_KEY,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ imageUrls, caption: batch.caption, batchId: batch.id }),
+    body: JSON.stringify({
+      imageUrls,
+      caption: batch.caption,
+      batchId: batch.id,
+      story: batch.kind.endsWith('-story'),
+    }),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok || json?.error) throw new Error(json?.error || `publish-instagram failed (${res.status})`);
