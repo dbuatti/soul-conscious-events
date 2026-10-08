@@ -267,9 +267,14 @@ const BatchCard: React.FC<{
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="font-heading text-lg text-foreground truncate">{batch.title || batch.kind}</p>
+            {isStory && (
+              <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                Story
+              </span>
+            )}
             <StatusBadge status={batch.status} />
           </div>
-          <p className="text-xs text-muted-foreground">{meta}</p>
+          <p className="text-xs text-muted-foreground">{isStory ? `Story · ${meta}` : meta}</p>
         </div>
         <div className="hidden shrink-0 -space-x-3 sm:flex">
           {batch.slides.slice(0, 5).map((slide) => (
