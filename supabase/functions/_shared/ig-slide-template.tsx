@@ -1,6 +1,5 @@
 /** @jsxImportSource https://esm.sh/react@18.2.0 */
 import satori from "https://esm.sh/satori@0.10.13";
-import { initWasm, Resvg } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
 import { Inter_Regular, Inter_SemiBold, Inter_Bold, Inter_ExtraBold } from "./fonts.ts";
 
 export interface EventSlideData {
@@ -15,6 +14,12 @@ export interface EventSlideData {
   event_type: string | null;
 }
 
+export interface BrandSlide {
+  kicker: string | null;
+  title: string;
+  body: string[];
+}
+
 const BRAND_BG = "#F8F1EA"; // warm sand
 const BRAND_PRIMARY = "#B34629"; // terracotta
 const BRAND_TEXT = "#1C1C1C";
@@ -23,7 +28,6 @@ const ACCENT = "#D9B75B";
 
 const WIDTH = 1080;
 const HEIGHT = 1350;
-
 
 type FontWeight = 400 | 600 | 700 | 800;
 
@@ -34,11 +38,11 @@ interface SatoriFont {
   style: "normal";
 }
 
-// A carousel renders up to ten slides in one invocation. Fetching the same four
-// font files and re-instantiating the resvg wasm for each would dominate the
-// run, so both are initialised once and shared.
+// Satori renders the layout to SVG. Rasterising to PNG happens in the browser
+// (the admin panel), because resvg's WASM rasteriser exceeds the Edge runtime's
+// 256MB / 2s CPU budget. Keeping this function SVG-only avoids the 546
+// WORKER_RESOURCE_LIMIT error entirely.
 let fontsPromise: Promise<SatoriFont[]> | null = null;
-let wasmPromise: Promise<void> | null = null;
 
 function b64ToArrayBuffer(b64: string): ArrayBuffer {
   const binary = atob(b64.split(",")[1] || b64);
@@ -59,14 +63,6 @@ const loadFonts = (): Promise<SatoriFont[]> => {
   return fontsPromise;
 };
 
-const ensureWasm = (): Promise<void> => {
-  wasmPromise ??= (async () => {
-    const data = await fetch("https://esm.sh/@resvg/resvg-wasm@2.6.2/index_bg.wasm").then((r) => r.arrayBuffer());
-    await initWasm(data);
-  })();
-  return wasmPromise;
-};
-
 function formatDate(d?: string | null) {
   if (!d) return "";
   const date = new Date(d);
@@ -84,350 +80,152 @@ function formatTime(t?: string | null) {
   return t;
 }
 
-// Deno 2's Blob() rejects a Uint8Array backed by ArrayBufferLike; copying into a
-// fresh view guarantees the ArrayBuffer-backed type BlobPart expects.
-const renderToPng = async (svg: string): Promise<Uint8Array<ArrayBuffer>> => {
-  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: WIDTH } });
-  return new Uint8Array(resvg.render().asPng());
+const baseStyle: Record<string, unknown> = {
+  display: "flex",
+  flexDirection: "column",
+  width: WIDTH,
+  height: HEIGHT,
+  fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+  position: "relative",
 };
-
-export async function generateCoverSlide(
-  weekStartISO: string,
-  weekEndISO: string,
-  count: number,
-): Promise<Uint8Array<ArrayBuffer>> {
-  await ensureWasm();
-
-  const svg = await satori(
-    <div
-      style={{
-        width: WIDTH,
-        height: HEIGHT,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        background: `linear-gradient(135deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
-        position: "relative",
-        fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 80,
-          left: 80,
-          width: 160,
-          height: 6,
-          background: BRAND_PRIMARY,
-          borderRadius: 3,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          top: 80,
-          right: 80,
-          width: 80,
-          height: 80,
-          borderRadius: 40,
-          background: `${ACCENT}33`,
-        }}
-      />
-      <h1
-        style={{
-          fontSize: 72,
-          fontWeight: 800,
-          color: BRAND_TEXT,
-          margin: 0,
-          letterSpacing: "-0.02em",
-        }}
-      >
-        SoulFlow
-      </h1>
-      <h2
-        style={{
-          fontSize: 36,
-          fontWeight: 600,
-          color: BRAND_PRIMARY,
-          marginTop: 16,
-          marginBottom: 48,
-        }}
-      >
-        Conscious Events This Week
-      </h2>
-      <p
-        style={{
-          fontSize: 28,
-          color: BRAND_SUBTEXT,
-          margin: 0,
-          textAlign: "center",
-          lineHeight: 1.6,
-        }}
-      >
-        {formatDate(weekStartISO)} – {formatDate(weekEndISO)}
-      </p>
-      <p
-        style={{
-          fontSize: 24,
-          color: BRAND_SUBTEXT,
-          margin: "12px 0 0 0",
-        }}
-      >
-        {count} event{count === 1 ? "" : "s"}
-      </p>
-      <p
-        style={{
-          position: "absolute",
-          bottom: 80,
-          fontSize: 22,
-          color: BRAND_SUBTEXT,
-          margin: 0,
-          opacity: 0.8,
-        }}
-      >
-        Link in bio
-      </p>
-    </div>,
-    { width: WIDTH, height: HEIGHT, fonts: await loadFonts() },
-  );
-
-  return renderToPng(svg);
-}
-
-export async function generateEventSlide(ev: EventSlideData): Promise<Uint8Array<ArrayBuffer>> {
-  await ensureWasm();
-
-  const venue = ev.place_name || ev.venue_name || "";
-  const dateStr = formatDate(ev.event_date);
-  const timeStr = formatTime(ev.event_time);
-  const metaParts = [dateStr, timeStr].filter(Boolean).join(" · ");
-  const price = ev.price || "";
-
-  const svg = await satori(
-    <div
-      style={{
-        width: WIDTH,
-        height: HEIGHT,
-        display: "flex",
-        flexDirection: "column",
-        background: BRAND_BG,
-        position: "relative",
-        fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-        overflow: "hidden",
-      }}
-    >
-      {ev.image_url ? (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: `url(${ev.image_url})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.18,
-            filter: "saturate(0.9)",
-          }}
-        />
-      ) : null}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `linear-gradient(180deg, rgba(248,241,234,0.92) 0%, ${BRAND_BG} 100%)`,
-        }}
-      />
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          padding: "48px 72px 0 72px",
-        }}
-      >
-        <div style={{ width: 12, height: 12, borderRadius: 6, background: BRAND_PRIMARY }} />
-        <span
-          style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: BRAND_PRIMARY,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-          }}
-        >
-          SoulFlow
-        </span>
-      </div>
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          flex: 1,
-          padding: "0 72px",
-          gap: 28,
-        }}
-      >
-        <h1
-          style={{
-            fontSize: 64,
-            fontWeight: 800,
-            color: BRAND_TEXT,
-            margin: 0,
-            lineHeight: 1.12,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {ev.event_name || "Conscious Event"}
-        </h1>
-        {metaParts ? (
-          <p style={{ fontSize: 30, fontWeight: 600, color: BRAND_SUBTEXT, margin: 0 }}>{metaParts}</p>
-        ) : null}
-        {venue ? (
-          <p style={{ fontSize: 26, color: BRAND_SUBTEXT, margin: 0, lineHeight: 1.5 }}>{venue}</p>
-        ) : null}
-        {price ? (
-          <p style={{ fontSize: 26, fontWeight: 600, color: BRAND_PRIMARY, margin: 0 }}>{price}</p>
-        ) : null}
-      </div>
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 72px 56px 72px",
-        }}
-      >
-        <span style={{ fontSize: 20, color: BRAND_SUBTEXT, opacity: 0.8 }}>
-          {ev.event_type ? ev.event_type : "Wellness & Conscious Events"}
-        </span>
-        <span style={{ fontSize: 20, color: BRAND_SUBTEXT, opacity: 0.8 }}>Link in bio</span>
-      </div>
-    </div>,
-    { width: WIDTH, height: HEIGHT, fonts: await loadFonts() },
-  );
-
-  return renderToPng(svg);
-}
 
 export async function generateCoverSlideSvg(
   weekStartISO: string,
   weekEndISO: string,
-  count: number
+  count: number,
 ): Promise<string> {
   const fonts = await loadFonts();
-  const svg = await satori(
+  return await satori(
     <div
       style={{
-        width: WIDTH,
-        height: HEIGHT,
-        display: "flex",
-        flexDirection: "column",
+        ...baseStyle,
         justifyContent: "center",
         alignItems: "center",
         background: `linear-gradient(135deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
-        position: "relative",
-        fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          top: 80,
-          left: 80,
-          width: 160,
-          height: 6,
-          background: BRAND_PRIMARY,
-          borderRadius: 3,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          top: 80,
-          right: 80,
-          width: 80,
-          height: 80,
-          borderRadius: 40,
-          background: `${ACCENT}33`,
-        }}
-      />
-      <h1
-        style={{
-          fontSize: 72,
-          fontWeight: 800,
-          color: BRAND_TEXT,
-          margin: 0,
-          letterSpacing: "-0.02em",
-        }}
-      >
+      <div style={{ position: "absolute", top: 80, left: 80, width: 160, height: 6, background: BRAND_PRIMARY, borderRadius: 3 }} />
+      <div style={{ position: "absolute", top: 80, right: 80, width: 120, height: 120, borderRadius: 60, background: ACCENT, opacity: 0.35 }} />
+      <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 6, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
         SoulFlow
+      </p>
+      <h1 style={{ fontSize: 92, fontWeight: 800, color: BRAND_TEXT, margin: "24px 0 0 0", textAlign: "center" }}>
+        This Week
       </h1>
-      <h2
-        style={{
-          fontSize: 36,
-          fontWeight: 600,
-          color: BRAND_PRIMARY,
-          marginTop: 16,
-          marginBottom: 48,
-        }}
-      >
-        Conscious Events This Week
+      <h2 style={{ fontSize: 36, fontWeight: 600, color: BRAND_SUBTEXT, marginTop: 16, marginBottom: 8, textAlign: "center" }}>
+        Conscious Events
       </h2>
-      <p
-        style={{
-          fontSize: 28,
-          color: BRAND_SUBTEXT,
-          margin: 0,
-          textAlign: "center",
-          lineHeight: 1.6,
-        }}
-      >
+      <p style={{ fontSize: 30, color: BRAND_SUBTEXT, margin: "32px 0 0 0", textAlign: "center" }}>
         {formatDate(weekStartISO)} – {formatDate(weekEndISO)}
       </p>
-      <p
-        style={{
-          fontSize: 24,
-          color: BRAND_SUBTEXT,
-          marginTop: 12,
-          margin: 0,
-        }}
-      >
+      <p style={{ fontSize: 26, fontWeight: 600, color: BRAND_PRIMARY, margin: "16px 0 0 0" }}>
         {count} event{count === 1 ? "" : "s"}
       </p>
-      <p
-        style={{
-          position: "absolute",
-          bottom: 80,
-          fontSize: 22,
-          color: BRAND_SUBTEXT,
-          margin: 0,
-          opacity: 0.8,
-        }}
-      >
+      <p style={{ position: "absolute", bottom: 80, fontSize: 24, color: BRAND_SUBTEXT, opacity: 0.8, margin: 0 }}>
         Link in bio
       </p>
     </div>,
-    {
-      width: WIDTH,
-      height: HEIGHT,
-      fonts,
-    }
+    { width: WIDTH, height: HEIGHT, fonts },
   );
-  return svg;
+}
+
+export async function generateEventSlideSvg(ev: EventSlideData): Promise<string> {
+  const fonts = await loadFonts();
+  const metaParts = [formatDate(ev.event_date), formatTime(ev.event_time)].filter(Boolean).join(" · ");
+  const venue = ev.place_name || ev.venue_name || "";
+
+  return await satori(
+    <div style={{ ...baseStyle, background: BRAND_BG }}>
+      {ev.image_url ? (
+        <img
+          src={ev.image_url}
+          width={WIDTH}
+          height={HEIGHT}
+          style={{ position: "absolute", top: 0, left: 0, width: WIDTH, height: HEIGHT, objectFit: "cover", opacity: 0.18 }}
+        />
+      ) : null}
+      <div style={{ position: "absolute", top: 0, left: 0, width: WIDTH, height: 8, background: BRAND_PRIMARY }} />
+      <div style={{ display: "flex", flexDirection: "column", padding: "96px 80px", flexGrow: 1, justifyContent: "center" }}>
+        <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 4, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
+          {ev.event_type || "Wellness & Conscious Events"}
+        </p>
+        <h1 style={{ fontSize: 76, fontWeight: 800, color: BRAND_TEXT, margin: "28px 0 0 0", lineHeight: 1.1 }}>
+          {ev.event_name || "Event"}
+        </h1>
+        {metaParts ? (
+          <p style={{ fontSize: 34, fontWeight: 600, color: BRAND_SUBTEXT, margin: "36px 0 0 0" }}>{metaParts}</p>
+        ) : null}
+        {venue ? <p style={{ fontSize: 30, color: BRAND_SUBTEXT, margin: "18px 0 0 0", lineHeight: 1.5 }}>{venue}</p> : null}
+        {ev.price ? <p style={{ fontSize: 30, fontWeight: 600, color: BRAND_PRIMARY, margin: "18px 0 0 0" }}>{ev.price}</p> : null}
+      </div>
+      <div style={{ position: "absolute", bottom: 72, left: 80, right: 80, display: "flex", justifyContent: "space-between" }}>
+        <span style={{ fontSize: 22, color: BRAND_SUBTEXT, opacity: 0.8 }}>SoulFlow</span>
+        <span style={{ fontSize: 22, color: BRAND_SUBTEXT, opacity: 0.8 }}>Link in bio</span>
+      </div>
+    </div>,
+    { width: WIDTH, height: HEIGHT, fonts },
+  );
+}
+
+export async function generateBrandCoverSvg(): Promise<string> {
+  const fonts = await loadFonts();
+  return await satori(
+    <div
+      style={{
+        ...baseStyle,
+        justifyContent: "center",
+        alignItems: "center",
+        background: `linear-gradient(160deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
+      }}
+    >
+      <div style={{ position: "absolute", top: 90, left: 90, width: 140, height: 6, background: BRAND_PRIMARY, borderRadius: 3 }} />
+      <div style={{ position: "absolute", bottom: 120, right: 90, width: 180, height: 180, borderRadius: 90, background: ACCENT, opacity: 0.3 }} />
+      <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 8, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
+        Welcome
+      </p>
+      <h1 style={{ fontSize: 120, fontWeight: 800, color: BRAND_TEXT, margin: "28px 0 0 0" }}>
+        SoulFlow
+      </h1>
+      <p style={{ fontSize: 38, fontWeight: 600, color: BRAND_SUBTEXT, margin: "24px 0 0 0", textAlign: "center", maxWidth: 820 }}>
+        Australia&apos;s home for conscious &amp; wellness events
+      </p>
+      <p style={{ position: "absolute", bottom: 96, fontSize: 24, color: BRAND_SUBTEXT, opacity: 0.8, margin: 0 }}>
+        Swipe to meet us →
+      </p>
+    </div>,
+    { width: WIDTH, height: HEIGHT, fonts },
+  );
+}
+
+export async function generateBrandTextSlideSvg(slide: BrandSlide, index: number, total: number): Promise<string> {
+  const fonts = await loadFonts();
+  return await satori(
+    <div style={{ ...baseStyle, background: BRAND_BG, padding: "110px 90px", justifyContent: "space-between" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, width: WIDTH, height: 8, background: BRAND_PRIMARY }} />
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {slide.kicker ? (
+          <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 5, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
+            {slide.kicker}
+          </p>
+        ) : null}
+        <h2 style={{ fontSize: 80, fontWeight: 800, color: BRAND_TEXT, margin: "24px 0 0 0", lineHeight: 1.05 }}>
+          {slide.title}
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", marginTop: 48 }}>
+          {slide.body.map((line) => (
+            <p key={line} style={{ fontSize: 36, color: BRAND_SUBTEXT, margin: "0 0 24px 0", lineHeight: 1.45 }}>
+              {line}
+            </p>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 22, color: BRAND_SUBTEXT, opacity: 0.7 }}>SoulFlow</span>
+        <span style={{ fontSize: 22, color: BRAND_SUBTEXT, opacity: 0.7 }}>
+          {index} / {total}
+        </span>
+      </div>
+    </div>,
+    { width: WIDTH, height: HEIGHT, fonts },
+  );
 }

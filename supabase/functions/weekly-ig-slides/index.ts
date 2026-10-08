@@ -1,18 +1,20 @@
 // supabase/functions/weekly-ig-slides/index.ts
 //
 // Builds the week's Instagram carousel: a cover slide plus one slide per
-// approved event in the next seven days. The PNGs go to the public
-// ig-weekly-slides bucket (public because a future Graph API publish step needs
-// publicly reachable image URLs) and a row is written to ig_slide_batches so the
-// admin panel can show the carousel and its caption for manual posting.
+// approved event in the next seven days. Slides are rendered as SVG and stored
+// in the public ig-weekly-slides bucket, and a row is written to ig_slide_batches
+// so the admin panel can show the carousel and caption. The admin panel
+// rasterises each SVG to a 1080x1350 PNG in the browser for posting.
 //
-// Delivery is deliberately in-app -- no email provider, no third-party account.
+// SVG (not PNG) is deliberate: resvg's WASM rasteriser exceeds the Edge
+// runtime's 256MB / 2s budget and caused a 546 WORKER_RESOURCE_LIMIT. Satori's
+// SVG output is cheap, and the browser rasterises natively for free.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
 import {
-  generateCoverSlide,
-  generateEventSlide,
+  generateCoverSlideSvg,
+  generateEventSlideSvg,
   type EventSlideData,
 } from "../_shared/ig-slide-template.tsx";
 
@@ -94,27 +96,40 @@ serve(async (req) => {
     const weekStartISO = weekStart.toISOString();
     const weekEndISO = addDays(weekStart, 6).toISOString();
 
-    const cover = await generateCoverSlide(weekStartISO, weekEndISO, selected.length);
     const uploaded: { path: string; publicUrl: string }[] = [];
     const dateFolder = isoDate(weekStart);
 
-    const upload = async (path: string, png: Uint8Array<ArrayBuffer>) => {
-      const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, png, {
-        contentType: "image/png",
-        upsert: true,
-      });
+    const upload = async (path: string, svg: string) => {
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, new Blob([svg], { type: "image/svg+xml" }), {
+          contentType: "image/svg+xml",
+          upsert: true,
+        });
       if (uploadError) throw uploadError;
       const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
       if (pub?.publicUrl) uploaded.push({ path, publicUrl: pub.publicUrl });
     };
 
-    await upload(`${dateFolder}/slide-01-cover.png`, cover);
+const coverSvg = await generateCoverSlideSvg(
+      weekStart.toISOString(),
+      addDays(weekStart, 6).toISOString(),
+      selected.length,
+    );
+    await upload(`${weekStartISO}/slide-01-cover.svg`, coverSvg);
 
     let n = 2;
     for (const ev of selected) {
-      const png = await generateEventSlide(ev);
+      let svg: string;
+      try {
+        svg = await generateEventSlideSvg(ev);
+      } catch (imgErr) {
+        // A broken/unreachable image URL makes satori throw; retry without it.
+        console.error("Event slide image failed, retrying without", imgErr);
+        svg = await generateEventSlideSvg({ ...ev, image_url: null });
+      }
       const label = String(n).padStart(2, "0");
-      await upload(`${dateFolder}/slide-${label}.png`, png);
+      await upload(`${weekStartISO}/slide-${label}.svg`, svg);
       n++;
     }
 
@@ -135,12 +150,13 @@ serve(async (req) => {
       .from("ig_slide_batches")
       .upsert(
         {
-          week_start: dateFolder,
+          kind: "weekly",
+          week_start: weekStartISO,
           caption,
           slides: uploaded,
           event_count: selected.length,
         },
-        { onConflict: "week_start" }
+        { onConflict: "kind,week_start" },
       );
 
     if (batchError) {
@@ -150,7 +166,7 @@ serve(async (req) => {
 
     return jsonResponse({
       ok: true,
-      weekStart: dateFolder,
+      weekStart: weekStartISO,
       eventCount: selected.length,
       slides: uploaded,
       caption,

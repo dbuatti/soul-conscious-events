@@ -72,6 +72,7 @@ export interface SlideBatchSlide {
 
 export interface SlideBatch {
   id: string;
+  kind: 'weekly' | 'brand';
   week_start: string;
   caption: string;
   slides: SlideBatchSlide[];
