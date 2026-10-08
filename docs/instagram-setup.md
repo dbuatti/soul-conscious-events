@@ -7,7 +7,7 @@ published automatically. There are two supported paths; the app's
 | | **Instagram Login** (recommended) | **Facebook Login** |
 |---|---|---|
 | Facebook Page needed | No | Yes (linked to the IG account) |
-| API host | `https://graph.instagram.com/v21.0` | `https://graph.facebook.com/v21.0` |
+| API host | `https://graph.instagram.com/v26.0` | `https://graph.facebook.com/v26.0` |
 | Secret to set | `META_GRAPH_BASE` | (leave unset) |
 
 Both need: a **Meta developer account**, an **app**, an **Instagram professional
@@ -44,7 +44,7 @@ Project → **Settings → Edge Functions → Secrets** (or `supabase secrets se
 ```
 META_IG_USER_ID   = <printed by the helper>
 META_ACCESS_TOKEN = <printed by the helper>
-META_GRAPH_BASE   = https://graph.instagram.com/v21.0
+META_GRAPH_BASE   = https://graph.instagram.com/v26.0
 ```
 
 ### 5. Refresh before expiry
@@ -70,7 +70,7 @@ for a non-expiring credential.)
 6. `GET /{page-id}?fields=instagram_business_account` → copy that **id**.
 7. Exchange the short-lived token for a long-lived one:
    ```
-   GET https://graph.facebook.com/v21.0/oauth/access_token
+   GET https://graph.facebook.com/v26.0/oauth/access_token
      ?grant_type=fb_exchange_token&client_id={app-id}
      &client_secret={app-secret}&fb_exchange_token={short-token}
    ```

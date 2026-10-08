@@ -5,21 +5,25 @@
 // to add as Supabase Edge Function secrets.
 //
 // Usage:
-//   META_APP_SECRET=xxx META_SHORT_TOKEN=IGQV... node scripts/instagram-login-token.mjs
-//   META_APP_SECRET=xxx META_LONG_TOKEN=IGQV...  node scripts/instagram-login-token.mjs --refresh
+//   META_IG_APP_SECRET=xxx META_SHORT_TOKEN=IGQV... node scripts/instagram-login-token.mjs
+//   META_IG_APP_SECRET=xxx META_LONG_TOKEN=IGQV...  node scripts/instagram-login-token.mjs --refresh
+//
+// META_IG_APP_SECRET is the *Instagram* app secret shown under
+// "API setup with Instagram Login" in the app dashboard (it differs from the
+// Facebook app secret). META_APP_SECRET also works if you only have that one.
 //
 // Where to get META_SHORT_TOKEN:
 //   developers.facebook.com -> your app -> Instagram -> API setup with
 //   Instagram login -> Generate token (as an app admin, for your own account).
 
-const APP_SECRET = process.env.META_APP_SECRET;
+const APP_SECRET = process.env.META_IG_APP_SECRET || process.env.META_APP_SECRET;
 const SHORT = process.env.META_SHORT_TOKEN;
 const LONG = process.env.META_LONG_TOKEN;
 const REFRESH = process.argv.includes('--refresh');
 const API = 'https://graph.instagram.com';
 
 if (!APP_SECRET) {
-  console.error('Missing META_APP_SECRET.');
+  console.error('Missing META_IG_APP_SECRET (the Instagram app secret) or META_APP_SECRET.');
   process.exit(1);
 }
 if (!SHORT && !LONG) {
@@ -65,7 +69,7 @@ async function run() {
   console.log(`META_IG_USER_ID   = ${igUserId}`);
   console.log(`META_ACCESS_TOKEN = ${longToken}`);
   console.log('\nAnd set this too, so the publisher uses the Instagram host:');
-  console.log('META_GRAPH_BASE   = https://graph.instagram.com/v21.0');
+  console.log('META_GRAPH_BASE   = https://graph.instagram.com/v26.0');
   console.log(`\nAccount: @${me.username} (${me.account_type})`);
   console.log('Tip: re-run with --refresh (and META_LONG_TOKEN) before the 60-day expiry.');
 }
