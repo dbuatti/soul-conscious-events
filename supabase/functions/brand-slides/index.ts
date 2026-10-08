@@ -374,7 +374,7 @@ serve(async (req) => {
       n++;
     }
 
-    const { error: batchError } = await supabase
+    const { data: batchRow, error: batchError } = await supabase
       .from("ig_slide_batches")
       .upsert(
         {
@@ -386,14 +386,16 @@ serve(async (req) => {
           event_count: 0,
         },
         { onConflict: "kind,week_start" },
-      );
+      )
+      .select("id")
+      .single();
 
     if (batchError) {
       console.error("Failed to record batch", batchError);
       return jsonResponse({ error: "Failed to record batch" }, 500);
     }
 
-    return jsonResponse({ ok: true, kind, title: coverTitle, format, theme, weekStart: dateFolder, slides: uploaded, caption });
+    return jsonResponse({ ok: true, kind, title: coverTitle, format, theme, weekStart: dateFolder, slides: uploaded, caption, batchId: batchRow?.id });
   } catch (e) {
     console.error(e);
     return jsonResponse({ error: String(e) }, 500);
