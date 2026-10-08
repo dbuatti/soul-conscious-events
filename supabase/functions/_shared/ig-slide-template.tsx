@@ -93,6 +93,7 @@ export async function generateCoverSlideSvg(
   weekStartISO: string,
   weekEndISO: string,
   count: number,
+  location?: string,
 ): Promise<string> {
   const fonts = await loadFonts();
   return await satori(
@@ -107,13 +108,13 @@ export async function generateCoverSlideSvg(
       <div style={{ position: "absolute", top: 80, left: 80, width: 160, height: 6, background: BRAND_PRIMARY, borderRadius: 3 }} />
       <div style={{ position: "absolute", top: 80, right: 80, width: 120, height: 120, borderRadius: 60, background: ACCENT, opacity: 0.35 }} />
       <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 6, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
-        SoulFlow
+        {location ? "SoulFlow" : "SoulFlow"}
       </p>
-      <h1 style={{ fontSize: 92, fontWeight: 800, color: BRAND_TEXT, margin: "24px 0 0 0", textAlign: "center" }}>
-        This Week
+      <h1 style={{ fontSize: location ? 76 : 92, fontWeight: 800, color: BRAND_TEXT, margin: "24px 0 0 0", textAlign: "center" }}>
+        {location || "This Week"}
       </h1>
       <h2 style={{ fontSize: 36, fontWeight: 600, color: BRAND_SUBTEXT, marginTop: 16, marginBottom: 8, textAlign: "center" }}>
-        Conscious Events
+        {location ? "This Week" : "Conscious Events"}
       </h2>
       <p style={{ fontSize: 30, color: BRAND_SUBTEXT, margin: "32px 0 0 0", textAlign: "center" }}>
         {formatDate(weekStartISO)} – {formatDate(weekEndISO)}
@@ -167,7 +168,11 @@ export async function generateEventSlideSvg(ev: EventSlideData): Promise<string>
   );
 }
 
-export async function generateBrandCoverSvg(): Promise<string> {
+export async function generateBrandCoverSvg(
+  eyebrow = "Welcome",
+  title = "SoulFlow",
+  subtitle = "Australia's home for conscious & wellness events",
+): Promise<string> {
   const fonts = await loadFonts();
   return await satori(
     <div
@@ -181,16 +186,16 @@ export async function generateBrandCoverSvg(): Promise<string> {
       <div style={{ position: "absolute", top: 90, left: 90, width: 140, height: 6, background: BRAND_PRIMARY, borderRadius: 3 }} />
       <div style={{ position: "absolute", bottom: 120, right: 90, width: 180, height: 180, borderRadius: 90, background: ACCENT, opacity: 0.3 }} />
       <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 8, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
-        Welcome
+        {eyebrow}
       </p>
-      <h1 style={{ fontSize: 120, fontWeight: 800, color: BRAND_TEXT, margin: "28px 0 0 0" }}>
-        SoulFlow
+      <h1 style={{ fontSize: title.length > 14 ? 84 : 120, fontWeight: 800, color: BRAND_TEXT, margin: "28px 0 0 0", textAlign: "center" }}>
+        {title}
       </h1>
-      <p style={{ fontSize: 38, fontWeight: 600, color: BRAND_SUBTEXT, margin: "24px 0 0 0", textAlign: "center", maxWidth: 820 }}>
-        Australia&apos;s home for conscious &amp; wellness events
+      <p style={{ fontSize: 38, fontWeight: 600, color: BRAND_SUBTEXT, margin: "24px 0 0 0", textAlign: "center", maxWidth: 840 }}>
+        {subtitle}
       </p>
       <p style={{ position: "absolute", bottom: 96, fontSize: 24, color: BRAND_SUBTEXT, opacity: 0.8, margin: 0 }}>
-        Swipe to meet us →
+        Swipe to learn more →
       </p>
     </div>,
     { width: WIDTH, height: HEIGHT, fonts },

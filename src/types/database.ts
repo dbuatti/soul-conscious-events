@@ -70,12 +70,20 @@ export interface SlideBatchSlide {
   publicUrl: string;
 }
 
+export type SlidePostStatus = 'draft' | 'scheduled' | 'posted' | 'failed';
+
 export interface SlideBatch {
   id: string;
-  kind: 'weekly' | 'brand';
+  kind: string;
+  title: string | null;
   week_start: string;
   caption: string;
   slides: SlideBatchSlide[];
   event_count: number;
+  status: SlidePostStatus;
+  scheduled_for: string | null;
+  posted_at: string | null;
+  instagram_media_id: string | null;
+  error: string | null;
   created_at: string;
 }

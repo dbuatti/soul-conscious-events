@@ -1,15 +1,50 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
-import { Copy, Download, ExternalLink, Images, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import {
+  CalendarClock,
+  CheckCircle2,
+  Copy,
+  Download,
+  Images,
+  Loader2,
+  RefreshCw,
+  Send,
+  Sparkles,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { functionErrorMessage } from '@/lib/function-errors';
-import type { SlideBatch } from '@/types/database';
+import { australianStates } from '@/lib/constants';
+import type { SlideBatch, SlidePostStatus } from '@/types/database';
 
 const SLIDE_W = 1080;
 const SLIDE_H = 1350;
+
+const GENERATORS = {
+  weekly: { label: 'National weekly', invoke: 'weekly-ig-slides', body: {} as Record<string, unknown> },
+  state: { label: 'State weekly', invoke: 'weekly-ig-slides', body: {} as Record<string, unknown> },
+  'brand-intro': { label: 'Introduction', invoke: 'brand-slides', body: { theme: 'intro' } },
+  'brand-organisers': { label: 'For organisers', invoke: 'brand-slides', body: { theme: 'organisers' } },
+  'brand-locations': { label: 'Near you', invoke: 'brand-slides', body: { theme: 'locations' } },
+} as const;
+
+const CONTENT_PLAN: { when: string; title: string; kind: string }[] = [
+  { when: 'Monday', title: 'This week across Australia', kind: 'weekly' },
+  { when: 'Wednesday', title: 'Victoria this week', kind: 'state' },
+  { when: 'Friday', title: 'Weekend picks', kind: 'state' },
+  { when: 'Sunday', title: 'Find your next practice', kind: 'brand-locations' },
+  { when: 'Fortnightly', title: 'For organisers — list your event', kind: 'brand-organisers' },
+  { when: 'Monthly', title: 'Meet SoulFlow (intro)', kind: 'brand-intro' },
+];
+
+const STATUS_STYLES: Record<SlidePostStatus, string> = {
+  draft: 'bg-muted text-muted-foreground',
+  scheduled: 'bg-blue-500/15 text-blue-600',
+  posted: 'bg-green-500/15 text-green-600',
+  failed: 'bg-destructive/15 text-destructive',
+};
 
 const sectionTitle = (Icon: React.ElementType, title: string, sub?: string) => (
   <div className="flex items-baseline gap-3 mb-4">
@@ -19,10 +54,9 @@ const sectionTitle = (Icon: React.ElementType, title: string, sub?: string) => (
   </div>
 );
 
-// The Edge Function stores slides as SVG (resvg's WASM rasteriser blows the Edge
-// resource budget). The browser rasterises an SVG to a 1080x1350 PNG for free,
-// using its own renderer, so posting to Instagram still gets a PNG.
-async function svgUrlToPngBlob(url: string): Promise<Blob> {
+// Edge stores SVG (resvg's WASM rasteriser blows the Edge budget). The browser
+// renders it to PNG or JPEG for free, so posting/downloading still works.
+async function svgUrlToBlob(url: string, type: 'image/png' | 'image/jpeg'): Promise<Blob> {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Could not fetch slide (${response.status})`);
   const svgText = await response.text();
@@ -42,8 +76,10 @@ async function svgUrlToPngBlob(url: string): Promise<Blob> {
     ctx.fillStyle = '#F8F1EA';
     ctx.fillRect(0, 0, SLIDE_W, SLIDE_H);
     ctx.drawImage(image, 0, 0, SLIDE_W, SLIDE_H);
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
-    if (!blob) throw new Error('Could not create the PNG');
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, type, type === 'image/jpeg' ? 0.92 : undefined),
+    );
+    if (!blob) throw new Error('Could not create the image');
     return blob;
   } finally {
     URL.revokeObjectURL(objectUrl);
@@ -61,18 +97,35 @@ function triggerDownload(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(href), 1000);
 }
 
-const SlideBatchCard: React.FC<{
+const StatusBadge: React.FC<{ status: SlidePostStatus }> = ({ status }) => (
+  <span className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${STATUS_STYLES[status] ?? STATUS_STYLES.draft}`}>
+    {status}
+  </span>
+);
+
+const BatchCard: React.FC<{
   batch: SlideBatch;
   onCopy: (caption: string) => void;
-}> = ({ batch, onCopy }) => {
-  const [busy, setBusy] = useState<'all' | number | null>(null);
-  const prefix = batch.kind === 'brand' ? 'soulflow-intro' : `soulflow-${batch.week_start}`;
+  onChanged: () => void;
+}> = ({ batch, onCopy, onChanged }) => {
+  const [busy, setBusy] = useState<'all' | 'publish' | number | null>(null);
+  const [scheduleFor, setScheduleFor] = useState(batch.scheduled_for?.slice(0, 16) ?? '');
+  const prefix = batch.kind;
+
+  const update = async (patch: Partial<SlideBatch>) => {
+    const { error } = await supabase.from('ig_slide_batches').update(patch).eq('id', batch.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    onChanged();
+  };
 
   const downloadSlide = async (index: number) => {
     setBusy(index);
     try {
-      const blob = await svgUrlToPngBlob(batch.slides[index].publicUrl);
-      triggerDownload(blob, `${prefix}-slide-${String(index + 1).padStart(2, '0')}.png`);
+      const blob = await svgUrlToBlob(batch.slides[index].publicUrl, 'image/png');
+      triggerDownload(blob, `${prefix}-${String(index + 1).padStart(2, '0')}.png`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
     } finally {
@@ -85,9 +138,8 @@ const SlideBatchCard: React.FC<{
     const id = toast.loading('Preparing PNGs…');
     try {
       for (let i = 0; i < batch.slides.length; i++) {
-        const blob = await svgUrlToPngBlob(batch.slides[i].publicUrl);
-        triggerDownload(blob, `${prefix}-slide-${String(i + 1).padStart(2, '0')}.png`);
-        // Small gap so the browser doesn't drop rapid consecutive downloads.
+        const blob = await svgUrlToBlob(batch.slides[i].publicUrl, 'image/png');
+        triggerDownload(blob, `${prefix}-${String(i + 1).padStart(2, '0')}.png`);
         await new Promise((resolve) => setTimeout(resolve, 400));
       }
       toast.success(`${batch.slides.length} slides downloaded.`, { id });
@@ -98,76 +150,138 @@ const SlideBatchCard: React.FC<{
     }
   };
 
+  const publish = async () => {
+    setBusy('publish');
+    const id = toast.loading('Publishing to Instagram…');
+    try {
+      const urls: string[] = [];
+      for (let i = 0; i < batch.slides.length; i++) {
+        const blob = await svgUrlToBlob(batch.slides[i].publicUrl, 'image/jpeg');
+        const path = `${batch.week_start}/${batch.kind}/publish/slide-${String(i + 1).padStart(2, '0')}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('ig-weekly-slides')
+          .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+        if (uploadError) throw uploadError;
+        urls.push(supabase.storage.from('ig-weekly-slides').getPublicUrl(path).data.publicUrl);
+      }
+      const { data, error } = await supabase.functions.invoke('publish-instagram', {
+        body: { imageUrls: urls, caption: batch.caption, batchId: batch.id },
+      });
+      if (error) throw new Error(await functionErrorMessage(error));
+      if (data?.error) throw new Error(data.error);
+      toast.success('Posted to Instagram.', { id });
+      onChanged();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error), { id });
+      onChanged();
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
-    <div className="organic-card p-6 space-y-6">
+    <div className="organic-card p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="font-heading text-lg text-foreground">
-            {batch.kind === 'brand'
-              ? 'Introduction carousel'
-              : `Week of ${format(parseISO(batch.week_start), 'd MMM yyyy')}`}
-          </p>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <p className="font-heading text-lg text-foreground">{batch.title || batch.kind}</p>
+            <StatusBadge status={batch.status} />
+          </div>
           <p className="text-xs text-muted-foreground">
-            {batch.slides.length} slide{batch.slides.length === 1 ? '' : 's'}
-            {batch.kind === 'brand' ? '' : ` · ${batch.event_count} event${batch.event_count === 1 ? '' : 's'}`}
+            {batch.slides.length} slides
+            {batch.event_count > 0 ? ` · ${batch.event_count} event${batch.event_count === 1 ? '' : 's'}` : ''}
+            {batch.status === 'posted' && batch.posted_at
+              ? ` · posted ${format(parseISO(batch.posted_at), 'd MMM, h:mma')}`
+              : ''}
+            {batch.status === 'scheduled' && batch.scheduled_for
+              ? ` · for ${format(parseISO(batch.scheduled_for), 'd MMM, h:mma')}`
+              : ''}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => onCopy(batch.caption)} className="rounded-xl">
-            <Copy className="h-4 w-4 mr-2" /> Copy caption
-          </Button>
-          <Button size="sm" onClick={downloadAll} disabled={busy !== null} className="rounded-xl">
-            {busy === 'all' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-            Download all PNGs
-          </Button>
-        </div>
+        <StatusBadge status={batch.status} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      {batch.error && <p className="text-xs text-destructive">Last error: {batch.error}</p>}
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {batch.slides.map((slide, i) => (
-          <div key={slide.path} className="group relative">
-            <a href={slide.publicUrl} target="_blank" rel="noreferrer" className="block">
-              <img
-                src={slide.publicUrl}
-                alt={`Slide ${i + 1}`}
-                className="aspect-[4/5] w-full rounded-2xl border border-border object-cover"
-              />
-              <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
-                {i + 1}
-              </span>
-            </a>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => downloadSlide(i)}
-              disabled={busy !== null}
-              className="mt-2 w-full rounded-xl"
-            >
-              {busy === i ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-              PNG
-            </Button>
-          </div>
+          <button
+            key={slide.path}
+            type="button"
+            onClick={() => downloadSlide(i)}
+            disabled={busy !== null}
+            className="group relative rounded-2xl border border-border overflow-hidden"
+            title="Download this slide as PNG"
+          >
+            <img src={slide.publicUrl} alt={`Slide ${i + 1}`} className="aspect-[4/5] w-full object-cover" />
+            <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{i + 1}</span>
+            <span className="absolute inset-0 hidden items-center justify-center bg-black/40 group-hover:flex">
+              {busy === i ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : <Download className="h-5 w-5 text-white" />}
+            </span>
+          </button>
         ))}
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-foreground">Caption</p>
-          <Button variant="ghost" size="sm" onClick={() => onCopy(batch.caption)} className="rounded-xl">
-            <Copy className="h-4 w-4 mr-2" /> Copy
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => onCopy(batch.caption)} className="rounded-xl">
+          <Copy className="h-4 w-4 mr-2" /> Copy caption
+        </Button>
+        <Button variant="outline" size="sm" onClick={downloadAll} disabled={busy !== null} className="rounded-xl">
+          {busy === 'all' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+          Download all PNGs
+        </Button>
+        <Button size="sm" onClick={publish} disabled={busy !== null || batch.status === 'posted'} className="rounded-xl">
+          {busy === 'publish' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+          {batch.status === 'posted' ? 'Posted' : 'Post to Instagram'}
+        </Button>
+        {batch.status !== 'posted' && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => update({ status: 'posted', posted_at: new Date().toISOString() })}
+            disabled={busy !== null}
+            className="rounded-xl"
+          >
+            <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as posted
           </Button>
-        </div>
-        <pre className="whitespace-pre-wrap rounded-2xl bg-secondary/40 p-4 text-sm text-foreground font-sans">
-          {batch.caption}
-        </pre>
+        )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button variant="ghost" size="sm" asChild className="rounded-xl">
-          <a href={batch.slides[0]?.publicUrl} target="_blank" rel="noreferrer">
-            <ExternalLink className="h-4 w-4 mr-2" /> Open first slide
-          </a>
+      <div className="flex flex-wrap items-end gap-2 border-t border-border pt-4">
+        <label className="text-xs text-muted-foreground flex flex-col gap-1">
+          Schedule
+          <input
+            type="datetime-local"
+            value={scheduleFor}
+            onChange={(e) => setScheduleFor(e.target.value)}
+            className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground"
+          />
+        </label>
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-xl"
+          disabled={!scheduleFor || busy !== null}
+          onClick={() =>
+            update({
+              status: 'scheduled',
+              scheduled_for: scheduleFor ? new Date(scheduleFor).toISOString() : null,
+            })
+          }
+        >
+          <CalendarClock className="h-4 w-4 mr-2" /> Save schedule
         </Button>
+        {batch.status !== 'draft' && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-xl"
+            disabled={busy !== null}
+            onClick={() => update({ status: 'draft', scheduled_for: null, posted_at: null })}
+          >
+            Reset
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -176,19 +290,20 @@ const SlideBatchCard: React.FC<{
 const WeeklySlides: React.FC = () => {
   const [batches, setBatches] = useState<SlideBatch[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState<'weekly' | 'brand' | null>(null);
+  const [generating, setGenerating] = useState<string | null>(null);
+  const [state, setState] = useState('VIC');
 
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('ig_slide_batches')
-      .select('id,kind,week_start,caption,slides,event_count,created_at')
+      .select('*')
       .order('week_start', { ascending: false })
-      .limit(30);
+      .limit(60);
 
     if (error) {
       console.error('Error fetching slide batches:', error);
-      toast.error('Could not load the slide batches.');
+      toast.error('Could not load slide batches.');
     } else {
       setBatches((data ?? []) as SlideBatch[]);
     }
@@ -199,25 +314,19 @@ const WeeklySlides: React.FC = () => {
     load();
   }, [load]);
 
-  const generate = async (kind: 'weekly' | 'brand') => {
-    setGenerating(kind);
-    const id = toast.loading(kind === 'brand' ? 'Building the intro carousel…' : 'Building this week’s carousel…');
+  const generate = async (key: keyof typeof GENERATORS, body: Record<string, unknown> = {}) => {
+    const gen = GENERATORS[key];
+    setGenerating(key);
+    const id = toast.loading('Building carousel…');
     try {
-      const { data, error } = await supabase.functions.invoke(
-        kind === 'brand' ? 'brand-slides' : 'weekly-ig-slides',
-        { body: {} },
-      );
+      const { data, error } = await supabase.functions.invoke(gen.invoke, { body: { ...gen.body, ...body } });
       if (error) throw new Error(await functionErrorMessage(error));
       if (data?.error) throw new Error(data.error);
       const count = data?.slides?.length ?? 0;
-      toast.success(`Carousel built — ${count} slide${count === 1 ? '' : 's'}.`, { id });
+      toast.success(`Built ${count} slide${count === 1 ? '' : 's'}.`, { id });
       await load();
-    } catch (error: unknown) {
-      console.error('Error generating slides:', error);
-      toast.error(
-        `Could not build the carousel: ${error instanceof Error ? error.message : String(error)}`,
-        { id },
-      );
+    } catch (error) {
+      toast.error(`Could not build: ${error instanceof Error ? error.message : String(error)}`, { id });
     } finally {
       setGenerating(null);
     }
@@ -228,166 +337,157 @@ const WeeklySlides: React.FC = () => {
       await navigator.clipboard.writeText(caption);
       toast.success('Caption copied.');
     } catch {
-      toast.error('Could not copy — select the text and copy it manually.');
+      toast.error('Could not copy.');
     }
   };
 
-  const weekly = batches.filter((b) => batchKind(b) === 'weekly');
-  const brand = batches.filter((b) => b.kind === 'brand');
+  const eventBatches = useMemo(
+    () => batches.filter((b) => b.kind === 'weekly' || b.kind.startsWith('state-')),
+    [batches],
+  );
+
+  const scheduled = useMemo(() => batches.filter((b) => b.status === 'scheduled').length, [batches]);
 
   return (
     <div className="space-y-12">
-      <section className="space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          {sectionTitle(
-            Images,
-            'Weekly Instagram carousel',
-            batches.length && weekly[0]
-              ? `Latest built ${format(parseISO(weekly[0].created_at), 'd MMM yyyy, h:mma')}`
-              : undefined,
-          )}
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={load} disabled={loading} className="rounded-xl">
-              <RefreshCw className="h-4 w-4 mr-2" /> Refresh
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => generate('weekly')}
-              disabled={generating !== null}
-              className="rounded-xl"
-            >
-              {generating === 'weekly' ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Images className="h-4 w-4 mr-2" />
-              )}
-              {weekly.length ? 'Rebuild this week' : 'Build this week’s'}
-            </Button>
-          </div>
+      <div className="organic-card p-5 flex flex-wrap items-center gap-6">
+        <div>
+          <p className="text-3xl font-heading font-semibold text-foreground">{batches.length}</p>
+          <p className="text-xs text-muted-foreground">carousels built</p>
         </div>
+        <div>
+          <p className="text-3xl font-heading font-semibold text-green-600">{scheduled}</p>
+          <p className="text-xs text-muted-foreground">scheduled</p>
+        </div>
+        <div>
+          <p className="text-3xl font-heading font-semibold text-foreground">{batches.filter((b) => b.status === 'posted').length}</p>
+          <p className="text-xs text-muted-foreground">posted</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={load} disabled={loading} className="rounded-xl ml-auto">
+          <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+        </Button>
+      </div>
 
-        <p className="text-sm text-muted-foreground -mt-2 max-w-2xl">
-          Built from events approved for the next seven days. Download the PNGs, copy the caption, and post them to
-          Instagram — nothing is published automatically.
-        </p>
-
-        {loading ? (
-          <div className="organic-card p-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <Skeleton className="aspect-[4/5] rounded-2xl" />
-            <Skeleton className="aspect-[4/5] rounded-2xl" />
-            <Skeleton className="aspect-[4/5] rounded-2xl" />
-          </div>
-        ) : weekly.length === 0 ? (
-          <div className="organic-card p-10 text-center">
-            <Images className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="font-heading text-lg text-foreground">No carousel yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Use “Build this week’s” to generate one from the approved events.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <SlideBatchCard batch={weekly[0]} onCopy={copyCaption} />
-            {weekly.length > 1 && (
-              <details className="organic-card p-4">
-                <summary className="cursor-pointer text-sm font-medium text-foreground">
-                  Earlier weeks ({weekly.length - 1})
-                </summary>
-                <div className="mt-4 flex flex-col gap-2">
-                  {weekly.slice(1).map((batch) => (
-                    <div
-                      key={batch.id}
-                      className="flex items-center justify-between gap-4 rounded-2xl border border-border px-4 py-3"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          Week of {format(parseISO(batch.week_start), 'd MMM yyyy')}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {batch.slides.length} slide{batch.slides.length === 1 ? '' : 's'} · {batch.event_count} event
-                          {batch.event_count === 1 ? '' : 's'}
-                        </p>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={() => copyCaption(batch.caption)} className="rounded-xl">
-                        <Copy className="h-4 w-4 mr-2" /> Caption
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </details>
-            )}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          {sectionTitle(Sparkles, 'Brand introduction carousel', 'Who we are · what we do · join us')}
+      {/* Event carousels */}
+      <section className="space-y-5">
+        {sectionTitle(Images, 'Event carousels', 'Built from approved events for the next 7 days')}
+        <div className="flex flex-wrap items-end gap-2">
+          <Button
+            size="sm"
+            className="rounded-xl"
+            onClick={() => generate('weekly')}
+            disabled={generating !== null}
+          >
+            {generating === 'weekly' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Images className="h-4 w-4 mr-2" />}
+            Build national weekly
+          </Button>
+          <label className="text-xs text-muted-foreground flex flex-col gap-1">
+            State
+            <select
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground"
+            >
+              {australianStates.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => generate('brand')}
-            disabled={generating !== null}
             className="rounded-xl"
+            onClick={() => generate('state', { state })}
+            disabled={generating !== null}
           >
-            {generating === 'brand' ? (
+            {generating === 'state' ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Images className="h-4 w-4 mr-2" />
             )}
-            {brand.length ? 'Rebuild intro' : 'Build intro carousel'}
+            Build {state} weekly
           </Button>
         </div>
-
-        <p className="text-sm text-muted-foreground -mt-2 max-w-2xl">
-          A ready-to-post welcome carousel for a fresh account: meet SoulFlow, what we stand for, what you can do here,
-          and how to join in.
-        </p>
-
-        {loading ? (
-          <Skeleton className="organic-card h-64 w-full rounded-2xl" />
-        ) : brand.length === 0 ? (
-          <div className="organic-card p-10 text-center">
-            <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="font-heading text-lg text-foreground">No intro carousel yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Use “Build intro carousel” to create your first welcome post.
-            </p>
-          </div>
+        {eventBatches.length === 0 && !loading ? (
+          <p className="text-sm text-muted-foreground">No event carousels yet.</p>
         ) : (
           <div className="space-y-4">
-            <SlideBatchCard batch={brand[0]} onCopy={copyCaption} />
-            {brand.length > 1 && (
-              <details className="organic-card p-4">
-                <summary className="cursor-pointer text-sm font-medium text-foreground">
-                  Earlier versions ({brand.length - 1})
-                </summary>
-                <div className="mt-4 flex flex-col gap-2">
-                  {brand.slice(1).map((batch) => (
-                    <div
-                      key={batch.id}
-                      className="flex items-center justify-between gap-4 rounded-2xl border border-border px-4 py-3"
-                    >
-                      <p className="text-sm text-muted-foreground">
-                        Built {format(parseISO(batch.created_at), 'd MMM yyyy, h:mma')}
-                      </p>
-                      <Button variant="ghost" size="sm" onClick={() => copyCaption(batch.caption)} className="rounded-xl">
-                        <Copy className="h-4 w-4 mr-2" /> Caption
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </details>
-            )}
+            {eventBatches.map((batch) => (
+              <BatchCard key={batch.id} batch={batch} onCopy={copyCaption} onChanged={load} />
+            ))}
           </div>
         )}
       </section>
+
+      {/* Brand carousels */}
+      <section className="space-y-5">
+        {sectionTitle(Sparkles, 'Brand carousels', 'Evergreen content — meet us, list an event, find us near you')}
+        <div className="flex flex-wrap gap-2">
+          {(['brand-intro', 'brand-organisers', 'brand-locations'] as const).map((key) => (
+            <Button
+              key={key}
+              size="sm"
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => generate(key)}
+              disabled={generating !== null}
+            >
+              {generating === key ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4 mr-2" />
+              )}
+              Build {GENERATORS[key].label}
+            </Button>
+          ))}
+        </div>
+        {batches.filter((b) => b.kind.startsWith('brand-')).length === 0 && !loading ? (
+          <p className="text-sm text-muted-foreground">No brand carousels yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {batches
+              .filter((b) => b.kind.startsWith('brand-'))
+              .map((batch) => (
+                <BatchCard key={batch.id} batch={batch} onCopy={copyCaption} onChanged={load} />
+              ))}
+          </div>
+        )}
+      </section>
+
+      {/* Content plan */}
+      <section className="space-y-5">
+        {sectionTitle(CalendarClock, 'Suggested content plan', 'A starting rhythm — adjust to taste')}
+        <div className="organic-card p-4">
+          <div className="flex flex-col divide-y divide-border">
+            {CONTENT_PLAN.map((item) => (
+              <div key={item.title} className="flex items-center justify-between gap-4 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="w-24 text-xs font-semibold uppercase tracking-wide text-primary">{item.when}</span>
+                  <span className="text-sm text-foreground">{item.title}</span>
+                </div>
+                <span className="text-xs text-muted-foreground">{GENERATORS[item.kind as keyof typeof GENERATORS]?.label ?? item.kind}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Automation note: once Instagram is connected (Meta secrets), scheduled carousels can publish themselves via the
+          daily automation workflow.
+        </p>
+      </section>
+
+      {loading && (
+        <div className="organic-card p-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Skeleton className="aspect-[4/5] rounded-2xl" />
+          <Skeleton className="aspect-[4/5] rounded-2xl" />
+          <Skeleton className="aspect-[4/5] rounded-2xl" />
+          <Skeleton className="aspect-[4/5] rounded-2xl" />
+        </div>
+      )}
     </div>
   );
 };
-
-function batchKind(batch: SlideBatch): 'weekly' | 'brand' {
-  return batch.kind === 'brand' ? 'brand' : 'weekly';
-}
 
 export default WeeklySlides;
