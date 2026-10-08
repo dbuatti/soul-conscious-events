@@ -106,6 +106,15 @@ async function svgUrlToBlob(url: string, type: 'image/png' | 'image/jpeg'): Prom
   }
 }
 
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Could not read the image'));
+    reader.readAsDataURL(blob);
+  });
+}
+
 function triggerDownload(blob: Blob, filename: string) {
   const href = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
@@ -175,18 +184,13 @@ const BatchCard: React.FC<{
     setBusy('publish');
     const id = toast.loading('Publishing to Instagram…');
     try {
-      const urls: string[] = [];
+      const images: string[] = [];
       for (let i = 0; i < batch.slides.length; i++) {
         const blob = await svgUrlToBlob(batch.slides[i].publicUrl, 'image/jpeg');
-        const path = `${batch.week_start}/${batch.kind}/publish/slide-${String(i + 1).padStart(2, '0')}.jpg`;
-        const { error: uploadError } = await supabase.storage
-          .from('ig-weekly-slides')
-          .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
-        if (uploadError) throw uploadError;
-        urls.push(supabase.storage.from('ig-weekly-slides').getPublicUrl(path).data.publicUrl);
+        images.push(await blobToDataUrl(blob));
       }
       const { data, error } = await supabase.functions.invoke('publish-instagram', {
-        body: { imageUrls: urls, caption: batch.caption, batchId: batch.id },
+        body: { images, caption: batch.caption, batchId: batch.id },
       });
       if (error) throw new Error(await functionErrorMessage(error));
       if (data?.error) throw new Error(data.error);

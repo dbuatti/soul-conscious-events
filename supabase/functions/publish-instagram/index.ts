@@ -14,14 +14,26 @@
 //                         Set to "https://graph.instagram.com/v26.0" for the
 //                         Instagram Login path (no Facebook Page required).
 //
-// Input: { imageUrls: string[], caption: string, batchId?: string }
-// The imageUrls must be publicly reachable JPEG/PNG (the caller uploads them;
-// SVGs are not accepted by Instagram).
+// Accepted input forms:
+//   JSON  { imageUrls: string[], caption?: string, batchId?: string }
+//   JSON  { images: string[] /* data:image/jpeg;base64,... */, caption, batchId }
+//
+// When `images` (data URLs) are supplied, the function uploads them to the
+// public bucket using the service role, so the browser never needs storage
+// permissions. Instagram requires publicly reachable JPEG/PNG URLs.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
 
 const GRAPH = Deno.env.get("META_GRAPH_BASE") ?? "https://graph.facebook.com/v26.0";
+const BUCKET = "ig-weekly-slides";
+
+interface BatchRow {
+  caption?: string;
+  week_start?: string;
+  kind?: string;
+  slides?: { publicUrl: string }[];
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -52,29 +64,57 @@ serve(async (req) => {
     );
   }
 
-  const supabase = isService
-    ? createClient(Deno.env.get("SUPABASE_URL")!, serviceKey, { auth: { persistSession: false } })
-    : null;
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey, {
+    auth: { persistSession: false },
+  });
 
   let batchId: string | undefined;
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     batchId = body?.batchId;
     let imageUrls: string[] = Array.isArray(body?.imageUrls) ? body.imageUrls : [];
     let caption: string = body?.caption ?? "";
+    const inlineImages: string[] = Array.isArray(body?.images) ? body.images : [];
 
-    // If a batchId is given without imageUrls, fall back to the batch's own
-    // slides (only works when they are already raster images).
-    if (batchId && imageUrls.length === 0 && supabase) {
-      const { data: batch } = await supabase
+    // Resolve the batch up-front for its caption and storage folder.
+    let batch: BatchRow | null = null;
+    if (batchId) {
+      const { data } = await admin
         .from("ig_slide_batches")
-        .select("caption,slides")
+        .select("caption,week_start,kind,slides")
         .eq("id", batchId)
         .maybeSingle();
-      if (!batch) return jsonResponse({ error: "Batch not found" }, 404);
-      imageUrls = (batch.slides as { publicUrl: string }[]).map((s) => s.publicUrl);
-      caption = caption || batch.caption;
+      batch = (data ?? null) as BatchRow | null;
     }
+
+    // Upload any inline (base64 data URL) images using the service role, so the
+    // browser never needs storage write access.
+    if (inlineImages.length > 0) {
+      const folder = batch?.week_start && batch?.kind
+        ? `${batch.week_start}/${batch.kind}/publish`
+        : `${new Date().toISOString().slice(0, 10)}/manual`;
+      for (let i = 0; i < inlineImages.length; i++) {
+        const match = /^data:([^;]+);base64,(.*)$/s.exec(inlineImages[i]);
+        if (!match) throw new Error("Invalid image data");
+        const [, mime, b64] = match;
+        const binary = atob(b64);
+        const bytes = new Uint8Array(binary.length);
+        for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
+        const path = `${folder}/slide-${String(i + 1).padStart(2, "0")}.jpg`;
+        const { error } = await admin.storage
+          .from("ig-weekly-slides")
+          .upload(path, bytes, { contentType: mime || "image/jpeg", upsert: true });
+        if (error) throw error;
+        imageUrls.push(admin.storage.from("ig-weekly-slides").getPublicUrl(path).data.publicUrl);
+      }
+    }
+
+    // Fall back to the batch's own slides (only works when they are already
+    // raster images).
+    if (imageUrls.length === 0 && batch?.slides) {
+      imageUrls = batch.slides.map((s) => s.publicUrl);
+    }
+    if (!caption && batch?.caption) caption = batch.caption;
 
     if (imageUrls.length === 0) return jsonResponse({ error: "No images to publish" }, 400);
     if (imageUrls.length > 10) return jsonResponse({ error: "Instagram allows at most 10 carousel slides" }, 400);
@@ -83,8 +123,8 @@ serve(async (req) => {
       ? await publishSingle(igUserId, accessToken, imageUrls[0], caption)
       : await publishCarousel(igUserId, accessToken, imageUrls, caption);
 
-    if (batchId && supabase) {
-      await supabase
+    if (batchId) {
+      await admin
         .from("ig_slide_batches")
         .update({ status: "posted", posted_at: new Date().toISOString(), instagram_media_id: mediaId, error: null })
         .eq("id", batchId);
@@ -93,8 +133,8 @@ serve(async (req) => {
     return jsonResponse({ ok: true, mediaId });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    if (batchId && supabase) {
-      await supabase.from("ig_slide_batches").update({ status: "failed", error: message }).eq("id", batchId);
+    if (batchId) {
+      await admin.from("ig_slide_batches").update({ status: "failed", error: message }).eq("id", batchId);
     }
     console.error("publish-instagram error:", message);
     return jsonResponse({ error: message }, 502);
