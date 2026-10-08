@@ -139,6 +139,78 @@ export async function generateCoverSlideSvg(
   );
 }
 
+export async function generateIndexSlideSvg(
+  events: EventSlideData[],
+  format: SlideFormat = "feed",
+): Promise<string> {
+  const fonts = await loadFonts();
+  const { width, height } = DIMS[format];
+  const padX = 80;
+  const gap = 24;
+  const cols = 2;
+  const cardW = Math.floor((width - padX * 2 - gap * (cols - 1)) / cols);
+
+  return await satori(
+    <div style={{ ...baseStyle(format), background: BRAND_BG, padding: "90px 80px 72px 80px" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, width, height: 8, background: BRAND_PRIMARY }} />
+      <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 5, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
+        What's on
+      </p>
+      <h2 style={{ fontSize: 64, fontWeight: 800, color: BRAND_TEXT, margin: "14px 0 40px 0" }}>
+        Inside this carousel
+      </h2>
+      <div style={{ display: "flex", flexWrap: "wrap", gap }}>
+        {events.map((ev, i) => (
+          <div
+            key={ev.id}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: cardW,
+              height: 196,
+              background: "#FFFFFF",
+              borderRadius: 18,
+              border: "1px solid rgba(75,59,43,0.12)",
+              padding: 22,
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 46,
+                  height: 46,
+                  borderRadius: 23,
+                  background: BRAND_PRIMARY,
+                  color: "#FFFFFF",
+                  fontSize: 22,
+                  fontWeight: 800,
+                }}
+              >
+                {i + 3}
+              </span>
+              <span style={{ fontSize: 20, fontWeight: 600, color: BRAND_PRIMARY }}>{formatDate(ev.event_date)}</span>
+            </div>
+            <p style={{ fontSize: 27, fontWeight: 700, color: BRAND_TEXT, margin: "14px 0 0 0", lineHeight: 1.2 }}>
+              {ev.event_name || "Event"}
+            </p>
+            {ev.place_name ? (
+              <p style={{ fontSize: 19, color: BRAND_SUBTEXT, margin: "8px 0 0 0" }}>{ev.place_name}</p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      <p style={{ position: "absolute", bottom: 40, fontSize: 22, color: BRAND_SUBTEXT, opacity: 0.75, margin: 0 }}>
+        Swipe for details →
+      </p>
+    </div>,
+    { width, height, fonts },
+  );
+}
+
 export async function generateEventSlideSvg(ev: EventSlideData): Promise<string> {
   const fonts = await loadFonts();
   const metaParts = [formatDate(ev.event_date), formatTime(ev.event_time)].filter(Boolean).join(" · ");

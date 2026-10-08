@@ -153,8 +153,34 @@ async function graph(path: string, params: Record<string, string>, token: string
   return json as { id: string };
 }
 
+// Instagram builds each media container asynchronously. Publishing before a
+// container reaches FINISHED causes "Media ID is not available" / "Media in
+// creation", so poll status_code first.
+async function containerStatus(containerId: string, token: string): Promise<string> {
+  const res = await fetch(`${GRAPH}/${containerId}?fields=status_code&access_token=${encodeURIComponent(token)}`);
+  const json = await res.json().catch(() => ({}));
+  if (json?.error) throw new Error(json.error.message);
+  return (json?.status_code as string) ?? "UNKNOWN";
+}
+
+async function waitForContainer(containerId: string, token: string, timeoutMs = 60000) {
+  const start = Date.now();
+  for (;;) {
+    const status = await containerStatus(containerId, token);
+    if (status === "FINISHED") return;
+    if (status === "ERROR" || status === "EXPIRED") {
+      throw new Error(`Instagram could not process the media (container ${status.toLowerCase()})`);
+    }
+    if (Date.now() - start > timeoutMs) {
+      throw new Error(`Timed out waiting for Instagram to process the media (last status: ${status})`);
+    }
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+}
+
 async function publishSingle(igUserId: string, token: string, imageUrl: string, caption: string) {
   const container = await graph(`${igUserId}/media`, { image_url: imageUrl, caption }, token);
+  await waitForContainer(container.id, token);
   return (await graph(`${igUserId}/media_publish`, { creation_id: container.id }, token)).id;
 }
 
@@ -164,11 +190,15 @@ async function publishCarousel(igUserId: string, token: string, imageUrls: strin
     const child = await graph(`${igUserId}/media`, { image_url: url, is_carousel_item: "true" }, token);
     children.push(child.id);
   }
+  for (const childId of children) {
+    await waitForContainer(childId, token);
+  }
   const parent = await graph(
     `${igUserId}/media`,
     { media_type: "CAROUSEL", children: children.join(","), caption },
     token,
   );
+  await waitForContainer(parent.id, token);
   return (await graph(`${igUserId}/media_publish`, { creation_id: parent.id }, token)).id;
 }
 

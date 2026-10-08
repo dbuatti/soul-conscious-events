@@ -11,6 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
 import {
   generateCoverSlideSvg,
+  generateIndexSlideSvg,
   generateEventSlideSvg,
   type EventSlideData,
 } from "../_shared/ig-slide-template.tsx";
@@ -92,7 +93,7 @@ serve(async (req) => {
       .gte("event_date", dateFolder)
       .lt("event_date", isoDate(weekEnd))
       .order("event_date", { ascending: true })
-      .limit(9);
+      .limit(8);
 
     if (state) query = query.eq("geographical_state", state);
 
@@ -127,7 +128,14 @@ serve(async (req) => {
     );
     await upload(`${dateFolder}/${kind}/slide-01-cover.svg`, coverSvg);
 
-    let n = 2;
+    // Index slide (slide 2): a numbered overview of every event, so viewers can
+    // see the whole lineup up-front and swipe straight to the one they want.
+    if (selected.length > 0) {
+      const indexSvg = await generateIndexSlideSvg(selected);
+      await upload(`${dateFolder}/${kind}/slide-02-index.svg`, indexSvg);
+    }
+
+    let n = 3;
     for (const ev of selected) {
       let svg: string;
       try {
@@ -150,12 +158,14 @@ serve(async (req) => {
     lines.push("", "Link in bio.");
     const caption = lines.join("\n");
 
-    const { error: batchError } = await supabase
+    const { data: batchRow, error: batchError } = await supabase
       .from("ig_slide_batches")
       .upsert(
         { kind, title, week_start: dateFolder, caption, slides: uploaded, event_count: selected.length },
         { onConflict: "kind,week_start" },
-      );
+      )
+      .select("id")
+      .single();
 
     if (batchError) {
       console.error("Failed to record batch", batchError);
@@ -170,6 +180,7 @@ serve(async (req) => {
       eventCount: selected.length,
       slides: uploaded,
       caption,
+      batchId: batchRow?.id,
     });
   } catch (e) {
     console.error(e);
