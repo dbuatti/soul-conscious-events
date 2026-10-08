@@ -241,9 +241,20 @@ export async function generateEventSlideSvg(ev: EventSlideData): Promise<string>
           src={ev.image_url}
           width={WIDTH}
           height={HEIGHT}
-          style={{ position: "absolute", top: 0, left: 0, width: WIDTH, height: HEIGHT, objectFit: "cover", opacity: 0.18 }}
+          style={{ position: "absolute", top: 0, left: 0, width: WIDTH, height: HEIGHT, objectFit: "cover" }}
         />
       ) : null}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: WIDTH,
+          height: HEIGHT,
+          background:
+            "linear-gradient(180deg, rgba(248,241,234,0.97) 0%, rgba(248,241,234,0.84) 28%, rgba(248,241,234,0.84) 60%, rgba(248,241,234,0.99) 100%)",
+        }}
+      />
       <div style={{ position: "absolute", top: 0, left: 0, width: WIDTH, height: 8, background: BRAND_PRIMARY }} />
       <Logo top={56} left={72} size={56} />
       <div style={{ display: "flex", flexDirection: "column", padding: "96px 80px", flexGrow: 1, justifyContent: "center" }}>
