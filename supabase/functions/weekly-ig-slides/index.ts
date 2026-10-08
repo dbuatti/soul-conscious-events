@@ -13,6 +13,7 @@ import {
   generateCoverSlideSvg,
   generateIndexSlideSvg,
   generateEventSlideSvg,
+  generateStorySlideSvg,
   type EventSlideData,
 } from "../_shared/ig-slide-template.tsx";
 
@@ -129,11 +130,23 @@ serve(async (req) => {
       label ?? undefined,
       format,
     );
-    await upload(`${dateFolder}/${kind}/slide-01-cover.svg`, coverSvg);
 
     if (format === "story") {
-      // Stories are single-image only — the 9:16 cover is the whole story.
+      // Stories are single-image only. Prefer a rich summary of the week's events
+      // (with a "see the feed" nudge — the API can't add link stickers), and fall
+      // back to the plain cover when there's nothing on.
+      const storySvg =
+        selected.length > 0
+          ? await generateStorySlideSvg(
+              selected,
+              label ?? undefined,
+              weekStart.toISOString(),
+              addDays(weekStart, 6).toISOString(),
+            )
+          : coverSvg;
+      await upload(`${dateFolder}/${kind}/slide-01-story.svg`, storySvg);
     } else {
+      await upload(`${dateFolder}/${kind}/slide-01-cover.svg`, coverSvg);
       // Index slide (slide 2): a numbered overview of every event, so viewers
       // can see the whole lineup up-front and swipe straight to the one they want.
       if (selected.length > 0) {
