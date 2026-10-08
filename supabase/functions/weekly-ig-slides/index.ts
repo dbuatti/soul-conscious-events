@@ -111,12 +111,8 @@ serve(async (req) => {
       if (pub?.publicUrl) uploaded.push({ path, publicUrl: pub.publicUrl });
     };
 
-const coverSvg = await generateCoverSlideSvg(
-      weekStart.toISOString(),
-      addDays(weekStart, 6).toISOString(),
-      selected.length,
-    );
-    await upload(`${weekStartISO}/slide-01-cover.svg`, coverSvg);
+    const coverSvg = await generateCoverSlideSvg(weekStartISO, weekEndISO, selected.length);
+    await upload(`${dateFolder}/slide-01-cover.svg`, coverSvg);
 
     let n = 2;
     for (const ev of selected) {
@@ -129,7 +125,7 @@ const coverSvg = await generateCoverSlideSvg(
         svg = await generateEventSlideSvg({ ...ev, image_url: null });
       }
       const label = String(n).padStart(2, "0");
-      await upload(`${weekStartISO}/slide-${label}.svg`, svg);
+      await upload(`${dateFolder}/slide-${label}.svg`, svg);
       n++;
     }
 
