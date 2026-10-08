@@ -1,10 +1,14 @@
 // supabase/functions/brand-slides/index.ts
 //
-// Generates evergreen Instagram carousels (no event data needed): an intro
-// "who we are" set, a "list your event" set for organisers, and a "near you"
-// set. Same mechanism as weekly-ig-slides -- SVG in the public
-// ig-weekly-slides bucket, a row in ig_slide_batches with kind
-// brand-<theme>, and the admin panel rasterises to PNG for posting.
+// Generates evergreen Instagram carousels (no event data needed): intro
+// "who we are", "list your event" for organisers, a "near you" set, plus
+// "meet the organiser", "our values", "quote" and "tips" sets. Same mechanism
+// as weekly-ig-slides -- SVG in the public ig-weekly-slides bucket, a row in
+// ig_slide_batches with kind brand-<theme>, and the admin panel rasterises to
+// PNG for posting.
+//
+// Body: { theme?: string, format?: "feed" | "story" }
+// Story format renders 1080x1920 and stores kind brand-<theme>-story.
 //
 // Re-run any time; it reuses today's date so a rebuild replaces today's set.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -147,6 +151,162 @@ const THEMES: Record<string, Theme> = {
     caption:
       "Wherever you are in Australia, there's a SoulFlow event nearby.\n\nFrom Sydney to Perth, regional retreats to online circles — open the map on SoulFlow and find your next practice. Link in bio.",
   },
+
+  "meet-organiser": {
+    cover: ["Meet the organiser", "The people behind the events", "Passionate souls, real gatherings"],
+    slides: [
+      {
+        kicker: "Who they are",
+        title: "Guides, not gurus",
+        body: [
+          "Our organisers are facilitators, teachers and healers who live what they share.",
+          "From yoga teachers to sound healers, each brings years of real practice.",
+        ],
+      },
+      {
+        kicker: "Why they host",
+        title: "Built on service",
+        body: [
+          "They create space for people to slow down, connect and heal.",
+          "Every event is an invitation — never a hard sell.",
+        ],
+      },
+      {
+        kicker: "The community",
+        title: "You're part of it",
+        body: [
+          "When you attend, you're not a number — you're welcomed into a circle.",
+          "Come as you are; leave a little lighter.",
+        ],
+      },
+      {
+        kicker: "Discover",
+        title: "Meet them this week",
+        body: [
+          "Browse upcoming events and find the guide who speaks to you.",
+          "New organisers join every week — link in bio.",
+        ],
+      },
+    ],
+    caption:
+      "Meet the humans behind the events.\n\nSoulFlow organisers are facilitators, teachers and healers who live what they share — hosting spaces to slow down, connect and heal. Browse upcoming events and find the guide who speaks to you. Link in bio.",
+  },
+
+  values: {
+    cover: ["Our values", "How we hold space", "Honest, warm, unhurried"],
+    slides: [
+      {
+        kicker: "Honesty",
+        title: "No hype, no noise",
+        body: [
+          "Every event is reviewed by a real person before it's listed.",
+          "What you see is what you get.",
+        ],
+      },
+      {
+        kicker: "Warmth",
+        title: "Everyone belongs",
+        body: [
+          "Conscious living is for every body, every background, every beginning.",
+          "There's no gatekeeping here.",
+        ],
+      },
+      {
+        kicker: "Care",
+        title: "Wellbeing first",
+        body: [
+          "We champion events that respect your time, energy and safety.",
+          "Quality over quantity, always.",
+        ],
+      },
+      {
+        kicker: "Community",
+        title: "Stronger together",
+        body: [
+          "We exist to connect seekers with the people who hold space for them.",
+          "Growth that lifts everyone.",
+        ],
+      },
+    ],
+    caption:
+      "This is how we do things at SoulFlow.\n\nHonest listings, a warm welcome for every body, and a real commitment to wellbeing. No hype, no noise — just good events, close to home. Link in bio.",
+  },
+
+  quote: {
+    cover: ["Just a moment", "Words to come back to", "Take what you need"],
+    slides: [
+      {
+        kicker: "Breathe",
+        title: "Almost everything will work again if you unplug it — including you.",
+        body: ["— Anne Lamott"],
+      },
+      {
+        kicker: "Begin",
+        title: "You do not have to be good. You only have to let the soft animal of your body love what it loves.",
+        body: ["— Mary Oliver"],
+      },
+      {
+        kicker: "Slow down",
+        title: "Nature does not hurry, yet everything is accomplished.",
+        body: ["— Lao Tzu"],
+      },
+      {
+        kicker: "Come home",
+        title: "Within you, there is a stillness and a sanctuary to which you can retreat at any time.",
+        body: ["— Hermann Hesse"],
+      },
+    ],
+    caption:
+      "A little reminder, just for today.\n\nSave this for when you need it and share it with someone who does too. Link in bio to find your next moment of calm.",
+  },
+
+  tips: {
+    cover: ["New here?", "5 gentle ways to start", "Conscious events, made simple"],
+    slides: [
+      {
+        kicker: "Start small",
+        title: "One event is enough",
+        body: [
+          "Pick a single class, circle or retreat this month.",
+          "Consistency beats intensity every time.",
+        ],
+      },
+      {
+        kicker: "Follow the pull",
+        title: "Trust what draws you",
+        body: [
+          "Yoga, breathwork, sound, cacao — notice what you're curious about.",
+          "Curiosity is a compass.",
+        ],
+      },
+      {
+        kicker: "Come as you are",
+        title: "No experience needed",
+        body: [
+          "You don't need to be flexible, calm or 'good at it'.",
+          "Beginners are not just welcome — they're the point.",
+        ],
+      },
+      {
+        kicker: "Bring someone",
+        title: "It's better shared",
+        body: [
+          "Invite a friend, a partner or a neighbour.",
+          "Shared moments land deeper.",
+        ],
+      },
+      {
+        kicker: "Keep going",
+        title: "Let it be simple",
+        body: [
+          "Find what feels good, then do a little more of it.",
+          "Tap the link in our bio to see what's on near you.",
+        ],
+      },
+    ],
+    caption:
+      "New to conscious events? Start here.\n\nFive gentle ways to dip a toe in — from picking your first class to bringing a friend along. Tap the link in our bio to find what's on near you.",
+  },
 };
 
 serve(async (req) => {
@@ -171,6 +331,7 @@ serve(async (req) => {
     if (!theme) {
       return jsonResponse({ error: `Unknown theme '${themeKey}'` }, 400);
     }
+    const format = body?.format === "story" ? "story" : "feed";
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -179,7 +340,7 @@ serve(async (req) => {
     });
 
     const dateFolder = new Date().toISOString().slice(0, 10);
-    const kind = `brand-${themeKey}`;
+    const kind = format === "story" ? `brand-${themeKey}-story` : `brand-${themeKey}`;
     const uploaded: { path: string; publicUrl: string }[] = [];
 
     const upload = async (path: string, svg: string) => {
@@ -195,11 +356,14 @@ serve(async (req) => {
     };
 
     const [eyebrow, coverTitle, subtitle] = theme.cover;
-    await upload(`${dateFolder}/${kind}/brand-01-cover.svg`, await generateBrandCoverSvg(eyebrow, coverTitle, subtitle));
+    await upload(
+      `${dateFolder}/${kind}/brand-01-cover.svg`,
+      await generateBrandCoverSvg(eyebrow, coverTitle, subtitle, format),
+    );
 
     let n = 2;
     for (const slide of theme.slides) {
-      const svg = await generateBrandTextSlideSvg(slide, n, theme.slides.length + 1);
+      const svg = await generateBrandTextSlideSvg(slide, n, theme.slides.length + 1, format);
       const label = String(n).padStart(2, "0");
       await upload(`${dateFolder}/${kind}/brand-${label}.svg`, svg);
       n++;
@@ -210,7 +374,7 @@ serve(async (req) => {
       .upsert(
         {
           kind,
-          title: coverTitle,
+          title: `${coverTitle}${format === "story" ? " (Story)" : ""}`,
           week_start: dateFolder,
           caption: theme.caption,
           slides: uploaded,
@@ -224,7 +388,7 @@ serve(async (req) => {
       return jsonResponse({ error: "Failed to record batch" }, 500);
     }
 
-    return jsonResponse({ ok: true, kind, title: coverTitle, theme, weekStart: dateFolder, slides: uploaded, caption: theme.caption });
+    return jsonResponse({ ok: true, kind, title: coverTitle, format, theme, weekStart: dateFolder, slides: uploaded, caption: theme.caption });
   } catch (e) {
     console.error(e);
     return jsonResponse({ error: String(e) }, 500);

@@ -29,6 +29,12 @@ const ACCENT = "#D9B75B";
 const WIDTH = 1080;
 const HEIGHT = 1350;
 
+export type SlideFormat = "feed" | "story";
+const DIMS: Record<SlideFormat, { width: number; height: number }> = {
+  feed: { width: 1080, height: 1350 },
+  story: { width: 1080, height: 1920 },
+};
+
 type FontWeight = 400 | 600 | 700 | 800;
 
 interface SatoriFont {
@@ -80,13 +86,16 @@ function formatTime(t?: string | null) {
   return t;
 }
 
-const baseStyle: Record<string, unknown> = {
-  display: "flex",
-  flexDirection: "column",
-  width: WIDTH,
-  height: HEIGHT,
-  fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-  position: "relative",
+const baseStyle = (format: SlideFormat = "feed"): Record<string, unknown> => {
+  const { width, height } = DIMS[format];
+  return {
+    display: "flex",
+    flexDirection: "column",
+    width,
+    height,
+    fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    position: "relative",
+  };
 };
 
 export async function generateCoverSlideSvg(
@@ -99,7 +108,7 @@ export async function generateCoverSlideSvg(
   return await satori(
     <div
       style={{
-        ...baseStyle,
+        ...baseStyle(),
         justifyContent: "center",
         alignItems: "center",
         background: `linear-gradient(135deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
@@ -136,7 +145,7 @@ export async function generateEventSlideSvg(ev: EventSlideData): Promise<string>
   const venue = ev.place_name || ev.venue_name || "";
 
   return await satori(
-    <div style={{ ...baseStyle, background: BRAND_BG }}>
+    <div style={{ ...baseStyle(), background: BRAND_BG }}>
       {ev.image_url ? (
         <img
           src={ev.image_url}
@@ -172,12 +181,15 @@ export async function generateBrandCoverSvg(
   eyebrow = "Welcome",
   title = "SoulFlow",
   subtitle = "Australia's home for conscious & wellness events",
+  format: SlideFormat = "feed",
 ): Promise<string> {
   const fonts = await loadFonts();
+  const { width, height } = DIMS[format];
+  const s = format === "story" ? 1.15 : 1;
   return await satori(
     <div
       style={{
-        ...baseStyle,
+        ...baseStyle(format),
         justifyContent: "center",
         alignItems: "center",
         background: `linear-gradient(160deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
@@ -185,52 +197,59 @@ export async function generateBrandCoverSvg(
     >
       <div style={{ position: "absolute", top: 90, left: 90, width: 140, height: 6, background: BRAND_PRIMARY, borderRadius: 3 }} />
       <div style={{ position: "absolute", bottom: 120, right: 90, width: 180, height: 180, borderRadius: 90, background: ACCENT, opacity: 0.3 }} />
-      <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 8, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
+      <p style={{ fontSize: 26 * s, fontWeight: 700, letterSpacing: 8, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
         {eyebrow}
       </p>
-      <h1 style={{ fontSize: title.length > 14 ? 84 : 120, fontWeight: 800, color: BRAND_TEXT, margin: "28px 0 0 0", textAlign: "center" }}>
+      <h1 style={{ fontSize: (title.length > 14 ? 84 : 120) * s, fontWeight: 800, color: BRAND_TEXT, margin: "28px 0 0 0", textAlign: "center", maxWidth: width - 160 }}>
         {title}
       </h1>
-      <p style={{ fontSize: 38, fontWeight: 600, color: BRAND_SUBTEXT, margin: "24px 0 0 0", textAlign: "center", maxWidth: 840 }}>
+      <p style={{ fontSize: 38 * s, fontWeight: 600, color: BRAND_SUBTEXT, margin: "24px 0 0 0", textAlign: "center", maxWidth: 840 }}>
         {subtitle}
       </p>
-      <p style={{ position: "absolute", bottom: 96, fontSize: 24, color: BRAND_SUBTEXT, opacity: 0.8, margin: 0 }}>
+      <p style={{ position: "absolute", bottom: 96, fontSize: 24 * s, color: BRAND_SUBTEXT, opacity: 0.8, margin: 0 }}>
         Swipe to learn more →
       </p>
     </div>,
-    { width: WIDTH, height: HEIGHT, fonts },
+    { width, height, fonts },
   );
 }
 
-export async function generateBrandTextSlideSvg(slide: BrandSlide, index: number, total: number): Promise<string> {
+export async function generateBrandTextSlideSvg(
+  slide: BrandSlide,
+  index: number,
+  total: number,
+  format: SlideFormat = "feed",
+): Promise<string> {
   const fonts = await loadFonts();
+  const { width, height } = DIMS[format];
+  const s = format === "story" ? 1.15 : 1;
   return await satori(
-    <div style={{ ...baseStyle, background: BRAND_BG, padding: "110px 90px", justifyContent: "space-between" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, width: WIDTH, height: 8, background: BRAND_PRIMARY }} />
+    <div style={{ ...baseStyle(format), background: BRAND_BG, padding: `${format === "story" ? 180 : 110}px 90px`, justifyContent: "space-between" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, width, height: 8, background: BRAND_PRIMARY }} />
       <div style={{ display: "flex", flexDirection: "column" }}>
         {slide.kicker ? (
-          <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 5, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
+          <p style={{ fontSize: 26 * s, fontWeight: 700, letterSpacing: 5, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
             {slide.kicker}
           </p>
         ) : null}
-        <h2 style={{ fontSize: 80, fontWeight: 800, color: BRAND_TEXT, margin: "24px 0 0 0", lineHeight: 1.05 }}>
+        <h2 style={{ fontSize: 80 * s, fontWeight: 800, color: BRAND_TEXT, margin: "24px 0 0 0", lineHeight: 1.05 }}>
           {slide.title}
         </h2>
         <div style={{ display: "flex", flexDirection: "column", marginTop: 48 }}>
           {slide.body.map((line) => (
-            <p key={line} style={{ fontSize: 36, color: BRAND_SUBTEXT, margin: "0 0 24px 0", lineHeight: 1.45 }}>
+            <p key={line} style={{ fontSize: 36 * s, color: BRAND_SUBTEXT, margin: "0 0 24px 0", lineHeight: 1.45 }}>
               {line}
             </p>
           ))}
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 22, color: BRAND_SUBTEXT, opacity: 0.7 }}>SoulFlow</span>
-        <span style={{ fontSize: 22, color: BRAND_SUBTEXT, opacity: 0.7 }}>
+        <span style={{ fontSize: 22 * s, color: BRAND_SUBTEXT, opacity: 0.7 }}>SoulFlow</span>
+        <span style={{ fontSize: 22 * s, color: BRAND_SUBTEXT, opacity: 0.7 }}>
           {index} / {total}
         </span>
       </div>
     </div>,
-    { width: WIDTH, height: HEIGHT, fonts },
+    { width, height, fonts },
   );
 }

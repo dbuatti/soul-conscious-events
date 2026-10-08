@@ -5,8 +5,14 @@
 // workflow.
 //
 // Requires two secrets on the project:
-//   META_IG_USER_ID    -- the Instagram Business account id
-//   META_ACCESS_TOKEN  -- a long-lived token with instagram_content_publish
+//   META_IG_USER_ID    -- the Instagram professional account id
+//   META_ACCESS_TOKEN  -- a long-lived token with content-publish permission
+//
+// Optional third secret:
+//   META_GRAPH_BASE    -- override the API host. Leave unset for the Facebook
+//                         Login path (graph.facebook.com, IG linked to a Page).
+//                         Set to "https://graph.instagram.com/v21.0" for the
+//                         Instagram Login path (no Facebook Page required).
 //
 // Input: { imageUrls: string[], caption: string, batchId?: string }
 // The imageUrls must be publicly reachable JPEG/PNG (the caller uploads them;
@@ -15,7 +21,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
 
-const GRAPH = "https://graph.facebook.com/v21.0";
+const GRAPH = Deno.env.get("META_GRAPH_BASE") ?? "https://graph.facebook.com/v21.0";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

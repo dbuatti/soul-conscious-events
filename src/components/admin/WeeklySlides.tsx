@@ -28,14 +28,32 @@ const GENERATORS = {
   'brand-intro': { label: 'Introduction', invoke: 'brand-slides', body: { theme: 'intro' } },
   'brand-organisers': { label: 'For organisers', invoke: 'brand-slides', body: { theme: 'organisers' } },
   'brand-locations': { label: 'Near you', invoke: 'brand-slides', body: { theme: 'locations' } },
+  'brand-meet-organiser': { label: 'Meet the organiser', invoke: 'brand-slides', body: { theme: 'meet-organiser' } },
+  'brand-values': { label: 'Our values', invoke: 'brand-slides', body: { theme: 'values' } },
+  'brand-quote': { label: 'Quotes', invoke: 'brand-slides', body: { theme: 'quote' } },
+  'brand-tips': { label: 'Getting started tips', invoke: 'brand-slides', body: { theme: 'tips' } },
 } as const;
+
+const BRAND_KEYS = [
+  'brand-intro',
+  'brand-organisers',
+  'brand-locations',
+  'brand-meet-organiser',
+  'brand-values',
+  'brand-quote',
+  'brand-tips',
+] as const;
 
 const CONTENT_PLAN: { when: string; title: string; kind: string }[] = [
   { when: 'Monday', title: 'This week across Australia', kind: 'weekly' },
   { when: 'Wednesday', title: 'Victoria this week', kind: 'state' },
   { when: 'Friday', title: 'Weekend picks', kind: 'state' },
   { when: 'Sunday', title: 'Find your next practice', kind: 'brand-locations' },
+  { when: 'Monthly', title: 'Meet the organiser', kind: 'brand-meet-organiser' },
   { when: 'Fortnightly', title: 'For organisers — list your event', kind: 'brand-organisers' },
+  { when: 'Monthly', title: 'Getting started tips', kind: 'brand-tips' },
+  { when: 'Monthly', title: 'Quotes to come back to', kind: 'brand-quote' },
+  { when: 'Quarterly', title: 'Our values', kind: 'brand-values' },
   { when: 'Monthly', title: 'Meet SoulFlow (intro)', kind: 'brand-intro' },
 ];
 
@@ -69,13 +87,15 @@ async function svgUrlToBlob(url: string, type: 'image/png' | 'image/jpeg'): Prom
       img.src = objectUrl;
     });
     const canvas = document.createElement('canvas');
-    canvas.width = SLIDE_W;
-    canvas.height = SLIDE_H;
+    const width = image.naturalWidth || SLIDE_W;
+    const height = image.naturalHeight || SLIDE_H;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas is not supported in this browser');
     ctx.fillStyle = '#F8F1EA';
-    ctx.fillRect(0, 0, SLIDE_W, SLIDE_H);
-    ctx.drawImage(image, 0, 0, SLIDE_W, SLIDE_H);
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(image, 0, 0, width, height);
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, type, type === 'image/jpeg' ? 0.92 : undefined),
     );
@@ -111,6 +131,7 @@ const BatchCard: React.FC<{
   const [busy, setBusy] = useState<'all' | 'publish' | number | null>(null);
   const [scheduleFor, setScheduleFor] = useState(batch.scheduled_for?.slice(0, 16) ?? '');
   const prefix = batch.kind;
+  const isStory = batch.kind.endsWith('-story');
 
   const update = async (patch: Partial<SlideBatch>) => {
     const { error } = await supabase.from('ig_slide_batches').update(patch).eq('id', batch.id);
@@ -213,7 +234,7 @@ const BatchCard: React.FC<{
             className="group relative rounded-2xl border border-border overflow-hidden"
             title="Download this slide as PNG"
           >
-            <img src={slide.publicUrl} alt={`Slide ${i + 1}`} className="aspect-[4/5] w-full object-cover" />
+            <img src={slide.publicUrl} alt={`Slide ${i + 1}`} className={`${isStory ? 'aspect-[9/16]' : 'aspect-[4/5]'} w-full object-cover`} />
             <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{i + 1}</span>
             <span className="absolute inset-0 hidden items-center justify-center bg-black/40 group-hover:flex">
               {busy === i ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : <Download className="h-5 w-5 text-white" />}
@@ -292,6 +313,7 @@ const WeeklySlides: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
   const [state, setState] = useState('VIC');
+  const [format, setFormat] = useState<'feed' | 'story'>('feed');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -424,14 +446,14 @@ const WeeklySlides: React.FC = () => {
       {/* Brand carousels */}
       <section className="space-y-5">
         {sectionTitle(Sparkles, 'Brand carousels', 'Evergreen content — meet us, list an event, find us near you')}
-        <div className="flex flex-wrap gap-2">
-          {(['brand-intro', 'brand-organisers', 'brand-locations'] as const).map((key) => (
+        <div className="flex flex-wrap items-end gap-2">
+          {BRAND_KEYS.map((key) => (
             <Button
               key={key}
               size="sm"
               variant="outline"
               className="rounded-xl"
-              onClick={() => generate(key)}
+              onClick={() => generate(key, { format })}
               disabled={generating !== null}
             >
               {generating === key ? (
@@ -442,6 +464,17 @@ const WeeklySlides: React.FC = () => {
               Build {GENERATORS[key].label}
             </Button>
           ))}
+          <label className="text-xs text-muted-foreground flex flex-col gap-1 ml-auto">
+            Format
+            <select
+              value={format}
+              onChange={(e) => setFormat(e.target.value as 'feed' | 'story')}
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground"
+            >
+              <option value="feed">Feed (4:5)</option>
+              <option value="story">Story (9:16)</option>
+            </select>
+          </label>
         </div>
         {batches.filter((b) => b.kind.startsWith('brand-')).length === 0 && !loading ? (
           <p className="text-sm text-muted-foreground">No brand carousels yet.</p>
