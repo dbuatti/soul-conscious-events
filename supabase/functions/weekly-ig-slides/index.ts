@@ -55,11 +55,12 @@ function formatAU(d: string | null) {
 
 // Builds a caption hashtag line from the state and the event types on show.
 function buildHashtags(events: { event_type?: string | null }[], label: string | null): string {
+  const skip = new Set(["Other", "General", "Event", "Events", "Misc", "Miscellaneous"]);
   const tags = new Set<string>(["SoulFlow", "ConsciousEvents", "WellnessAustralia", "MindBodySpirit"]);
   if (label) tags.add(`${label.replace(/[^A-Za-z]/g, "")}Events`);
   for (const ev of events) {
     const t = (ev.event_type || "").replace(/[^A-Za-z]/g, "");
-    if (t) tags.add(t);
+    if (t && !skip.has(t)) tags.add(t);
   }
   return [...tags].slice(0, 12).map((t) => `#${t}`).join(" ");
 }
