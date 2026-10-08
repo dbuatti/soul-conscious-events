@@ -53,6 +53,17 @@ function formatAU(d: string | null) {
   }
 }
 
+// Builds a caption hashtag line from the state and the event types on show.
+function buildHashtags(events: { event_type?: string | null }[], label: string | null): string {
+  const tags = new Set<string>(["SoulFlow", "ConsciousEvents", "WellnessAustralia", "MindBodySpirit"]);
+  if (label) tags.add(`${label.replace(/[^A-Za-z]/g, "")}Events`);
+  for (const ev of events) {
+    const t = (ev.event_type || "").replace(/[^A-Za-z]/g, "");
+    if (t) tags.add(t);
+  }
+  return [...tags].slice(0, 12).map((t) => `#${t}`).join(" ");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -168,14 +179,16 @@ serve(async (req) => {
       }
     }
 
-    const heading = label ? `${label} this week:` : "Soul Conscious Events this week:";
-    const lines = [heading];
+    const heading = label ? `📍 ${label} — what's on this week 🌿` : "🌿 Conscious events across Australia this week";
+    const lines = [heading, ""];
     for (const ev of selected) {
       const d = formatAU(ev.event_date);
-      lines.push(`• ${ev.event_name || "Event"}${d ? ` – ${d}` : ""}`);
+      const where = ev.place_name ? ` · ${ev.place_name}` : "";
+      lines.push(`• ${ev.event_name || "Event"}${d ? ` — ${d}` : ""}${where}`);
     }
     if (selected.length === 0) lines.push("• No approved upcoming events in the next 7 days.");
-    lines.push("", "Link in bio.");
+    lines.push("", "Tap the link in our bio to see every event, and save this post so you don't forget.");
+    lines.push("", buildHashtags(selected, label));
     const caption = lines.join("\n");
 
     const { data: batchRow, error: batchError } = await supabase

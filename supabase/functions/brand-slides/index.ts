@@ -22,6 +22,10 @@ import {
 
 const BUCKET = "ig-weekly-slides";
 
+// Appended to every brand caption so posts are discoverable.
+const BRAND_HASHTAGS =
+  "#SoulFlow #ConsciousEvents #WellnessAustralia #MindBodySpirit #Yoga #Breathwork #SoundHealing #Meditation #Retreats #SelfCare";
+
 interface Theme {
   cover: [string, string, string];
   slides: BrandSlide[];
@@ -341,6 +345,7 @@ serve(async (req) => {
 
     const dateFolder = new Date().toISOString().slice(0, 10);
     const kind = format === "story" ? `brand-${themeKey}-story` : `brand-${themeKey}`;
+    const caption = `${theme.caption}\n\n${BRAND_HASHTAGS}`;
     const uploaded: { path: string; publicUrl: string }[] = [];
 
     const upload = async (path: string, svg: string) => {
@@ -376,7 +381,7 @@ serve(async (req) => {
           kind,
           title: `${coverTitle}${format === "story" ? " (Story)" : ""}`,
           week_start: dateFolder,
-          caption: theme.caption,
+          caption,
           slides: uploaded,
           event_count: 0,
         },
@@ -388,7 +393,7 @@ serve(async (req) => {
       return jsonResponse({ error: "Failed to record batch" }, 500);
     }
 
-    return jsonResponse({ ok: true, kind, title: coverTitle, format, theme, weekStart: dateFolder, slides: uploaded, caption: theme.caption });
+    return jsonResponse({ ok: true, kind, title: coverTitle, format, theme, weekStart: dateFolder, slides: uploaded, caption });
   } catch (e) {
     console.error(e);
     return jsonResponse({ error: String(e) }, 500);

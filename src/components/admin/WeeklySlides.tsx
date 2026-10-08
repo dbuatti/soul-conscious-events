@@ -422,8 +422,10 @@ const WeeklySlides: React.FC = () => {
   const scheduleSummary = useMemo(() => {
     const lines: string[] = [];
     lines.push('Automatic');
-    lines.push('• Every Monday, 8:00am (Sydney) — "this week" carousel + Story, per state.');
-    lines.push('• States: VIC, QLD, SA, TAS, NSW (edit the weekly-state-carousels workflow).');
+    lines.push('• Every day, 8:00am (Sydney):');
+    lines.push('    Mon — national "this week" carousel + Story');
+    lines.push('    Tue–Sat — one state carousel + Story (VIC, QLD, SA, TAS, NSW)');
+    lines.push('    Sun — one evergreen brand carousel (rotates weekly)');
     lines.push('');
     const queued = batches
       .filter((b) => b.status === 'scheduled' && b.scheduled_for)

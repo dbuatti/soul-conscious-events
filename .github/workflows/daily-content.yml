@@ -1,25 +1,31 @@
-name: Weekly state carousels
+name: Daily content
 
 on:
   schedule:
-    # 08:00 Monday, Australia/Sydney. Two UTC slots cover daylight saving:
-    #   21:00 Sunday UTC = 08:00 AEDT (summer)
-    #   22:00 Sunday UTC = 08:00 AEST (winter)
-    # The script itself checks the Sydney clock, so the wrong slot is a no-op.
-    - cron: '0 21 * * 0'
-    - cron: '0 22 * * 0'
+    # 08:00 Australia/Sydney, every day. Two UTC slots cover daylight saving:
+    #   21:00 UTC = 08:00 AEDT (summer)
+    #   22:00 UTC = 08:00 AEST (winter)
+    # The script checks the Sydney clock, so the wrong slot is a no-op.
+    - cron: '0 21 * * *'
+    - cron: '0 22 * * *'
   workflow_dispatch:
     inputs:
       force:
         description: Ignore the Sydney time check (post now)
         type: boolean
         default: false
+      day:
+        description: Override the day (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+        required: false
       states:
-        description: Comma-separated states to run (default all)
+        description: Comma-separated states for the Tue-Sat slots
+        required: false
+      theme:
+        description: Override the Sunday brand theme (intro, organisers, locations, meet-organiser, values, quote, tips)
         required: false
 
 concurrency:
-  group: weekly-state-carousels
+  group: daily-content
   cancel-in-progress: false
 
 jobs:
@@ -72,12 +78,11 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: pnpm install --frozen-lockfile
 
-      - name: Generate & publish state carousels
+      - name: Generate & publish today's content
         if: steps.guard.outputs.skip != 'true'
         env:
           FORCE: ${{ github.event.inputs.force == 'true' && '1' || '' }}
-          # States to post every Monday. States with no events in the coming week
-          # are skipped automatically. Trim this list (or pass a `states` input
-          # when running manually) if you don't want every state in one morning.
+          DAY: ${{ github.event.inputs.day || '' }}
           STATES: ${{ github.event.inputs.states || 'VIC,QLD,SA,TAS,NSW' }}
-        run: node scripts/weekly-state-carousels.mjs
+          THEME: ${{ github.event.inputs.theme || '' }}
+        run: node scripts/daily-content.mjs
