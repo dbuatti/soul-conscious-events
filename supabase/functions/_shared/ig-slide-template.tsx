@@ -34,7 +34,7 @@ const HEIGHT = 1350;
 const LOGO_URL =
   "https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/ig-weekly-slides/2026-10-07/logo-trans.png";
 
-function Logo({ top = 56, left = 72, size = 56 }: { top?: number; left?: number; size?: number }) {
+function logoBadge({ top = 56, left = 72, size = 56 }: { top?: number; left?: number; size?: number }) {
   return (
     <img
       src={LOGO_URL}
@@ -131,7 +131,7 @@ export async function generateCoverSlideSvg(
         background: `linear-gradient(135deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
       }}
     >
-      <Logo top={72} left={72} size={72} />
+      {logoBadge({ top: 72, left: 72, size: 72 })}
       <div style={{ position: "absolute", top: 80, right: 80, width: 120, height: 120, borderRadius: 60, background: ACCENT, opacity: 0.35 }} />
       <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 6, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
         {location ? "SoulFlow" : "SoulFlow"}
@@ -170,7 +170,7 @@ export async function generateIndexSlideSvg(
   return await satori(
     <div style={{ ...baseStyle(format), background: BRAND_BG, padding: "120px 80px 72px 80px" }}>
       <div style={{ position: "absolute", top: 0, left: 0, width, height: 8, background: BRAND_PRIMARY }} />
-      <Logo top={52} left={72} size={54} />
+      {logoBadge({ top: 52, left: 72, size: 54 })}
       <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 5, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
         What's on
       </p>
@@ -256,7 +256,7 @@ export async function generateEventSlideSvg(ev: EventSlideData): Promise<string>
         }}
       />
       <div style={{ position: "absolute", top: 0, left: 0, width: WIDTH, height: 8, background: BRAND_PRIMARY }} />
-      <Logo top={56} left={72} size={56} />
+      {logoBadge({ top: 56, left: 72, size: 56 })}
       <div style={{ display: "flex", flexDirection: "column", padding: "96px 80px", flexGrow: 1, justifyContent: "center" }}>
         <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 4, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
           {ev.event_type || "Wellness & Conscious Events"}
@@ -297,7 +297,7 @@ export async function generateBrandCoverSvg(
         background: `linear-gradient(160deg, ${BRAND_BG} 0%, #FFFFFF 100%)`,
       }}
     >
-      <Logo top={72} left={72} size={72} />
+      {logoBadge({ top: 72, left: 72, size: 72 })}
       <div style={{ position: "absolute", bottom: 120, right: 90, width: 180, height: 180, borderRadius: 90, background: ACCENT, opacity: 0.3 }} />
       <p style={{ fontSize: 26 * s, fontWeight: 700, letterSpacing: 8, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
         {eyebrow}
@@ -328,7 +328,7 @@ export async function generateBrandTextSlideSvg(
   return await satori(
     <div style={{ ...baseStyle(format), background: BRAND_BG, padding: `${format === "story" ? 180 : 110}px 90px`, justifyContent: "space-between" }}>
       <div style={{ position: "absolute", top: 0, left: 0, width, height: 8, background: BRAND_PRIMARY }} />
-      <Logo top={52} left={72} size={52} />
+      {logoBadge({ top: 52, left: 72, size: 52 })}
       <div style={{ display: "flex", flexDirection: "column" }}>
         {slide.kicker ? (
           <p style={{ fontSize: 26 * s, fontWeight: 700, letterSpacing: 5, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>

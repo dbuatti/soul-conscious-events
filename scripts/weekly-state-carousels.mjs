@@ -11,6 +11,8 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY  (required)
 //   FORCE=1        bypass the "is it Monday 08:00 Sydney?" check (for testing)
 //   DRY_RUN=1      generate + rasterise but do not publish
+//   SKIP_FEED=1    don't post the feed carousel (e.g. to test the Story only)
+//   SKIP_STORY=1   don't post the Story
 //   STATES=VIC,NSW override the state list
 //
 import { createClient } from "@supabase/supabase-js";
@@ -22,6 +24,8 @@ const BUCKET = "ig-weekly-slides";
 const TZ = "Australia/Sydney";
 const FORCE = process.env.FORCE === "1";
 const DRY_RUN = process.env.DRY_RUN === "1";
+const SKIP_FEED = process.env.SKIP_FEED === "1";
+const SKIP_STORY = process.env.SKIP_STORY === "1";
 const STATES = (process.env.STATES || "ACT,NSW,NT,QLD,SA,TAS,VIC,WA")
   .split(",")
   .map((s) => s.trim().toUpperCase())
@@ -100,37 +104,44 @@ async function run() {
   let failures = 0;
   for (const state of STATES) {
     try {
-      const batch = await invoke("weekly-ig-slides", { state });
-      if (!batch.eventCount) {
-        log(`${state}: no events this week, skipping.`);
-        continue;
-      }
-      const urls = await rasteriseAndUpload(batch);
-      if (DRY_RUN) {
-        log(`${state}: ${batch.eventCount} events -> ${urls.length} feed slides (dry run)`);
-      } else {
-        const result = await invoke("publish-instagram", {
-          imageUrls: urls,
-          caption: batch.caption,
-          batchId: batch.batchId,
-        });
-        log(`${state}: posted feed (${batch.eventCount} events) -> media ${result.mediaId}`);
+      // Feed carousel.
+      if (!SKIP_FEED) {
+        const batch = await invoke("weekly-ig-slides", { state });
+        if (!batch.eventCount) {
+          log(`${state}: no events this week, skipping feed.`);
+        } else {
+          const urls = await rasteriseAndUpload(batch);
+          if (DRY_RUN) {
+            log(`${state}: ${batch.eventCount} events -> ${urls.length} feed slides (dry run)`);
+          } else {
+            const result = await invoke("publish-instagram", {
+              imageUrls: urls,
+              caption: batch.caption,
+              batchId: batch.batchId,
+            });
+            log(`${state}: posted feed (${batch.eventCount} events) -> media ${result.mediaId}`);
+          }
+        }
       }
 
       // Instagram Stories accept a single image only, so the 9:16 cover doubles
       // as an automatic Story for the same week.
-      const story = await invoke("weekly-ig-slides", { state, format: "story" });
-      if (story.slides?.length) {
-        const storyUrls = await rasteriseAndUpload(story);
-        if (DRY_RUN) {
-          log(`${state}: story slide ready (dry run)`);
-        } else {
-          const storyResult = await invoke("publish-instagram", {
-            imageUrls: storyUrls,
-            batchId: story.batchId,
-            story: true,
-          });
-          log(`${state}: posted story -> media ${storyResult.mediaId}`);
+      if (!SKIP_STORY) {
+        const story = await invoke("weekly-ig-slides", { state, format: "story" });
+        if (!story.eventCount) {
+          log(`${state}: no events this week, skipping story.`);
+        } else if (story.slides?.length) {
+          const storyUrls = await rasteriseAndUpload(story);
+          if (DRY_RUN) {
+            log(`${state}: story slide ready (dry run)`);
+          } else {
+            const storyResult = await invoke("publish-instagram", {
+              imageUrls: storyUrls,
+              batchId: story.batchId,
+              story: true,
+            });
+            log(`${state}: posted story -> media ${storyResult.mediaId}`);
+          }
         }
       }
     } catch (e) {

@@ -76,7 +76,8 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         env:
           FORCE: ${{ github.event.inputs.force == 'true' && '1' || '' }}
-          # Start with Victoria only; add states here (e.g. "VIC,NSW,QLD") once
-          # the format is proven.
-          STATES: ${{ github.event.inputs.states || 'VIC' }}
+          # States to post every Monday. States with no events in the coming week
+          # are skipped automatically. Trim this list (or pass a `states` input
+          # when running manually) if you don't want every state in one morning.
+          STATES: ${{ github.event.inputs.states || 'VIC,QLD,SA,TAS,NSW' }}
         run: node scripts/weekly-state-carousels.mjs

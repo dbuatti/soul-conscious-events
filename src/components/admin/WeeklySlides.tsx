@@ -45,6 +45,23 @@ const BRAND_KEYS = [
   'brand-tips',
 ] as const;
 
+// Maps a stored batch `kind` back to the Edge function + body that regenerates
+// it, so a card can rebuild itself in place.
+function rebuildTarget(kind: string): { invoke: string; body: Record<string, unknown> } | null {
+  const isStory = kind.endsWith('-story');
+  const base = isStory ? kind.slice(0, -'-story'.length) : kind;
+  if (base === 'weekly') return { invoke: 'weekly-ig-slides', body: isStory ? { format: 'story' } : {} };
+  if (base.startsWith('state-')) {
+    const state = base.slice('state-'.length);
+    return { invoke: 'weekly-ig-slides', body: isStory ? { state, format: 'story' } : { state } };
+  }
+  if (base.startsWith('brand-')) {
+    const theme = base.slice('brand-'.length);
+    return { invoke: 'brand-slides', body: { theme, format: isStory ? 'story' : 'feed' } };
+  }
+  return null;
+}
+
 const CONTENT_PLAN: { when: string; title: string; kind: string }[] = [
   { when: 'Monday', title: 'This week across Australia', kind: 'weekly' },
   { when: 'Wednesday', title: 'Victoria this week', kind: 'state' },
@@ -138,7 +155,7 @@ const BatchCard: React.FC<{
   onCopy: (caption: string) => void;
   onChanged: () => void;
 }> = ({ batch, onCopy, onChanged }) => {
-  const [busy, setBusy] = useState<'all' | 'publish' | number | null>(null);
+  const [busy, setBusy] = useState<'all' | 'publish' | 'rebuild' | number | null>(null);
   const [scheduleFor, setScheduleFor] = useState(batch.scheduled_for?.slice(0, 16) ?? '');
   const prefix = batch.kind;
   const isStory = batch.kind.endsWith('-story');
@@ -204,7 +221,7 @@ const BatchCard: React.FC<{
         images.push(await blobToDataUrl(blob));
       }
       const { data, error } = await supabase.functions.invoke('publish-instagram', {
-        body: { images, caption: batch.caption, batchId: batch.id },
+        body: { images, caption: batch.caption, batchId: batch.id, story: isStory },
       });
       if (error) throw new Error(await functionErrorMessage(error));
       if (data?.error) throw new Error(data.error);
@@ -213,6 +230,27 @@ const BatchCard: React.FC<{
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error), { id });
       onChanged();
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const rebuild = async () => {
+    const target = rebuildTarget(batch.kind);
+    if (!target) {
+      toast.error('This batch cannot be rebuilt.');
+      return;
+    }
+    setBusy('rebuild');
+    const id = toast.loading('Rebuilding…');
+    try {
+      const { data, error } = await supabase.functions.invoke(target.invoke, { body: target.body });
+      if (error) throw new Error(await functionErrorMessage(error));
+      if (data?.error) throw new Error(data.error);
+      toast.success('Rebuilt with the latest events & design.', { id });
+      onChanged();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error), { id });
     } finally {
       setBusy(null);
     }
@@ -286,7 +324,11 @@ const BatchCard: React.FC<{
         </Button>
         <Button size="sm" onClick={publish} disabled={busy !== null || batch.status === 'posted'} className="rounded-xl">
           {busy === 'publish' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-          {batch.status === 'posted' ? 'Posted' : 'Post to Instagram'}
+          {batch.status === 'posted' ? 'Posted' : isStory ? 'Post Story' : 'Post to Instagram'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={rebuild} disabled={busy !== null} className="rounded-xl">
+          {busy === 'rebuild' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+          Rebuild
         </Button>
         {batch.status !== 'posted' && (
           <Button
@@ -348,6 +390,7 @@ const WeeklySlides: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
   const [state, setState] = useState('VIC');
+  const [eventFormat, setEventFormat] = useState<'feed' | 'story'>('feed');
   const [slideFormat, setSlideFormat] = useState<'feed' | 'story'>('feed');
 
   const load = useCallback(async () => {
@@ -374,7 +417,8 @@ const WeeklySlides: React.FC = () => {
   const scheduleSummary = useMemo(() => {
     const lines: string[] = [];
     lines.push('Automatic');
-    lines.push('• Every Monday, 8:00am (Sydney) — "this week" carousel + Story auto-post. Currently: Victoria.');
+    lines.push('• Every Monday, 8:00am (Sydney) — "this week" carousel + Story, per state.');
+    lines.push('• States: VIC, QLD, SA, TAS, NSW (edit the weekly-state-carousels workflow).');
     lines.push('');
     const queued = batches
       .filter((b) => b.status === 'scheduled' && b.scheduled_for)
@@ -465,11 +509,11 @@ const WeeklySlides: React.FC = () => {
           <Button
             size="sm"
             className="rounded-xl"
-            onClick={() => generate('weekly')}
+            onClick={() => generate('weekly', { format: eventFormat })}
             disabled={generating !== null}
           >
             {generating === 'weekly' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Images className="h-4 w-4 mr-2" />}
-            Build national weekly
+            Build national {eventFormat === 'story' ? 'Story' : 'weekly'}
           </Button>
           <label className="text-xs text-muted-foreground flex flex-col gap-1">
             State
@@ -485,11 +529,22 @@ const WeeklySlides: React.FC = () => {
               ))}
             </select>
           </label>
+          <label className="text-xs text-muted-foreground flex flex-col gap-1">
+            Format
+            <select
+              value={eventFormat}
+              onChange={(e) => setEventFormat(e.target.value as 'feed' | 'story')}
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground"
+            >
+              <option value="feed">Feed (4:5)</option>
+              <option value="story">Story (9:16)</option>
+            </select>
+          </label>
           <Button
             size="sm"
             variant="outline"
             className="rounded-xl"
-            onClick={() => generate('state', { state })}
+            onClick={() => generate('state', { state, format: eventFormat })}
             disabled={generating !== null}
           >
             {generating === 'state' ? (
@@ -497,7 +552,7 @@ const WeeklySlides: React.FC = () => {
             ) : (
               <Images className="h-4 w-4 mr-2" />
             )}
-            Build {state} weekly
+            Build {state} {eventFormat === 'story' ? 'Story' : 'weekly'}
           </Button>
         </div>
         {eventBatches.length === 0 && !loading ? (
@@ -574,8 +629,8 @@ const WeeklySlides: React.FC = () => {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Automation note: once Instagram is connected (Meta secrets), scheduled carousels can publish themselves via the
-          daily automation workflow.
+          Automation: Instagram is connected. The weekly workflow auto-posts each state's "this week" carousel + Story, and
+          any batches you mark as scheduled publish via the hourly automation workflow.
         </p>
       </section>
 
