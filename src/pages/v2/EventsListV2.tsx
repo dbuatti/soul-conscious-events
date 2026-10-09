@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY as ANON_KEY } from '@/integrations/supabase/client';
+import React, { useEffect, useMemo, useState } from 'react';
 import { format, parseISO, isToday, isSameDay, isWeekend, addDays, startOfToday, endOfWeek } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, Plus, Search, X, Database, WifiOff, ShieldAlert, ArrowRight, Link2, Wand2, Send } from 'lucide-react';
+import { Frown, Loader2, Plus, Search, X, Database, ArrowRight, Link2, Wand2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
@@ -13,8 +12,9 @@ import { Event } from '@/types/event';
 import FilterDropdownsV2 from '@/components/v2/FilterDropdownsV2';
 import { useSession } from '@/components/SessionContextProvider';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
-import { generateRecurringInstances, getBaseEventId } from '@/utils/event-utils';
+import { expandRecurringEvents, getAvailableVenues, getBaseEventId } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
+import { useDeleteEvent, useEvents, useFavouriteVenues, useToggleFavouriteVenue } from '@/hooks/use-events';
 import { cn } from '@/lib/utils';
 import LeafletMap from '@/components/v2/LeafletMap';
 import SEO from '@/components/SEO';
@@ -30,16 +30,11 @@ const QUICK_FILTERS = [
 ];
 
 const EventsListV2 = () => {
-  const { user, isLoading: isSessionLoading } = useSession();
-  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const { user } = useSession();
   const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
-  const [availableVenues, setAvailableVenues] = useState<string[]>([]);
-  const [favouriteVenues, setFavouriteVenues] = useState<string[]>([]);
-  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error' | 'timeout' | 'blocked' | 'auth_error'>('checking');
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -47,6 +42,16 @@ const EventsListV2 = () => {
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
+  const eventsQuery = useEvents();
+  const deleteEvent = useDeleteEvent();
+  const toggleFavouriteVenue = useToggleFavouriteVenue(user?.id);
+  const { data: favouriteVenues = [] } = useFavouriteVenues(user?.id);
+
+  const allEvents = useMemo(() => expandRecurringEvents(eventsQuery.data ?? []), [eventsQuery.data]);
+  const availableVenues = useMemo(() => getAvailableVenues(eventsQuery.data ?? []), [eventsQuery.data]);
+
+  const loading = eventsQuery.isLoading;
 
   const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents, totalCount } = useEventFilters(allEvents);
 
@@ -71,99 +76,6 @@ const EventsListV2 = () => {
   // Pagination source switches between deduplicated (list) and full (calendar/map)
   const paginationSource = viewMode === 'list' ? listSource : filteredEvents;
 
-  const fetchFavouriteVenues = useCallback(async () => {
-    if (!user) {
-      setFavouriteVenues([]);
-      return;
-    }
-    try {
-      const { data, error } = await supabase
-        .from('user_favourite_venues')
-        .select('place_name')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      if (data) {
-        setFavouriteVenues(data.map(item => item.place_name));
-      }
-    } catch (err) {
-      console.error('[EventsListV2] Error fetching favourite venues:', err);
-    }
-  }, [user]);
-
-  const processEventData = (data: Event[]) => {
-    const validEvents = (data || []).filter(event => typeof event.id === 'string' && event.id.length > 30);
-
-    let combinedEvents: Event[] = [];
-    validEvents.forEach(event => {
-      combinedEvents.push(event);
-      if (event.recurring_pattern) {
-        const instances = generateRecurringInstances(event);
-        combinedEvents = combinedEvents.concat(instances);
-      }
-    });
-
-    combinedEvents.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
-    setAllEvents(combinedEvents);
-    
-    const uniqueVenues = Array.from(new Set(validEvents.map(event => event.place_name).filter(Boolean))) as string[];
-    setAvailableVenues(uniqueVenues.sort());
-  };
-
-  const fetchInitialEvents = useCallback(async () => {
-    setLoading(true);
-    setDbStatus('checking');
-    
-    try {
-      const rawResponse = await fetch(`${SUPABASE_URL}/rest/v1/events?approval_status=eq.approved&is_deleted=eq.false&order=event_date.asc`, {
-        method: 'GET',
-        headers: {
-          'apikey': ANON_KEY,
-          'Authorization': `Bearer ${ANON_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (rawResponse.ok) {
-        const data = await rawResponse.json();
-        setDbStatus('connected');
-        processEventData(data);
-        setLoading(false);
-        return;
-      } else if (rawResponse.status === 401 || rawResponse.status === 403) {
-        setDbStatus('auth_error');
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('approval_status', 'approved')
-        .eq('is_deleted', false)
-        .order('event_date', { ascending: true });
-
-      if (error) throw error;
-      setDbStatus('connected');
-      processEventData(data || []);
-    } catch (err: unknown) {
-      setDbStatus('error');
-      toast.error(`Connection issue: ${err instanceof Error ? err.message : String(err)}`);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Fetch events once on mount
-  useEffect(() => {
-    fetchInitialEvents();
-  }, [fetchInitialEvents]);
-
-  // Fetch user-specific data when session is ready
-  useEffect(() => {
-    if (!isSessionLoading) fetchFavouriteVenues();
-  }, [fetchFavouriteVenues, isSessionLoading]);
-
   useEffect(() => {
     setDisplayedEvents(paginationSource.slice(0, EVENTS_PER_LOAD));
     setOffset(EVENTS_PER_LOAD);
@@ -179,17 +91,15 @@ const EventsListV2 = () => {
     setLoadingMore(false);
   };
 
-  const handleToggleFavouriteVenue = async (placeName: string, isFavourited: boolean) => {
+  const handleToggleFavouriteVenue = (placeName: string, isFavourited: boolean) => {
     if (!user) {
       toast.info('Please log in to favourite venues.');
       return;
     }
-    if (isFavourited) {
-      await supabase.from('user_favourite_venues').delete().eq('user_id', user.id).eq('place_name', placeName);
-    } else {
-      await supabase.from('user_favourite_venues').insert([{ user_id: user.id, place_name: placeName }]);
-    }
-    fetchFavouriteVenues();
+    toggleFavouriteVenue.mutate(
+      { placeName, isFavourited },
+      { onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update favourites.') },
+    );
   };
 
   const handleShare = (event: Event, e: React.MouseEvent) => {
@@ -200,17 +110,15 @@ const EventsListV2 = () => {
       .catch(() => toast.error('Failed to copy link.'));
   };
 
-  const handleDelete = async (eventId: string, e: React.MouseEvent) => {
+  const handleDelete = (eventId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const baseId = getBaseEventId(eventId);
     if (baseId.length < 30) return;
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
-      if (!error) {
-        toast.success('Event moved to trash.');
-        fetchInitialEvents();
-      }
-    }
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    deleteEvent.mutate(baseId, {
+      onSuccess: () => toast.success('Event moved to trash.'),
+      onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete event.'),
+    });
   };
 
   const handleViewDetails = (event: Event) => {
@@ -374,7 +282,7 @@ const EventsListV2 = () => {
           </div>
         </div>
 
-        {!loading && dbStatus === 'connected' && (
+        {!loading && !eventsQuery.isError && (
           <p className="mt-8 text-sm text-muted-foreground">
             <span className="font-heading text-2xl font-semibold text-foreground mr-1.5">{nextWeekCount}</span>
             gatherings in the next 7 days
@@ -465,18 +373,10 @@ const EventsListV2 = () => {
             </div>
           ))}
         </div>
-      ) : dbStatus === 'auth_error' ? (
-        statusPanel(ShieldAlert, 'Authentication issue',
-          'The database rejected our request. This can happen if a browser extension is stripping security headers.',
-          <Button onClick={() => window.location.reload()} className="rounded-full px-6">Refresh page</Button>)
-      ) : dbStatus === 'blocked' ? (
-        statusPanel(WifiOff, 'Connection blocked',
-          'Your browser can’t reach our database. This is usually an ad-blocker, VPN or privacy extension. Try disabling it for this site.',
-          <Button onClick={() => window.location.reload()} className="rounded-full px-6">Refresh page</Button>)
-      ) : dbStatus === 'error' || dbStatus === 'timeout' ? (
+      ) : eventsQuery.isError ? (
         statusPanel(Database, 'We couldn’t load events',
           'We’re having trouble reaching the database. Please check your connection and try again.',
-          <Button onClick={() => fetchInitialEvents()} className="rounded-full px-6">Try again</Button>)
+          <Button onClick={() => eventsQuery.refetch()} className="rounded-full px-6">Try again</Button>)
       ) : (
         <>
           {viewMode === 'list' ? (
