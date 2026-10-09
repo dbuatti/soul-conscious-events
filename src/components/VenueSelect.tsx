@@ -97,8 +97,8 @@ const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
                   value={venue.name}
                   onSelect={() => {
                     form.setValue('placeName', venue.name, { shouldValidate: true });
-                    form.setValue('fullAddress', venue.full_address, { shouldValidate: true });
-                    const state = extractAustralianState(venue.full_address);
+                    form.setValue('fullAddress', venue.full_address ?? '', { shouldValidate: true });
+                    const state = extractAustralianState(venue.full_address ?? '');
                     if (state) form.setValue('geographicalState', state, { shouldValidate: true });
                     setOpen(false);
                   }}
