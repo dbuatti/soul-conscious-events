@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { format, parseISO, isToday, isSameDay, isWeekend, addDays, startOfToday, endOfWeek } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,13 +11,21 @@ import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
 import FilterDropdownsV2 from '@/components/v2/FilterDropdownsV2';
 import { useSession } from '@/components/SessionContextProvider';
-import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import { expandRecurringEvents, getAvailableVenues, getBaseEventId } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
 import { useDeleteEvent, useEvents, useFavouriteVenues, useToggleFavouriteVenue } from '@/hooks/use-events';
 import { cn } from '@/lib/utils';
-import LeafletMap from '@/components/v2/LeafletMap';
 import SEO from '@/components/SEO';
+
+// Heavy, view-specific code is split out so it only loads when its view is opened.
+const AdvancedEventCalendar = lazy(() => import('@/components/AdvancedEventCalendar'));
+const LeafletMap = lazy(() => import('@/components/v2/LeafletMap'));
+
+const ViewLoadingFallback = () => (
+  <div className="py-16 flex justify-center" aria-busy="true" aria-label="Loading view">
+    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+  </div>
+);
 
 const EVENTS_PER_LOAD = 8;
 
@@ -437,14 +445,16 @@ const EventsListV2 = () => {
             </section>
           ) : viewMode === 'calendar' ? (
             <div className="animate-in fade-in duration-500">
-              <AdvancedEventCalendar
-                events={filteredEvents}
-                onEventSelect={handleViewDetails}
-                selectedDay={selectedDay}
-                onDayClick={setSelectedDay}
-                currentMonth={currentMonth}
-                onMonthChange={setCurrentMonth}
-              />
+              <Suspense fallback={<ViewLoadingFallback />}>
+                <AdvancedEventCalendar
+                  events={filteredEvents}
+                  onEventSelect={handleViewDetails}
+                  selectedDay={selectedDay}
+                  onDayClick={setSelectedDay}
+                  currentMonth={currentMonth}
+                  onMonthChange={setCurrentMonth}
+                />
+              </Suspense>
               <div className="mt-12">
                 <div className="flex items-baseline gap-3 mb-5">
                   <h2 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground">{format(selectedDay, 'EEEE')}</h2>
@@ -476,7 +486,9 @@ const EventsListV2 = () => {
                 <span className="text-sm text-muted-foreground">{filteredEvents.length} events</span>
                 <span className="flex-1 h-px bg-border/70 translate-y-[-0.3rem]" />
               </div>
-              <LeafletMap events={filteredEvents} onViewDetails={handleViewDetails} />
+              <Suspense fallback={<ViewLoadingFallback />}>
+                <LeafletMap events={filteredEvents} onViewDetails={handleViewDetails} />
+              </Suspense>
             </div>
           )}
         </>
