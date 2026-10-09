@@ -6,6 +6,7 @@ import {
   getAvailableVenues,
   getBaseEventId,
   getGoogleCalendarUrl,
+  groupEventsByTimeBucket,
   isValidEventId,
 } from "./event-utils";
 import type { Event } from "@/types/event";
@@ -192,5 +193,49 @@ describe("getAvailableVenues", () => {
 
   it("skips events with no place name", () => {
     expect(getAvailableVenues([makeEvent({ id: BASE_ID })])).toEqual([]);
+  });
+});
+
+describe("groupEventsByTimeBucket", () => {
+  const today = new Date("2026-01-15T09:00:00");
+  const make = (id: string, date: string) => makeEvent({ id, event_date: date, event_name: id });
+
+  it("splits a sorted list into time-grouped sections", () => {
+    const groups = groupEventsByTimeBucket(
+      [
+        make("today", "2026-01-15"),
+        make("tomorrow", "2026-01-16"),
+        make("weekend", "2026-01-17"),
+        make("next-week", "2026-01-19"),
+        make("later", "2026-01-28"),
+        make("next-month", "2026-02-20"),
+        make("next-year", "2027-02-20"),
+      ],
+      today,
+    );
+
+    expect(groups.map((g) => g.label)).toEqual([
+      "Today",
+      "Tomorrow",
+      "This weekend",
+      "Next week",
+      "Later in January",
+      "February",
+      "February",
+    ]);
+    expect(groups[0].events.map((e) => e.event_name)).toEqual(["today"]);
+    expect(groups[6].key).toBe("2027-02");
+    expect(groups[6].sublabel).toBe("2027");
+  });
+
+  it("merges consecutive events that share a bucket", () => {
+    const groups = groupEventsByTimeBucket(
+      [make("a", "2026-01-28"), make("b", "2026-01-29")],
+      today,
+    );
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].label).toBe("Later in January");
+    expect(groups[0].events).toHaveLength(2);
   });
 });
