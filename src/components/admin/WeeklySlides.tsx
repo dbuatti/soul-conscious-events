@@ -8,6 +8,7 @@ import {
   Copy,
   Download,
   Images,
+  Link2,
   Loader2,
   RefreshCw,
   Send,
@@ -474,6 +475,16 @@ const WeeklySlides: React.FC = () => {
     }
   };
 
+  const bioLink = typeof window !== 'undefined' ? `${window.location.origin}/link` : '/link';
+  const copyBioLink = async () => {
+    try {
+      await navigator.clipboard.writeText(bioLink);
+      toast.success('Bio link copied.');
+    } catch {
+      toast.error('Could not copy.');
+    }
+  };
+
   const eventBatches = useMemo(
     () => batches.filter((b) => b.kind === 'weekly' || b.kind === 'weekend' || b.kind.startsWith('state-')),
     [batches],
@@ -498,6 +509,27 @@ const WeeklySlides: React.FC = () => {
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading} className="rounded-xl ml-auto">
           <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+        </Button>
+      </div>
+
+      <div className="organic-card p-4 flex flex-wrap items-center gap-3">
+        <Link2 className="h-5 w-5 text-primary" />
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground">Instagram bio link</p>
+          <p className="text-xs text-muted-foreground">
+            Point your Instagram bio to this page — every caption says "link in bio".
+          </p>
+        </div>
+        <a
+          href="/link"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-auto truncate text-sm font-medium text-primary hover:underline"
+        >
+          {bioLink}
+        </a>
+        <Button variant="outline" size="sm" className="rounded-xl" onClick={copyBioLink}>
+          <Copy className="h-4 w-4 mr-2" /> Copy
         </Button>
       </div>
 

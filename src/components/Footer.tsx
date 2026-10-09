@@ -25,6 +25,7 @@ const linkGroups = [
     links: [
       { to: '/about', label: 'About' },
       { to: '/contact', label: 'Contact' },
+      { to: '/link', label: 'All our links' },
     ],
   },
 ];
@@ -71,6 +72,14 @@ const Footer = () => {
         <div className="mt-14 pt-8 border-t border-ink-foreground/10 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center text-xs text-ink-foreground/50">
           <p>&copy; {currentYear} SoulFlow. All rights reserved.</p>
           <div className="flex items-center gap-4">
+            <a
+              href="https://www.instagram.com/soulflowau"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 hover:text-ink-foreground transition-colors"
+            >
+              <Instagram className="h-3.5 w-3.5" /> @soulflowau
+            </a>
             <a
               href="https://www.instagram.com/heartbeatslive"
               target="_blank"
