@@ -26,13 +26,6 @@ export const getRedirectUrl = (): string => {
   return window.location.origin.replace(/\/$/, '');
 };
 
-export const getStaticMapUrl = (address: string): string => {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  if (!apiKey || !address) return '';
-  const encodedAddress = encodeURIComponent(address);
-  return `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=15&size=800x400&maptype=roadmap&markers=color:0xB34629%7C${encodedAddress}&key=${apiKey}&style=feature:all|element:all|saturation:-20|lightness:10`;
-};
-
 export const openInMaps = (address: string) => {
   if (!address) return;
   const encodedAddress = encodeURIComponent(address);
