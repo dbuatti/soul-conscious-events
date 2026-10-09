@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  expandRecurringEvents,
   formatPrice,
   generateRecurringInstances,
+  getAvailableVenues,
   getBaseEventId,
   getGoogleCalendarUrl,
   isValidEventId,
@@ -9,6 +11,7 @@ import {
 import type { Event } from "@/types/event";
 
 const BASE_ID = "550e8400-e29b-41d4-a716-446655440000";
+const OTHER_ID = "650e8400-e29b-41d4-a716-446655440001";
 
 const makeEvent = (overrides: Partial<Event> = {}): Event => ({
   id: BASE_ID,
@@ -145,5 +148,49 @@ describe("getGoogleCalendarUrl", () => {
     expect(url).toContain("https://www.google.com/calendar/render?");
     expect(url).toContain("text=Kirtan+Night");
     expect(url).toContain("dates=20260115%2F20260116");
+  });
+});
+
+describe("expandRecurringEvents", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T09:00:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("drops rows whose id is not a full UUID", () => {
+    expect(expandRecurringEvents([makeEvent({ id: "short" })])).toEqual([]);
+  });
+
+  it("keeps base events, expands recurring ones, and sorts by date", () => {
+    const single = makeEvent({ id: OTHER_ID, event_date: "2026-02-01", event_name: "Single" });
+    const weekly = makeEvent({ id: BASE_ID, event_date: "2026-01-05", recurring_pattern: "WEEKLY" });
+
+    const events = expandRecurringEvents([single, weekly]);
+
+    expect(events).toHaveLength(12);
+    const dates = events.map((e) => e.event_date);
+    expect([...dates].sort()).toEqual(dates);
+    expect(events[0].event_date).toBe("2026-01-05");
+  });
+});
+
+describe("getAvailableVenues", () => {
+  it("returns unique, sorted venue names and ignores short ids", () => {
+    const venues = getAvailableVenues([
+      makeEvent({ id: BASE_ID, place_name: "Sydney" }),
+      makeEvent({ id: OTHER_ID, place_name: "Byron Bay" }),
+      makeEvent({ id: "short", place_name: "Ignored" }),
+      makeEvent({ id: "650e8400-e29b-41d4-a716-446655440002", place_name: "Sydney" }),
+    ]);
+
+    expect(venues).toEqual(["Byron Bay", "Sydney"]);
+  });
+
+  it("skips events with no place name", () => {
+    expect(getAvailableVenues([makeEvent({ id: BASE_ID })])).toEqual([]);
   });
 });

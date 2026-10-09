@@ -66,6 +66,31 @@ export const generateRecurringInstances = (event: Event): Event[] => {
   return instances;
 };
 
+/**
+ * Expands recurring events into their upcoming instances and returns the whole
+ * set sorted chronologically. Rows whose id is not a full UUID are dropped.
+ */
+export const expandRecurringEvents = (events: Event[]): Event[] => {
+  const combined: Event[] = [];
+  for (const event of events) {
+    if (typeof event.id !== 'string' || event.id.length <= 30) continue;
+    combined.push(event);
+    if (event.recurring_pattern) combined.push(...generateRecurringInstances(event));
+  }
+  return combined.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
+};
+
+/** Unique, alphabetically sorted venue names for the filter dropdown. */
+export const getAvailableVenues = (events: Event[]): string[] => {
+  const names = new Set<string>();
+  for (const event of events) {
+    if (typeof event.id === 'string' && event.id.length > 30 && event.place_name) {
+      names.add(event.place_name);
+    }
+  }
+  return [...names].sort();
+};
+
 export const formatPrice = (price?: string | null) => {
   if (!price) return 'N/A';
   const lowerCasePrice = price.toLowerCase();
