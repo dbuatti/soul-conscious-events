@@ -22,7 +22,7 @@
 // public bucket using the service role, so the browser never needs storage
 // permissions. Instagram requires publicly reachable JPEG/PNG URLs.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, jsonResponse, requireAdmin } from "../_shared/auth.ts";
 
 const GRAPH = Deno.env.get("META_GRAPH_BASE") ?? "https://graph.facebook.com/v26.0";
@@ -50,8 +50,7 @@ function normalizeCollaborators(value: unknown): string[] {
 // Loads the batch for its caption/folder/collaborators. Tolerates the
 // collaborators column not existing yet (migration 0015 may be unapplied).
 async function loadBatch(
-  // deno-lint-ignore no-explicit-any
-  admin: { from: (table: string) => any },
+  admin: SupabaseClient,
   batchId: string,
 ): Promise<BatchRow | null> {
   const withCollab = await admin
