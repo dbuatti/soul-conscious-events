@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   format,
   startOfMonth,
@@ -91,12 +91,6 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
         if (timeA && timeB) return timeA.localeCompare(timeB);
         return a.event_name.localeCompare(b.event_name);
       });
-  };
-
-  const eventDurationInDays = (event: Event): number => {
-    const startDate = parseISO(event.event_date);
-    const endDate = event.end_date ? parseISO(event.end_date) : startDate;
-    return differenceInDays(endDate, startDate) + 1;
   };
 
   const startOfCurrentMonth = startOfMonth(currentMonth);

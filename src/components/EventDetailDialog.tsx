@@ -24,7 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
 import {
@@ -33,7 +32,6 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerDescription,
-  DrawerFooter,
   DrawerClose,
 } from '@/components/ui/drawer';
 import {
@@ -57,7 +55,7 @@ interface EventDetailDialogProps {
   cameFromCalendar?: boolean;
 }
 
-const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose, cameFromCalendar = false }) => {
+const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, isAdmin } = useSession();
   const isMobile = useIsMobile();

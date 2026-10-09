@@ -423,7 +423,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
         <FormField
           control={form.control}
           name="placeName"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <FormLabel htmlFor="placeName">Place Name</FormLabel>
               <FormControl>

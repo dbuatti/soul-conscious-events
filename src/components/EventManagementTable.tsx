@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -10,7 +10,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { Edit, Trash2, PlusCircle, ExternalLink, Loader2, Frown, RefreshCw } from 'lucide-react';
 import {
@@ -51,7 +50,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import EventDetailDialog from './EventDetailDialog';
 import { getBaseEventId, isValidEventId, formatPrice } from '@/utils/event-utils';
@@ -112,8 +111,7 @@ const EventManagementTable = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
-  const location = useLocation();
+  const [currentEvent] = useState<Event | null>(null);
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -196,28 +194,6 @@ const EventManagementTable = () => {
       toast.success('Event moved to trash successfully!');
       fetchEvents();
     }
-  };
-
-  const handleEdit = (event: Event) => {
-    setCurrentEvent(event);
-    form.reset({
-      id: event.id,
-      eventName: event.event_name,
-      eventDate: new Date(`${event.event_date}T00:00:00`),
-      endDate: event.end_date ? new Date(`${event.end_date}T00:00:00`) : undefined,
-      eventTime: event.event_time || '',
-      placeName: event.place_name || '',
-      fullAddress: event.full_address || '',
-      description: event.description || '',
-      ticketLink: event.ticket_link || '',
-      price: event.price || '',
-      specialNotes: event.special_notes || '',
-      organizerContact: event.organizer_contact || '',
-      eventType: event.event_type || '',
-      approvalStatus: event.approval_status || '',
-      image_url: event.image_url || '',
-    });
-    setIsEditDialogOpen(true);
   };
 
   const onEditSubmit = async (values: z.infer<typeof eventFormSchema>) => {

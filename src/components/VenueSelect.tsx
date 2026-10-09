@@ -27,7 +27,7 @@ interface VenueSelectProps {
 const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
   const [open, setOpen] = useState(false);
   const [venues, setVenues] = useState<Venue[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {

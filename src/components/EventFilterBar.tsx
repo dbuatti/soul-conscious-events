@@ -3,9 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Filter as FilterIcon, List, CalendarDays, Map, X } from 'lucide-react';
-import { eventTypes } from '@/lib/constants';
 import FilterOverlay from '@/components/FilterOverlay';
-import { australianStates } from '@/lib/constants';
 
 interface EventFilterBarProps {
   searchTerm: string;
