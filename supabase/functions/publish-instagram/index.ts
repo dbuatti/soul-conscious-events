@@ -33,6 +33,39 @@ interface BatchRow {
   week_start?: string;
   kind?: string;
   slides?: { publicUrl: string }[];
+  collaborators?: string | null;
+}
+
+// Instagram allows up to 3 collaborators. Accepts an array or a comma/space
+// separated string and normalises to bare handles (no leading @).
+function normalizeCollaborators(value: unknown): string[] {
+  const raw = Array.isArray(value) ? value.join(",") : typeof value === "string" ? value : "";
+  return raw
+    .split(/[\s,]+/)
+    .map((s) => s.trim().replace(/^@/, ""))
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+// Loads the batch for its caption/folder/collaborators. Tolerates the
+// collaborators column not existing yet (migration 0015 may be unapplied).
+async function loadBatch(
+  // deno-lint-ignore no-explicit-any
+  admin: { from: (table: string) => any },
+  batchId: string,
+): Promise<BatchRow | null> {
+  const withCollab = await admin
+    .from("ig_slide_batches")
+    .select("caption,week_start,kind,slides,collaborators")
+    .eq("id", batchId)
+    .maybeSingle();
+  if (!withCollab.error) return (withCollab.data ?? null) as BatchRow | null;
+  const base = await admin
+    .from("ig_slide_batches")
+    .select("caption,week_start,kind,slides")
+    .eq("id", batchId)
+    .maybeSingle();
+  return (base.data ?? null) as BatchRow | null;
 }
 
 serve(async (req) => {
@@ -77,16 +110,15 @@ serve(async (req) => {
     const inlineImages: string[] = Array.isArray(body?.images) ? body.images : [];
     const isStory = body?.story === true;
 
-    // Resolve the batch up-front for its caption and storage folder.
+    // Resolve the batch up-front for its caption, storage folder and any
+    // default collaborators.
     let batch: BatchRow | null = null;
     if (batchId) {
-      const { data } = await admin
-        .from("ig_slide_batches")
-        .select("caption,week_start,kind,slides")
-        .eq("id", batchId)
-        .maybeSingle();
-      batch = (data ?? null) as BatchRow | null;
+      batch = await loadBatch(admin, batchId);
     }
+
+    // Feed posts can be co-authored (Instagram Collab); Stories cannot.
+    const collaborators = normalizeCollaborators(body?.collaborators ?? batch?.collaborators);
 
     // Upload any inline (base64 data URL) images using the service role, so the
     // browser never needs storage write access.
@@ -123,8 +155,8 @@ serve(async (req) => {
     const mediaId = isStory
       ? await publishStory(igUserId, accessToken, imageUrls)
       : imageUrls.length === 1
-        ? await publishSingle(igUserId, accessToken, imageUrls[0], caption)
-        : await publishCarousel(igUserId, accessToken, imageUrls, caption);
+        ? await publishSingle(igUserId, accessToken, imageUrls[0], caption, collaborators)
+        : await publishCarousel(igUserId, accessToken, imageUrls, caption, collaborators);
 
     if (batchId) {
       await admin
@@ -181,13 +213,15 @@ async function waitForContainer(containerId: string, token: string, timeoutMs = 
   }
 }
 
-async function publishSingle(igUserId: string, token: string, imageUrl: string, caption: string) {
-  const container = await graph(`${igUserId}/media`, { image_url: imageUrl, caption }, token);
+async function publishSingle(igUserId: string, token: string, imageUrl: string, caption: string, collaborators: string[] = []) {
+  const params: Record<string, string> = { image_url: imageUrl, caption };
+  if (collaborators.length) params.collaborators = collaborators.join(",");
+  const container = await graph(`${igUserId}/media`, params, token);
   await waitForContainer(container.id, token);
   return (await graph(`${igUserId}/media_publish`, { creation_id: container.id }, token)).id;
 }
 
-async function publishCarousel(igUserId: string, token: string, imageUrls: string[], caption: string) {
+async function publishCarousel(igUserId: string, token: string, imageUrls: string[], caption: string, collaborators: string[] = []) {
   const children: string[] = [];
   for (const url of imageUrls) {
     const child = await graph(`${igUserId}/media`, { image_url: url, is_carousel_item: "true" }, token);
@@ -196,11 +230,9 @@ async function publishCarousel(igUserId: string, token: string, imageUrls: strin
   for (const childId of children) {
     await waitForContainer(childId, token);
   }
-  const parent = await graph(
-    `${igUserId}/media`,
-    { media_type: "CAROUSEL", children: children.join(","), caption },
-    token,
-  );
+  const parentParams: Record<string, string> = { media_type: "CAROUSEL", children: children.join(","), caption };
+  if (collaborators.length) parentParams.collaborators = collaborators.join(",");
+  const parent = await graph(`${igUserId}/media`, parentParams, token);
   await waitForContainer(parent.id, token);
   return (await graph(`${igUserId}/media_publish`, { creation_id: parent.id }, token)).id;
 }

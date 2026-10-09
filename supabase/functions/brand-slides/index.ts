@@ -384,6 +384,9 @@ serve(async (req) => {
           caption,
           slides: uploaded,
           event_count: 0,
+          // Optional global default so automated posts co-author too. Omitted
+          // (safe) unless IG_COLLABORATORS is set on the project.
+          collaborators: Deno.env.get("IG_COLLABORATORS")?.trim() || undefined,
         },
         { onConflict: "kind,week_start" },
       )

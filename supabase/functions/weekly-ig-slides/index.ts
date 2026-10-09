@@ -223,7 +223,17 @@ serve(async (req) => {
     const { data: batchRow, error: batchError } = await supabase
       .from("ig_slide_batches")
       .upsert(
-        { kind, title, week_start: dateFolder, caption, slides: uploaded, event_count: selected.length },
+        {
+          kind,
+          title,
+          week_start: dateFolder,
+          caption,
+          slides: uploaded,
+          event_count: selected.length,
+          // Optional global default so automated posts co-author too. Omitted
+          // (safe) unless IG_COLLABORATORS is set on the project.
+          collaborators: Deno.env.get("IG_COLLABORATORS")?.trim() || undefined,
+        },
         { onConflict: "kind,week_start" },
       )
       .select("id")
