@@ -163,9 +163,12 @@ const BatchCard: React.FC<{
   const prefix = batch.kind;
   const isStory = batch.kind.endsWith('-story');
   const [collapsed, setCollapsed] = useState(true);
+  const [collaborators, setCollaborators] = useState(batch.collaborators ?? '');
 
   const meta = `${batch.slides.length} slide${batch.slides.length === 1 ? '' : 's'}${
     batch.event_count > 0 ? ` · ${batch.event_count} event${batch.event_count === 1 ? '' : 's'}` : ''
+  }${
+    !isStory && batch.collaborators ? ` · with ${batch.collaborators}` : ''
   }${
     batch.status === 'posted' && batch.posted_at
       ? ` · posted ${format(parseISO(batch.posted_at), 'd MMM, h:mma')}`
@@ -224,7 +227,7 @@ const BatchCard: React.FC<{
         images.push(await blobToDataUrl(blob));
       }
       const { data, error } = await supabase.functions.invoke('publish-instagram', {
-        body: { images, caption: batch.caption, batchId: batch.id, story: isStory },
+        body: { images, caption: batch.caption, batchId: batch.id, story: isStory, collaborators },
       });
       if (error) throw new Error(await functionErrorMessage(error));
       if (data?.error) throw new Error(data.error);
@@ -352,6 +355,22 @@ const BatchCard: React.FC<{
       </div>
 
       <div className="flex flex-wrap items-end gap-2 border-t border-border pt-4">
+        <label className="text-xs text-muted-foreground flex flex-col gap-1">
+          Collaborators
+          <input
+            type="text"
+            value={isStory ? '' : collaborators}
+            onChange={(e) => setCollaborators(e.target.value)}
+            onBlur={() => {
+              const next = collaborators.trim();
+              if (next !== (batch.collaborators ?? '')) update({ collaborators: next || null });
+            }}
+            placeholder={isStory ? 'Not for Stories' : '@heartbeatslive (max 3)'}
+            disabled={isStory || busy !== null}
+            title="Co-author this post with up to 3 accounts (comma-separated handles)"
+            className="w-56 rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground disabled:opacity-50"
+          />
+        </label>
         <label className="text-xs text-muted-foreground flex flex-col gap-1">
           Schedule
           <input

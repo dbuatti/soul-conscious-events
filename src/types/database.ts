@@ -80,6 +80,7 @@ export interface SlideBatch {
   caption: string;
   slides: SlideBatchSlide[];
   event_count: number;
+  collaborators: string | null;
   status: SlidePostStatus;
   scheduled_for: string | null;
   posted_at: string | null;
