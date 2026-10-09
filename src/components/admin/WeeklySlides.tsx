@@ -25,6 +25,7 @@ const SLIDE_H = 1350;
 
 const GENERATORS = {
   weekly: { label: 'National weekly', invoke: 'weekly-ig-slides', body: {} as Record<string, unknown> },
+  weekend: { label: 'Weekend picks', invoke: 'weekly-ig-slides', body: { window: 'weekend' } as Record<string, unknown> },
   state: { label: 'State weekly', invoke: 'weekly-ig-slides', body: {} as Record<string, unknown> },
   'brand-intro': { label: 'Introduction', invoke: 'brand-slides', body: { theme: 'intro' } },
   'brand-organisers': { label: 'For organisers', invoke: 'brand-slides', body: { theme: 'organisers' } },
@@ -51,6 +52,7 @@ function rebuildTarget(kind: string): { invoke: string; body: Record<string, unk
   const isStory = kind.endsWith('-story');
   const base = isStory ? kind.slice(0, -'-story'.length) : kind;
   if (base === 'weekly') return { invoke: 'weekly-ig-slides', body: isStory ? { format: 'story' } : {} };
+  if (base === 'weekend') return { invoke: 'weekly-ig-slides', body: isStory ? { window: 'weekend', format: 'story' } : { window: 'weekend' } };
   if (base.startsWith('state-')) {
     const state = base.slice('state-'.length);
     return { invoke: 'weekly-ig-slides', body: isStory ? { state, format: 'story' } : { state } };
@@ -65,7 +67,7 @@ function rebuildTarget(kind: string): { invoke: string; body: Record<string, unk
 const CONTENT_PLAN: { when: string; title: string; kind: string }[] = [
   { when: 'Monday', title: 'This week across Australia', kind: 'weekly' },
   { when: 'Wednesday', title: 'Victoria this week', kind: 'state' },
-  { when: 'Friday', title: 'Weekend picks', kind: 'state' },
+  { when: 'Friday', title: 'Weekend picks', kind: 'weekend' },
   { when: 'Sunday', title: 'Find your next practice', kind: 'brand-locations' },
   { when: 'Monthly', title: 'Meet the organiser', kind: 'brand-meet-organiser' },
   { when: 'Fortnightly', title: 'For organisers — list your event', kind: 'brand-organisers' },
@@ -425,6 +427,7 @@ const WeeklySlides: React.FC = () => {
     lines.push('• Every day, 8:00am (Sydney):');
     lines.push('    Mon — national "this week" carousel + Story');
     lines.push('    Tue–Sat — one state carousel + Story (VIC, QLD, SA, TAS, NSW)');
+    lines.push('    Fri — plus a national "weekend picks" carousel + Story');
     lines.push('    Sun — one evergreen brand carousel (rotates weekly)');
     lines.push('');
     const queued = batches
@@ -472,7 +475,7 @@ const WeeklySlides: React.FC = () => {
   };
 
   const eventBatches = useMemo(
-    () => batches.filter((b) => b.kind === 'weekly' || b.kind.startsWith('state-')),
+    () => batches.filter((b) => b.kind === 'weekly' || b.kind === 'weekend' || b.kind.startsWith('state-')),
     [batches],
   );
 
@@ -521,6 +524,16 @@ const WeeklySlides: React.FC = () => {
           >
             {generating === 'weekly' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Images className="h-4 w-4 mr-2" />}
             Build national {eventFormat === 'story' ? 'Story' : 'weekly'}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => generate('weekend', { format: eventFormat })}
+            disabled={generating !== null}
+          >
+            {generating === 'weekend' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Images className="h-4 w-4 mr-2" />}
+            Build Weekend picks
           </Button>
           <label className="text-xs text-muted-foreground flex flex-col gap-1">
             State
@@ -636,8 +649,8 @@ const WeeklySlides: React.FC = () => {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Automation: Instagram is connected. The weekly workflow auto-posts each state's "this week" carousel + Story, and
-          any batches you mark as scheduled publish via the hourly automation workflow.
+          Automation: Instagram is connected. The daily content workflow auto-posts the national, state and weekend carousels
+          (plus Stories), and any batches you mark as scheduled publish via the hourly automation workflow.
         </p>
       </section>
 

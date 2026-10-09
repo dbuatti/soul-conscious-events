@@ -32,6 +32,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const EventsListV2 = lazy(() => import("./pages/v2/EventsListV2"));
 const LoginV2 = lazy(() => import("./pages/v2/LoginV2"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
+const LinkInBio = lazy(() => import("./pages/LinkInBio"));
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,9 @@ const App = () => (
             </div>
           }>
             <Routes>
+              {/* Standalone link-in-bio page — the destination of the Instagram bio link. */}
+              <Route path="/link" element={<LinkInBio />} />
+
               {/* V2 Prototype Routes */}
               <Route element={<LayoutV2 />}>
                 <Route path="/" element={<EventsListV2 />} />

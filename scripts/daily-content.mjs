@@ -5,6 +5,7 @@
 //
 //   Monday     national "this week" carousel + Story
 //   Tue–Sat    one state carousel + Story each day (from STATES)
+//   Friday     the state carousel, plus a national "weekend picks" carousel + Story
 //   Sunday     one evergreen brand carousel (themes rotate weekly)
 //
 // Generation happens in the Edge Functions (weekly-ig-slides / brand-slides,
@@ -144,6 +145,26 @@ async function postEventWeek(state, label) {
   }
 }
 
+// Friday's extra: a national carousel of this weekend's (Sat–Sun) events.
+async function postWeekend() {
+  const feed = await invoke("weekly-ig-slides", { window: "weekend" });
+  if (!feed.eventCount) {
+    log("  Weekend: no events on this weekend, skipping.");
+    return;
+  }
+  if (!SKIP_FEED) {
+    const mediaId = await publish(feed);
+    log(`  Weekend: feed (${feed.eventCount} events)${mediaId ? ` -> ${mediaId}` : ""}`);
+  }
+  if (!SKIP_STORY) {
+    const story = await invoke("weekly-ig-slides", { window: "weekend", format: "story" });
+    if (story.slides?.length) {
+      const mediaId = await publish(story, { story: true });
+      log(`  Weekend: story${mediaId ? ` -> ${mediaId}` : ""}`);
+    }
+  }
+}
+
 async function postBrand(theme) {
   const brand = await invoke("brand-slides", { theme });
   if (!brand.slides?.length) {
@@ -177,6 +198,10 @@ async function run() {
         log(`  no state configured for ${weekday}, skipping.`);
       } else {
         await postEventWeek(state, state);
+      }
+      // Friday also gets the national "weekend picks" carousel.
+      if (weekday === "Fri" && process.env.SKIP_WEEKEND !== "1") {
+        await postWeekend();
       }
     } else {
       log(`  ${weekday}: nothing scheduled.`);

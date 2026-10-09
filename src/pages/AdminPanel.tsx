@@ -12,9 +12,10 @@ import AiLogsTable from '@/components/AiLogsTable';
 import VenueManagementTable from '@/components/VenueManagementTable';
 import EventImports from '@/components/admin/EventImports';
 import WeeklySlides from '@/components/admin/WeeklySlides';
+import InstagramInsights from '@/components/admin/InstagramInsights';
 import PageHeader from '@/components/v2/PageHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images } from 'lucide-react';
+import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -178,12 +179,15 @@ const AdminPanel = () => {
       />
 
       <Tabs defaultValue="imports" className="w-full" onValueChange={handleTabChange}>
-        <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-8 bg-secondary/50 p-1 rounded-2xl mb-8">
+        <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-9 bg-secondary/50 p-1 rounded-2xl mb-8">
           <TabsTrigger value="imports" className="rounded-xl flex items-center gap-2">
             <Inbox className="h-3.5 w-3.5" /> Imports
           </TabsTrigger>
           <TabsTrigger value="slides" className="rounded-xl flex items-center gap-2">
             <Images className="h-3.5 w-3.5" /> Slides
+          </TabsTrigger>
+          <TabsTrigger value="insights" className="rounded-xl flex items-center gap-2">
+            <BarChart3 className="h-3.5 w-3.5" /> Insights
           </TabsTrigger>
           <TabsTrigger value="events" className="rounded-xl">Events</TabsTrigger>
           <TabsTrigger value="venues" className="rounded-xl flex items-center gap-2">
@@ -203,6 +207,10 @@ const AdminPanel = () => {
 
         <TabsContent value="slides" className="mt-0">
           <WeeklySlides />
+        </TabsContent>
+
+        <TabsContent value="insights" className="mt-0">
+          <InstagramInsights />
         </TabsContent>
 
         <TabsContent value="events" className="mt-0">

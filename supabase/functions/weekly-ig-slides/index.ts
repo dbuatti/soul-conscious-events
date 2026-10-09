@@ -40,6 +40,17 @@ function isoDate(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
+// The upcoming Saturday–Sunday window ("weekend picks"). From a Friday this is
+// tomorrow; on a Sunday it rolls to the following weekend.
+function weekendRange(now: Date): { start: Date; endExclusive: Date } {
+  const d = new Date(now);
+  d.setUTCHours(0, 0, 0, 0);
+  const day = d.getUTCDay(); // 0 = Sunday … 6 = Saturday
+  const toSaturday = day === 6 ? 0 : day === 0 ? 6 : 6 - day;
+  const saturday = addDays(d, toSaturday);
+  return { start: saturday, endExclusive: addDays(saturday, 2) };
+}
+
 function formatAU(d: string | null) {
   if (!d) return "";
   try {
@@ -83,7 +94,9 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const rawState = (body?.state as string | undefined)?.toUpperCase();
-    const state = rawState && STATE_NAMES[rawState] ? rawState : null;
+    const scope = body?.window === "weekend" ? "weekend" : "week";
+    // Weekend picks are always national — ignore any state passed alongside.
+    const state = scope === "week" && rawState && STATE_NAMES[rawState] ? rawState : null;
     const format = body?.format === "story" ? "story" : "feed";
 
     const supabase = createClient(
@@ -95,9 +108,11 @@ serve(async (req) => {
     const now = new Date();
     const weekStart = new Date(now);
     weekStart.setUTCHours(0, 0, 0, 0);
-    const weekEnd = addDays(weekStart, 7);
+    const { start, endExclusive } = scope === "weekend"
+      ? weekendRange(now)
+      : { start: weekStart, endExclusive: addDays(weekStart, 7) };
     const dateFolder = isoDate(weekStart);
-    const baseKind = state ? `state-${state}` : "weekly";
+    const baseKind = scope === "weekend" ? "weekend" : state ? `state-${state}` : "weekly";
     const kind = format === "story" ? `${baseKind}-story` : baseKind;
 
     let query = supabase
@@ -105,8 +120,8 @@ serve(async (req) => {
       .select("id,event_name,event_date,event_time,place_name,price,image_url,event_type")
       .eq("approval_status", "approved")
       .eq("is_deleted", false)
-      .gte("event_date", dateFolder)
-      .lt("event_date", isoDate(weekEnd))
+      .gte("event_date", isoDate(start))
+      .lt("event_date", isoDate(endExclusive))
       .order("event_date", { ascending: true })
       .limit(8);
 
@@ -120,7 +135,11 @@ serve(async (req) => {
 
     const selected = (events || []) as EventSlideData[];
     const label = state ? STATE_NAMES[state] : null;
-    const title = label ? `${label} This Week` : "Conscious Events This Week";
+    const title = scope === "weekend"
+      ? "Weekend Picks"
+      : label
+        ? `${label} This Week`
+        : "Conscious Events This Week";
 
     const uploaded: { path: string; publicUrl: string }[] = [];
     const upload = async (path: string, svg: string) => {
@@ -135,12 +154,15 @@ serve(async (req) => {
       if (pub?.publicUrl) uploaded.push({ path, publicUrl: pub.publicUrl });
     };
 
+    const displayStart = scope === "weekend" ? start : weekStart;
+    const displayEnd = scope === "weekend" ? addDays(start, 1) : addDays(weekStart, 6);
     const coverSvg = await generateCoverSlideSvg(
-      weekStart.toISOString(),
-      addDays(weekStart, 6).toISOString(),
+      displayStart.toISOString(),
+      displayEnd.toISOString(),
       selected.length,
       label ?? undefined,
       format,
+      scope === "weekend" ? { headline: "This Weekend", subhead: "Conscious Events" } : undefined,
     );
 
     if (format === "story") {
@@ -152,8 +174,10 @@ serve(async (req) => {
           ? await generateStorySlideSvg(
               selected,
               label ?? undefined,
-              weekStart.toISOString(),
-              addDays(weekStart, 6).toISOString(),
+              displayStart.toISOString(),
+              displayEnd.toISOString(),
+              "story",
+              scope === "weekend" ? { kicker: "This weekend in", city: "Australia" } : undefined,
             )
           : coverSvg;
       await upload(`${dateFolder}/${kind}/slide-01-story.svg`, storySvg);
@@ -180,7 +204,11 @@ serve(async (req) => {
       }
     }
 
-    const heading = label ? `📍 ${label} — what's on this week 🌿` : "🌿 Conscious events across Australia this week";
+    const heading = scope === "weekend"
+      ? "☀️ Plans this weekend? Here's what's on 🌿"
+      : label
+        ? `📍 ${label} — what's on this week 🌿`
+        : "🌿 Conscious events across Australia this week";
     const lines = [heading, ""];
     for (const ev of selected) {
       const d = formatAU(ev.event_date);

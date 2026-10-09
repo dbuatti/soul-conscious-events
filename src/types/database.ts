@@ -87,3 +87,29 @@ export interface SlideBatch {
   error: string | null;
   created_at: string;
 }
+
+export interface IgAccountInsights {
+  username: string | null;
+  followers_count: number | null;
+  media_count: number | null;
+  reach: number | null;
+}
+
+export interface IgMediaInsights {
+  id: string;
+  media_type: string | null;
+  permalink: string | null;
+  timestamp: string | null;
+  like_count: number | null;
+  comments_count: number | null;
+  insights: { reach: number | null; saved: number | null; shares: number | null; views: number | null } | null;
+  insightsError?: string;
+}
+
+export interface IgInsightsResponse {
+  ok?: boolean;
+  account?: IgAccountInsights;
+  media?: IgMediaInsights[];
+  error?: string;
+  code?: string;
+}

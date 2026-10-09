@@ -120,8 +120,12 @@ export async function generateCoverSlideSvg(
   count: number,
   location?: string,
   format: SlideFormat = "feed",
+  opts?: { eyebrow?: string; headline?: string; subhead?: string },
 ): Promise<string> {
   const fonts = await loadFonts();
+  const eyebrow = opts?.eyebrow ?? "SoulFlow";
+  const headline = opts?.headline ?? location ?? "This Week";
+  const subhead = opts?.subhead ?? (location ? "This Week" : "Conscious Events");
   return await satori(
     <div
       style={{
@@ -134,13 +138,13 @@ export async function generateCoverSlideSvg(
       {logoBadge({ top: format === "story" ? 88 : 72, left: format === "story" ? 88 : 72, size: format === "story" ? 132 : 88 })}
       <div style={{ position: "absolute", top: 80, right: 80, width: 120, height: 120, borderRadius: 60, background: ACCENT, opacity: 0.35 }} />
       <p style={{ fontSize: 26, fontWeight: 700, letterSpacing: 6, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
-        {location ? "SoulFlow" : "SoulFlow"}
+        {eyebrow}
       </p>
       <h1 style={{ fontSize: location ? 76 : 92, fontWeight: 800, color: BRAND_TEXT, margin: "24px 0 0 0", textAlign: "center" }}>
-        {location || "This Week"}
+        {headline}
       </h1>
       <h2 style={{ fontSize: 36, fontWeight: 600, color: BRAND_SUBTEXT, marginTop: 16, marginBottom: 8, textAlign: "center" }}>
-        {location ? "This Week" : "Conscious Events"}
+        {subhead}
       </h2>
       <p style={{ fontSize: 30, color: BRAND_SUBTEXT, margin: "32px 0 0 0", textAlign: "center" }}>
         {formatDate(weekStartISO)} – {formatDate(weekEndISO)}
@@ -162,10 +166,12 @@ export async function generateStorySlideSvg(
   weekStartISO: string,
   weekEndISO: string,
   format: SlideFormat = "story",
+  opts?: { kicker?: string; city?: string },
 ): Promise<string> {
   const fonts = await loadFonts();
   const { width, height } = DIMS[format];
-  const city = label || "Australia";
+  const city = opts?.city ?? (label || "Australia");
+  const kicker = opts?.kicker ?? "This week in";
   const shown = events.slice(0, 6);
   const extra = Math.max(0, events.length - shown.length);
   return await satori(
@@ -173,7 +179,7 @@ export async function generateStorySlideSvg(
       <div style={{ position: "absolute", top: 0, left: 0, width, height: 10, background: BRAND_PRIMARY }} />
       {logoBadge({ top: 80, left: 90, size: 128 })}
       <p style={{ fontSize: 30, fontWeight: 700, letterSpacing: 5, color: BRAND_PRIMARY, margin: 0, textTransform: "uppercase" }}>
-        This week in
+        {kicker}
       </p>
       <h1 style={{ fontSize: 96, fontWeight: 800, color: BRAND_TEXT, margin: "8px 0 0 0", lineHeight: 1.02 }}>
         {city}
