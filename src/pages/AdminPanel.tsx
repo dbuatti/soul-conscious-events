@@ -13,9 +13,10 @@ import VenueManagementTable from '@/components/VenueManagementTable';
 import EventImports from '@/components/admin/EventImports';
 import WeeklySlides from '@/components/admin/WeeklySlides';
 import InstagramInsights from '@/components/admin/InstagramInsights';
+import ByHeartDashboard from '@/components/admin/ByHeartDashboard';
 import PageHeader from '@/components/v2/PageHeader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3 } from 'lucide-react';
+import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3, Piano } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -179,7 +180,7 @@ const AdminPanel = () => {
       />
 
       <Tabs defaultValue="imports" className="w-full" onValueChange={handleTabChange}>
-        <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-9 bg-secondary/50 p-1 rounded-2xl mb-8">
+        <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-10 bg-secondary/50 p-1 rounded-2xl mb-8">
           <TabsTrigger value="imports" className="rounded-xl flex items-center gap-2">
             <Inbox className="h-3.5 w-3.5" /> Imports
           </TabsTrigger>
@@ -198,6 +199,9 @@ const AdminPanel = () => {
           <TabsTrigger value="users" className="rounded-xl">Users</TabsTrigger>
           <TabsTrigger value="ai-logs" className="rounded-xl flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5" /> AI Logs
+          </TabsTrigger>
+          <TabsTrigger value="by-heart" className="rounded-xl flex items-center justify-center" title="By Heart — piano sound journey" aria-label="By Heart">
+            <Piano className="h-3.5 w-3.5" />
           </TabsTrigger>
         </TabsList>
         
@@ -281,6 +285,10 @@ const AdminPanel = () => {
 
         <TabsContent value="ai-logs" className="mt-0">
           <AiLogsTable />
+        </TabsContent>
+
+        <TabsContent value="by-heart" className="mt-0">
+          <ByHeartDashboard />
         </TabsContent>
         
         <TabsContent value="users" className="mt-0">
