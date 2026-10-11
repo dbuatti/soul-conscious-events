@@ -200,7 +200,7 @@ const AdminPanel = () => {
           <TabsTrigger value="ai-logs" className="rounded-xl flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5" /> AI Logs
           </TabsTrigger>
-          <TabsTrigger value="by-heart" className="rounded-xl flex items-center justify-center" title="By Heart — piano sound journey" aria-label="By Heart">
+          <TabsTrigger value="by-heart" className="rounded-xl flex items-center justify-center" title="Piano by Heart — piano sound journey" aria-label="Piano by Heart">
             <Piano className="h-3.5 w-3.5" />
           </TabsTrigger>
         </TabsList>
