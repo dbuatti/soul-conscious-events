@@ -41,11 +41,11 @@ const VENUES: Venue[] = [
   { name: 'Infinite Co', suburb: 'St Kilda, VIC', address: '14 Pakington St', piano: 'None (BYO + 2 JBL speakers)', hasPiano: false, floor: '—', capacity: null, rate: 'On enquiry', cost3h: null, contact: 'Elle · hello@infiniteco.com.au · 0498 668 236', email: 'hello@infiniteco.com.au', notes: 'Studio/room hire; hosts $44–$139 paid wellness events' },
 ];
 
-const EMAIL_TEMPLATE = `Subject: By Heart — an hour of improvised piano at [Venue]
+const EMAIL_TEMPLATE = `Subject: Piano by Heart — an hour of improvised piano at [Venue]
 
 Hi [first name],
 
-My name is Daniele Buatti — Melbourne pianist and music director with 12+ years in music theatre. I'm launching "By Heart", a one-hour improvised piano sound journey: people lie or sit on mats in a dim room while I play a single continuous, unbroken improvisation. No set list, no talking — a short welcome, an hour of live music, then a gentle close.
+My name is Daniele Buatti — Melbourne pianist and music director with 12+ years in music theatre. I'm launching "Piano by Heart", a one-hour improvised piano sound journey: people lie or sit on mats in a dim room while I play a single continuous, unbroken improvisation. No set list, no talking — a short welcome, an hour of live music, then a gentle close.
 
 I came across [Venue] and think the space could be a beautiful fit.
 
@@ -71,11 +71,11 @@ const RUN_OF_SHOW = [
   ['Integrate & connect (30 min)', 'Gentle close, then quiet time. Tea and fruit if possible.'],
 ] as const;
 
-const MIC_WELCOME = `Welcome to By Heart. Find a spot, lie down or sit, and let yourself arrive. For the next hour there's nothing you need to do. No phones, no talking. Just be with whatever you need. If your body wants to move, move. If a sound wants to come out, let it. And if it meets the sounds around you, that's welcome too. Stillness is welcome. Tears are welcome. I'll be here at the piano. Let's begin.`;
+const MIC_WELCOME = `Welcome to Piano by Heart. Find a spot, lie down or sit, and let yourself arrive. For the next hour there's nothing you need to do. No phones, no talking. Just be with whatever you need. If your body wants to move, move. If a sound wants to come out, let it. And if it meets the sounds around you, that's welcome too. Stillness is welcome. Tears are welcome. I'll be here at the piano. Let's begin.`;
 
 const NAMES = [
-  { name: 'By Heart', tag: 'Current pick', verdict: 'Cleanest and most evocative. "By heart" is improvisation itself — no sheet music. Doesn\u2019t name the piano, so the description line carries that.', best: true },
-  { name: 'Piano by Heart', tag: 'Best of the four', verdict: 'Flows better than "Heart by Piano", keeps the musical pun, and names the piano. Use if you want piano in the title.', best: true },
+  { name: 'Piano by Heart', tag: 'Locked in', verdict: 'The pick. Names the piano and keeps "played by heart = improvised". Clear on a poster or bio, easy to repeat.', best: true },
+  { name: 'By Heart', tag: 'Runner-up', verdict: 'Cleanest and most evocative. "By heart" is improvisation itself — no sheet music. Doesn\u2019t name the piano, so the description line carries that.', best: false },
   { name: 'The Held Note', tag: 'Top new pick', verdict: 'Musical sustain plus being safely held. Speaks directly to a safe, open container.', best: true },
   { name: 'Sustain', tag: 'One word', verdict: 'Piano pedal + emotional support. Perfect for the flat, bold, sans-serif look. Slightly abstract.', best: false },
   { name: 'Heart & Piano', tag: 'Literal', verdict: 'Clearest and warmest — lowest risk, lowest poetry. Reads as a two-act bill rather than one continuous piece.', best: false },
@@ -195,7 +195,7 @@ const ByHeartDashboard = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-          <Music2 className="h-3.5 w-3.5" /> By Heart
+          <Music2 className="h-3.5 w-3.5" /> Piano by Heart
         </span>
         <span className="text-sm text-muted-foreground">An hour of improvised piano to rest, move and sound.</span>
       </div>
@@ -220,7 +220,7 @@ const ByHeartDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-foreground">
                 <p>One hour of live, improvised piano in a calm, dim room where people rest, move or make sound however they need. No phones, no talking, no demands. Daniele is the channel at the piano.</p>
-                <p><span className="font-semibold">Name:</span> By Heart. <span className="text-muted-foreground">Improvising is playing by heart, and the heart is where the music is aimed.</span></p>
+                <p><span className="font-semibold">Name:</span> Piano by Heart. <span className="text-muted-foreground">Improvising is playing by heart, and the heart is where the music is aimed.</span></p>
                 <p><span className="font-semibold">Description line:</span> An hour of improvised piano to rest, move and sound.</p>
                 <p className="text-muted-foreground">The thread underneath comes from Music of the Spheres: light reaches us first, but what touches us deeper is sound.</p>
               </CardContent>
