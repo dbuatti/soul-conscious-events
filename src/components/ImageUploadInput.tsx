@@ -43,6 +43,7 @@ interface ImageUploadInputProps {
 
 const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageUrl, name }) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(currentImageUrl || null);
   const [imageInputMode, setImageInputMode] = useState<'upload' | 'url' | 'defaults'>(
     currentImageUrl && !currentImageUrl.includes('supabase.co/storage/v1/object/public/event-images') ? 'url' : 'upload'
@@ -68,18 +69,39 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
     }
   }, [currentImageUrl]);
 
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    setSelectedImage(file);
+    setImagePreviewUrl(URL.createObjectURL(file));
+    form.setValue('imageFile', file, { shouldValidate: true });
+    form.setValue('imageUrl', '', { shouldValidate: true });
+  };
+
   const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setSelectedImage(file);
-      setImagePreviewUrl(URL.createObjectURL(file));
-      form.setValue('imageFile', file, { shouldValidate: true });
-      form.setValue('imageUrl', '', { shouldValidate: true });
+      processFile(event.target.files[0]);
     } else {
       setSelectedImage(null);
       setImagePreviewUrl(currentImageUrl || null);
       form.setValue('imageFile', undefined, { shouldValidate: true });
     }
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const file = event.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
   };
 
   const handleImageUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,7 +175,18 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
                 <TabsTrigger value="defaults" className="text-xs"><Sparkles className="mr-1 h-3 w-3" /> Defaults</TabsTrigger>
               </TabsList>
               <TabsContent value="upload" className="mt-3">
-                <label htmlFor="image-upload" className="flex items-center justify-between px-4 py-2 rounded-xl border border-input bg-background text-sm text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors duration-200">
+                <label
+                  htmlFor="image-upload"
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-2 rounded-xl border text-sm text-foreground shadow-sm cursor-pointer transition-colors duration-200",
+                    isDragging
+                      ? "border-primary bg-primary/10 text-accent-foreground"
+                      : "border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
                   <span className="flex items-center truncate">
                     <ImageIcon className="mr-2 h-4 w-4 shrink-0" />
                     {selectedImage ? selectedImage.name : 'Choose a different file'}
@@ -244,7 +277,15 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
             <TabsContent value="upload" className="mt-3">
               <label
                 htmlFor="image-upload-empty"
-                className="flex flex-col items-center justify-center w-full h-40 sm:h-48 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 cursor-pointer transition-all duration-300"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={cn(
+                  "flex flex-col items-center justify-center w-full h-40 sm:h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-300",
+                  isDragging
+                    ? "border-primary bg-primary/15 scale-[1.01]"
+                    : "border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50"
+                )}
               >
                 <div className="flex flex-col items-center gap-2 text-center px-4">
                   <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
