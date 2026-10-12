@@ -38,7 +38,7 @@ const VENUES: Venue[] = [
   { name: 'St Brigid\u2019s Parish Hall', suburb: 'Fitzroy North, VIC', piano: 'Ask', hasPiano: true, floor: 'Ask', capacity: 100, rate: 'Not published', cost3h: null, contact: 'Via the parish', notes: 'Already hosts sound healing' },
   { name: 'Paradiso', suburb: 'Ubud, Bali', piano: 'Upright + grand', hasPiano: true, floor: 'Wooden', capacity: 50, rate: 'TBC (dance 200k IDR)', cost3h: null, contact: 'Instagram / WhatsApp', notes: 'Origin of the idea' },
   { name: 'HUMM', suburb: 'St Kilda, VIC', address: '144 St Kilda Rd', piano: 'None (bring in)', hasPiano: false, floor: '—', capacity: 18, rate: 'Not published', cost3h: null, contact: 'Sharon · sharonbkanor@gmail.com', email: 'sharonbkanor@gmail.com', notes: '11 futons (lying) + bolsters (sitting). Saturdays open; Sundays taken by her Spring Awakening program (4–6:30pm). Invited for a visit.' },
-  { name: 'Infinite Co', suburb: 'St Kilda, VIC', address: '14 Pakington St', piano: 'None (BYO + 2 JBL speakers)', hasPiano: false, floor: '—', capacity: null, rate: 'On enquiry', cost3h: null, contact: 'Elle · hello@infiniteco.com.au · 0498 668 236', email: 'hello@infiniteco.com.au', notes: 'Studio/room hire; hosts $44–$139 paid wellness events' },
+  { name: 'Infinite Co', suburb: 'St Kilda, VIC', address: '14 Pakington St', piano: 'None (BYO + 2 JBL speakers)', hasPiano: false, floor: '—', capacity: 30, rate: '$240 + GST / 3hrs (same for fortnightly)', cost3h: 264, contact: 'Elle · hello@infiniteco.com.au · 0498 668 236', email: 'hello@infiniteco.com.au', notes: '30 mats (3 rows of 10). Daytime only — Sun 11am–5:30pm (their classes start 6pm). Lamps + fairy lights, dimmable overheads.' },
 ];
 
 const EMAIL_TEMPLATE = `Subject: Piano by Heart — an hour of improvised piano at [Venue]
@@ -352,10 +352,11 @@ const ByHeartDashboard = () => {
             <Card className="organic-card rounded-[2rem]">
               <CardHeader className="pb-2">
                 <CardDescription className="text-xs uppercase tracking-widest">In motion</CardDescription>
-                <CardTitle className="font-heading text-primary">HUMM, St Kilda</CardTitle>
+                <CardTitle className="font-heading text-primary">HUMM &amp; Infinite Co</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-foreground">
-                <p>Sharon&apos;s room: <span className="font-semibold">11 futons + bolsters</span>, BYO piano. Saturdays open, Sundays taken by her Spring Awakening program. Go visit and test the seated arrangement before committing.</p>
+              <CardContent className="space-y-2 text-sm text-foreground">
+                <p><span className="font-semibold">HUMM (Sat eve):</span> Sharon&apos;s room — 11 futons + bolsters, BYO piano. Visit to test the seated arrangement.</p>
+                <p><span className="font-semibold">Infinite Co (Sun arvo):</span> Elle&apos;s 30 mats at $264/3hrs, daytime only. Visit and check how dark it gets at 3pm.</p>
               </CardContent>
             </Card>
           </div>
@@ -589,6 +590,7 @@ const ByHeartDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-foreground">
                 <p><span className="font-semibold">Saturday 7:15pm</span> is the move: HUMM&apos;s Sundays are taken by Sharon&apos;s Spring Awakening program (4–6:30pm), and she has more availability on Saturdays. No Monday looming. A 5pm Saturday is the fallback for an earlier crowd.</p>
+                <p><span className="font-semibold">Sunday 2–5pm (Infinite Co):</span> 30 mats, daylight, no competition in the slot — a strong second offering or fallback; check how dark the room gets at 3pm.</p>
                 <p><span className="font-semibold">Sunday</span> remains Melbourne&apos;s proven slot (6 of 13 sound-healing listings) — worth revisiting at another venue later.</p>
                 <p><span className="font-semibold">Where the demand is:</span> St Kilda and the south side (5 of 13 listings) — HUMM sits right in it.</p>
                 <p><span className="font-semibold">Launch plan:</span> Saturday 14 Nov 2026 at 7:15pm, then fortnightly — avoiding late Dec / early Jan when Melbourne is away.</p>
