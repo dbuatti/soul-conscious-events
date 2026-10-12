@@ -37,7 +37,7 @@ const VENUES: Venue[] = [
   { name: 'Christ Church Mission, Baxter Hall', suburb: 'St Kilda, VIC', address: '14 Acland St', piano: 'Piano', hasPiano: true, floor: 'Not stated', capacity: 100, rate: 'Community rates (reduced for groups)', cost3h: null, contact: 'communitycentre@ccm.org.au · 03 9534 9250', email: 'communitycentre@ccm.org.au', notes: 'Piano confirmed, 80 seated / 100 auditorium, kitchen' },
   { name: 'St Brigid\u2019s Parish Hall', suburb: 'Fitzroy North, VIC', piano: 'Ask', hasPiano: true, floor: 'Ask', capacity: 100, rate: 'Not published', cost3h: null, contact: 'Via the parish', notes: 'Already hosts sound healing' },
   { name: 'Paradiso', suburb: 'Ubud, Bali', piano: 'Upright + grand', hasPiano: true, floor: 'Wooden', capacity: 50, rate: 'TBC (dance 200k IDR)', cost3h: null, contact: 'Instagram / WhatsApp', notes: 'Origin of the idea' },
-  { name: 'HUMM', suburb: 'St Kilda, VIC', address: '144 St Kilda Rd', piano: 'None (bring in)', hasPiano: false, floor: '—', capacity: null, rate: 'Not published', cost3h: null, contact: 'Sharon · sharonbkanor@gmail.com', email: 'sharonbkanor@gmail.com', notes: 'BYO piano' },
+  { name: 'HUMM', suburb: 'St Kilda, VIC', address: '144 St Kilda Rd', piano: 'None (bring in)', hasPiano: false, floor: '—', capacity: 18, rate: 'Not published', cost3h: null, contact: 'Sharon · sharonbkanor@gmail.com', email: 'sharonbkanor@gmail.com', notes: '11 futons (lying) + bolsters (sitting). Saturdays open; Sundays taken by her Spring Awakening program (4–6:30pm). Invited for a visit.' },
   { name: 'Infinite Co', suburb: 'St Kilda, VIC', address: '14 Pakington St', piano: 'None (BYO + 2 JBL speakers)', hasPiano: false, floor: '—', capacity: null, rate: 'On enquiry', cost3h: null, contact: 'Elle · hello@infiniteco.com.au · 0498 668 236', email: 'hello@infiniteco.com.au', notes: 'Studio/room hire; hosts $44–$139 paid wellness events' },
 ];
 
@@ -52,7 +52,7 @@ I came across [Venue] and think the space could be a beautiful fit.
 Practical details:
 - Format: ~1h45 total (doors ~6:45, playing 7:15–8:15, quiet close by 9)
 - Setup: minimal — piano (I can bring a quality digital if needed), mats, low lighting, water
-- Day/time: aiming for a Sunday 7pm start, fortnightly if the trial lands
+- Day/time: Saturday evening — doors 6:45, playing 7:15–8:15 — fortnightly if the trial lands
 - Proposal: happy to discuss flat room hire or a revenue share
 - Audience: the existing sound-bath / meditation community
 
@@ -135,7 +135,7 @@ const ByHeartDashboard = () => {
   const [performerFee, setPerformerFee] = useState(0);
   const [copied, setCopied] = useState(false);
 
-  const [startDate, setStartDate] = useState('2026-11-15');
+  const [startDate, setStartDate] = useState('2026-11-14');
   const [frequency, setFrequency] = useState<'weekly' | 'fortnightly'>('fortnightly');
   const [sessions, setSessions] = useState(8);
   const [slot, setSlot] = useState('7:00–9:00pm · doors 6:45 · playing 7:15–8:15');
@@ -222,6 +222,7 @@ const ByHeartDashboard = () => {
                 <p>One hour of live, improvised piano in a calm, dim room where people rest, move or make sound however they need. No phones, no talking, no demands. Daniele is the channel at the piano.</p>
                 <p><span className="font-semibold">Name:</span> Piano by Heart. <span className="text-muted-foreground">Improvising is playing by heart, and the heart is where the music is aimed.</span></p>
                 <p><span className="font-semibold">Description line:</span> An hour of improvised piano to rest, move and sound.</p>
+                <p><span className="font-semibold">Room:</span> Keep the first room intimate — at HUMM that&apos;s 11 futons for lying plus bolsters for sitting.</p>
                 <p className="text-muted-foreground">The thread underneath comes from Music of the Spheres: light reaches us first, but what touches us deeper is sound.</p>
               </CardContent>
             </Card>
@@ -320,7 +321,7 @@ const ByHeartDashboard = () => {
 
         {/* Best bets readout */}
         <TabsContent value="readout" className="mt-4 space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card className="organic-card rounded-[2rem]">
               <CardHeader className="pb-2">
                 <CardDescription className="text-xs uppercase tracking-widest">Most possible</CardDescription>
@@ -346,6 +347,15 @@ const ByHeartDashboard = () => {
               </CardHeader>
               <CardContent className="text-sm text-foreground">
                 <p>Grand + polished timber, <span className="font-semibold">130 cap</span> from $90/hr. Highest margin potential if you can fill it — but that needs real marketing reach.</p>
+              </CardContent>
+            </Card>
+            <Card className="organic-card rounded-[2rem]">
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs uppercase tracking-widest">In motion</CardDescription>
+                <CardTitle className="font-heading text-primary">HUMM, St Kilda</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-foreground">
+                <p>Sharon&apos;s room: <span className="font-semibold">11 futons + bolsters</span>, BYO piano. Saturdays open, Sundays taken by her Spring Awakening program. Go visit and test the seated arrangement before committing.</p>
               </CardContent>
             </Card>
           </div>
@@ -578,11 +588,10 @@ const ByHeartDashboard = () => {
                 <CardTitle className="font-heading text-primary">When to run it</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-foreground">
-                <p><span className="font-semibold">Sunday 7–7:30pm</span> is the proven Melbourne slot for sound/wellness evenings — of 13 sound-healing listings, 6 are Sundays and 8 start 7:00–7:30pm.</p>
-                <p><span className="font-semibold">Where the demand is:</span> St Kilda East (5 of 13), so the south side has a proven audience — and the most competition.</p>
-                <p><span className="font-semibold">Weekday alternative:</span> Mon–Thu 7pm sessions exist (South Yarra, Brunswick). A Wednesday evening is a quieter mid-week test slot.</p>
-                <p><span className="font-semibold">Saturday:</span> late-afternoon works, but Saturday nights compete with going out.</p>
-                <p><span className="font-semibold">Launch plan:</span> Sunday 15 Nov 2026 at 7pm, then fortnightly — avoiding late Dec / early Jan when Melbourne is away.</p>
+                <p><span className="font-semibold">Saturday 7:15pm</span> is the move: HUMM&apos;s Sundays are taken by Sharon&apos;s Spring Awakening program (4–6:30pm), and she has more availability on Saturdays. No Monday looming. A 5pm Saturday is the fallback for an earlier crowd.</p>
+                <p><span className="font-semibold">Sunday</span> remains Melbourne&apos;s proven slot (6 of 13 sound-healing listings) — worth revisiting at another venue later.</p>
+                <p><span className="font-semibold">Where the demand is:</span> St Kilda and the south side (5 of 13 listings) — HUMM sits right in it.</p>
+                <p><span className="font-semibold">Launch plan:</span> Saturday 14 Nov 2026 at 7:15pm, then fortnightly — avoiding late Dec / early Jan when Melbourne is away.</p>
               </CardContent>
             </Card>
           </div>
