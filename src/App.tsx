@@ -34,7 +34,16 @@ const LoginV2 = lazy(() => import("./pages/v2/LoginV2"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const LinkInBio = lazy(() => import("./pages/LinkInBio"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Persistent Layout for V2
 const LayoutV2 = () => {

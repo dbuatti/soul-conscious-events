@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Heart, Users, Palette, Utensils, Leaf, GraduationCap, Globe, Zap, HelpCircle, Map as MapIcon } from 'lucide-react';
-import { v2EventCategories, v2PriceOptions, v2Venues, v2States, v2DateOptions } from '@/lib/v2/constants';
+import { v2EventCategories, v2PriceOptions, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';

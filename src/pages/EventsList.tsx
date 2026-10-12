@@ -3,11 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isSameDay, isSameMonth } from 'date-fns';
-import { List, CalendarDays, Lightbulb, Frown, Map } from 'lucide-react';
+import { Lightbulb, Frown, Map } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import { useLocation } from 'react-router-dom';
 import AdvancedEventCalendar from '@/components/AdvancedEventCalendar';
 import heroBackground from '@/assets/phil-hero-background.jpeg'; // Corrected import for the image
 import EventFilterBar from '@/components/EventFilterBar'; // Import the EventFilterBar component
@@ -49,8 +48,7 @@ const EventsList = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
 
-  const { user, isAdmin, isLoading: isSessionLoading } = useSession();
-  const location = useLocation();
+  const { isLoading: isSessionLoading } = useSession();
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);

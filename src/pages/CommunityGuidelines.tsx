@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ListChecks, Ban, Handshake, MessageCircleWarning, Heart, Users, Sparkles } from 'lucide-react';

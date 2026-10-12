@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -24,7 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
 import {
@@ -33,7 +32,6 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerDescription,
-  DrawerFooter,
   DrawerClose,
 } from '@/components/ui/drawer';
 import {
@@ -47,8 +45,10 @@ import BookmarkButton from '@/components/BookmarkButton';
 import { formatPrice, getGoogleCalendarUrl, downloadIcalFile, getBaseEventId } from '@/utils/event-utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { openInMaps } from '@/lib/utils';
-import LeafletMap from '@/components/v2/LeafletMap';
 import EventCardFallback from '@/components/EventCardFallback';
+
+// Leaflet is heavy and only needed when an event with coordinates is shown.
+const LeafletMap = lazy(() => import('@/components/v2/LeafletMap'));
 
 interface EventDetailDialogProps {
   event: Event | null;
@@ -57,7 +57,7 @@ interface EventDetailDialogProps {
   cameFromCalendar?: boolean;
 }
 
-const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose, cameFromCalendar = false }) => {
+const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, isAdmin } = useSession();
   const isMobile = useIsMobile();
@@ -229,14 +229,16 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                     opens Google Maps. */}
                 {typeof event.latitude === 'number' && typeof event.longitude === 'number' && (
                 <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden border border-border shadow-sm bg-secondary">
-                  <LeafletMap 
-                    events={[event]} 
-                    onViewDetails={() => {}} 
-                    className="h-full w-full" 
-                    zoom={15}
-                    interactive={false}
-                    showWatermark={false}
-                  />
+                  <Suspense fallback={<div className="h-full w-full animate-pulse bg-muted" />}>
+                    <LeafletMap
+                      events={[event]}
+                      onViewDetails={() => {}}
+                      className="h-full w-full"
+                      zoom={15}
+                      interactive={false}
+                      showWatermark={false}
+                    />
+                  </Suspense>
                   <div 
                     className="absolute inset-0 bg-black/0 hover:bg-black/5 transition-colors flex items-center justify-center cursor-pointer z-10"
                     onClick={() => openInMaps(event.full_address!)}

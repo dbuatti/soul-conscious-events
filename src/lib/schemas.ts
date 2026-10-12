@@ -14,7 +14,7 @@ export const eventFormSchema = z.object({
   organizerContact: z.string().optional().or(z.literal('')),
   eventType: z.string().optional().or(z.literal('')),
   geographicalState: z.string().optional().or(z.literal('')),
-  imageFile: z.any().optional(),
+  imageFile: z.instanceof(File).optional(),
   imageUrl: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),
   discountCode: z.string().optional().or(z.literal('')),
   googleMapsLink: z.string().url({ message: "Must be a valid URL" }).optional().or(z.literal('')),

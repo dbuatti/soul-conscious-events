@@ -26,7 +26,4 @@ export default defineConfig(() => ({
       },
     },
   },
-  define: {
-    'import.meta.env.VITE_GOOGLE_MAPS_API_KEY': JSON.stringify("AIzaSyBOhxn3A2qu5e9VJHamFCRdwAZzV9r4424"),
-  },
 }));

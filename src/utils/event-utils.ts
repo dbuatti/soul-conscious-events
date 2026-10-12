@@ -1,5 +1,5 @@
 import {
-  format, parseISO, addDays, addMonths, startOfToday,
+  format, parseISO, addDays, addMonths, startOfToday, isSameDay, isWeekend, endOfWeek,
   differenceInCalendarDays, differenceInCalendarMonths,
 } from 'date-fns';
 import { Event } from '@/types/event';
@@ -64,6 +64,73 @@ export const generateRecurringInstances = (event: Event): Event[] => {
     });
   }
   return instances;
+};
+
+/**
+ * Expands recurring events into their upcoming instances and returns the whole
+ * set sorted chronologically. Rows whose id is not a full UUID are dropped.
+ */
+export const expandRecurringEvents = (events: Event[]): Event[] => {
+  const combined: Event[] = [];
+  for (const event of events) {
+    if (typeof event.id !== 'string' || event.id.length <= 30) continue;
+    combined.push(event);
+    if (event.recurring_pattern) combined.push(...generateRecurringInstances(event));
+  }
+  return combined.sort((a, b) => parseISO(a.event_date).getTime() - parseISO(b.event_date).getTime());
+};
+
+/** Unique, alphabetically sorted venue names for the filter dropdown. */
+export const getAvailableVenues = (events: Event[]): string[] => {
+  const names = new Set<string>();
+  for (const event of events) {
+    if (typeof event.id === 'string' && event.id.length > 30 && event.place_name) {
+      names.add(event.place_name);
+    }
+  }
+  return [...names].sort();
+};
+
+export interface EventTimeBucket {
+  key: string;
+  label: string;
+  sublabel?: string;
+  events: Event[];
+}
+
+/**
+ * Groups chronological events into "what's on" reading buckets (Today,
+ * Tomorrow, This weekend, Next week, Later in Month…), preserving input order
+ * within each bucket. `today` is injectable for deterministic tests.
+ */
+export const groupEventsByTimeBucket = (events: Event[], today: Date = startOfToday()): EventTimeBucket[] => {
+  const tomorrow = addDays(today, 1);
+  const thisWeekEnd = endOfWeek(today, { weekStartsOn: 1 });
+  const nextWeekEnd = addDays(thisWeekEnd, 7);
+
+  const bucketFor = (date: Date): { key: string; label: string; sublabel?: string } => {
+    if (isSameDay(date, today)) return { key: 'today', label: 'Today', sublabel: format(date, 'EEEE d MMMM') };
+    if (isSameDay(date, tomorrow)) return { key: 'tomorrow', label: 'Tomorrow', sublabel: format(date, 'EEEE d MMMM') };
+    if (date <= thisWeekEnd) {
+      return isWeekend(date)
+        ? { key: 'weekend', label: 'This weekend' }
+        : { key: 'week', label: 'Later this week' };
+    }
+    if (date <= nextWeekEnd) return { key: 'next-week', label: 'Next week' };
+    const sameMonth = date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+    return sameMonth
+      ? { key: 'month', label: `Later in ${format(date, 'MMMM')}` }
+      : { key: format(date, 'yyyy-MM'), label: format(date, 'MMMM'), sublabel: date.getFullYear() !== today.getFullYear() ? format(date, 'yyyy') : undefined };
+  };
+
+  const groups: EventTimeBucket[] = [];
+  for (const event of events) {
+    const bucket = bucketFor(parseISO(event.event_date));
+    const last = groups[groups.length - 1];
+    if (last && last.key === bucket.key) last.events.push(event);
+    else groups.push({ ...bucket, events: [event] });
+  }
+  return groups;
 };
 
 export const formatPrice = (price?: string | null) => {

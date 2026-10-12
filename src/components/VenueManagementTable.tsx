@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Venue } from '@/types/database';
 import { toast } from 'sonner';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Loader2, MapPin, Plus, Sparkles, Trash2, Edit, Save } from 'lucide-react';
+import { Loader2, Plus, Sparkles, Trash2, Edit, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -27,7 +27,7 @@ type VenueFormValues = z.infer<typeof venueSchema>;
 
 const VenueManagementTable = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [isAiParsing, setIsAiParsing] = useState(false);
   const [rawText, setRawText] = useState('');
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);

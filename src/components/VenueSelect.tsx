@@ -27,7 +27,7 @@ interface VenueSelectProps {
 const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
   const [open, setOpen] = useState(false);
   const [venues, setVenues] = useState<Venue[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
@@ -97,8 +97,8 @@ const VenueSelect: React.FC<VenueSelectProps> = ({ form }) => {
                   value={venue.name}
                   onSelect={() => {
                     form.setValue('placeName', venue.name, { shouldValidate: true });
-                    form.setValue('fullAddress', venue.full_address, { shouldValidate: true });
-                    const state = extractAustralianState(venue.full_address);
+                    form.setValue('fullAddress', venue.full_address ?? '', { shouldValidate: true });
+                    const state = extractAustralianState(venue.full_address ?? '');
                     if (state) form.setValue('geographicalState', state, { shouldValidate: true });
                     setOpen(false);
                   }}

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow, format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
-import { Check, X, Pencil, Plus, Play, Trash2, Loader2, ExternalLink, Inbox, Rss, History, RefreshCw } from 'lucide-react';
+import { Check, X, Pencil, Plus, Play, Trash2, Loader2, ExternalLink, Inbox, Rss, History, RefreshCw, Wrench } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,20 @@ interface ImportResponse {
   events_found?: number;
   sources_checked?: number;
   message?: string;
+  error?: string;
+}
+
+interface BackfillResponse {
+  dryRun?: boolean;
+  examined?: number;
+  rows_filled?: number;
+  descriptions_filled?: number;
+  times_filled?: number;
+  relevance_scores?: Record<string, number>;
+  skipped?: number;
+  skipped_detail?: { event_name: string; reason: string }[];
+  still_missing?: number;
+  sample?: string[];
   error?: string;
 }
 
@@ -63,6 +77,8 @@ const EventImports: React.FC = () => {
   const [showOffTopic, setShowOffTopic] = useState(false);
   const [newUrl, setNewUrl] = useState('');
   const [newLabel, setNewLabel] = useState('');
+  const [backfillBusy, setBackfillBusy] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<BackfillResponse | null>(null);
 
   const sourceLabel = useMemo(() => {
     const map = new Map(sources.map((s) => [s.id, s.label || new URL(s.url).hostname]));
@@ -138,6 +154,23 @@ const EventImports: React.FC = () => {
       toast.success(`Checked ${data?.sources_checked ?? 0} source(s): ${data?.events_added ?? 0} new event(s) added.`);
     }
     load();
+  };
+
+  // Re-reads the page of rows that were imported without a time or description
+  // and fills the blanks in place. Dry-run first so an admin can see what would
+  // change before anything is written.
+  const runBackfill = async (dryRun: boolean) => {
+    setBackfillBusy(true);
+    const { data, error } = await supabase.functions.invoke<BackfillResponse>('backfill-import-metadata', { body: { dryRun } });
+    setBackfillBusy(false);
+    if (error || data?.error) {
+      toast.error(`Backfill failed: ${data?.error ?? await functionErrorMessage(error)}`);
+      return;
+    }
+    setBackfillResult(data ?? {});
+    toast.success(dryRun
+      ? `Preview: ${data?.examined ?? 0} row(s) missing metadata, ${data?.times_filled ?? 0} would get a time.`
+      : `Backfill done: ${data?.times_filled ?? 0} times, ${data?.descriptions_filled ?? 0} descriptions filled.`);
   };
 
   const addSource = async (e: React.FormEvent) => {
@@ -419,6 +452,60 @@ const EventImports: React.FC = () => {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Metadata backfill */}
+      <section>
+        {sectionTitle(Wrench, 'Metadata backfill', 'repairs times & descriptions left blank by older imports')}
+        <div className="organic-card rounded-[var(--radius)] p-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Some events were imported before listing summaries handed off to their detail pages, so they
+            arrived without a start time or description and still show "Time TBC" or a bare card. This
+            re-reads each event's own page and fills only the blanks — it never overwrites anything a human wrote.
+          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <Button size="sm" variant="outline" className="rounded-full bg-card" onClick={() => runBackfill(true)} disabled={backfillBusy}>
+              {backfillBusy ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="mr-1.5 h-3.5 w-3.5" />}
+              Preview (no changes)
+            </Button>
+            <Button size="sm" className="rounded-full" onClick={() => runBackfill(false)} disabled={backfillBusy}>
+              <Wrench className="mr-1.5 h-3.5 w-3.5" /> Fill missing metadata
+            </Button>
+            {backfillBusy && <span className="text-xs text-muted-foreground">Checking event pages…</span>}
+          </div>
+          {backfillResult && (
+            <div className="mt-3 rounded-xl bg-secondary/40 p-3 text-sm space-y-1.5">
+              {backfillResult.error ? (
+                <p className="text-destructive">Backfill failed: {backfillResult.error}</p>
+              ) : (
+                <>
+                  <p className="text-foreground font-medium">
+                    {backfillResult.dryRun ? 'Preview' : 'Done'} — {backfillResult.examined ?? 0} row(s) checked, {backfillResult.rows_filled ?? 0} filled.
+                  </p>
+                  <p className="text-muted-foreground">
+                    {backfillResult.times_filled ?? 0} times · {backfillResult.descriptions_filled ?? 0} descriptions
+                    {backfillResult.relevance_scores && Object.keys(backfillResult.relevance_scores).length > 0 &&
+                      <> · relevance {Object.entries(backfillResult.relevance_scores).map(([k, v]) => `${k}: ${v}`).join(', ')}</>}
+                  </p>
+                  {(backfillResult.skipped ?? 0) > 0 && (
+                    <p className="text-muted-foreground">
+                      {backfillResult.skipped} skipped
+                      {backfillResult.skipped_detail?.slice(0, 3).map((s) => ` · ${s.event_name} (${s.reason})`)}
+                    </p>
+                  )}
+                  {(backfillResult.still_missing ?? 0) > 0 && (
+                    <p className="text-amber-600">
+                      {backfillResult.still_missing} still missing — pages may have been taken down or run out. Run again later to retry.
+                    </p>
+                  )}
+                  {backfillResult.sample && backfillResult.sample.length > 0 && (
+                    <p className="text-muted-foreground">Filled: {backfillResult.sample.join(' · ')}</p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Run log */}

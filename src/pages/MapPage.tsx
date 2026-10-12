@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, Frown, PlusCircle, Sparkles, Database } from 'lucide-react';
@@ -22,7 +22,7 @@ const MapPage = () => {
       
       try {
         // First, check if we can even reach the database with a simple count
-        const { count, error: pingError } = await supabase
+        const { error: pingError } = await supabase
           .from('events')
           .select('*', { count: 'exact', head: true });
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Instagram } from 'lucide-react';
 import { SoulFlowMark } from '@/components/v2/HeaderV2';
