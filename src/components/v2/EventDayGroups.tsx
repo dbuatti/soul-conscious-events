@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import type { MouseEvent } from 'react';
-import { isToday, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import { getBaseEventId, groupEventsByTimeBucket } from '@/utils/event-utils';
@@ -8,7 +7,6 @@ import { Event } from '@/types/event';
 
 interface EventDayGroupsProps {
   events: Event[];
-  onShare: (event: Event, e: MouseEvent) => void;
   onDelete: (eventId: string, e: MouseEvent) => void;
   onViewDetails: (event: Event) => void;
   extraCountMap: Record<string, number>;
@@ -20,7 +18,6 @@ interface EventDayGroupsProps {
  */
 const EventDayGroups = ({
   events,
-  onShare,
   onDelete,
   onViewDetails,
   extraCountMap,
@@ -47,10 +44,8 @@ const EventDayGroups = ({
               <EventCardV2
                 key={event.id}
                 event={event}
-                onShare={onShare}
                 onDelete={onDelete}
                 onViewDetails={onViewDetails}
-                isFeaturedToday={isToday(parseISO(event.event_date))}
                 additionalDatesCount={extraCountMap[getBaseEventId(event.id)] || 0}
               />
             ))}

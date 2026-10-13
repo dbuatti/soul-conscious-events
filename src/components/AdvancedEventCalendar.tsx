@@ -129,7 +129,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
       <div className="mb-8 p-5 bg-secondary rounded-xl shadow-lg border border-border flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handlePrevMonth : handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button variant="ghost" size="icon" aria-label={viewMode === 'month' ? 'Previous month' : 'Previous week'} onClick={viewMode === 'month' ? handlePrevMonth : handlePrevWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <Popover open={isMonthPickerPopoverOpen} onOpenChange={setIsMonthPickerPopoverOpen}>
@@ -149,7 +149,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                 />
               </PopoverContent>
             </Popover>
-            <Button variant="ghost" size="icon" onClick={viewMode === 'month' ? handleNextMonth : handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button variant="ghost" size="icon" aria-label={viewMode === 'month' ? 'Next month' : 'Next week'} onClick={viewMode === 'month' ? handleNextMonth : handleNextWeek} className="transition-all duration-300 ease-in-out transform hover:scale-105">
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>

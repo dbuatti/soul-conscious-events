@@ -1,9 +1,19 @@
 import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { format, parseISO, isToday, isSameDay, addDays, startOfToday } from 'date-fns';
+import { format, parseISO, isSameDay, addDays, startOfToday } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, Loader2, Plus, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Link } from 'react-router-dom';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
@@ -43,6 +53,7 @@ const EventsListV2 = () => {
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const eventsQuery = useEvents();
   const deleteEvent = useDeleteEvent();
@@ -103,23 +114,20 @@ const EventsListV2 = () => {
     );
   };
 
-  const handleShare = (event: Event, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const baseId = getBaseEventId(event.id);
-    navigator.clipboard.writeText(`${window.location.origin}/events/${baseId}`)
-      .then(() => toast.success('Event link copied!'))
-      .catch(() => toast.error('Failed to copy link.'));
-  };
-
   const handleDelete = (eventId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const baseId = getBaseEventId(eventId);
     if (baseId.length < 30) return;
-    if (!window.confirm('Are you sure you want to delete this event?')) return;
-    deleteEvent.mutate(baseId, {
+    setPendingDeleteId(baseId);
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDeleteId) return;
+    deleteEvent.mutate(pendingDeleteId, {
       onSuccess: () => toast.success('Event moved to trash.'),
       onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete event.'),
     });
+    setPendingDeleteId(null);
   };
 
   const handleViewDetails = (event: Event) => {
@@ -245,7 +253,6 @@ const EventsListV2 = () => {
               {displayedEvents.length > 0 ? (
                 <EventDayGroups
                   events={displayedEvents}
-                  onShare={handleShare}
                   onDelete={handleDelete}
                   onViewDetails={handleViewDetails}
                   extraCountMap={extraCountMap}
@@ -297,10 +304,8 @@ const EventsListV2 = () => {
                       <EventCardV2
                         key={event.id}
                         event={event}
-                        onShare={handleShare}
                         onDelete={handleDelete}
                         onViewDetails={handleViewDetails}
-                        isFeaturedToday={isToday(parseISO(event.event_date))}
                       />
                     ))}
                   </div>
@@ -327,6 +332,19 @@ const EventsListV2 = () => {
       {!loading && <HostCTA hasUser={!!user} />}
 
       <EventDetailDialog event={selectedEvent} isOpen={isEventDetailDialogOpen} onClose={() => setIsEventDetailDialogOpen(false)} />
+
+      <AlertDialog open={pendingDeleteId !== null} onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}>
+        <AlertDialogContent className="rounded-[1.75rem] w-[90vw] max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading text-2xl">Delete this event?</AlertDialogTitle>
+            <AlertDialogDescription>It will be removed from SoulFlow for everyone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="rounded-full mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive rounded-full">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

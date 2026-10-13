@@ -160,10 +160,10 @@ const VenueManagementTable = () => {
                 <TableCell className="text-sm text-muted-foreground">{v.full_address}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(v)}>
+                    <Button variant="ghost" size="icon" aria-label={`Edit ${v.name}`} onClick={() => handleEdit(v)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)} className="text-destructive">
+                    <Button variant="ghost" size="icon" aria-label={`Delete ${v.name}`} onClick={() => handleDelete(v.id)} className="text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

@@ -54,7 +54,6 @@ interface EventDetailDialogProps {
   event: Event | null;
   isOpen: boolean;
   onClose: () => void;
-  cameFromCalendar?: boolean;
 }
 
 const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose }) => {
@@ -412,7 +411,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
           <div className="flex items-center justify-between px-5 pt-1 pb-1 flex-shrink-0">
             <div className="w-8" />
             <DrawerClose asChild>
-              <button className="rounded-full bg-muted/60 hover:bg-muted p-2 transition-colors">
+              <button aria-label="Close" className="rounded-full bg-muted/60 hover:bg-muted p-2 transition-colors">
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
             </DrawerClose>

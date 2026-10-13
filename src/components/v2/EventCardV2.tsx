@@ -13,10 +13,9 @@ import EventCardFallback from '@/components/EventCardFallback';
 
 interface EventCardV2Props {
   event: Event;
-  onShare: (event: Event, e: React.MouseEvent) => void;
-  onDelete: (eventId: string, e: React.MouseEvent) => void;
   onViewDetails: (event: Event) => void;
-  isFeaturedToday?: boolean;
+  /** Omit to hide the delete control (e.g. read-only views like bookmarks). */
+  onDelete?: (eventId: string, e: React.MouseEvent) => void;
   additionalDatesCount?: number;
 }
 
@@ -79,7 +78,12 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
     <article
       className="group relative flex flex-col organic-card organic-card-hover rounded-[var(--radius)] overflow-hidden cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-500"
       onClick={() => onViewDetails(event)}
-      onKeyDown={(e) => { if (e.key === 'Enter') onViewDetails(event); }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onViewDetails(event);
+        }
+      }}
       tabIndex={0}
       aria-label={`${event.event_name}, ${format(eventDate, 'EEEE d MMMM')}`}
     >
@@ -89,7 +93,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         {event.image_url ? (
           <img
             src={event.image_url}
-            alt=""
+            alt={event.event_name}
             onLoad={() => setImageLoaded(true)}
             className={cn(
               "w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.04]",
@@ -201,14 +205,16 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
                 >
                   <Pencil className="h-3.5 w-3.5" />
                 </Link>
-                <button
-                  type="button"
-                  onClick={(e) => onDelete(event.id, e)}
-                  className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                  aria-label="Delete event"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={(e) => onDelete(event.id, e)}
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    aria-label="Delete event"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </>
             )}
             <span className="h-8 w-8 rounded-full flex items-center justify-center text-primary bg-primary/0 group-hover:bg-primary/10 transition-colors" aria-hidden="true">

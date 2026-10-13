@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, PlusCircle, UserPlus } from 'lucide-react';
+import { Frown, PlusCircle, UserPlus, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import UserEventCard from '@/components/UserEventCard';
@@ -15,6 +15,7 @@ const MyEvents: React.FC = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const fetchMyEvents = useCallback(async () => {
     if (!user) {
@@ -33,9 +34,11 @@ const MyEvents: React.FC = () => {
     if (error) {
       console.error('Error fetching user events:', error);
       toast.error('Failed to load your events.');
+      setLoadFailed(true);
     } else {
       const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
       setEvents(validEvents as Event[]);
+      setLoadFailed(false);
     }
     setLoadingEvents(false);
   }, [user]);
@@ -75,6 +78,21 @@ const MyEvents: React.FC = () => {
             Sign Up / Log In
           </Button>
         </Link>
+      </div>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <div className="w-full max-w-2xl text-center p-12 organic-card rounded-[2rem] shadow-2xl">
+        <AlertCircle className="h-20 w-20 text-destructive/40 mx-auto mb-8" />
+        <h2 className="text-4xl font-heading font-bold mb-6">We couldn’t load your events</h2>
+        <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
+          Something went wrong reaching the server. Please try again.
+        </p>
+        <Button onClick={fetchMyEvents} className="rounded-full px-10 py-6 text-lg font-semibold shadow-xl">
+          Try again
+        </Button>
       </div>
     );
   }

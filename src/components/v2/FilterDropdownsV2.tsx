@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Heart, Users, Palette, Utensils, Leaf, GraduationCap, Globe, Zap, HelpCircle, Map as MapIcon } from 'lucide-react';
+import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Users, Leaf, Mic, Waves, Wrench, HelpCircle, Map as MapIcon } from 'lucide-react';
 import { v2EventCategories, v2PriceOptions, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -32,20 +32,20 @@ export interface FilterDropdownsV2Props {
   onViewModeChange: (mode: 'list' | 'calendar' | 'map') => void;
 }
 
+// Keys must match `v2EventCategories` (src/lib/constants.ts) or the icon is dropped.
 const categoryIcons: Record<string, React.ReactNode> = {
-  'Wellness': <Heart className="h-3.5 w-3.5 mr-2" />,
-  'Dance & Movement': <Zap className="h-3.5 w-3.5 mr-2" />,
-  'Consciousness & Spirituality': <Sparkles className="h-3.5 w-3.5 mr-2" />,
-  'Arts & Creativity': <Palette className="h-3.5 w-3.5 mr-2" />,
-  'Community & Social': <Users className="h-3.5 w-3.5 mr-2" />,
   'Music': <Music className="h-3.5 w-3.5 mr-2" />,
-  'Food & Drink': <Utensils className="h-3.5 w-3.5 mr-2" />,
-  'Relationships & Connection': <Heart className="h-3.5 w-3.5 mr-2" />,
-  'Talks & Learning': <GraduationCap className="h-3.5 w-3.5 mr-2" />,
-  'Local Culture': <Globe className="h-3.5 w-3.5 mr-2" />,
-  'Nature & Outdoors': <Leaf className="h-3.5 w-3.5 mr-2" />,
+  'Workshop': <Wrench className="h-3.5 w-3.5 mr-2" />,
+  'Meditation': <Sparkles className="h-3.5 w-3.5 mr-2" />,
+  'Open Mic': <Mic className="h-3.5 w-3.5 mr-2" />,
+  'Sound Bath': <Waves className="h-3.5 w-3.5 mr-2" />,
+  'Foraging': <Leaf className="h-3.5 w-3.5 mr-2" />,
+  'Community Gathering': <Users className="h-3.5 w-3.5 mr-2" />,
   'Other': <HelpCircle className="h-3.5 w-3.5 mr-2" />,
 };
+
+const categoryIcon = (category: string): React.ReactNode =>
+  categoryIcons[category] ?? <HelpCircle className="h-3.5 w-3.5 mr-2" />;
 
 const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
   currentFilters,
@@ -114,7 +114,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
           className="cursor-pointer flex-grow"
         >
           <div className="flex items-center">
-            {filterType === 'category' && categoryIcons[option]}
+            {filterType === 'category' && categoryIcon(option)}
             {option}
           </div>
         </DropdownMenuCheckboxItem>
@@ -122,6 +122,8 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
           <Button
             variant="ghost"
             size="icon"
+            aria-label={isFavourited ? `Remove ${option} from favourite venues` : `Add ${option} to favourite venues`}
+            aria-pressed={isFavourited}
             className="h-7 w-7 p-0 mr-2 text-muted-foreground hover:text-yellow-500 transition-colors duration-200"
             onClick={(e) => {
               e.stopPropagation();

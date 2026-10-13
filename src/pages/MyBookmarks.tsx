@@ -3,12 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UserPlus, Sparkles } from 'lucide-react';
+import { UserPlus, Sparkles, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
-import { getBaseEventId } from '@/utils/event-utils';
 import { Event } from '@/types/event';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
@@ -22,6 +21,7 @@ const MyBookmarks: React.FC = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
   const [loadingBookmarks, setLoadingBookmarks] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -66,10 +66,12 @@ const MyBookmarks: React.FC = () => {
     if (error) {
       console.error('Error fetching bookmarked events:', error);
       toast.error('Failed to load your bookmarked events.');
+      setLoadFailed(true);
     } else {
       const typedData = data as unknown as BookmarkedEventData[];
       const eventsData = typedData.map(item => item.events?.[0]).filter(Boolean) as Event[];
       setBookmarkedEvents(eventsData);
+      setLoadFailed(false);
     }
     setLoadingBookmarks(false);
   }, [user]);
@@ -79,14 +81,6 @@ const MyBookmarks: React.FC = () => {
       fetchBookmarkedEvents();
     }
   }, [isSessionLoading, fetchBookmarkedEvents]);
-
-  const handleShare = (event: Event, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const eventUrl = `${window.location.origin}/events/${getBaseEventId(event.id)}`;
-    navigator.clipboard.writeText(eventUrl)
-      .then(() => toast.success('Event link copied!'))
-      .catch(() => toast.error('Failed to copy link.'));
-  };
 
   const handleViewDetails = (event: Event) => {
     setSelectedEvent(event);
@@ -126,6 +120,21 @@ const MyBookmarks: React.FC = () => {
     );
   }
 
+  if (loadFailed) {
+    return (
+      <div className="w-full max-w-2xl text-center p-12 organic-card rounded-[2rem] shadow-2xl">
+        <AlertCircle className="h-20 w-20 text-destructive/40 mx-auto mb-8" />
+        <h2 className="text-4xl font-heading font-bold mb-6">We couldn’t load your saved events</h2>
+        <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
+          Something went wrong reaching the server. Please try again.
+        </p>
+        <Button onClick={fetchBookmarkedEvents} className="rounded-full px-10 py-6 text-lg font-semibold shadow-xl">
+          Try again
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-6xl px-4">
       <SEO 
@@ -155,8 +164,6 @@ const MyBookmarks: React.FC = () => {
             <EventCardV2
               key={event.id}
               event={event}
-              onShare={handleShare}
-              onDelete={() => {}}
               onViewDetails={handleViewDetails}
             />
           ))}

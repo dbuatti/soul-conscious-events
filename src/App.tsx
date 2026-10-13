@@ -63,9 +63,15 @@ const LayoutV2 = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-lg"
+      >
+        Skip to content
+      </a>
       <ScrollProgress />
       <HeaderV2 />
-      <main className="flex-grow w-full px-2 flex flex-col items-center pt-4 sm:pt-6 pb-8">
+      <main id="main-content" tabIndex={-1} className="flex-grow w-full px-2 flex flex-col items-center pt-4 sm:pt-6 pb-8 outline-none">
         <Outlet />
       </main>
       <Footer />

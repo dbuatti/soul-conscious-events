@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -106,19 +106,6 @@ const SubmitEvent = () => {
       recurringPattern: 'NONE',
     },
   });
-
-  useEffect(() => {
-    const logPageVisit = async () => {
-      await supabase.from('page_visit_logs').insert([
-        {
-          user_id: user?.id || null,
-          page_path: '/submit-event',
-          action_type: 'page_view',
-        },
-      ]);
-    };
-    logPageVisit();
-  }, [user?.id]);
 
   const handleAiParseComplete = (response: AiParseResponse) => {
     const parsedData = response?.parsed_data;

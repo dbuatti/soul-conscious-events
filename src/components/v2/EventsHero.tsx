@@ -118,7 +118,7 @@ const EventsHero = ({
                   className="group w-full flex items-center gap-3 rounded-2xl bg-card/80 backdrop-blur border border-border/60 p-2.5 pr-4 text-left shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
                 >
                   <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
-                    {event.image_url && <img src={event.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />}
+                    {event.image_url && <img src={event.image_url} alt={event.event_name} className="h-full w-full object-cover" loading="lazy" />}
                   </span>
                   <span className="min-w-0">
                     <span className="block text-[11px] font-semibold uppercase tracking-wider text-primary">

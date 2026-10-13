@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Event } from '@/types/event';
 import SEO from '@/components/SEO';
 import { format, parseISO, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, PlusCircle, Eye, MousePointerClick, Tag, Frown, Edit } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, PlusCircle, Eye, MousePointerClick, Tag, Frown, Edit, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import PageHeader from '@/components/v2/PageHeader';
 
@@ -33,6 +33,7 @@ const Dashboard: React.FC = () => {
   const [thisWeekViews, setThisWeekViews] = useState(0);
   const [lastWeekViews, setLastWeekViews] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     if (!user) { setLoading(false); return; }
@@ -48,9 +49,11 @@ const Dashboard: React.FC = () => {
 
     if (eventsError) {
       toast.error('Failed to load your events.');
+      setLoadFailed(true);
       setLoading(false);
       return;
     }
+    setLoadFailed(false);
 
     const validEvents = (eventsData || []).filter(e => e.id && e.id.length > 30) as Event[];
     setEvents(validEvents);
@@ -146,6 +149,21 @@ const Dashboard: React.FC = () => {
             <Skeleton key={i} className="h-28 w-full rounded-[2rem]" />
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <div className="w-full max-w-2xl text-center p-12 organic-card rounded-[2rem] shadow-2xl">
+        <AlertCircle className="h-20 w-20 text-destructive/40 mx-auto mb-8" />
+        <h2 className="text-4xl font-heading font-bold mb-6">We couldn’t load your dashboard</h2>
+        <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
+          Something went wrong reaching the server. Please try again.
+        </p>
+        <Button onClick={fetchDashboardData} className="rounded-full px-10 py-6 text-lg font-semibold shadow-xl">
+          Try again
+        </Button>
       </div>
     );
   }

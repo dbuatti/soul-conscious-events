@@ -36,6 +36,7 @@ const ScrollToTopButton: React.FC = () => {
       variant="outline"
       size="icon"
       onClick={scrollToTop}
+      aria-label="Scroll to top"
       className={cn(
         "fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 rounded-full shadow-lg transition-all duration-500 transform hover:scale-110 bg-card/90 backdrop-blur-md border-border",
         hasMobileTicketBar && "max-lg:hidden",
