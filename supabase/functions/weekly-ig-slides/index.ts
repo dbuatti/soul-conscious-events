@@ -94,7 +94,7 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const rawState = (body?.state as string | undefined)?.toUpperCase();
-    const scope = body?.window === "weekend" ? "weekend" : "week";
+    const scope = body?.window === "today" ? "today" : body?.window === "weekend" ? "weekend" : "week";
     // Weekend picks are always national — ignore any state passed alongside.
     const state = scope === "week" && rawState && STATE_NAMES[rawState] ? rawState : null;
     const format = body?.format === "story" ? "story" : "feed";
@@ -110,9 +110,11 @@ serve(async (req) => {
     weekStart.setUTCHours(0, 0, 0, 0);
     const { start, endExclusive } = scope === "weekend"
       ? weekendRange(now)
-      : { start: weekStart, endExclusive: addDays(weekStart, 7) };
+      : scope === "today"
+        ? { start: weekStart, endExclusive: addDays(weekStart, 1) }
+        : { start: weekStart, endExclusive: addDays(weekStart, 7) };
     const dateFolder = isoDate(weekStart);
-    const baseKind = scope === "weekend" ? "weekend" : state ? `state-${state}` : "weekly";
+    const baseKind = scope === "today" ? "today" : scope === "weekend" ? "weekend" : state ? `state-${state}` : "weekly";
     const kind = format === "story" ? `${baseKind}-story` : baseKind;
 
     let query = supabase
@@ -135,9 +137,11 @@ serve(async (req) => {
 
     const selected = (events || []) as EventSlideData[];
     const label = state ? STATE_NAMES[state] : null;
-    const title = scope === "weekend"
-      ? "Weekend Picks"
-      : label
+    const title = scope === "today"
+      ? "Today's Events"
+      : scope === "weekend"
+        ? "Weekend Picks"
+        : label
         ? `${label} This Week`
         : "Conscious Events This Week";
 
@@ -154,8 +158,8 @@ serve(async (req) => {
       if (pub?.publicUrl) uploaded.push({ path, publicUrl: pub.publicUrl });
     };
 
-    const displayStart = scope === "weekend" ? start : weekStart;
-    const displayEnd = scope === "weekend" ? addDays(start, 1) : addDays(weekStart, 6);
+    const displayStart = scope === "today" ? weekStart : scope === "weekend" ? start : weekStart;
+    const displayEnd = scope === "today" ? weekStart : scope === "weekend" ? addDays(start, 1) : addDays(weekStart, 6);
     const coverSvg = await generateCoverSlideSvg(
       displayStart.toISOString(),
       displayEnd.toISOString(),
@@ -204,9 +208,11 @@ serve(async (req) => {
       }
     }
 
-    const heading = scope === "weekend"
-      ? "☀️ Plans this weekend? Here's what's on 🌿"
-      : label
+    const heading = scope === "today"
+      ? "🌿 What's on today"
+      : scope === "weekend"
+        ? "☀️ Plans this weekend? Here's what's on 🌿"
+        : label
         ? `📍 ${label} — what's on this week 🌿`
         : "🌿 Conscious events across Australia this week";
     const lines = [heading, ""];

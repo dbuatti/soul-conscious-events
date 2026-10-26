@@ -161,11 +161,11 @@ const BatchCard: React.FC<{
   const [busy, setBusy] = useState<'all' | 'publish' | 'rebuild' | number | null>(null);
   const [scheduleFor, setScheduleFor] = useState(batch.scheduled_for?.slice(0, 16) ?? '');
   const prefix = batch.kind;
-  const isStory = batch.kind.endsWith('-story');
+  const isStory = (batch.kind || '').endsWith('-story');
   const [collapsed, setCollapsed] = useState(true);
   const [collaborators, setCollaborators] = useState(batch.collaborators ?? '');
 
-  const meta = `${batch.slides.length} slide${batch.slides.length === 1 ? '' : 's'}${
+  const meta = `${(batch.slides ?? []).length} slide${(batch.slides ?? []).length === 1 ? '' : 's'}${
     batch.event_count > 0 ? ` · ${batch.event_count} event${batch.event_count === 1 ? '' : 's'}` : ''
   }${
     !isStory && batch.collaborators ? ` · with ${batch.collaborators}` : ''
@@ -191,7 +191,7 @@ const BatchCard: React.FC<{
   const downloadSlide = async (index: number) => {
     setBusy(index);
     try {
-      const blob = await svgUrlToBlob(batch.slides[index].publicUrl, 'image/png');
+      const blob = await svgUrlToBlob((batch.slides ?? [])[index].publicUrl, 'image/png');
       triggerDownload(blob, `${prefix}-${String(index + 1).padStart(2, '0')}.png`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
@@ -204,12 +204,12 @@ const BatchCard: React.FC<{
     setBusy('all');
     const id = toast.loading('Preparing PNGs…');
     try {
-      for (let i = 0; i < batch.slides.length; i++) {
-        const blob = await svgUrlToBlob(batch.slides[i].publicUrl, 'image/png');
+      for (let i = 0; i < (batch.slides ?? []).length; i++) {
+        const blob = await svgUrlToBlob((batch.slides ?? [])[i].publicUrl, 'image/png');
         triggerDownload(blob, `${prefix}-${String(i + 1).padStart(2, '0')}.png`);
         await new Promise((resolve) => setTimeout(resolve, 400));
       }
-      toast.success(`${batch.slides.length} slides downloaded.`, { id });
+      toast.success(`${(batch.slides ?? []).length} slides downloaded.`, { id });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error), { id });
     } finally {
@@ -222,12 +222,12 @@ const BatchCard: React.FC<{
     const id = toast.loading('Publishing to Instagram…');
     try {
       const images: string[] = [];
-      for (let i = 0; i < batch.slides.length; i++) {
-        const blob = await svgUrlToBlob(batch.slides[i].publicUrl, 'image/jpeg');
+      for (let i = 0; i < (batch.slides ?? []).length; i++) {
+        const blob = await svgUrlToBlob((batch.slides ?? [])[i].publicUrl, 'image/jpeg');
         images.push(await blobToDataUrl(blob));
       }
       const { data, error } = await supabase.functions.invoke('publish-instagram', {
-        body: { images, caption: batch.caption, batchId: batch.id, story: isStory, collaborators },
+        body: { images, caption: batch.caption, batchId: batch.id, story: isStory, collaborators: collaborators.trim() || undefined },
       });
       if (error) throw new Error(await functionErrorMessage(error));
       if (data?.error) throw new Error(data.error);
@@ -283,7 +283,7 @@ const BatchCard: React.FC<{
           <p className="text-xs text-muted-foreground">{isStory ? `Story · ${meta}` : meta}</p>
         </div>
         <div className="hidden shrink-0 -space-x-3 sm:flex">
-          {batch.slides.slice(0, 5).map((slide) => (
+          {(batch.slides ?? []).slice(0, 5).map((slide) => (
             <img
               key={slide.path}
               src={slide.publicUrl}
@@ -291,9 +291,9 @@ const BatchCard: React.FC<{
               className={`${isStory ? 'h-14 w-8' : 'h-14 w-11'} rounded-md border-2 border-background object-cover shadow-sm`}
             />
           ))}
-          {batch.slides.length > 5 && (
+          {(batch.slides ?? []).length > 5 && (
             <span className="flex h-14 items-center rounded-md border-2 border-background bg-muted px-2 text-xs text-muted-foreground">
-              +{batch.slides.length - 5}
+              +{(batch.slides ?? []).length - 5}
             </span>
           )}
         </div>
@@ -307,7 +307,7 @@ const BatchCard: React.FC<{
           {batch.error && <p className="text-xs text-destructive">Last error: {batch.error}</p>}
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {batch.slides.map((slide, i) => (
+        {(batch.slides ?? []).map((slide, i) => (
           <button
             key={slide.path}
             type="button"

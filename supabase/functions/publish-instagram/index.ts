@@ -117,7 +117,11 @@ serve(async (req) => {
     }
 
     // Feed posts can be co-authored (Instagram Collab); Stories cannot.
-    const collaborators = normalizeCollaborators(body?.collaborators ?? batch?.collaborators);
+    // An empty/missing collaborators value from the caller falls back to the
+    // batch's own default (e.g. IG_COLLABORATORS) instead of wiping it out.
+    const bodyCollab =
+      typeof body?.collaborators === "string" ? body.collaborators.trim() : body?.collaborators;
+    const collaborators = normalizeCollaborators(bodyCollab || batch?.collaborators);
 
     // Upload any inline (base64 data URL) images using the service role, so the
     // browser never needs storage write access.

@@ -46,9 +46,9 @@ async function fetchDueBatchIds() {
 
 async function rasteriseAndUpload(batch) {
   const urls = [];
-  const height = batch.kind.endsWith('-story') ? 1920 : 1350;
-  for (let i = 0; i < batch.slides.length; i++) {
-    const slide = batch.slides[i];
+  const height = (batch.kind || "").endsWith("-story") ? 1920 : 1350;
+  for (let i = 0; i < (batch.slides ?? []).length; i++) {
+    const slide = (batch.slides ?? [])[i];
     const res = await fetch(slide.publicUrl);
     if (!res.ok) throw new Error(`Could not fetch ${slide.publicUrl} (${res.status})`);
     const svg = Buffer.from(await res.arrayBuffer());
@@ -87,7 +87,7 @@ async function publish(batch, imageUrls) {
       imageUrls,
       caption: batch.caption,
       batchId: batch.id,
-      story: batch.kind.endsWith('-story'),
+      story: (batch.kind || '').endsWith('-story'),
     }),
   });
   const json = await res.json().catch(() => ({}));
@@ -111,7 +111,7 @@ async function run() {
       log(`skip ${id}: ${error?.message || 'not found'}`);
       continue;
     }
-    log(`processing "${batch.title || batch.kind}" (${batch.slides.length} slides)`);
+    log(`processing "${batch.title || batch.kind}" (${(batch.slides ?? []).length} slides)`);
     try {
       const urls = await rasteriseAndUpload(batch);
       const mediaId = await publish(batch, urls);

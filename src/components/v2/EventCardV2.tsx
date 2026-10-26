@@ -76,7 +76,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
 
   return (
     <article
-      className="group relative flex flex-col organic-card organic-card-hover rounded-[var(--radius)] overflow-hidden cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-500"
+      className={cn("group relative flex flex-col organic-card organic-card-hover rounded-[var(--radius)] overflow-hidden cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-500", isEventToday && "ring-2 ring-primary/40 shadow-lg shadow-primary/10")}
       onClick={() => onViewDetails(event)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -126,6 +126,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         {event.event_type && (
           <span className="absolute bottom-3 left-3 z-20 text-[11px] font-semibold tracking-wide text-white/95 drop-shadow">
             {event.event_type}
+          </span>
+        )}
+        {isEventToday && (
+          <span className="absolute bottom-3 right-3 z-20 inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow">
+            Today
           </span>
         )}
       </div>

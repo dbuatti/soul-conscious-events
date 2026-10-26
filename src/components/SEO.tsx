@@ -11,7 +11,7 @@ interface SEOProps {
 const SEO: React.FC<SEOProps> = ({
   title = "SoulFlow | Discover Soulful Events in Australia",
   description = "Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, concerts, and community gatherings.",
-  image = "https://soulflowevents.vercel.app/social-preview.jpeg",
+  image = "https://soulflowau.vercel.app/social-preview.jpeg",
   url = window.location.href,
   type = "website"
 }) => {

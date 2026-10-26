@@ -26,6 +26,8 @@ const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
 const About = lazy(() => import("./pages/About"));
 const DevSpace = lazy(() => import("./pages/DevSpace"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
 const MyEvents = lazy(() => import("./pages/MyEvents"));
 const MyBookmarks = lazy(() => import("./pages/MyBookmarks"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -117,6 +119,8 @@ const App = () => (
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
                 <Route path="/events/:id" element={<EventDetailPage />} />
                 <Route path="/map" element={<MapPage />} />
                 

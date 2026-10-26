@@ -24,6 +24,8 @@ const linkGroups = [
     links: [
       { to: '/about', label: 'About' },
       { to: '/contact', label: 'Contact' },
+      { to: '/privacy', label: 'Privacy policy' },
+      { to: '/terms', label: 'Terms of service' },
       { to: '/link', label: 'All our links' },
     ],
   },

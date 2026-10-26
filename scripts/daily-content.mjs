@@ -89,9 +89,9 @@ async function invoke(fn, body) {
 
 async function rasteriseAndUpload(batch) {
   const urls = [];
-  const height = batch.kind.endsWith("-story") ? 1920 : 1350;
-  for (let i = 0; i < batch.slides.length; i++) {
-    const res = await fetch(batch.slides[i].publicUrl);
+  const height = (batch.kind || "").endsWith("-story") ? 1920 : 1350;
+  for (let i = 0; i < (batch.slides ?? []).length; i++) {
+    const res = await fetch((batch.slides ?? [])[i].publicUrl);
     if (!res.ok) throw new Error(`Could not fetch slide (${res.status})`);
     const svg = Buffer.from(await res.arrayBuffer());
     const jpeg = await sharp(svg, { density: 144 })

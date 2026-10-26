@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://soulflowevents.vercel.app/</loc>
+    <loc>https://soulflowau.vercel.app/</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://soulflowevents.vercel.app/submit-event</loc>
+    <loc>https://soulflowau.vercel.app/submit-event</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://soulflowevents.vercel.app/map</loc>
+    <loc>https://soulflowau.vercel.app/map</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://soulflowevents.vercel.app/about</loc>
+    <loc>https://soulflowau.vercel.app/about</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://soulflowevents.vercel.app/contact</loc>
+    <loc>https://soulflowau.vercel.app/contact</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://soulflowevents.vercel.app/community-guidelines</loc>
+    <loc>https://soulflowau.vercel.app/community-guidelines</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://soulflowevents.vercel.app/my-events</loc>
+    <loc>https://soulflowau.vercel.app/my-events</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://soulflowevents.vercel.app/my-bookmarks</loc>
+    <loc>https://soulflowau.vercel.app/my-bookmarks</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://soulflowevents.vercel.app/account-settings</loc>
+    <loc>https://soulflowau.vercel.app/account-settings</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
