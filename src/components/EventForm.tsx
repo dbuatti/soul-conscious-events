@@ -524,19 +524,19 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           )}
         />
 
-        {/* Ticket Link */}
+        {/* Booking Link */}
         <FormField
           control={form.control}
           name="ticketLink"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="ticketLink" className="flex items-center gap-1">
-                Ticket/Booking Link <span className="text-destructive font-bold">*</span>
+              <FormLabel htmlFor="ticketLink">
+                Booking link <span className="text-muted-foreground font-normal">(optional)</span>
               </FormLabel>
               <FormControl>
                 <Input
                   id="ticketLink"
-                  placeholder="e.g., www.eventbrite.com.au/e/..."
+                  placeholder="e.g. ticketing page, payment link, or the post with all the details"
                   {...field}
                   className={cn(
                     "focus-visible:ring-primary",
@@ -545,7 +545,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                 />
               </FormControl>
               <FormDescription className="text-[11px] text-muted-foreground">
-                Where attendees can purchase tickets or RSVP (e.g., Eventbrite, Humanitix, or your website).
+                Anything people can act on: Eventbrite, Humanitix, a Stripe/PayID payment link, or an Instagram/Facebook post. No link? Leave it blank and add a contact below instead — we'll turn that into a "Message …" button.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -608,10 +608,13 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           name="organizerContact"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="organizerContact">Organizer Name/Contact</FormLabel>
+              <FormLabel htmlFor="organizerContact">Organiser name / contact</FormLabel>
               <FormControl>
-                <Input id="organizerContact" placeholder="e.g., Jenna, Ryan @ryanswizardry" {...field} className="focus-visible:ring-primary" />
+                <Input id="organizerContact" placeholder="e.g. Cara or @embodied_abundance_with_cara" {...field} className="focus-visible:ring-primary" />
               </FormControl>
+              <FormDescription className="text-[11px] text-muted-foreground">
+                Add an Instagram @handle, email or phone number and we'll show a booking button for it. This is also how people book when there's no booking link.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

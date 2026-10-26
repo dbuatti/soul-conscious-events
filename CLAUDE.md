@@ -53,7 +53,7 @@ The Supabase client is a singleton at `src/integrations/supabase/client.ts`. Imp
 
 ### Event Form & Validation
 
-- Schema: `src/lib/schemas.ts` (Zod). `ticketLink` is required and must be a valid URL.
+- Schema: `src/lib/schemas.ts` (Zod). `ticketLink` is optional but must be a valid URL when present; a listing must have either a booking link or an actionable `organizerContact` (@handle, email or phone). The booking CTA is derived in `src/utils/booking.ts` (`getBookingTarget`) — use it instead of reading `ticket_link` directly, so DM/contact-to-book events keep working.
 - `EventForm` component (used by both `SubmitEvent` and `EventEditPage`) handles create and edit via the same form.
 - The `AiParsingSection` component calls the `parse-event-details` edge function to pre-fill the form from pasted text (flyers, emails, etc.).
 

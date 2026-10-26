@@ -523,7 +523,7 @@ const EventManagementTable = () => {
                 name="ticketLink"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ticket/Booking Link (Optional)</FormLabel>
+                    <FormLabel>Booking link (optional)</FormLabel>
                     <FormControl>
                       <Input {...field} className="focus-visible:ring-primary" />
                     </FormControl>

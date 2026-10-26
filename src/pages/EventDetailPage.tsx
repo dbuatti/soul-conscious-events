@@ -21,6 +21,7 @@ import {
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { getBaseEventId, formatPrice, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
+import { getBookingTarget } from '@/utils/booking';
 import SEO from '@/components/SEO';
 import EventCardFallback from '@/components/EventCardFallback';
 
@@ -124,24 +125,6 @@ const EventDetailPage: React.FC = () => {
     }
   };
 
-  const handleTicketLinkClick = () => {
-    if (!event?.ticket_link) return;
-    
-    // Open the link immediately to preserve the user gesture and prevent mobile popup blockers
-    window.open(event.ticket_link, '_blank');
-    
-    // Log the analytics asynchronously in the background
-    supabase.from('event_analytics_logs').insert([
-      {
-        event_id: event.id,
-        user_id: user?.id || null,
-        log_type: 'ticket_click',
-      },
-    ]).then(({ error }) => {
-      if (error) console.error('Error logging ticket link click:', error);
-    });
-  };
-
   if (loading || isSessionLoading) {
     return (
       <div className="w-full max-w-6xl px-4">
@@ -167,6 +150,29 @@ const EventDetailPage: React.FC = () => {
 
   const isMultiDay = !!endDate && !isSameDay(startDate, endDate);
   const shareUrl = `${window.location.origin}/events/${getBaseEventId(event.id)}`;
+  const booking = getBookingTarget(event);
+
+  const handleBookingClick = () => {
+    if (!booking.href) return;
+
+    // Open immediately to preserve the user gesture and dodge mobile popup blockers.
+    if (booking.external) {
+      window.open(booking.href, '_blank', 'noopener,noreferrer');
+    } else {
+      window.location.href = booking.href;
+    }
+
+    // Log the analytics asynchronously in the background
+    supabase.from('event_analytics_logs').insert([
+      {
+        event_id: event.id,
+        user_id: user?.id || null,
+        log_type: 'ticket_click',
+      },
+    ]).then(({ error }) => {
+      if (error) console.error('Error logging booking click:', error);
+    });
+  };
 
   const handleShare = async () => {
     const shareData = { title: event.event_name, text: `Check out ${event.event_name} on SoulFlow`, url: shareUrl };
@@ -311,13 +317,19 @@ const EventDetailPage: React.FC = () => {
               {event.full_address && !event.price && !event.organizer_contact && detailRow(MapPin, event.place_name || 'Venue', event.full_address)}
             </div>
 
-            {event.ticket_link && (
-              <Button
-                onClick={handleTicketLinkClick}
-                className="w-full h-12 rounded-full text-base font-semibold shadow-lg shadow-primary/25"
-              >
-                Get tickets <ExternalLink className="ml-2 h-4 w-4" />
-              </Button>
+            {booking.href && (
+              <div>
+                <Button
+                  onClick={handleBookingClick}
+                  className="w-full h-12 rounded-full text-base font-semibold shadow-lg shadow-primary/25"
+                >
+                  {booking.label}
+                  {booking.mode === 'link' ? <ExternalLink className="ml-2 h-4 w-4" /> : <User className="ml-2 h-4 w-4" />}
+                </Button>
+                {booking.note && (
+                  <p className="text-center text-xs text-muted-foreground mt-2">{booking.note}</p>
+                )}
+              </div>
             )}
 
             <div className="grid grid-cols-2 gap-2.5">
@@ -375,15 +387,15 @@ const EventDetailPage: React.FC = () => {
         </aside>
       </div>
 
-      {/* Mobile ticket bar */}
-      {event.ticket_link && (
+      {/* Mobile booking bar */}
+      {booking.href && (
         <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/90 backdrop-blur-xl px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground truncate">{event.price ? formatPrice(event.price) : 'Tickets'}</p>
+            <p className="text-sm font-semibold text-foreground truncate">{event.price ? formatPrice(event.price) : booking.mode === 'contact' ? 'Book direct' : 'Tickets'}</p>
             <p className="text-xs text-muted-foreground truncate">{format(startDate, 'EEE d MMM')}{event.event_time ? ` · ${event.event_time}` : ''}</p>
           </div>
-          <Button onClick={handleTicketLinkClick} className="rounded-full h-11 px-6 font-semibold shrink-0">
-            Get tickets
+          <Button onClick={handleBookingClick} className="rounded-full h-11 px-5 font-semibold shrink-0 max-w-[58%]">
+            <span className="truncate">{booking.label}</span>
           </Button>
         </div>
       )}

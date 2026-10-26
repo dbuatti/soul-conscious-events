@@ -8,6 +8,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Event } from '@/types/event';
+import { ensureProtocol } from '@/utils/booking';
 import EventForm from '@/components/EventForm';
 import EventPreviewDialog from '@/components/EventPreviewDialog';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
@@ -150,7 +151,7 @@ const EventEditPage: React.FC = () => {
         place_name: values.placeName || null,
         full_address: values.fullAddress || null,
         description: values.description || null,
-        ticket_link: values.ticketLink || null,
+        ticket_link: ensureProtocol(values.ticketLink ?? '') || null,
         price: values.price || null,
         special_notes: values.specialNotes || null,
         organizer_contact: values.organizerContact || null,

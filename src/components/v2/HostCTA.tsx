@@ -33,7 +33,7 @@ const HostCTA = ({ hasUser }: HostCTAProps) => (
 
     <ol className="space-y-3">
       {[
-        { icon: Link2, title: 'Paste a link or flyer', body: 'Ticketing page, Instagram caption or email. Anything works.' },
+        { icon: Link2, title: 'Paste a link or flyer', body: 'Ticketing page, payment link, Instagram post or flyer text. Anything works.' },
         { icon: Wand2, title: 'We fill in the details', body: 'Date, time, venue, price and a cover image, ready to review.' },
         { icon: Send, title: 'Publish & share', body: 'Your event appears in the guide and on the map straight away.' },
       ].map((step, i) => (

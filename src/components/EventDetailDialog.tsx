@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X, CalendarPlus, ChevronDown, Check, Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getBookingTarget } from '@/utils/booking';
 import { useSession } from '@/components/SessionContextProvider';
 import {
   AlertDialog,
@@ -146,28 +147,33 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
     }
   };
 
-  const handleTicketLinkClick = () => {
-    if (!event?.ticket_link) return;
-    
-    // Open the link immediately to preserve the user gesture and prevent mobile popup blockers
-    window.open(event.ticket_link, '_blank');
-    
-    // Log the analytics asynchronously in the background
-    supabase.from('event_analytics_logs').insert([{
-      event_id: getBaseEventId(event.id),
-      user_id: user?.id || null,
-      log_type: 'ticket_click',
-    }]).then(({ error }) => {
-      if (error) console.error('Error logging ticket click:', error);
-    });
-  };
-
   if (!isOpen || !event) return null;
 
   const startDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
   const dateDisplay = endDate && !isSameDay(startDate, endDate) ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}` : format(startDate, 'MMM d, yyyy');
   const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
+  const booking = getBookingTarget(event);
+
+  const handleBookingClick = () => {
+    if (!booking.href) return;
+
+    // Open immediately to preserve the user gesture and dodge mobile popup blockers.
+    if (booking.external) {
+      window.open(booking.href, '_blank', 'noopener,noreferrer');
+    } else {
+      window.location.href = booking.href;
+    }
+
+    // Log the analytics asynchronously in the background
+    supabase.from('event_analytics_logs').insert([{
+      event_id: getBaseEventId(event.id),
+      user_id: user?.id || null,
+      log_type: 'ticket_click',
+    }]).then(({ error }) => {
+      if (error) console.error('Error logging booking click:', error);
+    });
+  };
 
   const Content = (
     <div className="flex flex-col h-full min-h-0">
@@ -391,9 +397,9 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         <Button variant="ghost" className="rounded-full h-11 px-4 text-sm hidden sm:inline-flex" onClick={() => { onClose(); navigate(`/events/${getBaseEventId(event.id)}`); }}>
           Full page
         </Button>
-        {event.ticket_link ? (
-          <Button className="ml-auto rounded-full h-11 px-6 font-semibold shadow-md shadow-primary/25" onClick={handleTicketLinkClick}>
-            {event.price ? `Get tickets · ${formatPrice(event.price)}` : 'Get tickets'} <LinkIcon className="ml-2 h-4 w-4" />
+        {booking.href ? (
+          <Button className="ml-auto rounded-full h-11 px-6 font-semibold shadow-md shadow-primary/25 max-w-[55%]" onClick={handleBookingClick}>
+            <span className="truncate">{booking.label}</span> {booking.mode === 'link' ? <LinkIcon className="ml-2 h-4 w-4 shrink-0" /> : <User className="ml-2 h-4 w-4 shrink-0" />}
           </Button>
         ) : (
           <Button variant="outline" className="ml-auto rounded-full h-11 px-6" onClick={() => { onClose(); navigate(`/events/${getBaseEventId(event.id)}`); }}>

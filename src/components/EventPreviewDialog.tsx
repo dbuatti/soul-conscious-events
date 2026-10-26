@@ -82,7 +82,7 @@ const EventPreviewDialog: React.FC<EventPreviewDialogProps> = ({ isOpen, onClose
           )}
           {previewData.ticketLink && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <p className="text-right font-medium text-foreground">Ticket Link:</p>
+              <p className="text-right font-medium text-foreground">Booking link:</p>
               <a href={previewData.ticketLink} target="_blank" rel="noopener noreferrer" className="col-span-3 text-primary hover:underline break-all">
                 {previewData.ticketLink}
               </a>

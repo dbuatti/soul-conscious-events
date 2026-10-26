@@ -10,6 +10,7 @@ import AiParsingSection, { AiParseResponse } from '@/components/AiParsingSection
 import EventPreviewDialog from '@/components/EventPreviewDialog';
 import { format, parseISO } from 'date-fns';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
+import { ensureProtocol } from '@/utils/booking';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
 
@@ -190,10 +191,7 @@ const SubmitEvent = () => {
         finalImageUrl = values.imageUrl;
       }
 
-      let formattedTicketLink = values.ticketLink;
-      if (formattedTicketLink && !/^https?:\/\//i.test(formattedTicketLink)) {
-        formattedTicketLink = `https://${formattedTicketLink}`;
-      }
+      const formattedTicketLink = ensureProtocol(values.ticketLink ?? '');
 
       // Auto-scrape ticket link for image if no cover image is set
       if (!finalImageUrl && formattedTicketLink) {
@@ -260,7 +258,7 @@ const SubmitEvent = () => {
       <PageHeader
         eyebrow="For hosts & facilitators"
         title={<>List your <span className="italic font-medium text-primary">gathering</span></>}
-        description="Free, and it takes under a minute. Paste a ticketing link or your flyer text below and we'll fill in the details for you to review."
+        description="Free, and it takes under a minute. Paste a booking link, a payment link, or your flyer text and we'll fill in the details for you to review."
       />
 
       <div className="grid grid-cols-1 gap-8">
