@@ -10,7 +10,7 @@ import AiParsingSection, { AiParseResponse } from '@/components/AiParsingSection
 import EventPreviewDialog from '@/components/EventPreviewDialog';
 import { format, parseISO } from 'date-fns';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
-import { ensureProtocol } from '@/utils/booking';
+import { ensureProtocol, parseOrganiserContact } from '@/utils/booking';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
 
@@ -147,6 +147,15 @@ const SubmitEvent = () => {
     if (parsedData.imageUrl) {
       setImagePreviewUrl(parsedData.imageUrl);
     }
+
+    // The AI can't know a handle unless it was in the text. Say so now rather
+    // than letting the validation error surprise them at submit.
+    if (!parsedData.ticketLink?.trim() && !parseOrganiserContact(parsedData.organizerContact).href) {
+      toast('Filled in what I could find', {
+        description: "There's no booking link in that text — add your Instagram @handle, email or phone in the organiser field so people know how to book.",
+        duration: 9000,
+      });
+    }
   };
 
   const handlePreview = () => {
@@ -258,7 +267,7 @@ const SubmitEvent = () => {
       <PageHeader
         eyebrow="For hosts & facilitators"
         title={<>List your <span className="italic font-medium text-primary">gathering</span></>}
-        description="Free, and it takes under a minute. Paste a booking link, a payment link, or your flyer text and we'll fill in the details for you to review."
+        description="Free, and it takes under a minute. Paste your Instagram caption, your flyer text, a booking link — or anything else you've already written — and we'll fill in the rest for you to review."
       />
 
       <div className="grid grid-cols-1 gap-8">

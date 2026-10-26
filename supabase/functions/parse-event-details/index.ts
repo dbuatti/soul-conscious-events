@@ -239,11 +239,13 @@ serve(async (req: Request) => {
 
       6. **Price:** Look for dollar amounts in JSON-LD (offers.price) or in the page text. Use the lowest available ticket price. Format as "$75", "Free", "Donation", "$50-$100". Extract from structured data's offers section when present.
 
-      7. **Organizer Contact:** Look for organizer/host name, email, or contact info. Combine with the platform name if known (e.g. "Nanda Das (via Humanitix)", "Book via eventbrite.com.au").
+      7. **Organizer Contact:** Look for organizer/host name, email, or contact info. If a social handle (e.g. "@embodied_abundance", "@sound.healer") appears anywhere in the text, return it verbatim — a handle is far more useful than a bare name because it becomes the booking button. Combine with the platform name if known (e.g. "Nanda Das (via Humanitix)", "Book via eventbrite.com.au"). If only a first name is present, return just that name.
 
       8. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
 
       9. **Google Maps Link:** If a Google Maps link is present in the text, use it. If the full address is available but no maps link, generate one using: "https://maps.google.com/maps?q=<encoded_address>".
+
+      10. **Booking Link:** Only include a URL that actually appears in the text. There is no requirement to find one: many organisers take bookings by DM or a payment link, so return "" when nothing is present. NEVER invent a URL. A link to a social POST (e.g. instagram.com/p/…) is a booking link; a link to a social PROFILE (e.g. instagram.com/username) belongs in organizerContact instead.
 
       **Expected JSON Format:**
       {

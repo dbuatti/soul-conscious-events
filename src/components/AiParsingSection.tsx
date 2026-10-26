@@ -106,16 +106,16 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
               AI Event Assistant
               <span className="text-[9px] font-black uppercase tracking-widest bg-primary text-white px-2.5 py-1 rounded-full">Beta</span>
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">Paste a ticketing link and we'll fill in everything for you.</p>
+            <p className="text-sm text-muted-foreground mt-1">Paste a caption, a flyer or a link — we'll fill in the rest.</p>
           </div>
         </div>
 
-        {/* URL hint callout */}
+        {/* Any-text hint callout */}
         <div className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-4 py-3 mb-5">
-          <div className="text-2xl">🔗</div>
+          <div className="text-2xl">📋</div>
           <div>
-            <p className="text-sm font-bold text-foreground">Just paste a link!</p>
-            <p className="text-xs text-muted-foreground">Works with Megatix, Humanitix, Eventbrite, and most event pages. We'll grab the event details, date, venue, and cover image automatically.</p>
+            <p className="text-sm font-bold text-foreground">Paste whatever you've already written</p>
+            <p className="text-xs text-muted-foreground">Your Instagram caption, the flyer text, an email, or a ticketing page link (Megatix, Humanitix, Eventbrite). We'll pull out the date, venue and price — you review it before anything is published.</p>
           </div>
         </div>
       
@@ -123,7 +123,7 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
           <div className="space-y-2">
             <Textarea
               id="ai-text"
-              placeholder="Paste a ticketing link here... (e.g. https://megatix.com.au/events/my-event)"
+              placeholder="Paste your Instagram caption, flyer text or a ticketing link…"
               value={aiText}
               onChange={(e) => setAiText(e.target.value)}
               className="min-h-[100px] rounded-2xl bg-background/80 border border-border/50 focus-visible:ring-primary text-base p-4 placeholder:text-muted-foreground/50"
