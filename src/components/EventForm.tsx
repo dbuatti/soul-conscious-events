@@ -627,14 +627,15 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
           render={({ field }) => (
             <FormItem>
               <FormLabel htmlFor="eventType">Event Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || undefined}>
                 <FormControl>
                   <SelectTrigger id="eventType" className="focus-visible:ring-primary">
                     <SelectValue placeholder="Select an event type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent className="dark:bg-card dark:border-border">
-                  {eventTypes.map((type) => (
+                  {/* "All" is a filter token, not a real event type */}
+                  {eventTypes.filter((type) => type !== 'All').map((type) => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
                 </SelectContent>

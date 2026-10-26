@@ -9,6 +9,8 @@ import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Event } from '@/types/event';
 import { ensureProtocol } from '@/utils/booking';
+import { rehostImageToStorage } from '@/utils/image-url';
+import { uploadEventImage } from '@/lib/event-image-upload';
 import EventForm from '@/components/EventForm';
 import EventPreviewDialog from '@/components/EventPreviewDialog';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
@@ -128,19 +130,14 @@ const EventEditPage: React.FC = () => {
       if (values.imageFile) {
         const fileExtension = values.imageFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-        const { error: uploadError } = await supabase.storage
-          .from('event-images')
-          .upload(fileName, values.imageFile);
-
-        if (uploadError) throw uploadError;
-
-        const { data: publicUrlData } = supabase.storage
-          .from('event-images')
-          .getPublicUrl(fileName);
-
-        finalImageUrl = publicUrlData.publicUrl;
+        finalImageUrl = await uploadEventImage(values.imageFile, fileName);
       } else if (values.imageUrl) {
         finalImageUrl = values.imageUrl;
+      }
+
+      // Existing events may already point at an expiring social CDN URL.
+      if (finalImageUrl) {
+        finalImageUrl = await rehostImageToStorage(finalImageUrl, uploadEventImage);
       }
 
       const eventData = {

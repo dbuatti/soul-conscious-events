@@ -11,6 +11,8 @@ import EventPreviewDialog from '@/components/EventPreviewDialog';
 import { format, parseISO } from 'date-fns';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
 import { ensureProtocol, parseOrganiserContact } from '@/utils/booking';
+import { decodeHtmlEntities, rehostImageToStorage } from '@/utils/image-url';
+import { uploadEventImage } from '@/lib/event-image-upload';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
 
@@ -37,14 +39,15 @@ const scrapeOgImage = async (url: string): Promise<string | null> => {
 
     const ogMatch = html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
       || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-    if (ogMatch?.[1]) return ogMatch[1];
+    if (ogMatch?.[1]) return decodeHtmlEntities(ogMatch[1]);
 
     const ldMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
     if (ldMatch?.[1]) {
       try {
         const ld = JSON.parse(ldMatch[1]);
         if (ld.image) {
-          return Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
+          const image = Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
+          return image ? decodeHtmlEntities(image) : null;
         }
       } catch { /* ignore */ }
     }
@@ -182,20 +185,7 @@ const SubmitEvent = () => {
       if (values.imageFile) {
         const fileExtension = values.imageFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-        const { error: uploadError } = await supabase.storage
-          .from('event-images')
-          .upload(fileName, values.imageFile, {
-            cacheControl: '3600',
-            upsert: false,
-          });
-
-        if (uploadError) throw uploadError;
-
-        const { data: publicUrlData } = supabase.storage
-          .from('event-images')
-          .getPublicUrl(fileName);
-
-        finalImageUrl = publicUrlData.publicUrl;
+        finalImageUrl = await uploadEventImage(values.imageFile, fileName);
       } else if (values.imageUrl) {
         finalImageUrl = values.imageUrl;
       }
@@ -209,6 +199,12 @@ const SubmitEvent = () => {
         if (scrapedImage) {
           finalImageUrl = scrapedImage;
         }
+      }
+
+      // Social CDN URLs are signed and expire within days -- keep our own copy.
+      // Falls back to the original URL if the copy fails.
+      if (finalImageUrl) {
+        finalImageUrl = await rehostImageToStorage(finalImageUrl, uploadEventImage);
       }
 
       // Final fallback: assign a random default cover image

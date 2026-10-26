@@ -122,17 +122,24 @@ serve(async (req: Request) => {
         if (!response.ok) return { image: null, pageText: '', structuredData: '' };
         const html = await response.text();
 
+        // Scraped markup is HTML-escaped: a raw "&amp;" in a CDN URL breaks the
+        // signature (and therefore the image), so decode before returning.
+        const decodeEntities = (value: string) => value
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#x2F;/gi, '/');
+
         // Extract hero image
         let image: string | null = null;
         const ogMatch = html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
           || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
         if (ogMatch?.[1]) {
-          image = ogMatch[1];
+          image = decodeEntities(ogMatch[1]);
         } else {
           const twMatch = html.match(/<meta\s+[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
             || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
           if (twMatch?.[1]) {
-            image = twMatch[1];
+            image = decodeEntities(twMatch[1]);
           }
         }
 
@@ -145,7 +152,8 @@ serve(async (req: Request) => {
             if (ld['@type'] === 'Event' || ld['@type'] === 'MusicEvent' || (Array.isArray(ld['@graph']) && ld['@graph'].some((n: Record<string, string>) => n['@type'] === 'Event'))) {
               structuredData = JSON.stringify(ld, null, 2);
               if (!image && ld.image) {
-                image = Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
+                const ldImage = Array.isArray(ld.image) ? ld.image[0] : (typeof ld.image === 'string' ? ld.image : ld.image?.url);
+                image = ldImage ? decodeEntities(ldImage) : null;
               }
               break;
             }
