@@ -283,16 +283,38 @@ serve(async (req: Request) => {
       "${textForGemini}"
     `;
 
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
-    });
+    // Google intermittently returns 503/429 on gemini-2.5-flash. A single blip
+    // shouldn't look like a broken feature, so retry with a short backoff.
+    const retryableStatuses = new Set([429, 500, 502, 503, 504]);
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    if (!geminiResponse.ok) {
-      throw new Error(`Gemini API error: ${geminiResponse.status}`);
+    let geminiResponse: Response | null = null;
+    let lastStatus = 0;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await sleep(attempt === 1 ? 800 : 2000);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      });
+
+      if (response.ok) {
+        geminiResponse = response;
+        break;
+      }
+
+      lastStatus = response.status;
+      if (!retryableStatuses.has(response.status)) break;
+    }
+
+    if (!geminiResponse) {
+      throw new Error(
+        lastStatus === 503 || lastStatus === 429
+          ? `The AI service is busy right now (${lastStatus}). Try Auto-Fill again in a moment, or fill the form in manually.`
+          : `Gemini API error: ${lastStatus}`,
+      );
     }
 
     const geminiResult = await geminiResponse.json();
@@ -303,6 +325,10 @@ serve(async (req: Request) => {
       if (jsonMatch) {
         parsed_data = JSON.parse(jsonMatch[0]);
       }
+    }
+
+    if (!parsed_data) {
+      throw new Error("Couldn't find event details in that text. Include the date, venue and price — or fill the form in manually.");
     }
 
     // Attach scraped image URL to parsed data

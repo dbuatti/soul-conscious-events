@@ -82,7 +82,11 @@ const AiParsingSection: React.FC<AiParsingSectionProps> = ({ onAiParseComplete }
       toast.success('Event details parsed successfully!');
     } catch (error: unknown) {
       console.error('Error parsing event details with AI:', error);
-      toast.error(`Failed to parse event details: ${error instanceof Error ? error.message : String(error)}`);
+      const message = error instanceof Error ? error.message : String(error);
+      // Upstream hiccups and empty results already read as sentences; don't
+      // prefix them with noise.
+      const alreadyFriendly = /^(The AI service|Couldn't find)/.test(message);
+      toast.error(alreadyFriendly ? message : `Failed to parse event details: ${message}`, { duration: 9000 });
     } finally {
       setIsAiParsing(false);
     }
