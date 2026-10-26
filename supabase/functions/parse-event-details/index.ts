@@ -239,7 +239,10 @@ serve(async (req: Request) => {
 
       6. **Price:** Look for dollar amounts in JSON-LD (offers.price) or in the page text. Use the lowest available ticket price. Format as "$75", "Free", "Donation", "$50-$100". Extract from structured data's offers section when present.
 
-      7. **Organizer Contact:** Look for organizer/host name, email, or contact info. If a social handle (e.g. "@embodied_abundance", "@sound.healer") appears anywhere in the text, return it verbatim — a handle is far more useful than a bare name because it becomes the booking button. Combine with the platform name if known (e.g. "Nanda Das (via Humanitix)", "Book via eventbrite.com.au"). If only a first name is present, return just that name.
+      7. **Organizer Contact:** Look for organizer/host name, email, or contact info, and prefer a handle over a bare name — a handle (e.g. "@embodied_abundance") becomes the booking button, a name alone does not.
+         Only use a handle that belongs to the ORGANISER: the signature/sign-off ("💚Cara @cara"), a "DM me / message me / follow me" call to action, or the account whose post this is.
+         Do NOT use handles that belong to anyone else — venues, sponsors, collaborators, or accounts merely mentioned or tagged, especially in a hashtag/mention block at the end of a caption. If the only handles in the text belong to other people, return the organiser's plain name instead.
+         Combine with the platform name if known (e.g. "Nanda Das (via Humanitix)", "Book via eventbrite.com.au"). Never invent a handle.
 
       8. **Discount Code:** Look for words like "Code", "Promo", "Discount" followed by a string.
 
