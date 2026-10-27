@@ -179,7 +179,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
   return (
     <div className="flex items-center justify-between gap-3 w-full">
-      <div className="flex items-center gap-2 min-w-0 flex-1 overflow-x-auto no-scrollbar -my-1 py-1">
+      <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap -my-1 py-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
