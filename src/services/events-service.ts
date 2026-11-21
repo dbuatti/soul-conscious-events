@@ -28,7 +28,6 @@ const LIST_FIELDS = [
   'image_url',
   'ticket_link',
   'organizer_contact',
-  'is_recurring_instance',
   'recurring_pattern',
   'latitude',
   'longitude',
