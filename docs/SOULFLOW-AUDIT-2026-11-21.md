@@ -76,13 +76,19 @@ through the normal edit form.
 
 - Upcoming by state: VIC 55, QLD 27, TAS 16, NSW 9, SA 3, WA **0**, none 2.
 - The Perth Eventbrite source is seeded but yields no upcoming events.
-- `ON_TOPIC_TERMS` deliberately includes `/pilates/i`, `/mindful/i`, `/yoga/i`,
-  so commercial fitness and "mindful craft" classes reach the front page
-  (today's eight included Pilates ×2, pottery and calligraphy). This is an
-  editorial decision baked into the code — change it only if you want a
-  narrower definition of "conscious event".
+- `ON_TOPIC_TERMS` deliberately includes `/pilates/i`, `/yoga/i` and (until
+  21 Nov) `/mindful/i`, so commercial fitness and "mindful craft" classes
+  reached the front page (today's eight included Pilates ×2, pottery and
+  calligraphy). **Fixed for "mindful":** it is now a soft signal, so a listing
+  whose only on-topic word is "mindful" is `unsure` → review, not published.
+  Pilates and yoga remain strong signals on purpose — an existing test calls
+  a Pilates class a real SoulFlow event. That is still an editorial choice.
 - A user-submitted medical conference on 1 Mar 2027 was approved manually even
-  though `/conference/i` is an off-topic term.
+  though `/conference/i` is an off-topic term. **Fixed:** user submissions that
+  score `off-topic` now go to `pending`. Admins are exempt so your own
+  participatory events (e.g. the Resonance choir, which matches the `choir`
+  rule) still go live immediately. The three upcoming user submissions were
+  checked: only the conference is affected.
 
 ### 5. Housekeeping
 
@@ -114,6 +120,8 @@ resolved.
 
 - [x] Daily-content scheduler / idempotency fix
 - [x] Importer source rotation + stale "waiting for review" wording
+- [x] Relevance tightened: "mindful"-only listings now wait for review
+- [x] Clearly off-topic user submissions now wait for review (admins exempt)
 - [x] Removed `/old` routes from `App.tsx`
 - [x] Added SoulFlow row to systems-repo `INDEX.md` and `inventory/repositories.md`
 - [x] typecheck, lint, 46 Deno tests and 79 Vitest tests all pass
@@ -143,6 +151,6 @@ resolved.
 - [ ] Check the admin Analytics tab for real visitor numbers (admin-only).
 - [ ] Mark your own monthly events as recurring in the edit form.
 - [ ] Review whether the Perth source should be replaced with a Canberra feed.
-- [ ] Decide the narrow-vs-broad curation question (pilates/crafts).
+- [ ] Decide whether Pilates/yoga should also be soft signals. Left strong for now.
 - [ ] Decide on the name and a real domain before any branding spend.
 - [ ] Optional: delete the now-unreferenced legacy components under `src/pages/`.

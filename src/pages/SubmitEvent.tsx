@@ -12,6 +12,7 @@ import { format, parseISO } from 'date-fns';
 import { eventFormSchema, EventFormValues } from '@/lib/schemas';
 import { ensureProtocol, parseOrganiserContact } from '@/utils/booking';
 import { decodeHtmlEntities, rehostImageToStorage } from '@/utils/image-url';
+import { scoreRelevance } from '../../supabase/functions/_shared/relevance.ts';
 import { uploadEventImage } from '@/lib/event-image-upload';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
@@ -85,7 +86,7 @@ const isRlsDenial = (error: unknown): boolean => {
 
 const SubmitEvent = () => {
   const navigate = useNavigate();
-  const { user } = useSession();
+  const { user, isAdmin } = useSession();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<EventFormValues | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -214,6 +215,13 @@ const SubmitEvent = () => {
 
       const recurringPattern = values.recurringPattern === 'NONE' ? null : values.recurringPattern;
 
+      // Hand-submitted events normally go live immediately. Clearly off-topic
+      // ones wait for a human instead of quietly publishing; the site owner's
+      // own listings are exempt (a participatory choir, for example, matches
+      // the importer's "choir" rule but is exactly what this site is for).
+      const relevance = scoreRelevance(values.eventName, values.description, values.specialNotes);
+      const approvalStatus = !isAdmin && relevance === 'off-topic' ? 'pending' : 'approved';
+
       const { error } = await supabase.from('events').insert([{
         event_name: values.eventName,
         event_date: format(values.eventDate, 'yyyy-MM-dd'),
@@ -235,12 +243,17 @@ const SubmitEvent = () => {
         recurring_end_date: values.recurringEndDate ? format(values.recurringEndDate, 'yyyy-MM-dd') : null,
         event_days: values.eventDays || null,
         user_id: user?.id || null,
-        approval_status: 'approved',
+        approval_status: approvalStatus,
       }]);
 
       if (error) throw error;
 
-      toast.success('Your event has been submitted! It will appear in the listing shortly.', { id: loadingToastId, duration: 5000 });
+      toast.success(
+        approvalStatus === 'pending'
+          ? 'Thanks — your event is queued for review and will appear once approved.'
+          : 'Your event has been submitted! It will appear in the listing shortly.',
+        { id: loadingToastId, duration: 5000 },
+      );
       navigate('/');
     } catch (error: unknown) {
       console.error('Error during event submission:', error);

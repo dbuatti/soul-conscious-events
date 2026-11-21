@@ -525,6 +525,17 @@ Deno.test('an on-topic signal wins when an event looks like both', () => {
   assert.equal(scoreRelevance('Sunrise Sound Bath at Earth Frequency Festival'), 'on-topic');
 });
 
+Deno.test('mindful on its own is not enough to publish', () => {
+  // "Mindful" has become decorative language on craft and fitness classes.
+  // Demote those to the review queue without rejecting them.
+  assert.equal(scoreRelevance('Mindful Pottery Class for Beginners'), 'unsure');
+  assert.equal(scoreRelevance('Mindful Calligraphy Workshop for Beginners'), 'unsure');
+});
+
+Deno.test('mindful alongside a real practice still publishes', () => {
+  assert.equal(scoreRelevance('Mindful Movement and Sound Bath'), 'on-topic');
+});
+
 Deno.test('relevance reads the description, not just the title', () => {
   assert.equal(scoreRelevance('Community evening', 'A guided breathwork session with gongs.'), 'on-topic');
   assert.equal(scoreRelevance('Main Stage', 'Three live bands performing. A DJ set closes the night.'), 'off-topic');
