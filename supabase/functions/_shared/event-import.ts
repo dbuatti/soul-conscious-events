@@ -15,6 +15,8 @@ export interface ImportedEvent {
   event_type: string;
   geographical_state: string | null;
   image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
   recurring_pattern: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' | null;
   recurring_end_date: string | null;
   external_id: string;
@@ -558,6 +560,9 @@ const parseLocation = (loc: unknown): Place => {
         if (clean.length >= 3 && bag && new RegExp(`\\b${escaped}\\b`, 'i').test(bag)) continue;
         parts.push(clean);
       }
+      // Build a geocode-friendly address: street, suburb, state postcode.
+      // A complete address helps the geocoder land on the right building rather
+      // than dropping a pin in the middle of a suburb.
       return {
         name: str(item.name),
         address: parts.join(', ') || null,
@@ -733,6 +738,23 @@ export const jsonLdToEvent = (
   const place = parseLocation(node.location);
   if (place.country && NON_AU_COUNTRY.test(place.country.trim())) return 'not-australian';
 
+  // Compose a geocode-ready full address: venue name, street/suburb, state,
+  // postcode. The more complete the address, the better the geocoder lands on
+  // the right building rather than the middle of a suburb.
+  const addressBits = [
+    place.address,
+    place.region,
+  ].filter(Boolean);
+  const fullAddress = place.name
+    ? [place.name, ...addressBits].filter(Boolean).join(', ')
+    : addressBits.join(', ') || null;
+
+  // State from the address first (most reliable), then from region, then from
+  // the raw full address as a last resort.
+  const geographicalState = place.online
+    ? null
+    : detectState(fullAddress, place.address, place.region);
+
   const name = decodeEntities(str(node.name)!);
   const blurb = extendTruncatedDescription(html, htmlToText(str(node.description) ?? '')).trim();
   // Some pages use the title as their description ("Evoke Sounds // Lounge
@@ -753,14 +775,16 @@ export const jsonLdToEvent = (
     end_date: end?.date && end.date > start.date ? end.date : null,
     event_time: formatTimeRange(start, end),
     place_name: place.name ? decodeEntities(place.name) : null,
-    full_address: place.address ? decodeEntities(place.address) : null,
+    full_address: fullAddress ? decodeEntities(fullAddress) : null,
     description,
     ticket_link: ticketLink,
     price: priceFromOffers(node.offers),
     organizer_contact: organizer ? (platform ? `${organizer} (via ${platform})` : organizer) : null,
     event_type: classifyEventType(name, asArray(node['@type'] as string | string[]).join(' '), description),
-    geographical_state: place.online ? null : detectState(place.region, place.address),
+    geographical_state: geographicalState,
     image_url: pickImage(node.image),
+    latitude: null,
+    longitude: null,
     recurring_pattern: null,
     recurring_end_date: null,
     external_id: normalizeUrl(ticketLink) ?? `${name}|${start.date}`,
@@ -972,20 +996,26 @@ export const icsToEvent = (
   const uid = ev.get('UID')?.value.trim();
   const organizer = ev.get('ORGANIZER');
 
+  // Build a complete address: venue, then the rest of the comma-separated parts.
+  const fullAddress = location || null;
+  const geographicalState = detectState(location);
+
   return {
     event_name: clip(name, 200)!,
     event_date: start.date,
     end_date: end?.date && end.date > start.date ? end.date : null,
     event_time: formatTimeRange(start, end),
     place_name: placeName?.trim() || null,
-    full_address: addressRest.length ? location : null,
+    full_address: fullAddress,
     description,
     ticket_link: url,
     price: null,
     organizer_contact: organizer?.params.CN ?? null,
     event_type: classifyEventType(name, description),
-    geographical_state: detectState(location),
+    geographical_state: geographicalState,
     image_url: null,
+    latitude: null,
+    longitude: null,
     recurring_pattern: recurring,
     recurring_end_date: recurringEnd,
     external_id: uid ? `${uid}` : `${normalizeUrl(calendarUrl)}|${name}|${start.date}`,

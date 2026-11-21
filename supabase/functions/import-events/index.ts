@@ -154,20 +154,30 @@ Page text:
     if (!json.isEvent || typeof json.eventName !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(json.eventDate ?? '')) return null;
     if (json.eventDate < opts.today || (opts.maxDate && json.eventDate > opts.maxDate)) return null;
     const s = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+    const fullAddress = s(json.fullAddress);
+    // Compose a geocode-ready address: place name + address, with state
+    // detection from the combined text.
+    const composedAddress = s(json.placeName) && fullAddress
+      ? `${s(json.placeName)}, ${fullAddress}`
+      : fullAddress || s(json.placeName) || null;
+    const geographicalState = detectState(composedAddress, s(json.placeName), s(json.fullAddress));
+
     return {
       event_name: json.eventName.trim().slice(0, 200),
       event_date: json.eventDate,
       end_date: /^\d{4}-\d{2}-\d{2}$/.test(json.endDate ?? '') && json.endDate > json.eventDate ? json.endDate : null,
       event_time: s(json.eventTime),
       place_name: s(json.placeName),
-      full_address: s(json.fullAddress),
+      full_address: composedAddress,
       description: s(json.description)?.slice(0, 4000) ?? null,
       ticket_link: url,
       price: s(json.price),
       organizer_contact: s(json.organizerContact),
       event_type: classifyEventType(json.eventName, json.description),
-      geographical_state: detectState(json.fullAddress, json.placeName),
+      geographical_state: geographicalState,
       image_url: html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)?.[1] ?? null,
+      latitude: null,
+      longitude: null,
       recurring_pattern: null,
       recurring_end_date: null,
       external_id: normalizeUrl(url) ?? url,
@@ -351,6 +361,41 @@ serve(async (req) => {
         added = inserted?.length ?? 0;
         if (added < fresh.length) {
           notes.push(`only ${added} of ${fresh.length} were saved`);
+        }
+
+        // Auto-geocode newly imported events that have an address but no
+        // coordinates, so they appear on the map without waiting for the
+        // separate geocode-events job. Rate-limited and time-budgeted server-side.
+        const toGeocode = fresh.filter((e) =>
+          typeof e.latitude !== 'number' &&
+          typeof e.longitude !== 'number' &&
+          (e.full_address || e.place_name)
+        );
+        if (toGeocode.length) {
+          try {
+            const geoRes = await fetch(
+              `${Deno.env.get('SUPABASE_URL')}/functions/v1/geocode-events`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${serviceKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  limit: toGeocode.length,
+                  // Only geocode events from this source so we don't re-geocode
+                  // everything every run.
+                  // (The function itself filters to approved, undeleted, upcoming
+                  //  events with null latitude and no geocode_failed_at.)
+                }),
+              },
+            );
+            const geoBody = await geoRes.json().catch(() => ({}));
+            if (geoBody.message) notes.push(`geocoding: ${geoBody.message}`);
+          } catch (err) {
+            console.error('Auto-geocode failed:', err);
+            notes.push('geocoding skipped (network)');
+          }
         }
       }
     }
