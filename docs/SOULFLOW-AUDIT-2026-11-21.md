@@ -118,6 +118,18 @@ resolved.
 - [x] Added SoulFlow row to systems-repo `INDEX.md` and `inventory/repositories.md`
 - [x] typecheck, lint, 46 Deno tests and 79 Vitest tests all pass
 
+## Production verification — 21 Nov 2026
+
+- Pushed `ddead74` to `main`. Deploy Supabase Edge Functions completed ✓.
+- Importer run `44884573317` (started before the deploy finished, so it used the
+  old function) added **21 events** across all six sources — confirming the
+  zero-add runs were a budget/scheduling problem, not dead sources.
+- Importer run `44884754175` (after deploy) processed **exactly 2 sources**
+  (Brisbane + Perth) and added **12 events** — the rotation fix is live.
+  Public event count went from 561 → 595 in one afternoon.
+- Daily content: not force-triggered, because that would publish to Instagram.
+  The next scheduled run (22:00 UTC) is the live check.
+
 ## Still to do
 
 - [ ] Check the admin Analytics tab for real visitor numbers (admin-only).
