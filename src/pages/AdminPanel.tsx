@@ -18,7 +18,7 @@ import ByHeartDashboard from '@/components/admin/ByHeartDashboard';
 import PageHeader from '@/components/v2/PageHeader';
 import SEO from '@/components/SEO';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3, Piano, Workflow } from 'lucide-react';
+import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3, Piano, Workflow, CircleDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -182,10 +182,15 @@ const AdminPanel = () => {
         description="Review imported events, manage listings, venues and users, and see how the site is doing."
       />
 
-      <div className="flex justify-end mb-4">
+      <div className="flex flex-wrap justify-end gap-2 mb-4">
         <Button asChild variant="outline" className="rounded-full">
           <Link to="/admin/how-it-works">
             <Workflow className="h-4 w-4 mr-2" /> How SoulFlow works
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="rounded-full">
+          <Link to="/admin/how-it-works#paid-tiers">
+            <CircleDollarSign className="h-4 w-4 mr-2" /> Paid tiers (review)
           </Link>
         </Button>
       </div>

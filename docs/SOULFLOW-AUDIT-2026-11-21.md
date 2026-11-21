@@ -168,6 +168,10 @@ resolved.
   spelling and the Saved events SEO title were aligned.
 - `/link` now has a "Back to the event guide" path, a page title, and sends
   "Submit an event" to sign-in first (the form is auth-gated).
+- The parked paid-tier decision is now visible in admin: **Admin panel → Paid
+  tiers (review)** jumps to a table on the How SoulFlow works page covering
+  standard/free, featured $15–30/week, email signup, and the rejected options
+  (commission, browser subscriptions, app stores). Nothing is built or live.
 
 ## Still to do
 

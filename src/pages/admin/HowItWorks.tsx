@@ -1,9 +1,10 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 type Tone = 'supply' | 'decision' | 'product' | 'value';
 
@@ -61,8 +62,17 @@ const FlowLane = ({ step, title, subtitle, nodes }: FlowLaneProps) => (
  * event, what a visitor gets, and where the value ends up. Kept deliberately
  * diagram-first — no charts, no live queries, readable in one glance.
  */
-const HowItWorks = () => (
-  <div className="w-full max-w-6xl px-4 pb-16">
+const HowItWorks = () => {
+  // The admin panel links straight to the paid-tiers card with a hash. Lazy
+  // loading means the element may not exist when the browser first tries.
+  useEffect(() => {
+    if (window.location.hash === '#paid-tiers') {
+      document.getElementById('paid-tiers')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
+  return (
+    <div className="w-full max-w-6xl px-4 pb-16">
     <SEO
       title="How SoulFlow works | Admin | SoulFlow"
       description="A one-page functional and business model map for SoulFlow administrators."
@@ -156,12 +166,87 @@ const HowItWorks = () => (
       </section>
     </div>
 
+    <section id="paid-tiers" className="organic-card rounded-[var(--radius)] p-6 mt-5 scroll-mt-24">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+        <div>
+          <p className="eyebrow mb-1">Monetisation · parked</p>
+          <h3 className="font-heading text-xl font-semibold text-foreground">Paid tiers — for review, not live</h3>
+        </div>
+        <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">
+          Decision only
+        </span>
+      </div>
+      <p className="text-sm leading-relaxed text-muted-foreground mb-5">
+        Nothing here is built or charged. This is the decision parked on 21 November 2026, kept in one place
+        so it is easy to revisit after the next traffic check.
+      </p>
+
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Option</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>What would have to be true</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="font-medium">Standard listing</TableCell>
+              <TableCell>Free, always</TableCell>
+              <TableCell><span className="text-emerald-700 dark:text-emerald-400">Live</span></TableCell>
+              <TableCell>Baseline. Hosts publish themselves; bookings stay with them.</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-medium">Featured listing</TableCell>
+              <TableCell>$15–30 / week</TableCell>
+              <TableCell><span className="text-amber-700 dark:text-amber-400">Parked</span></TableCell>
+              <TableCell>Only after Admin → Analytics shows real traffic. Pin at the top of a category or state, or in weekly picks. No billing exists.</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-medium">Weekly picks email</TableCell>
+              <TableCell>Free</TableCell>
+              <TableCell><span className="text-amber-700 dark:text-amber-400">Parked</span></TableCell>
+              <TableCell>Kit signup once there is an audience. Used to promote your own events, not to sell access.</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-medium">Booking commission</TableCell>
+              <TableCell>0%</TableCell>
+              <TableCell><span className="text-destructive">Rejected</span></TableCell>
+              <TableCell>Never take a cut of tickets. SoulFlow sends people to the host.</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-medium">Browser subscriptions</TableCell>
+              <TableCell>—</TableCell>
+              <TableCell><span className="text-destructive">Rejected</span></TableCell>
+              <TableCell>Do not copy the competing “Soul Flow” app’s $9.99–$59.99 subscriptions; the name/domain collision is unresolved.</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-medium">App-store app</TableCell>
+              <TableCell>—</TableCell>
+              <TableCell><span className="text-destructive">Rejected</span></TableCell>
+              <TableCell>Capacitor scaffold stays dormant. No app stores.</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="mt-5 pt-5 border-t border-border">
+        <p className="text-sm leading-relaxed text-foreground">
+          <span className="font-semibold">Trigger to revisit:</span> check Admin → Analytics. If visits, saves and
+          ticket clicks are meaningful, price one featured tier first — don’t build billing until a host asks.
+        </p>
+      </div>
+    </section>
+
     <p className="mt-8 text-center">
       <Link to="/admin/panel" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
         <ArrowLeft className="h-4 w-4" /> Back to the admin panel
       </Link>
     </p>
-  </div>
-);
+    </div>
+  );
+};
 
 export default HowItWorks;
