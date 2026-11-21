@@ -223,3 +223,24 @@
   50% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
+
+/* Smooth horizontal scrolling for swipeable carousels */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Touch-friendly scroll containers */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+}

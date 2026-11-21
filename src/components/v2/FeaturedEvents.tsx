@@ -56,8 +56,12 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
         </Link>
       </div>
 
-      <div className="relative overflow-hidden">
-        <div className="flex gap-4 sm:gap-6 -translate-x-1 sm:-translate-x-0">
+      {/* Swipeable horizontal carousel with scroll snap */}
+      <div className="relative overflow-x-auto scroll-snap-x -mx-4 sm:-mx-6 pb-2 no-scrollbar touch-scroll">
+        <div
+          className="flex gap-4 sm:gap-6 px-4 sm:px-6 scroll-snap-items"
+          data-scroll-container
+        >
           {featured.map((event) => {
             const eventDate = parseISO(event.event_date);
             const badgeColor = categoryColours[event.event_type || 'Other'] ?? categoryColours.Other;
@@ -67,7 +71,7 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
               <article
                 key={event.id}
                 className={cn(
-                  'relative flex-shrink-0 w-[280px] sm:w-[340px] rounded-[2rem] overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] group',
+                  'relative flex-shrink-0 w-[280px] sm:w-[340px] rounded-[2rem] overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] group scroll-snap-start',
                   isEventToday && 'ring-3 ring-primary/20'
                 )}
                 onClick={() => onViewDetails(event)}
