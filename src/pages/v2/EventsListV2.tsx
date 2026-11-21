@@ -41,7 +41,7 @@ const ViewLoadingFallback = () => (
 const EVENTS_PER_LOAD = 8;
 
 const EventsListV2 = () => {
-  const { user } = useSession();
+  const { user, defaultState } = useSession();
   const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -65,7 +65,7 @@ const EventsListV2 = () => {
 
   const loading = eventsQuery.isLoading;
 
-  const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents, totalCount } = useEventFilters(allEvents);
+  const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState);
 
   // Deduplicate recurring series for the list view: keep only the next upcoming instance per series.
   // Calendar and map views still receive the full filteredEvents so all instances are visible.
@@ -180,7 +180,11 @@ const EventsListV2 = () => {
     ...filters.category.map((v) => ({ type: 'category' as const, value: v, label: v })),
     ...filters.venue.map((v) => ({ type: 'venue' as const, value: v, label: v })),
     ...filters.price.map((v) => ({ type: 'price' as const, value: v, label: v })),
-    ...filters.state.map((v) => ({ type: 'state' as const, value: v, label: v })),
+    ...filters.state.map((v) => ({
+      type: 'state' as const,
+      value: v,
+      label: v === defaultState ? `${v} · your default` : v,
+    })),
   ];
 
   const statusPanel = (Icon: React.ElementType, title: string, message: React.ReactNode, action: React.ReactNode) => (

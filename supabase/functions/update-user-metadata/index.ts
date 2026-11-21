@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders, jsonResponse, requireUser } from '../_shared/auth.ts';
 
+const DEFAULT_STATES = ['ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -10,7 +12,8 @@ serve(async (req) => {
     const auth = await requireUser(req);
     if (!auth.ok) return auth.response;
 
-    const { userId, firstName, lastName, email, username, country } = await req.json();
+    const payload = await req.json();
+    const { userId, firstName, lastName, email, username, country, defaultState } = payload;
 
     if (!userId) {
       return jsonResponse({ error: 'User ID is required.' }, 400);
@@ -29,11 +32,23 @@ serve(async (req) => {
       return jsonResponse({ error: 'Email changes must be confirmed via the account settings page.' }, 403);
     }
 
+    // 'ALL' clears the preference. Storing it in user_metadata avoids a schema
+    // migration and is readable by the signed-in user on every device. Only
+    // touch it when the field was sent, so admin user edits don't wipe it.
+    const userMetadata: Record<string, unknown> = {
+      first_name: firstName,
+      last_name: lastName,
+    };
+    if (Object.prototype.hasOwnProperty.call(payload, 'defaultState')) {
+      const requestedState = typeof defaultState === 'string' ? defaultState.toUpperCase() : 'ALL';
+      userMetadata.default_state = DEFAULT_STATES.includes(requestedState) ? requestedState : null;
+    }
+
     const { data: authUpdateData, error: authUpdateError } = await auth.admin.auth.admin.updateUserById(
       userId,
       {
         ...(emailChanged ? { email } : {}),
-        user_metadata: { first_name: firstName, last_name: lastName },
+        user_metadata: userMetadata,
       }
     );
 

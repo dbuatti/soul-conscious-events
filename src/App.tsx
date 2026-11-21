@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SessionContextProvider, useSession } from "@/components/SessionContextProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,7 +17,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 const Contact = lazy(() => import("./pages/Contact"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
-const AdminHowItWorks = lazy(() => import("./pages/admin/HowItWorks"));
+const AdminBusiness = lazy(() => import("./pages/admin/BusinessView"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 const EventEditPage = lazy(() => import("./pages/EventEditPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
@@ -44,6 +44,17 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Keep the old booking/anchor URLs working after the pages were consolidated.
+const BusinessRedirect = () => {
+  const location = useLocation();
+  return (
+    <Navigate
+      to={{ pathname: '/admin/business', search: location.search, hash: location.hash }}
+      replace
+    />
+  );
+};
 
 // Persistent Layout for V2
 const LayoutV2 = () => {
@@ -126,7 +137,8 @@ const App = () => (
                 {/* Admin V2 Routes */}
                 <Route element={<ProtectedRoute requireAdmin><Outlet /></ProtectedRoute>}>
                   <Route path="/admin/panel" element={<AdminPanel />} />
-                  <Route path="/admin/how-it-works" element={<AdminHowItWorks />} />
+                  <Route path="/admin/business" element={<AdminBusiness />} />
+                  <Route path="/admin/how-it-works" element={<BusinessRedirect />} />
                   <Route path="/dev-space" element={<DevSpace />} />
                 </Route>
 

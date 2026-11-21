@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,7 @@ import ByHeartDashboard from '@/components/admin/ByHeartDashboard';
 import PageHeader from '@/components/v2/PageHeader';
 import SEO from '@/components/SEO';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3, Piano, Workflow, CircleDollarSign } from 'lucide-react';
+import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3, Piano, Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -52,7 +52,18 @@ export interface UserProfile {
   created_at: string;
 }
 
+const ADMIN_TABS = [
+  'imports', 'slides', 'insights', 'events', 'venues',
+  'submissions', 'analytics', 'users', 'ai-logs', 'by-heart',
+] as const;
+
 const AdminPanel = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const activeTab = ADMIN_TABS.includes(requestedTab as (typeof ADMIN_TABS)[number])
+    ? requestedTab!
+    : 'imports';
+
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
   const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(true);
@@ -104,7 +115,11 @@ const AdminPanel = () => {
     fetchUserProfiles();
   }, []);
 
-  const handleTabChange = (_value: string) => {
+  // Keep the selected tab in the URL so the Business view can deep-link here.
+  const handleTabChange = (value: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', value);
+    setSearchParams(next, { replace: true });
   };
 
   const handleEditUser = (user: UserProfile) => {
@@ -184,18 +199,13 @@ const AdminPanel = () => {
 
       <div className="flex flex-wrap justify-end gap-2 mb-4">
         <Button asChild variant="outline" className="rounded-full">
-          <Link to="/admin/how-it-works">
-            <Workflow className="h-4 w-4 mr-2" /> How SoulFlow works
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="rounded-full">
-          <Link to="/admin/how-it-works#paid-tiers">
-            <CircleDollarSign className="h-4 w-4 mr-2" /> Paid tiers (review)
+          <Link to="/admin/business">
+            <Workflow className="h-4 w-4 mr-2" /> Business view
           </Link>
         </Button>
       </div>
 
-      <Tabs defaultValue="imports" className="w-full" onValueChange={handleTabChange}>
+      <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
         <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-10 bg-secondary/50 p-1 rounded-2xl mb-8">
           <TabsTrigger value="imports" className="rounded-xl flex items-center gap-2">
             <Inbox className="h-3.5 w-3.5" /> Imports

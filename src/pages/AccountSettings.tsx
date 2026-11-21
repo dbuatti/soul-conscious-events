@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { countries } from '@/lib/countries';
+import { australianStates } from '@/lib/constants';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
@@ -32,6 +33,11 @@ const formSchema = z.object({
   username: z.string().min(3, { message: "Username must be at least 3 characters." }).optional().or(z.literal('')),
   email: z.string().email({ message: "Invalid email address." }),
   country: z.string().optional().or(z.literal('')),
+  // 'ALL' means "show every state"; it clears the stored preference.
+  defaultState: z.string().refine(
+    (value) => value === 'ALL' || australianStates.includes(value),
+    { message: 'Choose a valid Australian state.' },
+  ),
 });
 
 type AccountSettingsFormValues = z.infer<typeof formSchema>;
@@ -48,6 +54,7 @@ const AccountSettings = () => {
       username: '',
       email: '',
       country: '',
+      defaultState: 'ALL',
     },
   });
 
@@ -69,15 +76,23 @@ const AccountSettings = () => {
         console.error('Error fetching user profile:', error);
         toast.error('Failed to load profile.');
       } else if (data) {
+        const metadataState = user?.user_metadata?.default_state;
         form.reset({
           firstName: data.first_name || '',
           lastName: data.last_name || '',
           username: data.username || '',
           email: data.email || user.email || '',
           country: data.country || '',
+          defaultState:
+            typeof metadataState === 'string' && australianStates.includes(metadataState)
+              ? metadataState
+              : 'ALL',
         });
       } else {
-        form.reset({ email: user.email || '' });
+        form.reset({
+          email: user.email || '',
+          defaultState: 'ALL',
+        });
       }
       setLoadingProfile(false);
     };
@@ -99,6 +114,7 @@ const AccountSettings = () => {
           lastName: values.lastName,
           username: values.username,
           country: values.country,
+          defaultState: values.defaultState,
         },
       });
 
@@ -111,6 +127,11 @@ const AccountSettings = () => {
         toast.success('Profile updated! Check your inbox to confirm your new email address.', { id: loadingToastId, duration: 6000 });
         return;
       }
+
+      // The edge function writes user_metadata server-side; refresh so the
+      // signed-in session (and therefore the home filter) sees it immediately.
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) console.warn('Could not refresh session metadata:', refreshError.message);
 
       toast.success('Profile updated!', { id: loadingToastId });
     } catch (error: unknown) {
@@ -224,6 +245,32 @@ const AccountSettings = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="defaultState"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">Default state / location</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="h-12 rounded-xl bg-secondary/50 border-none focus-visible:ring-primary">
+                            <SelectValue placeholder="Choose your home state" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="ALL">All of Australia</SelectItem>
+                          {australianStates.map((state) => (
+                            <SelectItem key={state} value={state}>{state}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        Pre-filters the event guide when you open it. Pick “All of Australia” to see everything.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

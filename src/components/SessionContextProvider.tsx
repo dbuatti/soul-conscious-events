@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types/database';
+import { australianStates } from '@/lib/constants';
 import { useNavigate } from 'react-router-dom';
 
 // The site owner is always an admin, even before their profile row has loaded.
@@ -14,6 +15,8 @@ interface SessionContextType {
   isLoading: boolean;
   isProfileLoading: boolean;
   isAdmin: boolean;
+  /** The user's preferred home state, stored in auth user_metadata. */
+  defaultState: string | null;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -113,8 +116,14 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
 
   const isAdmin = profile?.role === 'admin' || user?.email === SUPER_ADMIN_EMAIL;
 
+  const metadataState = user?.user_metadata?.default_state;
+  const defaultState =
+    typeof metadataState === 'string' && australianStates.includes(metadataState)
+      ? metadataState
+      : null;
+
   return (
-    <SessionContext.Provider value={{ session, user, profile, isLoading, isProfileLoading, isAdmin }}>
+    <SessionContext.Provider value={{ session, user, profile, isLoading, isProfileLoading, isAdmin, defaultState }}>
       {children}
     </SessionContext.Provider>
   );

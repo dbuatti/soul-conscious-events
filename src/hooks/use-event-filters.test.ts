@@ -37,6 +37,18 @@ describe("useEventFilters", () => {
     expect(result.current.totalCount).toBe(events.length);
   });
 
+  it("applies the user's default state and follows changes to it", () => {
+    const { result, rerender } = renderHook(
+      ({ state }: { state: string | null }) => useEventFilters(events, state),
+      { initialProps: { state: "VIC" as string | null } },
+    );
+
+    expect(ids(result.current.filteredEvents)).toEqual(["tomorrow"]);
+
+    rerender({ state: null });
+    expect(ids(result.current.filteredEvents)).toEqual(["today", "tomorrow", "weekend", "later", "next-month"]);
+  });
+
   it("matches the search term across name, place and state", () => {
     const { result } = setup();
 

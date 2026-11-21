@@ -1,17 +1,27 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { parseISO, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, isSameDay } from 'date-fns';
 import { Event } from '@/types/event';
 import { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
 
-export const useEventFilters = (allEvents: Event[]) => {
+export const useEventFilters = (allEvents: Event[], defaultState?: string | null) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
     date: 'All Upcoming',
     category: [],
     venue: [],
     price: [],
-    state: [],
+    state: defaultState ? [defaultState] : [],
   });
+
+  // Re-apply the preference if the user changes it in Settings and navigates
+  // back without a full reload. Manual changes in this session are left alone
+  // until the preference itself changes.
+  useEffect(() => {
+    setFilters((current) => ({
+      ...current,
+      state: defaultState ? [defaultState] : [],
+    }));
+  }, [defaultState]);
 
   const filteredEvents = useMemo(() => {
     const now = new Date();

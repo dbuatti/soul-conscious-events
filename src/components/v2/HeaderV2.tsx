@@ -159,8 +159,8 @@ const HeaderV2 = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
-                    <Link to="/admin/how-it-works" className="flex items-center py-2.5 px-3">
-                      <Workflow className="mr-3 h-4 w-4 text-muted-foreground" /> How SoulFlow works
+                    <Link to="/admin/business" className="flex items-center py-2.5 px-3">
+                      <Workflow className="mr-3 h-4 w-4 text-muted-foreground" /> Business view
                     </Link>
                   </DropdownMenuItem>
                 </>

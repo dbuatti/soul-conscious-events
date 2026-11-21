@@ -150,10 +150,16 @@ resolved.
 
 ## UI / UX / IA pass — 21 Nov 2026
 
-- Added an admin-only **How SoulFlow works** page at `/admin/how-it-works`,
-  linked from the admin panel and the admin avatar menu. It is a four-lane
-  diagram (supply → triage → product → value) plus the automation loops and a
-  one-sentence business model, readable without charts or live queries.
+- Added a single admin-only **Business view** at `/admin/business`, linked from
+  the admin panel and the admin avatar menu. It consolidates the live morning
+  pulse, today's action loop, the four-lane model diagram, strategy decisions,
+  the parked paid-tier table and links to the audit/legal guides. The old
+  `/admin/how-it-works` URL redirects here. Admin panel tabs now accept `?tab=`
+  so the Business view can deep-link straight to Imports, Slides or Analytics.
+- Users can set a **Default state / location** in Settings. It is stored in
+  Supabase `user_metadata.default_state` (no schema migration), pre-filters the
+  home event guide and shows as a “your default” badge. “All of Australia”
+  clears it.
 - Desktop nav now includes Contact. Header/footer labels were made consistent
   (`Saved events`, `My listings`), and footer links to protected pages show a
   sign-in route for guests instead of bouncing them to an error toast.
