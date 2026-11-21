@@ -16,6 +16,7 @@ import {
   MapPin,
   Navigation,
   RefreshCw,
+  Users,
   Workflow,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -211,6 +212,7 @@ const SECTIONS = [
   { id: 'today', label: 'Today' },
   { id: 'model', label: 'Model' },
   { id: 'strategy', label: 'Strategy' },
+  { id: 'competitors', label: 'Competitors' },
   { id: 'guides', label: 'Guides' },
 ];
 
@@ -667,6 +669,206 @@ const BusinessView = () => {
             <li><span className="font-semibold text-foreground">Discovery →</span> sends people back to the guide and to your own listings.</li>
             <li><span className="font-semibold text-foreground">Admin review →</span> clears the queue and keeps the feed on-topic.</li>
           </ul>
+        </div>
+      </section>
+
+      {/* 06 — Competitor landscape */}
+      <section id="competitors" className="mt-12 scroll-mt-24">
+        <div className="flex items-center gap-2 mb-1">
+          <Users className="h-5 w-5 text-primary" aria-hidden="true" />
+          <p className="eyebrow">Competitor analysis</p>
+        </div>
+        <h2 className="font-heading text-2xl font-semibold text-foreground mb-5">SoulFlow vs Path Collective</h2>
+        <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
+          Path Collective is a pre-launch wellness discovery platform (Melbourne-first, app.pathcollective.com).
+          This snapshot is from public pages reviewed on 22 Nov 2026. Use it to see where SoulFlow is
+          differentiated, where Path is ahead, and what to watch as they launch.
+        </p>
+
+        <div className="overflow-x-auto">
+          <Table className="min-w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Dimension</TableHead>
+                <TableHead>Path Collective</TableHead>
+                <TableHead>SoulFlow</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Mission / positioning</TableCell>
+                <TableCell className="text-muted-foreground">
+                  “Stop wondering where everyone is.” A connected ecosystem for finding people, places and
+                  experiences that align with the life you're building. Wellness-first, Melbourne-first.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  A free community guide to conscious/wellness events across Australia. A marketing channel for
+                  your own events (Piano by Heart, Resonance), not a standalone business.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Stage</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Pre-launch / Founding Phase. Limited founding members and facilitators. ~3 events listed.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Live. 585 total events, 135 upcoming, ~500 auto-imported. Active daily importer.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Geographic focus</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Melbourne first; expanding from there.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  National (Australia), with state filtering and a saved default state per user.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Cost to browse</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Free to join.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Free, always. No paywall.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Cost to list</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Free for founding facilitators during Founding Phase. Post-launch pricing not public.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Free, always. Hosts publish themselves.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Booking model</TableCell>
+                <TableCell className="text-muted-foreground">
+                  RSVP on-platform ("Be the first in"). PathCoins rewards system mentioned.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Booking stays with the host (ticket link, IG DM, email, phone). SoulFlow never touches the sale.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Commission / fees</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Not disclosed (pre-launch).
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  0%. Rejected as a model.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Views</TableCell>
+                <TableCell className="text-muted-foreground">
+                  List view on web/app.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  List, Calendar, Map. Same dataset three ways.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Curation</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Founding team curates founding facilitators; "gathered the things worth finding."
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  AI-assisted triage + admin review inbox. Auto-approval for clear signals; unsure goes to review.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Supply sources</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Founding facilitators + direct submissions.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Auto-import from Eventbrite/Humanitix/public calendars + host submissions + own events.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Social / community layer</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Friends, Match (personalised matching), Facilitator profiles, Ambassadors.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Bookmarks, saved venues, weekly Instagram carousel, 24-hour post guard.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Practitioner / business directory</TableCell>
+                <TableCell className="text-muted-foreground">
+                  On the roadmap — "someone worth trusting" (coach, healer, practitioner).
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Not in scope. Events only; organiser contact for bookings.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Mobile app</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Web app (Next.js). No native app store presence found.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  PWA (installable via browser). Capacitor scaffold dormant; no app stores.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Monetisation</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Not disclosed. Likely featured listings / subscriptions given "Founding" tier structure.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Parked: featured $15–30/week, email signup. Rejected: commission, browser subscriptions, app-store
+                  subscriptions. Revisit only after real traffic.
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b border-border/50">
+                <TableCell className="font-medium text-foreground">Automation</TableCell>
+                <TableCell className="text-muted-foreground">
+                  Not visible publicly.
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Daily IG carousel, AI parsing of flyer/text submissions, auto-importer rotation.
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <div className="organic-card rounded-[var(--radius)] p-6 border-l-4 border-amber-500">
+            <p className="eyebrow mb-3">Where Path Collective is ahead</p>
+            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2">
+              <li><span className="font-semibold text-foreground">Founding community model</span> — limited founding members/facilitators creates scarcity and early buy-in.</li>
+              <li><span className="font-semibold text-foreground">Match + Friends</span> — social layer (personalised matching, friend connections) that SoulFlow doesn't have.</li>
+              <li><span className="font-semibold text-foreground">Practitioner directory roadmap</span> — expanding beyond events into coaches/healers.</li>
+              <li><span className="font-semibold text-foreground">Melbourne focus</span> — concentrated density in one city vs national spread.</li>
+            </ul>
+          </div>
+          <div className="organic-card rounded-[var(--radius)] p-6 border-l-4 border-emerald-500">
+            <p className="eyebrow mb-3">Where SoulFlow is ahead</p>
+            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2">
+              <li><span className="font-semibold text-foreground">Live now</span> — 135 upcoming events vs ~3; national coverage vs Melbourne-only.</li>
+              <li><span className="font-semibold text-foreground">Map view</span> — geocoded events on an interactive map; Path is list-only.</li>
+              <li><span className="font-semibold text-foreground">Auto-importer</span> — daily sourcing from Eventbrite/Humanitix; Path relies on manual founding facilitator sign-ups.</li>
+              <li><span className="font-semibold text-foreground">Zero commission</span> — explicit 0% model, bookings stay with hosts.</li>
+              <li><span className="font-semibold text-foreground">Saved default state</span> — location preference persists across sessions.</li>
+              <li><span className="font-semibold text-foreground">AI submission assistant</span> — hosts paste a link/flyer and the form is pre-filled.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-6 organic-card rounded-[var(--radius)] p-6">
+          <p className="eyebrow mb-3">Strategic takeaway</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Path Collective is building a <strong>social discovery ecosystem</strong> (events → practitioners → businesses → community),
+            starting with a founding-community model in Melbourne. SoulFlow is a <strong>free event guide</strong> that
+            doubles as a marketing channel for your own events. They are not directly competing on the same model yet —
+            Path is social-first and pre-launch; SoulFlow is content-first and live. Watch their facilitator dashboard and
+            practitioner directory launches, but don't mirror their social features unless traffic and retention justify it.
+          </p>
         </div>
       </section>
 

@@ -166,6 +166,13 @@ resolved.
   can be improved without CLI access. Curation note: the Alliance Française
   market and mindful craft workshops are on-topic; line dancing is treated as
   `unsure` for review, not rejected.
+- Added **Competitor analysis** section to the Business view (`/admin/business#competitors`):
+  side-by-side comparison of SoulFlow vs Path Collective (pathcollective.com /
+  app.pathcollective.com), covering mission, stage, geography, pricing, booking
+  model, curation, supply, social layer, monetisation and automation, plus
+  "where each is ahead" and a strategic takeaway. Path Collective is pre-launch
+  (Melbourne-first, ~3 events, founding-community model); SoulFlow is live
+  (national, 135 upcoming events, auto-importer, map view).
 - Desktop nav now includes Contact. Header/footer labels were made consistent
   (`Saved events`, `My listings`), and footer links to protected pages show a
   sign-in route for guests instead of bouncing them to an error toast.
