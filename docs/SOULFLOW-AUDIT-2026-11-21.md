@@ -143,6 +143,10 @@ resolved.
   or clear the queue on a fixed schedule.
 - Daily content: not force-triggered, because that would publish to Instagram.
   The next scheduled run (22:00 UTC) is the live check.
+- Final push `4d7f355` (relevance + submission gate): edge-function deploy
+  completed ✓, and Vercel is serving the new hashed `SubmitEvent` chunk, so
+  the client change is live too. 48 Deno tests, 79 Vitest tests, typecheck,
+  lint and production build all pass.
 
 ## Still to do
 
