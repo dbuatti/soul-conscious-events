@@ -14,6 +14,7 @@ interface LeafletMapProps {
   className?: string;
   zoom?: number;
   center?: [number, number];
+  userLocation?: [number, number];
   interactive?: boolean;
   showWatermark?: boolean;
 }
@@ -92,6 +93,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   className,
   zoom = 4,
   center = [-25.2744, 133.7751],
+  userLocation,
   interactive = true,
   showWatermark = true,
 }) => {
@@ -101,6 +103,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   const initCenterRef = useRef(center);
   const initZoomRef = useRef(zoom);
   const initInteractiveRef = useRef(interactive);
+  const initUserLocationRef = useRef(userLocation);
 
   const [tileError, setTileError] = useState<string | null>(null);
 
@@ -131,8 +134,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     let map: L.Map;
     try {
       map = L.map(mapRef.current, {
-        center: initCenterRef.current,
-        zoom: initZoomRef.current,
+        center: initUserLocationRef.current ?? initCenterRef.current,
+        zoom: initUserLocationRef.current ? 13 : initZoomRef.current,
         scrollWheelZoom: initInteractiveRef.current,
         dragging: initInteractiveRef.current,
         touchZoom: initInteractiveRef.current,
@@ -207,6 +210,19 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       );
       clusters.addLayer(marker);
     });
+
+    // User location marker (not clustered, always visible).
+    if (initUserLocationRef.current) {
+      const [uLat, uLng] = initUserLocationRef.current;
+      const userMarker = L.circleMarker([uLat, uLng], {
+        radius: 8,
+        color: '#B34629',
+        fillColor: '#B34629',
+        fillOpacity: 0.6,
+        weight: 2,
+      }).addTo(mapInstanceRef.current!);
+      userMarker.bindPopup("You're here", { className: 'custom-leaflet-popup', maxWidth: 150 });
+    }
 
     // Frame the view once per change of set.
     if (current.length > 0) {

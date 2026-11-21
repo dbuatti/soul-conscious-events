@@ -13,17 +13,41 @@ export const eventKeys = {
   favourites: (userId: string) => ["favourite-venues", userId] as const,
 };
 
-/** All approved, non-deleted events, earliest first. */
+/** Fields needed for the list/card views. Keeping this small cuts the JSON
+ *  payload roughly in half versus select("*"). */
+const LIST_FIELDS = [
+  'id',
+  'event_name',
+  'event_date',
+  'end_date',
+  'event_time',
+  'place_name',
+  'geographical_state',
+  'event_type',
+  'price',
+  'image_url',
+  'ticket_link',
+  'organizer_contact',
+  'is_recurring_instance',
+  'recurring_pattern',
+  'latitude',
+  'longitude',
+].join(',');
+
+/** All approved, non-deleted, upcoming events with only list-view fields. */
 export async function getApprovedEvents(): Promise<Event[]> {
+  const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from("events")
-    .select("*")
+    .select(LIST_FIELDS)
     .eq("approval_status", "approved")
     .eq("is_deleted", false)
-    .order("event_date", { ascending: true });
+    .gte("event_date", today)
+    .order("event_date", { ascending: true })
+    .limit(500);
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as Event[];
+  return (data ?? []) as unknown as Event[];
 }
 
 /** The place names a user has favourited. */

@@ -6,7 +6,7 @@ const mock = vi.hoisted(() => {
 
   type Chain = Record<string, unknown>;
   const chain: Chain = {};
-  for (const method of ["select", "eq", "order", "insert", "update", "delete"]) {
+  for (const method of ["select", "eq", "order", "gte", "limit", "insert", "update", "delete"]) {
     chain[method] = (...args: unknown[]) => {
       calls.push({ method, args });
       return chain;
@@ -49,7 +49,9 @@ describe("events-service", () => {
     expect(mock.calls).toContainEqual({ method: "from", args: ["events"] });
     expect(mock.calls).toContainEqual({ method: "eq", args: ["approval_status", "approved"] });
     expect(mock.calls).toContainEqual({ method: "eq", args: ["is_deleted", false] });
+    expect(mock.calls).toContainEqual({ method: "gte", args: ["event_date", expect.any(String)] });
     expect(mock.calls).toContainEqual({ method: "order", args: ["event_date", { ascending: true }] });
+    expect(mock.calls).toContainEqual({ method: "limit", args: [500] });
   });
 
   it("throws a normalised error when the events query fails", async () => {

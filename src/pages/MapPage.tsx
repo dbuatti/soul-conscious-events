@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronUp, Database, Frown, Loader2, MapPin, PlusCircle, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Database, Frown, Loader2, MapPin, PlusCircle, Sparkles, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import LeafletMap from '@/components/v2/LeafletMap';
@@ -18,6 +18,8 @@ const MapPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showUnmapped, setShowUnmapped] = useState(false);
   const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -76,6 +78,32 @@ const MapPage = () => {
     setIsEventDetailDialogOpen(true);
   };
 
+  const handleLocateMe = async () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation not supported in this browser.');
+      return;
+    }
+    setLocating(true);
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10_000,
+          maximumAge: 5 * 60_000,
+        });
+      });
+      setUserLocation({
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+      });
+      toast.success('Map centred on your location.');
+    } catch {
+      toast.error('Could not access your location.');
+    } finally {
+      setLocating(false);
+    }
+  };
+
   // The home guide already honours the user's saved location; the standalone
   // map used to ignore it and show all of Australia. Keep both views aligned.
   const visibleEvents = useMemo(
@@ -110,6 +138,17 @@ const MapPage = () => {
               change
             </Link>
           </div>
+        )}
+        {!userLocation && (
+          <button
+            type="button"
+            onClick={handleLocateMe}
+            disabled={locating}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-primary hover:border-primary/40 disabled:opacity-50"
+          >
+            {locating ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Target className="mr-2 h-3.5 w-3.5" />}
+            {locating ? 'Locating…' : 'Near me'}
+          </button>
         )}
       </div>
 
@@ -197,7 +236,7 @@ const MapPage = () => {
             </div>
           )}
 
-          <LeafletMap events={visibleEvents} onViewDetails={handleViewDetails} />
+          <LeafletMap events={visibleEvents} onViewDetails={handleViewDetails} userLocation={userLocation ? [userLocation.lat, userLocation.lng] : undefined} />
         </div>
       )}
 
