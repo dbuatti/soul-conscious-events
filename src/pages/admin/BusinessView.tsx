@@ -13,6 +13,8 @@ import {
   Clock,
   ExternalLink,
   Inbox,
+  MapPin,
+  Navigation,
   RefreshCw,
   Workflow,
 } from 'lucide-react';
@@ -46,6 +48,8 @@ interface EventPulseRow {
   approval_status: string | null;
   is_deleted: boolean | null;
   source_id: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 interface RunPulseRow {
@@ -67,6 +71,7 @@ interface PulseCounts {
   next7: number;
   pending: number;
   imported: number;
+  upcomingMapped: number;
 }
 
 interface PulseState {
@@ -225,6 +230,9 @@ const BusinessView = () => {
     latestBatch: null,
     fetchedAt: null,
   });
+  const [geocoding, setGeocoding] = useState(false);
+  const [geoMessage, setGeoMessage] = useState<string | null>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   const loadPulse = useCallback(async () => {
     setPulse((current) => ({ ...current, loading: true, error: null }));
@@ -236,7 +244,7 @@ const BusinessView = () => {
     const [eventsRes, runsRes, batchesRes, visitsRes] = await Promise.allSettled([
       supabase
         .from('events')
-        .select('id, event_date, end_date, approval_status, is_deleted, source_id')
+        .select('id, event_date, end_date, approval_status, is_deleted, source_id, latitude, longitude')
         .eq('is_deleted', false),
       supabase
         .from('event_import_runs')
@@ -271,6 +279,9 @@ const BusinessView = () => {
         next7: upcoming.filter((row) => row.event_date <= in7).length,
         pending: rows.filter((row) => row.approval_status === 'pending').length,
         imported: live.filter((row) => Boolean(row.source_id)).length,
+        upcomingMapped: upcoming.filter(
+          (row) => typeof row.latitude === 'number' && typeof row.longitude === 'number',
+        ).length,
       };
     }
 
@@ -295,6 +306,27 @@ const BusinessView = () => {
   useEffect(() => {
     loadPulse();
   }, [loadPulse]);
+
+  // The geocoder is rate-limited and time-budgeted server-side, so one click
+  // handles a safe batch and reports what is left. No CLI access required.
+  const runGeocode = async () => {
+    setGeocoding(true);
+    setGeoMessage(null);
+    setGeoError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('geocode-events', {
+        body: { limit: 60 },
+      });
+      if (error) throw error;
+      const message = (data as { message?: string } | null)?.message;
+      setGeoMessage(message || 'Geocoding batch finished.');
+      await loadPulse();
+    } catch (err) {
+      setGeoError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setGeocoding(false);
+    }
+  };
 
   useEffect(() => {
     if (!location.hash) return;
@@ -369,7 +401,7 @@ const BusinessView = () => {
           )}
         </div>
 
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div className="mt-3 grid gap-3 md:grid-cols-3">
           <div className="rounded-2xl bg-secondary/50 p-4">
             <p className="eyebrow mb-1">Last importer run</p>
             <p className="font-semibold text-foreground">
@@ -391,6 +423,29 @@ const BusinessView = () => {
                 ? `Posted ${ago(pulse.latestBatch.posted_at)}`
                 : 'Not posted yet — check after the 22:00 UTC run.'}
             </p>
+          </div>
+          <div className="rounded-2xl bg-secondary/50 p-4">
+            <p className="eyebrow mb-1">Map coverage</p>
+            <p className="font-semibold text-foreground">
+              {pulse.counts
+                ? `${pulse.counts.upcomingMapped} of ${pulse.counts.upcoming} upcoming events have a pin`
+                : 'Checking coordinates…'}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              The geocoder is rate-limited, so each run handles a small batch.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 rounded-full"
+              onClick={runGeocode}
+              disabled={geocoding}
+            >
+              <Navigation className={cn('mr-2 h-3.5 w-3.5', geocoding && 'animate-spin')} />
+              {geocoding ? 'Geocoding…' : 'Geocode 60 now'}
+            </Button>
+            {geoMessage && <p className="mt-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">{geoMessage}</p>}
+            {geoError && <p className="mt-2 text-xs text-destructive">{geoError}</p>}
           </div>
         </div>
       </section>
@@ -415,6 +470,12 @@ const BusinessView = () => {
             icon={Camera}
             title="Check the Instagram batch"
             detail="Confirm the daily carousel was generated and posted; the 24-hour guard prevents doubles."
+          />
+          <ActionLink
+            to="/map"
+            icon={MapPin}
+            title="Check map coverage"
+            detail="See how many upcoming events have a pin, and geocode another batch from the pulse above."
           />
           <ActionLink
             to="/admin/panel?tab=analytics"

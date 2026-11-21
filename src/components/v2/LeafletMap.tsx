@@ -16,14 +16,33 @@ interface LeafletMapProps {
 
 type PlottedEvent = Event & { lat: number; lng: number };
 
-// One icon shared by every marker. Building a fresh L.divIcon per marker per
-// render makes Leaflet re-measure the same 24px circle dozens of times over.
-const markerIcon = L.divIcon({
-  html: `<div style="width: 24px; height: 24px; background-color: #B34629; border: 2px solid white; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>`,
-  className: 'custom-div-icon',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-});
+// One icon per category, shared by every marker of that category. Building a
+// fresh L.divIcon per marker per render makes Leaflet re-measure the same
+// 24px circle dozens of times over.
+const categoryColours: Record<string, string> = {
+  Meditation: '#7C3AED',
+  'Sound Bath': '#0EA5E9',
+  Workshop: '#F59E0B',
+  'Community Gathering': '#10B981',
+  Foraging: '#65A30D',
+  Music: '#EC4899',
+  'Open Mic': '#9333EA',
+  Other: '#B34629',
+};
+
+const markerIcons: Record<string, L.DivIcon> = Object.fromEntries(
+  Object.entries(categoryColours).map(([category, colour]) => [
+    category,
+    L.divIcon({
+      html: `<div style="width: 24px; height: 24px; background-color: ${colour}; border: 2px solid white; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>`,
+      className: 'custom-div-icon',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+    }),
+  ]),
+);
+
+const iconFor = (event: Event) => markerIcons[event.event_type || 'Other'] ?? markerIcons.Other;
 
 // Plain DOM rather than a React root per marker: with a single link in it, a
 // root costs considerably more than the popup it renders, and it was previously
@@ -157,7 +176,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     const current = plottedRef.current;
 
     current.forEach((event) => {
-      const marker = L.marker([event.lat, event.lng], { icon: markerIcon });
+      const marker = L.marker([event.lat, event.lng], { icon: iconFor(event) });
       marker.bindPopup(
         buildPopup(
           event,
@@ -195,6 +214,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   const ready = plotted.length;
   const total = events.length;
   const missing = total - ready;
+  const legendCategories = useMemo(
+    () => [...new Set(plotted.map((event) => event.event_type || 'Other'))].filter((type) => categoryColours[type]),
+    [plotted],
+  );
 
   return (
     <div className={`w-full relative overflow-hidden rounded-[2rem] sm:rounded-[1.75rem] shadow-2xl bg-[#fdfbf7] border-none ${className || 'h-[500px] sm:h-[600px]'}`}>
@@ -219,6 +242,24 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
               </span>
             </div>
           </div>
+
+          {legendCategories.length > 0 && (
+            <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-border shadow-lg max-w-[190px] sm:max-w-none">
+              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Pins by category</p>
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                {legendCategories.map((category) => (
+                  <span key={category} className="inline-flex items-center gap-1.5 text-[9px] font-bold text-foreground">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full border border-white shadow-sm"
+                      style={{ backgroundColor: categoryColours[category] }}
+                      aria-hidden="true"
+                    />
+                    {category}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

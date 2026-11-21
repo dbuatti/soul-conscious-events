@@ -159,7 +159,13 @@ resolved.
 - Users can set a **Default state / location** in Settings. It is stored in
   Supabase `user_metadata.default_state` (no schema migration), pre-filters the
   home event guide and shows as a “your default” badge. “All of Australia”
-  clears it.
+  clears it. The standalone `/map` page now honours the same preference.
+- Map improvements: pins are colour-coded by category with a legend, the page
+  reports how many events actually have a pin and can list the unmapped ones,
+  and the Business view has a rate-limited “Geocode 60 now” button so coverage
+  can be improved without CLI access. Curation note: the Alliance Française
+  market and mindful craft workshops are on-topic; line dancing is treated as
+  `unsure` for review, not rejected.
 - Desktop nav now includes Contact. Header/footer labels were made consistent
   (`Saved events`, `My listings`), and footer links to protected pages show a
   sign-in route for guests instead of bouncing them to an error toast.

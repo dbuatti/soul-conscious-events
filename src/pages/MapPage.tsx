@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Frown, PlusCircle, Sparkles, Database } from 'lucide-react';
+import { ChevronDown, ChevronUp, Database, Frown, Loader2, MapPin, PlusCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import LeafletMap from '@/components/v2/LeafletMap';
 import { Event } from '@/types/event';
 import EventDetailDialog from '@/components/EventDetailDialog';
+import { useSession } from '@/components/SessionContextProvider';
 import SEO from '@/components/SEO';
 
 const MapPage = () => {
+  const { defaultState } = useSession();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<Event[]>([]);
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showUnmapped, setShowUnmapped] = useState(false);
   const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking');
 
   useEffect(() => {
@@ -73,6 +76,18 @@ const MapPage = () => {
     setIsEventDetailDialogOpen(true);
   };
 
+  // The home guide already honours the user's saved location; the standalone
+  // map used to ignore it and show all of Australia. Keep both views aligned.
+  const visibleEvents = useMemo(
+    () => (defaultState ? events.filter((event) => event.geographical_state === defaultState) : events),
+    [events, defaultState],
+  );
+
+  const hasPin = (event: Event) =>
+    typeof event.latitude === 'number' && typeof event.longitude === 'number';
+  const mappedEvents = visibleEvents.filter(hasPin);
+  const unmappedEvents = visibleEvents.filter((event) => !hasPin(event));
+
   return (
     <div className="w-full max-w-6xl px-4">
       <SEO 
@@ -87,6 +102,15 @@ const MapPage = () => {
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
           Discover soulful gatherings vibrating in your local area.
         </p>
+        {defaultState && (
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary">
+            <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+            Showing {defaultState}
+            <Link to="/account-settings" className="underline underline-offset-4 hover:text-foreground">
+              change
+            </Link>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -107,10 +131,19 @@ const MapPage = () => {
             Try Again
           </Button>
         </div>
-      ) : events.length === 0 ? (
+      ) : visibleEvents.length === 0 ? (
         <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20">
           <Frown className="h-20 w-20 text-primary/20 mx-auto mb-8" />
-          <p className="text-2xl font-bold text-muted-foreground mb-8">No events with addresses found to display.</p>
+          <p className="text-2xl font-bold text-muted-foreground mb-8">
+            {defaultState
+              ? `No events with addresses found in ${defaultState} yet.`
+              : 'No events with addresses found to display.'}
+          </p>
+          {defaultState && (
+            <Link to="/" className="mb-4 inline-block text-sm font-semibold text-primary hover:underline">
+              Show all of Australia instead
+            </Link>
+          )}
           <Link to="/submit-event">
             <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
               <PlusCircle className="mr-3 h-7 w-7" /> Add the First Event!
@@ -119,7 +152,52 @@ const MapPage = () => {
         </div>
       ) : (
         <div className="animate-in fade-in duration-1000">
-          <LeafletMap events={events} onViewDetails={handleViewDetails} />
+          <div className="mb-5 flex flex-wrap items-center justify-center gap-3">
+            <span className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-muted-foreground">
+              <strong className="text-foreground">{mappedEvents.length}</strong> of {visibleEvents.length} events have a pin
+            </span>
+            {unmappedEvents.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowUnmapped((shown) => !shown)}
+                aria-expanded={showUnmapped}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-primary hover:border-primary/40"
+              >
+                {showUnmapped ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                {showUnmapped ? 'Hide' : 'Show'} {unmappedEvents.length} without a pin
+              </button>
+            )}
+          </div>
+
+          {showUnmapped && unmappedEvents.length > 0 && (
+            <div className="organic-card rounded-[var(--radius)] p-5 sm:p-6 mb-6">
+              <p className="text-sm text-muted-foreground mb-4">
+                These events are in the guide but their location hasn’t been pinned yet. They’re listed here so they don’t disappear from the map view.
+              </p>
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {unmappedEvents.slice(0, 30).map((event) => (
+                  <li key={event.id}>
+                    <button
+                      type="button"
+                      onClick={() => handleViewDetails(event)}
+                      className="w-full rounded-xl border border-border bg-background/60 px-3 py-2.5 text-left transition-colors hover:border-primary/40"
+                    >
+                      <span className="block truncate text-sm font-semibold text-foreground">{event.event_name}</span>
+                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                        {event.place_name || event.full_address || 'Location to be confirmed'}
+                        {event.geographical_state ? ` · ${event.geographical_state}` : ''}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {unmappedEvents.length > 30 && (
+                <p className="mt-3 text-xs text-muted-foreground">Showing the first 30 of {unmappedEvents.length}.</p>
+              )}
+            </div>
+          )}
+
+          <LeafletMap events={visibleEvents} onViewDetails={handleViewDetails} />
         </div>
       )}
 
