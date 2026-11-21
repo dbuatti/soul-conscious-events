@@ -14,7 +14,7 @@ const HostCTA = ({ hasUser }: HostCTAProps) => (
       <h2 className="text-4xl sm:text-5xl font-heading font-semibold leading-[1.05] text-ink-foreground">
         Hosting a gathering?
         <br />
-        <span className="italic font-medium text-accent">List it in under a minute.</span>
+        <span className="italic font-medium text-accent">List it in a few steps.</span>
       </h2>
       <p className="mt-5 text-ink-foreground/70 max-w-md leading-relaxed">
         Paste your Humanitix, Eventbrite or Megatix link, or just your flyer text. Our assistant fills in the details for you. Free, always.

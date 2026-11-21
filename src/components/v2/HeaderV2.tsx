@@ -1,7 +1,7 @@
 import { Link, NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, Plus, Settings, Info, Home, LayoutDashboard, Map as MapIcon, Mail } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, Plus, Settings, Info, Home, LayoutDashboard, Map as MapIcon, Mail, Workflow } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -27,6 +27,7 @@ const desktopLinks = [
   { to: '/', label: 'Events', end: true },
   { to: '/map', label: 'Map' },
   { to: '/about', label: 'About' },
+  { to: '/contact', label: 'Contact' },
 ];
 
 const HeaderV2 = () => {
@@ -55,8 +56,8 @@ const HeaderV2 = () => {
     { to: '/', label: 'Events', icon: Home },
     { to: '/map', label: 'Map', icon: MapIcon },
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/my-events', label: 'My Events', icon: CalendarCheck },
-    { to: '/my-bookmarks', label: 'Saved Events', icon: Bookmark },
+    { to: '/my-events', label: 'My listings', icon: CalendarCheck },
+    { to: '/my-bookmarks', label: 'Saved events', icon: Bookmark },
     { to: '/account-settings', label: 'Settings', icon: Settings },
     { to: '/about', label: 'About', icon: Info },
     { to: '/contact', label: 'Contact', icon: Mail },
@@ -155,6 +156,11 @@ const HeaderV2 = () => {
                   <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
                     <Link to="/admin/panel" className="flex items-center py-2.5 px-3">
                       <UserCog className="mr-3 h-4 w-4 text-muted-foreground" /> Admin Panel
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+                    <Link to="/admin/how-it-works" className="flex items-center py-2.5 px-3">
+                      <Workflow className="mr-3 h-4 w-4 text-muted-foreground" /> How SoulFlow works
                     </Link>
                   </DropdownMenuItem>
                 </>

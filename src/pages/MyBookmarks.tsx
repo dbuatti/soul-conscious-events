@@ -69,7 +69,18 @@ const MyBookmarks: React.FC = () => {
       setLoadFailed(true);
     } else {
       const typedData = data as unknown as BookmarkedEventData[];
-      const eventsData = typedData.map(item => item.events?.[0]).filter(Boolean) as Event[];
+      const today = new Date().toISOString().slice(0, 10);
+      const eventsData = typedData
+        .map(item => item.events?.[0])
+        .filter(Boolean)
+        .filter((event) => {
+          const e = event as Event & { is_deleted?: boolean; approval_status?: string };
+          // The join is not filtered server-side, so stale bookmarks used to
+          // resurface here after a deletion or rejection.
+          return !e.is_deleted
+            && e.approval_status === 'approved'
+            && (e.end_date || e.event_date) >= today;
+        }) as Event[];
       setBookmarkedEvents(eventsData);
       setLoadFailed(false);
     }
@@ -138,7 +149,7 @@ const MyBookmarks: React.FC = () => {
   return (
     <div className="w-full max-w-6xl px-4">
       <SEO 
-        title="My Bookmarks | SoulFlow Australia"
+        title="Saved events | SoulFlow Australia"
         description="View your saved soulful events, workshops, and conscious gatherings across Australia."
       />
       <PageHeader

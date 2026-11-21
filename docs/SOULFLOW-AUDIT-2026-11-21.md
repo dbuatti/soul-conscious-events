@@ -124,7 +124,7 @@ resolved.
 - [x] Clearly off-topic user submissions now wait for review (admins exempt)
 - [x] Removed `/old` routes from `App.tsx`
 - [x] Added SoulFlow row to systems-repo `INDEX.md` and `inventory/repositories.md`
-- [x] typecheck, lint, 46 Deno tests and 79 Vitest tests all pass
+- [x] typecheck, lint, 48 Deno tests and 79 Vitest tests all pass
 
 ## Production verification — 21 Nov 2026
 
@@ -147,6 +147,27 @@ resolved.
   completed ✓, and Vercel is serving the new hashed `SubmitEvent` chunk, so
   the client change is live too. 48 Deno tests, 79 Vitest tests, typecheck,
   lint and production build all pass.
+
+## UI / UX / IA pass — 21 Nov 2026
+
+- Added an admin-only **How SoulFlow works** page at `/admin/how-it-works`,
+  linked from the admin panel and the admin avatar menu. It is a four-lane
+  diagram (supply → triage → product → value) plus the automation loops and a
+  one-sentence business model, readable without charts or live queries.
+- Desktop nav now includes Contact. Header/footer labels were made consistent
+  (`Saved events`, `My listings`), and footer links to protected pages show a
+  sign-in route for guests instead of bouncing them to an error toast.
+- Hero quick filters now match the curation rules: `Music` was removed (live
+  music is off-topic) and `Foraging` added.
+- Accessibility: event cards announce as buttons with a "View details" label,
+  calendar day cells are keyboard-operable with descriptive labels, and view
+  toggles have explicit accessible names.
+- Consistency fixes: the full event page now soft-deletes like the dialog and
+  home list; bookmarks hide deleted/rejected/past events; the map view has an
+  empty state; "under a minute" was changed to "in a few steps"; `Organizer`
+  spelling and the Saved events SEO title were aligned.
+- `/link` now has a "Back to the event guide" path, a page title, and sends
+  "Submit an event" to sign-in first (the form is auth-gated).
 
 ## Still to do
 

@@ -17,6 +17,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 const Contact = lazy(() => import("./pages/Contact"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const AdminHowItWorks = lazy(() => import("./pages/admin/HowItWorks"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 const EventEditPage = lazy(() => import("./pages/EventEditPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
@@ -125,6 +126,7 @@ const App = () => (
                 {/* Admin V2 Routes */}
                 <Route element={<ProtectedRoute requireAdmin><Outlet /></ProtectedRoute>}>
                   <Route path="/admin/panel" element={<AdminPanel />} />
+                  <Route path="/admin/how-it-works" element={<AdminHowItWorks />} />
                   <Route path="/dev-space" element={<DevSpace />} />
                 </Route>
 

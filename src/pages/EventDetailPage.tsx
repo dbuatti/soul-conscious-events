@@ -94,7 +94,9 @@ const EventDetailPage: React.FC = () => {
   const handleDelete = async () => {
     if (!event) return;
     const baseId = getBaseEventId(event.id);
-    const { error } = await supabase.from('events').delete().eq('id', baseId);
+    // Soft delete, matching the dialog and the home list. A hard delete here
+    // orphaned bookmarks and let the importer bring the same event straight back.
+    const { error } = await supabase.from('events').update({ is_deleted: true }).eq('id', baseId);
 
     if (error) {
       console.error('Error deleting event:', error);

@@ -264,7 +264,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             )}
           </div>
           <div className="space-y-4">
-            <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">Organizer & Details</h3>
+            <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">Organiser & Details</h3>
             {event.organizer_contact && (
               <div className="flex items-center text-foreground">
                 <User className="mr-2 h-4 w-4 text-primary flex-shrink-0" />

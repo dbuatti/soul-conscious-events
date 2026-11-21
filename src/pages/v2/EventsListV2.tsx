@@ -314,6 +314,10 @@ const EventsListV2 = () => {
                 )}
               </div>
             </div>
+          ) : filteredEvents.length === 0 ? (
+            <p className="py-12 text-center text-muted-foreground organic-card rounded-[var(--radius)]">
+              No events to show on the map. Try clearing a filter or choosing another date.
+            </p>
           ) : (
             <div className="animate-in fade-in duration-500">
               <div className="flex items-baseline gap-3 mb-5">

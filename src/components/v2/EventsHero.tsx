@@ -4,12 +4,14 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Event } from '@/types/event';
 
+// Keep these in the site's remit. "Music" used to be here but live music is
+// explicitly off-topic, so the first thing a visitor saw contradicted the curation.
 const QUICK_FILTERS = [
-  { label: 'Music', value: 'Music' },
   { label: 'Meditation', value: 'Meditation' },
   { label: 'Sound Bath', value: 'Sound Bath' },
   { label: 'Workshops', value: 'Workshop' },
   { label: 'Community', value: 'Community Gathering' },
+  { label: 'Foraging', value: 'Foraging' },
 ];
 
 interface EventsHeroProps {

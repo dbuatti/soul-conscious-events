@@ -192,6 +192,15 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                 return (
                   <div
                     key={format(day, 'yyyy-MM-dd')}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Select ${format(day, 'EEEE d MMMM yyyy')}${dayEvents.length ? `, ${dayEvents.length} event${dayEvents.length === 1 ? '' : 's'}` : ''}`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onDayClick(day);
+                      }
+                    }}
                     className={cn(
                       "relative flex flex-col min-h-[100px] w-full transition-colors duration-200 cursor-pointer border-b border-r border-border",
                       (dayIndex % 7 === 6) && "border-r-0",

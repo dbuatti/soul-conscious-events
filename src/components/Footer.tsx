@@ -1,38 +1,46 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Instagram } from 'lucide-react';
 import { SoulFlowMark } from '@/components/v2/HeaderV2';
-
-const linkGroups = [
-  {
-    title: 'Discover',
-    links: [
-      { to: '/', label: 'All events' },
-      { to: '/map', label: 'Event map' },
-      { to: '/my-bookmarks', label: 'Saved events' },
-    ],
-  },
-  {
-    title: 'Hosts',
-    links: [
-      { to: '/submit-event', label: 'List your event' },
-      { to: '/my-events', label: 'Manage listings' },
-      { to: '/community-guidelines', label: 'Community guidelines' },
-    ],
-  },
-  {
-    title: 'SoulFlow',
-    links: [
-      { to: '/about', label: 'About' },
-      { to: '/contact', label: 'Contact' },
-      { to: '/privacy', label: 'Privacy policy' },
-      { to: '/terms', label: 'Terms of service' },
-      { to: '/link', label: 'All our links' },
-    ],
-  },
-];
+import { useSession } from '@/components/SessionContextProvider';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { user } = useSession();
+
+  // Signed-out visitors used to get bounced to /login with an error toast by
+  // these footer links. Show the sign-in route instead of a dead end.
+  const linkGroups = [
+    {
+      title: 'Discover',
+      links: [
+        { to: '/', label: 'All events' },
+        { to: '/map', label: 'Event map' },
+        user
+          ? { to: '/my-bookmarks', label: 'Saved events' }
+          : { to: '/login', label: 'Sign in to save events' },
+      ],
+    },
+    {
+      title: 'Hosts',
+      links: [
+        { to: '/submit-event', label: 'List your event' },
+        user
+          ? { to: '/my-events', label: 'My listings' }
+          : { to: '/login', label: 'Sign in to manage listings' },
+        { to: '/community-guidelines', label: 'Community guidelines' },
+      ],
+    },
+    {
+      title: 'SoulFlow',
+      links: [
+        { to: '/about', label: 'About' },
+        { to: '/contact', label: 'Contact' },
+        { to: '/privacy', label: 'Privacy policy' },
+        { to: '/terms', label: 'Terms of service' },
+        { to: '/link', label: 'All our links' },
+      ],
+    },
+  ];
 
   return (
     <footer className="w-full night-band mt-16">

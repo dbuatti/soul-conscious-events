@@ -85,7 +85,8 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         }
       }}
       tabIndex={0}
-      aria-label={`${event.event_name}, ${format(eventDate, 'EEEE d MMMM')}`}
+      role="button"
+      aria-label={`View details: ${event.event_name}, ${format(eventDate, 'EEEE d MMMM')}`}
     >
       <div className="relative w-full aspect-[16/9] sm:aspect-[3/2] overflow-hidden bg-secondary">
         {!imageLoaded && event.image_url && <Skeleton className="absolute inset-0 z-10 rounded-none" />}
@@ -115,7 +116,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         </div>
 
         <div className="absolute top-3 right-3 z-20 flex gap-2">
-          <button type="button" onClick={handleNativeShare} className={iconButton} aria-label="Share event">
+          <button type="button" onClick={handleNativeShare} className={iconButton} aria-label={`Share ${event.event_name}`}>
             <Share2 className="h-4 w-4" />
           </button>
           <div onClick={(e) => e.stopPropagation()}>

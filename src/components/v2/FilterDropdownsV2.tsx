@@ -239,15 +239,15 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
       <div className="flex items-center bg-card border border-border/80 p-1 rounded-full shrink-0">
         <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && onViewModeChange(value)}>
-          <ToggleGroupItem value="list" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="List View">
+          <ToggleGroupItem value="list" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="List View" aria-label="List view">
             <List className="h-3.5 w-3.5" />
             <span className="hidden sm:inline text-xs font-semibold">List</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="calendar" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="Calendar View">
+          <ToggleGroupItem value="calendar" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="Calendar View" aria-label="Calendar view">
             <CalendarDays className="h-3.5 w-3.5" />
             <span className="hidden sm:inline text-xs font-semibold">Calendar</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="map" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="Map View">
+          <ToggleGroupItem value="map" className="rounded-full h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="Map View" aria-label="Map view">
             <MapIcon className="h-3.5 w-3.5" />
             <span className="hidden sm:inline text-xs font-semibold">Map</span>
           </ToggleGroupItem>

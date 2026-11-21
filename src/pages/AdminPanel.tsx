@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -15,8 +16,9 @@ import WeeklySlides from '@/components/admin/WeeklySlides';
 import InstagramInsights from '@/components/admin/InstagramInsights';
 import ByHeartDashboard from '@/components/admin/ByHeartDashboard';
 import PageHeader from '@/components/v2/PageHeader';
+import SEO from '@/components/SEO';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3, Piano } from 'lucide-react';
+import { User as UserIcon, Mail, CalendarDays, Edit, Trash2, RefreshCw, Key, Loader2, Sparkles, MapPin, Inbox, Images, BarChart3, Piano, Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -173,11 +175,20 @@ const AdminPanel = () => {
 
   return (
     <div className="w-full max-w-6xl px-4">
+      <SEO title="Admin panel | SoulFlow" />
       <PageHeader
         eyebrow="Admin"
         title="Admin panel"
         description="Review imported events, manage listings, venues and users, and see how the site is doing."
       />
+
+      <div className="flex justify-end mb-4">
+        <Button asChild variant="outline" className="rounded-full">
+          <Link to="/admin/how-it-works">
+            <Workflow className="h-4 w-4 mr-2" /> How SoulFlow works
+          </Link>
+        </Button>
+      </div>
 
       <Tabs defaultValue="imports" className="w-full" onValueChange={handleTabChange}>
         <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-10 bg-secondary/50 p-1 rounded-2xl mb-8">

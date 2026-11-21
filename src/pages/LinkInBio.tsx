@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, MapPin, CalendarDays, PlusCircle, Mail, Compass, ArrowRight } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const LOGO_URL =
   'https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/ig-weekly-slides/2026-10-07/logo-trans.png';
@@ -18,7 +19,7 @@ interface BioLink {
 const LINKS: BioLink[] = [
   { label: 'Browse events', description: 'Everything coming up, all in one place', to: '/', icon: CalendarDays },
   { label: 'Explore the map', description: 'Find gatherings near you', to: '/map', icon: MapPin },
-  { label: 'Submit an event', description: 'List yours — it’s free', to: '/submit-event', icon: PlusCircle },
+  { label: 'Submit an event', description: 'List yours — it’s free (sign in first)', to: '/login', icon: PlusCircle },
   { label: 'About SoulFlow', description: 'Who we are and why we do this', to: '/about', icon: Compass },
   { label: 'Contact us', description: 'Questions, ideas or a hand', to: '/contact', icon: Mail },
   { label: 'Follow on Instagram', description: '@soulflowau', href: INSTAGRAM_URL, icon: Instagram },
@@ -27,6 +28,7 @@ const LINKS: BioLink[] = [
 const LinkInBio: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center px-5 py-12">
+      <SEO title="SoulFlow links | SoulFlow" />
       <div className="w-full max-w-md flex flex-col items-center">
         <img src={LOGO_URL} alt="SoulFlow" className="h-24 w-24 object-contain" />
         <h1 className="mt-4 text-3xl font-heading font-semibold tracking-tight">SoulFlow</h1>
@@ -64,6 +66,9 @@ const LinkInBio: React.FC = () => {
         <p className="mt-10 text-center text-xs text-muted-foreground">
           Made with care for the Australian conscious community.
         </p>
+        <Link to="/" className="mt-3 text-xs font-semibold text-primary hover:underline">
+          Back to the event guide →
+        </Link>
       </div>
     </div>
   );
