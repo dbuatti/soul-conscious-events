@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -147,17 +147,19 @@ const EventDetailPage: React.FC = () => {
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
     : '#');
 
-  // Related events: same category or state, excluding this event, upcoming only
-  const relatedEvents = useMemo(() => {
+  // Related events: same category or state, excluding this event, upcoming only.
+  // Computed during render (not memoized) to avoid hook dependency issues with
+  // the TanStack Query data array reference changing on every render.
+  const now = new Date().toISOString().slice(0, 10);
+  const relatedEvents: Event[] = (() => {
     if (!event || !eventsQuery.data) return [];
-    const now = new Date().toISOString().slice(0, 10);
     return eventsQuery.data
       .filter((e) => e.id !== event.id)
       .filter((e) => e.approval_status === 'approved' && !e.is_deleted && e.event_date >= now)
       .filter((e) => e.event_type === event.event_type || e.geographical_state === event.geographical_state)
       .sort((a, b) => a.event_date.localeCompare(b.event_date))
       .slice(0, 4);
-  }, [event, eventsQuery.data]);
+  })();
 
   const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
   const startDate = parseISO(event.event_date);
