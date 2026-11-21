@@ -24,6 +24,7 @@ import { getBaseEventId, formatPrice, getGoogleCalendarUrl, downloadIcalFile } f
 import { getBookingTarget } from '@/utils/booking';
 import SEO from '@/components/SEO';
 import { ResilientImage } from '@/components/v2/ResilientImage';
+import EventSchema from '@/components/v2/EventSchema';
 
 
 const EventDetailPage: React.FC = () => {
@@ -205,6 +206,7 @@ const EventDetailPage: React.FC = () => {
         image={event.image_url || undefined}
         type="article"
       />
+      <EventSchema event={event} />
 
       <button
         type="button"
