@@ -1,0 +1,49 @@
+{
+  "name": "SoulFlow - Conscious Events Australia",
+  "short_name": "SoulFlow",
+  "description": "Discover soulful gatherings, workshops, meditations, sound baths, and conscious events across Australia.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfbf7",
+  "theme_color": "#B34629",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["lifestyle", "health-fitness", "events"],
+  "icons": [
+    {
+      "src": "/soulflow-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/soulflow-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Events",
+      "short_name": "Events",
+      "description": "Browse upcoming conscious events",
+      "url": "/",
+      "icons": [{ "src": "/soulflow-logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Map",
+      "short_name": "Map",
+      "description": "Find events near you on the map",
+      "url": "/map",
+      "icons": [{ "src": "/soulflow-logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "List Your Event",
+      "short_name": "List Event",
+      "description": "Submit your own gathering to the guide",
+      "url": "/submit-event",
+      "icons": [{ "src": "/soulflow-logo.png", "sizes": "192x192" }]
+    }
+  ]
+}

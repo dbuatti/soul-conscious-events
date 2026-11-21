@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { format, parseISO, isSameDay, addDays, startOfToday } from 'date-fns';
+import { format, parseISO, isSameDay, isToday, addDays, startOfToday } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, Loader2, Plus, Database } from 'lucide-react';
@@ -19,6 +19,7 @@ import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
 import EventsHero from '@/components/v2/EventsHero';
+import FeaturedEvents from '@/components/v2/FeaturedEvents';
 import EventsToolbar, { type FilterBadge } from '@/components/v2/EventsToolbar';
 import EventDayGroups from '@/components/v2/EventDayGroups';
 import HostCTA from '@/components/v2/HostCTA';
@@ -166,6 +167,20 @@ const EventsListV2 = () => {
 
   const comingUp = useMemo(() => listSource.slice(0, 3), [listSource]);
 
+  // Featured events: upcoming events with images, prioritising today's events
+  const featuredEvents = useMemo(() => {
+    const withImages = listSource.filter((e) => e.image_url);
+    return withImages
+      .sort((a, b) => {
+        const aToday = isToday(parseISO(a.event_date));
+        const bToday = isToday(parseISO(b.event_date));
+        if (aToday && !bToday) return -1;
+        if (!aToday && bToday) return 1;
+        return a.event_date.localeCompare(b.event_date);
+      })
+      .slice(0, 3);
+  }, [listSource]);
+
   const nextWeekCount = useMemo(() => {
     const today = startOfToday();
     const weekOut = addDays(today, 7);
@@ -213,6 +228,10 @@ const EventsListV2 = () => {
         comingUp={comingUp}
         onViewDetails={handleViewDetails}
       />
+
+      {!loading && featuredEvents.length > 0 && (
+        <FeaturedEvents events={featuredEvents} onViewDetails={handleViewDetails} />
+      )}
 
       <EventsToolbar
         filters={filters}

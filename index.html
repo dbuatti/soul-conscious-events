@@ -3,11 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#B34629" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="SoulFlow" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/soulflow-logo.png" />
     <title>SoulFlow | Discover Soulful Events in Australia</title>
     
     <!-- Open Graph / Social Media Meta Tags -->
     <meta property="og:title" content="SoulFlow | Discover Soulful Events in Australia" />
-    <meta property="og:description" content="Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, concerts, and community gatherings." />
+    <meta property="og:description" content="Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, sound baths, circles and community gatherings." />
     <meta property="og:image" content="https://soulflowau.vercel.app/social-preview.jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -25,5 +33,17 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Register service worker for PWA offline support
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('Service Worker registered:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+      }
+    </script>
   </body>
 </html>
