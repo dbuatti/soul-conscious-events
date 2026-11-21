@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { format, parseISO, isSameDay, isToday, addDays, startOfToday } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Loader2, Plus, Database } from 'lucide-react';
+import { Loader2, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -14,7 +14,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Link } from 'react-router-dom';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
@@ -23,6 +22,7 @@ import FeaturedEvents from '@/components/v2/FeaturedEvents';
 import EventsToolbar, { type FilterBadge } from '@/components/v2/EventsToolbar';
 import EventDayGroups from '@/components/v2/EventDayGroups';
 import HostCTA from '@/components/v2/HostCTA';
+import { NoEventsEmptyState, NoSearchResultsEmptyState, NoCalendarEventsEmptyState } from '@/components/v2/EmptyState';
 import { useSession } from '@/components/SessionContextProvider';
 import { expandRecurringEvents, getAvailableVenues, getBaseEventId } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
@@ -280,17 +280,10 @@ const EventsListV2 = () => {
                   onViewDetails={handleViewDetails}
                   extraCountMap={extraCountMap}
                 />
+              ) : hasActiveFilters && searchTerm !== '' ? (
+                <NoSearchResultsEmptyState />
               ) : (
-                statusPanel(Frown, 'Nothing matches… yet',
-                  'Try widening your filters, or be the first to list a gathering like this.',
-                  <div className="flex flex-col sm:flex-row justify-center gap-3">
-                    {hasActiveFilters && (
-                      <Button variant="outline" onClick={handleClearFilters} className="rounded-full px-6">Clear filters</Button>
-                    )}
-                    <Button asChild className="rounded-full px-6">
-                      <Link to="/submit-event"><Plus className="mr-1.5 h-4 w-4" /> List an event</Link>
-                    </Button>
-                  </div>)
+                <NoEventsEmptyState />
               )}
 
               {hasMore && displayedEvents.length > 0 && (
@@ -333,7 +326,7 @@ const EventsListV2 = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="py-12 text-center text-muted-foreground organic-card rounded-[var(--radius)]">No events on this day. Pick another date in the calendar.</p>
+                  <NoCalendarEventsEmptyState />
                 )}
               </div>
             </div>
