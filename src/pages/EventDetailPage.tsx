@@ -26,6 +26,7 @@ import { getBookingTarget } from '@/utils/booking';
 import SEO from '@/components/SEO';
 import { ResilientImage } from '@/components/v2/ResilientImage';
 import EventCardV2 from '@/components/v2/EventCardV2';
+import LocationPicker from '@/components/v2/LocationPicker';
 import EventSchema from '@/components/v2/EventSchema';
 
 
@@ -236,6 +237,13 @@ const EventDetailPage: React.FC = () => {
       >
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> All events
       </button>
+
+      {event.latitude && event.longitude && (
+        <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 mb-6">
+          <MapPin className="h-3 w-3" aria-hidden="true" />
+          On the map
+        </div>
+      )}
 
       <header className="mb-8 max-w-4xl">
         <p className="eyebrow mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -448,6 +456,13 @@ const EventDetailPage: React.FC = () => {
           </Button>
         </div>
       )}
+
+      <LocationPicker
+        event={event}
+        onLocationSaved={(lat, lng) => {
+          setEvent((prev) => prev ? { ...prev, latitude: lat, longitude: lng } : prev);
+        }}
+      />
     </div>
   );
 };

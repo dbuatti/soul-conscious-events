@@ -108,6 +108,8 @@ const SubmitEvent = () => {
       imageUrl: '',
       discountCode: '',
       googleMapsLink: '',
+      latitude: '',
+      longitude: '',
       recurringPattern: 'NONE',
     },
   });
@@ -239,6 +241,8 @@ const SubmitEvent = () => {
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
         google_maps_link: values.googleMapsLink || null,
+        latitude: values.latitude ? Number(values.latitude) : null,
+        longitude: values.longitude ? Number(values.longitude) : null,
         recurring_pattern: recurringPattern,
         recurring_end_date: values.recurringEndDate ? format(values.recurringEndDate, 'yyyy-MM-dd') : null,
         event_days: values.eventDays || null,

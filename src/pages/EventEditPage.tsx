@@ -95,6 +95,8 @@ const EventEditPage: React.FC = () => {
           imageUrl: data.image_url || '',
           discountCode: data.discount_code || '',
           googleMapsLink: data.google_maps_link || '',
+          latitude: data.latitude ?? '',
+          longitude: data.longitude ?? '',
           recurringPattern: data.recurring_pattern || 'NONE',
           recurringEndDate: data.recurring_end_date
             ? new Date(`${data.recurring_end_date}T00:00:00`)
@@ -157,6 +159,8 @@ const EventEditPage: React.FC = () => {
         image_url: finalImageUrl,
         discount_code: values.discountCode || null,
         google_maps_link: values.googleMapsLink || null,
+        latitude: values.latitude ? Number(values.latitude) : null,
+        longitude: values.longitude ? Number(values.longitude) : null,
         recurring_pattern: !values.recurringPattern || values.recurringPattern === 'NONE' ? null : values.recurringPattern,
         recurring_end_date: values.recurringEndDate ? format(values.recurringEndDate, 'yyyy-MM-dd') : null,
         event_days: values.eventDays || null,

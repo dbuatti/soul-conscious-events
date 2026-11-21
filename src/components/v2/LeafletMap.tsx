@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import { Event } from '@/types/event';
 import { format, parseISO } from 'date-fns';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface LeafletMapProps {
   events: Event[];
@@ -101,6 +102,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   const initZoomRef = useRef(zoom);
   const initInteractiveRef = useRef(interactive);
 
+  const [tileError, setTileError] = useState<string | null>(null);
+
   const onViewDetailsRef = useRef(onViewDetails);
   useEffect(() => { onViewDetailsRef.current = onViewDetails; });
 
@@ -125,19 +128,32 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    const map = L.map(mapRef.current, {
-      center: initCenterRef.current,
-      zoom: initZoomRef.current,
-      scrollWheelZoom: initInteractiveRef.current,
-      dragging: initInteractiveRef.current,
-      touchZoom: initInteractiveRef.current,
-      zoomControl: false,
-      attributionControl: false,
+    let map: L.Map;
+    try {
+      map = L.map(mapRef.current, {
+        center: initCenterRef.current,
+        zoom: initZoomRef.current,
+        scrollWheelZoom: initInteractiveRef.current,
+        dragging: initInteractiveRef.current,
+        touchZoom: initInteractiveRef.current,
+        zoomControl: false,
+        attributionControl: false,
+      });
+    } catch (err) {
+      console.error('[LeafletMap] Failed to initialise Leaflet map:', err);
+      setTileError('Map failed to load. Try refreshing the page.');
+      return;
+    }
+
+    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
+    tileLayer.on('tileerror', () => {
+      setTileError('Map tiles failed to load. Check your connection and refresh.');
+    });
+
+    tileLayer.addTo(map);
 
     // Marker cluster group with spiderfy on click.
     const clusters = L.markerClusterGroup({
@@ -209,6 +225,20 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 
   return (
     <div className={`w-full relative overflow-hidden rounded-[2rem] sm:rounded-[1.75rem] shadow-2xl bg-[#fdfbf7] border-none ${className || 'h-[500px] sm:h-[600px]'}`}>
+      {tileError && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/90 backdrop-blur-sm">
+          <AlertCircle className="h-12 w-12 text-destructive mb-3" />
+          <p className="text-center text-sm text-destructive max-w-xs px-4">{tileError}</p>
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+            className="mt-3 rounded-full"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" /> Refresh map
+          </Button>
+        </div>
+      )}
+
       <div ref={mapRef} className="w-full h-full z-0" />
 
       {interactive && (
@@ -231,6 +261,34 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
             </div>
           </div>
 
+          {total > 0 && ready > 0 && (
+            <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-border shadow-lg max-w-[190px] sm:max-w-none">
+              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Pins by category</p>
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                {[
+                  'Meditation',
+                  'Sound Bath',
+                  'Workshop',
+                  'Community Gathering',
+                  'Foraging',
+                  'Music',
+                  'Open Mic',
+                  'Other',
+                ]
+                  .filter((cat) => plotted.some((e) => e.event_type === cat))
+                  .map((category) => (
+                    <span key={category} className="inline-flex items-center gap-1.5 text-[9px] font-bold text-foreground">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full border border-white shadow-sm"
+                        style={{ backgroundColor: categoryColours[category] }}
+                        aria-hidden="true"
+                      />
+                      {category}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -25,6 +25,7 @@ import VenueSelect from '@/components/VenueSelect';
 import RecurringEventFields from './RecurringEventFields';
 import { EventFormValues } from '@/lib/schemas';
 import { formatPrice } from '@/utils/event-utils';
+import { toast } from 'sonner';
 
 interface EventFormProps {
   form: UseFormReturn<EventFormValues>;
@@ -503,6 +504,73 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
             </FormItem>
           )}
         />
+
+        {/* Map coordinates */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="latitude"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="latitude">Latitude</FormLabel>
+                <FormControl>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="0.000001"
+                    placeholder="-37.8"
+                    {...field}
+                    className="focus-visible:ring-primary"
+                  />
+                </FormControl>
+                <FormDescription className="text-[11px] text-muted-foreground">
+                  Auto-filled from address, or click the map pin below.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="longitude"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="longitude">Longitude</FormLabel>
+                <FormControl>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="0.000001"
+                    placeholder="144.9"
+                    {...field}
+                    className="focus-visible:ring-primary"
+                  />
+                </FormControl>
+                <FormDescription className="text-[11px] text-muted-foreground">
+                  Leave blank to geocode from address.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex items-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const address = form.getValues('fullAddress');
+                if (!address) {
+                  toast.error('Please enter an address first.');
+                  return;
+                }
+                toast.info('Geocoding not yet available in the form. Please add coordinates manually or use the map page.');
+              }}
+              className="w-full"
+            >
+              Geocode from address
+            </Button>
+          </div>
+        </div>
 
         {/* Description */}
         <FormField
