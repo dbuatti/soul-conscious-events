@@ -23,7 +23,7 @@ import BookmarkButton from '@/components/BookmarkButton';
 import { getBaseEventId, formatPrice, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
 import { getBookingTarget } from '@/utils/booking';
 import SEO from '@/components/SEO';
-import EventCardFallback from '@/components/EventCardFallback';
+import { ResilientImage } from '@/components/v2/ResilientImage';
 
 
 const EventDetailPage: React.FC = () => {
@@ -237,11 +237,12 @@ const EventDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         <div className="lg:col-span-7 space-y-10">
           <div className="relative w-full aspect-[16/10] rounded-[1.75rem] overflow-hidden bg-secondary shadow-[0_30px_60px_-30px_hsl(20_40%_20%/0.45)]">
-            {event.image_url ? (
-              <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover" />
-            ) : (
-              <EventCardFallback event={event} />
-            )}
+            <ResilientImage
+              src={event.image_url || undefined}
+              alt={event.event_name}
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
 
           {event.description && (

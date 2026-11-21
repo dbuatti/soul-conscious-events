@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from "react-router-dom";
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { format, parseISO, isToday, isTomorrow, isSameDay, differenceInHours } from 'date-fns';
 import { Clock, MapPin, Share2, Pencil, Trash2, Repeat, ArrowUpRight } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
@@ -7,9 +7,26 @@ import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResilientImage } from '@/components/v2/ResilientImage';
 import { formatPrice, getBaseEventId } from '@/utils/event-utils';
-import EventCardFallback from '@/components/EventCardFallback';
+
+// Category colour system used across cards, map pins and the legend.
+const categoryColours: Record<string, string> = {
+  Meditation: '#7C3AED',
+  'Sound Bath': '#0EA5E9',
+  Workshop: '#F59E0B',
+  'Community Gathering': '#10B981',
+  Foraging: '#65A30D',
+  Music: '#EC4899',
+  'Open Mic': '#9333EA',
+  Other: '#B34629',
+};
+
+const categoryBadgeColor = (eventType?: string | null) =>
+  categoryColours[eventType || 'Other'] ?? categoryColours.Other;
+
+const iconButton =
+  "h-9 w-9 rounded-full bg-background/90 dark:bg-black/60 backdrop-blur text-foreground shadow-sm hover:bg-background flex items-center justify-center transition-colors";
 
 interface EventCardV2Props {
   event: Event;
@@ -19,9 +36,6 @@ interface EventCardV2Props {
   additionalDatesCount?: number;
 }
 
-const iconButton =
-  "h-9 w-9 rounded-full bg-background/90 dark:bg-black/60 backdrop-blur text-foreground shadow-sm hover:bg-background flex items-center justify-center transition-colors";
-
 const EventCardV2: React.FC<EventCardV2Props> = ({
   event,
   onDelete,
@@ -30,7 +44,6 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
 }) => {
   const { user, isAdmin } = useSession();
   const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   const eventDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
@@ -45,9 +58,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
 
   const lowerPrice = event.price?.toLowerCase() ?? '';
   const isFree = lowerPrice.includes('free');
+  const isDonation = lowerPrice.includes('donation');
   const priceLabel = event.price ? formatPrice(event.price) : null;
 
   const baseId = getBaseEventId(event.id);
+  const badgeColor = categoryBadgeColor(event.event_type);
 
   const handleNativeShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -76,7 +91,10 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
 
   return (
     <article
-      className={cn("group relative flex flex-col organic-card organic-card-hover rounded-[var(--radius)] overflow-hidden cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-500", isEventToday && "ring-2 ring-primary/40 shadow-lg shadow-primary/10")}
+      className={cn(
+        "group relative flex flex-col organic-card organic-card-hover rounded-[var(--radius)] overflow-hidden cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-500",
+        isEventToday && "ring-2 ring-primary/40 shadow-lg shadow-primary/10"
+      )}
       onClick={() => onViewDetails(event)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -89,22 +107,11 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
       aria-label={`View details: ${event.event_name}, ${format(eventDate, 'EEEE d MMMM')}`}
     >
       <div className="relative w-full aspect-[16/9] sm:aspect-[3/2] overflow-hidden bg-secondary">
-        {!imageLoaded && event.image_url && <Skeleton className="absolute inset-0 z-10 rounded-none" />}
-
-        {event.image_url ? (
-          <img
-            src={event.image_url}
-            alt={event.event_name}
-            onLoad={() => setImageLoaded(true)}
-            className={cn(
-              "w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.04]",
-              imageLoaded ? "opacity-100" : "opacity-0"
-            )}
-            loading="lazy"
-          />
-        ) : (
-          <EventCardFallback event={event} />
-        )}
+        <ResilientImage
+          src={event.image_url || undefined}
+          alt={event.event_name}
+          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.04]"
+        />
 
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/45 to-transparent pointer-events-none" />
 
@@ -125,7 +132,15 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         </div>
 
         {event.event_type && (
-          <span className="absolute bottom-3 left-3 z-20 text-[11px] font-semibold tracking-wide text-white/95 drop-shadow">
+          <span
+            className="absolute bottom-3 left-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide text-white drop-shadow"
+            style={{ backgroundColor: badgeColor }}
+          >
+            <span
+              className="h-2 w-2 rounded-full bg-white/30"
+              style={{ backgroundColor: 'rgba(255,255,255,0.3)' }}
+              aria-hidden="true"
+            />
             {event.event_type}
           </span>
         )}
@@ -187,9 +202,10 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           <div className="flex items-center gap-2 min-w-0">
             {priceLabel && (
               <span className={cn(
-                "text-sm font-semibold truncate",
-                isFree ? "text-sage" : "text-foreground"
+                "text-sm font-semibold truncate inline-flex items-center gap-1",
+                isFree ? "text-sage" : isDonation ? "text-amber-600 dark:text-amber-400" : "text-foreground"
               )}>
+                {isDonation && <span className="h-3 w-3 text-amber-500 dark:text-amber-400" aria-hidden="true">♡</span>}
                 {priceLabel}
               </span>
             )}
