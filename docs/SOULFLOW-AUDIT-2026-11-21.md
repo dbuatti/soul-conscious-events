@@ -126,12 +126,20 @@ resolved.
   zero-add runs were a budget/scheduling problem, not dead sources.
 - Importer run `44884754175` (after deploy) processed **exactly 2 sources**
   (Brisbane + Perth) and added **12 events** — the rotation fix is live.
-  Public event count went from 561 → 595 in one afternoon.
+- Public events went 561 → **585**; upcoming went 112 → **135** (next 7 days:
+  45 → 65). The pre-deploy run supplied most of that.
+- Only **2 of the 12** post-deploy inserts were auto-approved. The rest were 9
+  `unsure` (waiting in the admin review queue) and 1 `off-topic` (rejected).
+  The importer is healthy, but its default verdict is cautious, so the admin
+  inbox now grows on every run. Worth deciding whether to widen `ON_TOPIC_TERMS`
+  or clear the queue on a fixed schedule.
 - Daily content: not force-triggered, because that would publish to Instagram.
   The next scheduled run (22:00 UTC) is the live check.
 
 ## Still to do
 
+- [ ] Clear the growing `pending` import queue, then decide whether `unsure`
+      should keep defaulting to manual review.
 - [ ] Check the admin Analytics tab for real visitor numbers (admin-only).
 - [ ] Mark your own monthly events as recurring in the edit form.
 - [ ] Review whether the Perth source should be replaced with a Canberra feed.
