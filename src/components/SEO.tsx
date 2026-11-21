@@ -47,6 +47,15 @@ const SEO: React.FC<SEOProps> = ({
     updateMetaTag('twitter:description', description, true);
     updateMetaTag('twitter:image', image, true);
 
+    // Canonical URL
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', url);
+
   }, [title, description, image, url, type]);
 
   return null;
