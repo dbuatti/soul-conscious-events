@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Clock, Ticket, User, Share2, Edit, Trash2, Copy, ArrowLeft, CalendarPlus, Download, Repeat, ExternalLink } from 'lucide-react';
+import { MapPin, Clock, Ticket, User, Share2, Edit, Trash2, Copy, ArrowLeft, ArrowRight, CalendarPlus, Download, Repeat, ExternalLink } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
+import { useEvents } from '@/hooks/use-events';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +25,7 @@ import { getBaseEventId, formatPrice, getGoogleCalendarUrl, downloadIcalFile } f
 import { getBookingTarget } from '@/utils/booking';
 import SEO from '@/components/SEO';
 import { ResilientImage } from '@/components/v2/ResilientImage';
+import EventCardV2 from '@/components/v2/EventCardV2';
 import EventSchema from '@/components/v2/EventSchema';
 
 
@@ -33,6 +35,7 @@ const EventDetailPage: React.FC = () => {
   const { user, isAdmin, isLoading: isSessionLoading } = useSession();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const eventsQuery = useEvents();
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -144,6 +147,18 @@ const EventDetailPage: React.FC = () => {
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.full_address)}`
     : '#');
 
+  // Related events: same category or state, excluding this event, upcoming only
+  const relatedEvents = useMemo(() => {
+    if (!event || !eventsQuery.data) return [];
+    const now = new Date().toISOString().slice(0, 10);
+    return eventsQuery.data
+      .filter((e) => e.id !== event.id)
+      .filter((e) => e.approval_status === 'approved' && !e.is_deleted && e.event_date >= now)
+      .filter((e) => e.event_type === event.event_type || e.geographical_state === event.geographical_state)
+      .sort((a, b) => a.event_date.localeCompare(b.event_date))
+      .slice(0, 4);
+  }, [event, eventsQuery.data]);
+
   const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
   const startDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
@@ -175,6 +190,10 @@ const EventDetailPage: React.FC = () => {
     ]).then(({ error }) => {
       if (error) console.error('Error logging booking click:', error);
     });
+  };
+
+  const handleViewDetails = (relatedEvent: Event) => {
+    navigate(`/events/${getBaseEventId(relatedEvent.id)}`);
   };
 
   const handleShare = async () => {
@@ -391,6 +410,29 @@ const EventDetailPage: React.FC = () => {
           </div>
         </aside>
       </div>
+
+      {/* Related events */}
+      {relatedEvents.length > 0 && (
+        <section className="mb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight">
+              More like this
+            </h2>
+            <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
+              Browse all <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+            {relatedEvents.map((related) => (
+              <EventCardV2
+                key={related.id}
+                event={related}
+                onViewDetails={handleViewDetails}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Mobile booking bar */}
       {booking.href && (
