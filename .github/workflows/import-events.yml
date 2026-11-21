@@ -73,5 +73,5 @@ jobs:
 
           ADDED=$(echo "$BODY" | jq -r '.events_added // 0')
           echo "### Event import" >> "$GITHUB_STEP_SUMMARY"
-          echo "$ADDED new event(s) waiting for review in the admin panel." >> "$GITHUB_STEP_SUMMARY"
+          echo "$ADDED new event(s) added. On-topic imports publish immediately; anything unsure waits in the admin panel." >> "$GITHUB_STEP_SUMMARY"
           echo "$BODY" | jq -r '.sources[]? | "- **\(.status)** \(.url) — \(.message)"' >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true

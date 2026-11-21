@@ -14,7 +14,7 @@
 //
 // Env:
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY  (required)
-//   FORCE=1        bypass the "is it 08:00 Sydney?" check (for testing)
+//   FORCE=1        bypass the time and 24h-ledger checks (manual runs only)
 //   DRY_RUN=1      generate + rasterise but do not publish
 //   SKIP_FEED=1    don't post the feed carousel
 //   SKIP_STORY=1   don't post the Story
@@ -175,12 +175,37 @@ async function postBrand(theme) {
   log(`  brand ${theme}: feed${mediaId ? ` -> ${mediaId}` : ""}`);
 }
 
+// publish-instagram marks a batch 'posted'. GitHub's scheduler fires this job
+// 5-7h late and sometimes re-fires it, so a wall-clock window alone turned every
+// run into a green no-op. Check the publish ledger instead: one post per rolling
+// 24h, however late the runner was.
+async function alreadyPostedToday() {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("ig_slide_batches")
+    .select("id, kind, posted_at")
+    .eq("status", "posted")
+    .gte("posted_at", since)
+    .limit(1);
+  if (error) {
+    log(`  could not check publish ledger: ${error.message}`);
+    return false; // fail open: a missed post is better than a duplicate
+  }
+  return (data?.length ?? 0) > 0;
+}
+
 async function run() {
   const now = sydneyNow();
   const weekday = DAY_OVERRIDE || now.weekday;
-  const inWindow = now.hour === 8 && now.minute < 45;
+  // Delayed runners are the normal case, so accept the whole local day rather
+  // than an exact 08:00 minute. The ledger check below is the real guard.
+  const inWindow = now.hour >= 8;
   if (!FORCE && !inWindow) {
-    log(`Outside the daily window (Sydney: ${now.weekday} ${now.hour}:${String(now.minute).padStart(2, "0")}). Nothing to do.`);
+    log(`Too early for the daily content run (Sydney: ${now.weekday} ${now.hour}:${String(now.minute).padStart(2, "0")}). Nothing to do.`);
+    return 0;
+  }
+  if (!FORCE && !DRY_RUN && await alreadyPostedToday()) {
+    log("A carousel was already posted in the last 24 hours. Nothing to do.");
     return 0;
   }
 

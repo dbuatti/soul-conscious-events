@@ -2,11 +2,10 @@ name: Daily content
 
 on:
   schedule:
-    # 08:00 Australia/Sydney, every day. Two UTC slots cover daylight saving:
-    #   21:00 UTC = 08:00 AEDT (summer)
-    #   22:00 UTC = 08:00 AEST (winter)
-    # The script checks the Sydney clock, so the wrong slot is a no-op.
-    - cron: '0 21 * * *'
+    # 08:00 AEST / 09:00 AEDT every day. One slot only: GitHub routinely fires
+    # scheduled jobs hours late, and two slots used to produce duplicate posts
+    # once the script stopped treating the exact hour as a hard requirement.
+    # The script checks the publish ledger (posted_at within 24h) for idempotency.
     - cron: '0 22 * * *'
   workflow_dispatch:
     inputs:

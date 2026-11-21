@@ -19,6 +19,12 @@ const AI_FALLBACKS_PER_RUN = 5;
 const MAX_SITEMAPS = 4;
 const MAX_CANDIDATE_LINKS = 60;
 const MAX_PAGINATION_HOPS = 1;
+// One broad listing can eat the whole 110s budget. Checking all six sources
+// every day meant five were skipped with "out of time" and their last_run_at
+// never advanced, so the same sources starved forever. Sources are ordered
+// by last_run_at, so a small slice rotates fairly and self-corrects: a source
+// that gets skipped stays at the front for the next run.
+const SOURCES_PER_RUN = 2;
 
 interface Source { id: string; url: string; label: string | null }
 
@@ -202,7 +208,10 @@ serve(async (req) => {
   }
   const sourceId: string | undefined = typeof body?.sourceId === 'string' ? body.sourceId : undefined;
 
-  let query = db.from('event_sources').select('id, url, label').order('last_run_at', { ascending: true, nullsFirst: true });
+  let query = db.from('event_sources')
+    .select('id, url, label')
+    .order('last_run_at', { ascending: true, nullsFirst: true })
+    .limit(SOURCES_PER_RUN);
   query = sourceId ? query.eq('id', sourceId) : query.eq('is_active', true);
   const { data: sources, error: sourcesError } = await query;
   if (sourcesError) {

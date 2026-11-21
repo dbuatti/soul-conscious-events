@@ -7,20 +7,17 @@ import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SessionContextProvider, useSession } from "@/components/SessionContextProvider";
 import { supabase } from "@/integrations/supabase/client";
-import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import HeaderV2 from "./components/v2/HeaderV2";
 import Footer from "./components/Footer";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import ScrollProgress from "./components/ScrollProgress";
 
-const EventsList = lazy(() => import("./pages/EventsList"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 const Contact = lazy(() => import("./pages/Contact"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const MapPage = lazy(() => import("./pages/MapPage"));
-const Login = lazy(() => import("./pages/Login"));
 const EventEditPage = lazy(() => import("./pages/EventEditPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
 const About = lazy(() => import("./pages/About"));
@@ -82,15 +79,6 @@ const LayoutV2 = () => {
   );
 };
 
-// Persistent Layout for Old pages
-const LayoutOld = () => {
-  return (
-    <Layout>
-      <Outlet />
-    </Layout>
-  );
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -143,21 +131,6 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Route>
 
-              {/* Original App Routes - under /old */}
-              <Route path="/old" element={<LayoutOld />}>
-                <Route index element={<EventsList />} />
-                <Route path="events/:id" element={<EventDetailPage />} />
-                <Route path="login" element={<Login />} />
-                <Route path="map" element={<MapPage />} />
-                
-                <Route element={<ProtectedRoute requireAdmin><Outlet /></ProtectedRoute>}>
-                  <Route path="dev-space" element={<DevSpace />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
-                  <Route path="edit-event/:id" element={<EventEditPage />} />
-                </Route>
-              </Route>
             </Routes>
           </Suspense>
         </SessionContextProvider>
