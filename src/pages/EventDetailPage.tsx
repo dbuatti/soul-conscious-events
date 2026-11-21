@@ -27,6 +27,7 @@ import SEO from '@/components/SEO';
 import { ResilientImage } from '@/components/v2/ResilientImage';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import LocationPicker from '@/components/v2/LocationPicker';
+import MapPreview from '@/components/v2/MapPreview';
 import EventSchema from '@/components/v2/EventSchema';
 
 
@@ -275,6 +276,16 @@ const EventDetailPage: React.FC = () => {
               priority
             />
           </div>
+
+          {event.latitude && event.longitude && (
+            <section className="mb-8">
+              <h2 className="text-xl font-semibold font-heading text-foreground mb-3">Where</h2>
+              <MapPreview event={event} />
+              <p className="mt-3 text-sm text-muted-foreground text-center">
+                Pin this location on the map to help others find it.
+              </p>
+            </section>
+          )}
 
           {event.description && (
             <section>
