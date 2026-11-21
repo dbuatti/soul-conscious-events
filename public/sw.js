@@ -1,7 +1,8 @@
 // SoulFlow Service Worker
 // Provides offline caching for core pages and assets.
+// Bump CACHE_NAME on every deployment to invalidate old cached assets.
 
-const CACHE_NAME = 'soulflow-v1';
+const CACHE_NAME = 'soulflow-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -10,29 +11,30 @@ const STATIC_ASSETS = [
   '/placeholder.svg',
 ];
 
-// Install: cache static assets
+// Install: cache static assets, then immediately take over.
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
 });
 
-// Activate: clean up old caches
+// Activate: clean up old caches and claim all clients.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch: cache-first for static assets, network-first for API calls
+// Fetch: cache-first for static assets, network-first for API calls.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Cache-first for same-origin static assets
+  // Cache-first for same-origin static assets.
   if (url.origin === self.location.origin && url.pathname.startsWith('/')) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
@@ -50,7 +52,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-first for Supabase API calls
+  // Network-first for Supabase API calls.
   if (url.hostname.includes('supabase.co')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
