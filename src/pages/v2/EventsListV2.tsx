@@ -66,7 +66,15 @@ const EventsListV2 = () => {
 
   const loading = eventsQuery.isLoading;
 
-  const { filters, setFilters, searchTerm, setSearchTerm, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState);
+  // Debounce search input so filtering doesn't run on every keystroke.
+  const [rawSearchTerm, setRawSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(rawSearchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [rawSearchTerm]);
+
+  const { filters, setFilters, searchTerm, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm);
 
   // Deduplicate recurring series for the list view: keep only the next upcoming instance per series.
   // Calendar and map views still receive the full filteredEvents so all instances are visible.
@@ -137,7 +145,7 @@ const EventsListV2 = () => {
   };
 
   const handleClearFilters = () => {
-    setSearchTerm('');
+    setRawSearchTerm('');
     setFilters({ date: 'All Upcoming', category: [], venue: [], price: [], state: [] });
   };
 
@@ -220,7 +228,7 @@ const EventsListV2 = () => {
 
       <EventsHero
         searchTerm={searchTerm}
-        onSearchTermChange={setSearchTerm}
+        onSearchTermChange={setRawSearchTerm}
         selectedCategories={filters.category}
         onToggleQuickFilter={toggleQuickFilter}
         showNextWeekCount={!loading && !eventsQuery.isError}
@@ -244,7 +252,7 @@ const EventsListV2 = () => {
         onViewModeChange={(mode) => setViewMode(mode)}
         hasActiveFilters={hasActiveFilters}
         searchTerm={searchTerm}
-        onClearSearch={() => setSearchTerm('')}
+        onClearSearch={() => setRawSearchTerm('')}
         badges={filterBadges}
         onRemoveBadge={removeFilter}
         onClearFilters={handleClearFilters}

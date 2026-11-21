@@ -3,8 +3,8 @@ import { parseISO, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfM
 import { Event } from '@/types/event';
 import { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
 
-export const useEventFilters = (allEvents: Event[], defaultState?: string | null) => {
-  const [searchTerm, setSearchTerm] = useState('');
+export const useEventFilters = (allEvents: Event[], defaultState?: string | null, externalSearchTerm?: string) => {
+  const [internalSearchTerm, setInternalSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
     date: 'All Upcoming',
     category: [],
@@ -12,6 +12,9 @@ export const useEventFilters = (allEvents: Event[], defaultState?: string | null
     price: [],
     state: defaultState ? [defaultState] : [],
   });
+
+  // Use externally-provided search term (debounced) when available, otherwise internal state.
+  const searchTerm = externalSearchTerm ?? internalSearchTerm;
 
   // Re-apply the preference if the user changes it in Settings and navigates
   // back without a full reload. Manual changes in this session are left alone
@@ -113,7 +116,7 @@ export const useEventFilters = (allEvents: Event[], defaultState?: string | null
     filters,
     setFilters,
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: setInternalSearchTerm,
     filteredEvents,
     totalCount: allEvents.length
   };
