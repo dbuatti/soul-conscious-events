@@ -92,7 +92,7 @@ const geocode = async (query: string, gate: () => Promise<void>): Promise<Geocod
   await gate();
 
   if (provider === 'geoapify') {
-    const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(query)}&filter=countrycode:au&limit=1&apiKey=${encodeURIComponent(GEOAPIFY_KEY)}`;
+    const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(query)}&filter=countrycode:au&limit=3&apiKey=${encodeURIComponent(GEOAPIFY_KEY)}`;
     let response: Response;
     try {
       response = await fetch(url, { headers });
@@ -105,12 +105,33 @@ const geocode = async (query: string, gate: () => Promise<void>): Promise<Geocod
       return { kind: 'error', detail: `HTTP ${response.status}: ${(await response.text().catch(() => '')).slice(0, 120)}` };
     }
     const data = await response.json().catch(() => null) as {
-      features?: Array<{ geometry?: { coordinates?: number[] } }>;
+      features?: Array<{
+        geometry?: { coordinates?: number[] };
+        properties?: {
+          rank?: {
+            match_type?: string;
+            confidence_building_level?: number;
+            confidence_street_level?: number;
+          };
+        };
+      }>;
     } | null;
-    const coords = data?.features?.[0]?.geometry?.coordinates;
-    if (!coords || coords.length < 2) return { kind: 'miss' };
-    // GeoJSON is [longitude, latitude], the opposite of what we store.
-    return checkedPoint(coords[1], coords[0]);
+
+    // A partial text match such as "Fortress Melbourne" -> "Fortress Road" is
+    // not a location. Accept a full match, or an address-level match where Geoapify
+    // resolved a street/building; otherwise keep looking or report a miss.
+    for (const feature of data?.features ?? []) {
+      const rank = feature.properties?.rank;
+      const full = rank?.match_type === 'full_match';
+      const addressLevel = rank?.confidence_building_level === 1 || rank?.confidence_street_level === 1;
+      if (!full && !addressLevel) continue;
+      const coords = feature.geometry?.coordinates;
+      if (!coords || coords.length < 2) continue;
+      // GeoJSON is [longitude, latitude], the opposite of what we store.
+      const point = checkedPoint(coords[1], coords[0]);
+      if (point.kind === 'hit') return point;
+    }
+    return { kind: 'miss' };
   }
 
   // geomcp.au: exact G-NAF address first, then its ranked autocomplete index.
@@ -155,6 +176,9 @@ const probe = async (query: string, which: Provider = provider): Promise<Record<
   }
   const response = await fetch(url, { headers });
   const body = await response.text().catch(() => '');
+  // Also report what the real geocode path would do with this query, so a raw
+  // 200 with a weak partial match cannot be mistaken for a usable pin.
+  const decision = which === provider ? await geocode(query, async () => {}) : null;
   return {
     query,
     provider: which,
@@ -162,6 +186,11 @@ const probe = async (query: string, which: Provider = provider): Promise<Record<
     ok: response.ok,
     headers: Object.fromEntries(response.headers.entries()),
     body: body.slice(0, 400),
+    decision: decision
+      ? decision.kind === 'hit'
+        ? { kind: 'hit', lat: decision.lat, lng: decision.lng }
+        : { kind: decision.kind }
+      : null,
   };
 };
 
