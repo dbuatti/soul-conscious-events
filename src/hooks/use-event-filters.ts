@@ -3,6 +3,25 @@ import { parseISO, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfM
 import { Event } from '@/types/event';
 import { FilterDropdownsV2Props } from '@/components/v2/FilterDropdownsV2';
 
+/** Higher scores put the events the user actually named at the top. */
+const searchScore = (event: Event, term: string): number => {
+  const name = event.event_name.toLowerCase();
+  const place = event.place_name?.toLowerCase() ?? '';
+  const address = event.full_address?.toLowerCase() ?? '';
+  const state = event.geographical_state?.toLowerCase() ?? '';
+  const description = event.description?.toLowerCase() ?? '';
+
+  if (name === term) return 100;
+  if (name.startsWith(term)) return 80;
+  if (name.includes(term)) return 60;
+  if (place.startsWith(term)) return 50;
+  if (place.includes(term)) return 40;
+  if (address.includes(term)) return 30;
+  if (state.includes(term)) return 20;
+  if (description.includes(term)) return 10;
+  return 0;
+};
+
 export const useEventFilters = (allEvents: Event[], defaultState?: string | null, externalSearchTerm?: string) => {
   const [internalSearchTerm, setInternalSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
@@ -33,16 +52,7 @@ export const useEventFilters = (allEvents: Event[], defaultState?: string | null
 
     const result = allEvents.filter(event => {
       // 1. Search Term Filter
-      if (searchTerm) {
-        const lowerSearch = searchTerm.toLowerCase();
-        const matchesSearch = 
-          event.event_name.toLowerCase().includes(lowerSearch) ||
-          (event.description?.toLowerCase().includes(lowerSearch)) ||
-          (event.place_name?.toLowerCase().includes(lowerSearch)) ||
-          (event.geographical_state?.toLowerCase().includes(lowerSearch));
-        
-        if (!matchesSearch) return false;
-      }
+      if (searchTerm && searchScore(event, searchTerm.trim().toLowerCase()) === 0) return false;
 
       const eventDate = parseISO(event.event_date);
 
@@ -109,6 +119,12 @@ export const useEventFilters = (allEvents: Event[], defaultState?: string | null
       return true;
     });
 
+    // Date order for browsing; best textual match first for a search.
+    if (searchTerm) {
+      const term = searchTerm.trim().toLowerCase();
+      return result.sort((a, b) =>
+        searchScore(b, term) - searchScore(a, term) || a.event_date.localeCompare(b.event_date));
+    }
     return result;
   }, [allEvents, filters, searchTerm]);
 

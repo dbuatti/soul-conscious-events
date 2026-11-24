@@ -51,7 +51,7 @@ const MapPreview: React.FC<MapPreviewProps> = ({ event }) => {
       mapInstanceRef.current = null;
       markerRef.current = null;
     };
-  }, [mapRef.current, event.latitude, event.longitude, event.event_name]);
+  }, [event.latitude, event.longitude, event.event_name]);
 
   return (
     <div

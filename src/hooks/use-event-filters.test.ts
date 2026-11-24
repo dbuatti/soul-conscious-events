@@ -59,6 +59,22 @@ describe("useEventFilters", () => {
     expect(ids(result.current.filteredEvents)).toEqual(["today", "weekend", "later"]);
   });
 
+  it("ranks the best textual match first and searches street addresses", () => {
+    const local: Event[] = [
+      makeEvent({ id: "description", event_name: "Community Gathering", event_date: "2026-01-20", description: "A sound bath in the park" }),
+      makeEvent({ id: "address", event_name: "Sunday Session", event_date: "2026-01-18", full_address: "12 Sound Lane, Fitzroy VIC 3065" }),
+      makeEvent({ id: "venue", event_name: "Evening Event", event_date: "2026-01-17", place_name: "Sound House" }),
+      makeEvent({ id: "title", event_name: "Sound Bath", event_date: "2026-01-19" }),
+    ];
+    const { result } = renderHook(() => useEventFilters(local));
+
+    act(() => result.current.setSearchTerm("sound"));
+    expect(ids(result.current.filteredEvents)).toEqual(["title", "venue", "address", "description"]);
+
+    act(() => result.current.setSearchTerm("  sound  "));
+    expect(ids(result.current.filteredEvents)).toEqual(["title", "venue", "address", "description"]);
+  });
+
   it("filters by category", () => {
     const { result } = setup();
 
