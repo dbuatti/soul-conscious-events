@@ -738,16 +738,17 @@ export const jsonLdToEvent = (
   const place = parseLocation(node.location);
   if (place.country && NON_AU_COUNTRY.test(place.country.trim())) return 'not-australian';
 
-  // Compose a geocode-ready full address: venue name, street/suburb, state,
-  // postcode. The more complete the address, the better the geocoder lands on
-  // the right building rather than the middle of a suburb.
-  const addressBits = [
-    place.address,
-    place.region,
-  ].filter(Boolean);
-  const fullAddress = place.name
-    ? [place.name, ...addressBits].filter(Boolean).join(', ')
-    : addressBits.join(', ') || null;
+  // Keep full_address a real street address: the venue name has its own field,
+  // and the geocoder tries it as a separate candidate. Prefixing it here prints
+  // the name twice on public cards and makes address matching less reliable.
+  // Street addresses from JSON-LD often already carry the region and postcode,
+  // so only append the region when it is not already present.
+  const addressBits = [place.address];
+  const region = place.region?.trim();
+  if (region && !(place.address && new RegExp(`\\b${region.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(place.address))) {
+    addressBits.push(region);
+  }
+  const fullAddress = addressBits.filter(Boolean).join(', ') || null;
 
   // State from the address first (most reliable), then from region, then from
   // the raw full address as a last resort.

@@ -155,11 +155,9 @@ Page text:
     if (json.eventDate < opts.today || (opts.maxDate && json.eventDate > opts.maxDate)) return null;
     const s = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
     const fullAddress = s(json.fullAddress);
-    // Compose a geocode-ready address: place name + address, with state
-    // detection from the combined text.
-    const composedAddress = s(json.placeName) && fullAddress
-      ? `${s(json.placeName)}, ${fullAddress}`
-      : fullAddress || s(json.placeName) || null;
+    // Keep the street address clean: place_name is stored separately and the
+    // geocoder tries it as its own candidate. Detect the state from all sources.
+    const composedAddress = fullAddress || s(json.placeName) || null;
     const geographicalState = detectState(composedAddress, s(json.placeName), s(json.fullAddress));
 
     return {
