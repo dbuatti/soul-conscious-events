@@ -29,3 +29,6 @@ dist-ssr
 *.sw?
 .dyad/
 supabase/.temp/
+
+# direnv (tracked - no secrets, just variable names)
+!.envrc
