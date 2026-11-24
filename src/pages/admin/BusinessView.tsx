@@ -458,7 +458,7 @@ const BusinessView = () => {
               disabled={geocoding}
             >
               <Navigation className={cn('mr-2 h-3.5 w-3.5', geocoding && 'animate-spin')} />
-              {geocoding ? 'Geocoding…' : 'Geocode 60 now'}
+              {geocoding ? 'Geocoding…' : 'Geocode now'}
             </Button>
             {geoMessage && <p className="mt-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">{geoMessage}</p>}
             {geoError && <p className="mt-2 text-xs text-destructive">{geoError}</p>}

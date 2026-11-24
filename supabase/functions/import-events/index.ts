@@ -383,10 +383,9 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   limit: toGeocode.length,
-                  // Only geocode events from this source so we don't re-geocode
-                  // everything every run.
-                  // (The function itself filters to approved, undeleted, upcoming
-                  //  events with null latitude and no geocode_failed_at.)
+                  // The function itself filters to approved, undeleted, upcoming
+                  // events with null latitude and no geocode_failed_at, so the
+                  // queue is empty after a normal run.
                 }),
               },
             );
