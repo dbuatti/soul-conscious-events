@@ -42,17 +42,6 @@ interface FlowLaneProps {
   nodes: FlowNode[];
 }
 
-interface EventPulseRow {
-  id: string;
-  event_date: string;
-  end_date: string | null;
-  approval_status: string | null;
-  is_deleted: boolean | null;
-  source_id: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-}
-
 interface RunPulseRow {
   started_at: string;
   events_added: number;
@@ -243,49 +232,70 @@ const BusinessView = () => {
     const in7 = format(new Date(Date.now() + 7 * 86_400_000), 'yyyy-MM-dd');
     const since = subDays(new Date(), 7).toISOString();
 
-    const [eventsRes, runsRes, batchesRes, visitsRes] = await Promise.allSettled([
+    // PostgREST returns at most 1,000 rows by default. Counting by downloading
+    // every event silently dropped the newest rows -- including most of the
+    // coordinates just written -- and understated map coverage. Head counts
+    // with exact counts keep every figure correct regardless of table size.
+    const eventCounts = () =>
       supabase
         .from('events')
-        .select('id, event_date, end_date, approval_status, is_deleted, source_id, latitude, longitude')
-        .eq('is_deleted', false),
-      supabase
-        .from('event_import_runs')
-        .select('started_at, events_added, sources_checked')
-        .order('started_at', { ascending: false })
-        .limit(1),
-      supabase
-        .from('ig_slide_batches')
-        .select('kind, week_start, status, posted_at')
-        .order('created_at', { ascending: false })
-        .limit(1),
-      supabase
-        .from('page_visit_logs')
-        .select('*', { count: 'exact', head: true })
-        .eq('action_type', 'visit')
-        .gte('logged_at', since),
-    ]);
+        .select('id', { count: 'exact', head: true })
+        .eq('is_deleted', false);
+    const upcomingFilter = `end_date.gte.${today},event_date.gte.${today}`;
+
+    const [liveRes, upcomingRes, next7Res, pendingRes, importedRes, mappedRes, runsRes, batchesRes, visitsRes] =
+      await Promise.allSettled([
+        eventCounts().eq('approval_status', 'approved'),
+        eventCounts().eq('approval_status', 'approved').or(upcomingFilter),
+        eventCounts().eq('approval_status', 'approved').gte('event_date', today).lte('event_date', in7),
+        eventCounts().eq('approval_status', 'pending'),
+        eventCounts().eq('approval_status', 'approved').not('source_id', 'is', null),
+        eventCounts()
+          .eq('approval_status', 'approved')
+          .or(upcomingFilter)
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null),
+        supabase
+          .from('event_import_runs')
+          .select('started_at, events_added, sources_checked')
+          .order('started_at', { ascending: false })
+          .limit(1),
+        supabase
+          .from('ig_slide_batches')
+          .select('kind, week_start, status, posted_at')
+          .order('created_at', { ascending: false })
+          .limit(1),
+        supabase
+          .from('page_visit_logs')
+          .select('*', { count: 'exact', head: true })
+          .eq('action_type', 'visit')
+          .gte('logged_at', since),
+      ]);
 
     let error: string | null = null;
     let counts: PulseCounts | null = null;
 
-    const eventsOutcome = eventsRes.status === 'fulfilled' ? eventsRes.value : null;
-    if (eventsOutcome?.error) {
-      error = eventsOutcome.error.message;
-    } else {
-      const rows = (eventsOutcome?.data ?? []) as unknown as EventPulseRow[];
-      const live = rows.filter((row) => row.approval_status === 'approved');
-      const upcoming = live.filter((row) => (row.end_date || row.event_date) >= today);
-      counts = {
-        live: live.length,
-        upcoming: upcoming.length,
-        next7: upcoming.filter((row) => row.event_date <= in7).length,
-        pending: rows.filter((row) => row.approval_status === 'pending').length,
-        imported: live.filter((row) => Boolean(row.source_id)).length,
-        upcomingMapped: upcoming.filter(
-          (row) => typeof row.latitude === 'number' && typeof row.longitude === 'number',
-        ).length,
-      };
-    }
+    type CountResult = PromiseSettledResult<{ count: number | null; error: { message: string } | null }>;
+    const countOf = (result: CountResult): number => {
+      if (result.status === 'rejected') {
+        if (!error) error = String(result.reason);
+        return 0;
+      }
+      if (result.value.error) {
+        if (!error) error = result.value.error.message;
+        return 0;
+      }
+      return result.value.count ?? 0;
+    };
+
+    counts = {
+      live: countOf(liveRes as CountResult),
+      upcoming: countOf(upcomingRes as CountResult),
+      next7: countOf(next7Res as CountResult),
+      pending: countOf(pendingRes as CountResult),
+      imported: countOf(importedRes as CountResult),
+      upcomingMapped: countOf(mappedRes as CountResult),
+    };
 
     const runsOutcome = runsRes.status === 'fulfilled' ? runsRes.value : null;
     if (runsOutcome?.error && !error) error = runsOutcome.error.message;
