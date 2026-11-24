@@ -74,7 +74,7 @@ const EventsListV2 = () => {
     return () => clearTimeout(timer);
   }, [rawSearchTerm]);
 
-  const { filters, setFilters, searchTerm, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm);
+  const { filters, setFilters, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm);
 
   // Deduplicate recurring series for the list view: keep only the next upcoming instance per series.
   // Calendar and map views still receive the full filteredEvents so all instances are visible.
@@ -171,7 +171,9 @@ const EventsListV2 = () => {
   };
 
   const selectedDayEvents = filteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
-  const hasActiveFilters = searchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
+  // The input shows rawSearchTerm so keystrokes appear immediately; only the
+  // filtering hook uses the debounced value.
+  const hasActiveFilters = rawSearchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
 
   const comingUp = useMemo(() => listSource.slice(0, 3), [listSource]);
 
@@ -227,7 +229,7 @@ const EventsListV2 = () => {
       />
 
       <EventsHero
-        searchTerm={searchTerm}
+        searchTerm={rawSearchTerm}
         onSearchTermChange={setRawSearchTerm}
         selectedCategories={filters.category}
         onToggleQuickFilter={toggleQuickFilter}
@@ -251,7 +253,7 @@ const EventsListV2 = () => {
         viewMode={viewMode}
         onViewModeChange={(mode) => setViewMode(mode)}
         hasActiveFilters={hasActiveFilters}
-        searchTerm={searchTerm}
+        searchTerm={rawSearchTerm}
         onClearSearch={() => setRawSearchTerm('')}
         badges={filterBadges}
         onRemoveBadge={removeFilter}
@@ -288,7 +290,7 @@ const EventsListV2 = () => {
                   onViewDetails={handleViewDetails}
                   extraCountMap={extraCountMap}
                 />
-              ) : hasActiveFilters && searchTerm !== '' ? (
+              ) : hasActiveFilters && rawSearchTerm !== '' ? (
                 <NoSearchResultsEmptyState />
               ) : (
                 <NoEventsEmptyState />
