@@ -194,11 +194,32 @@ resolved.
 
 ## Still to do
 
-- [ ] Clear the growing `pending` import queue, then decide whether `unsure`
-      should keep defaulting to manual review.
-- [ ] Check the admin Analytics tab for real visitor numbers (admin-only).
+- [x] Clear the growing `pending` import queue, then decide whether `unsure`
+      should keep defaulting to manual review. Resolved 24 Nov: widening the
+      relevance vocabulary plus the source rotation leaves **0 pending**; the
+      review inbox is no longer growing on every run.
+- [x] Check the admin Analytics tab for real visitor numbers (admin-only).
+      Last 30 days at 24 Nov: `/` 205 visits, `/login` 30, `/submit-event` 25
+      (11 “Add Event” clicks), `/admin/business` 22, `/admin/panel` 21.
 - [ ] Mark your own monthly events as recurring in the edit form.
 - [ ] Review whether the Perth source should be replaced with a Canberra feed.
 - [ ] Decide whether Pilates/yoga should also be soft signals. Left strong for now.
 - [ ] Decide on the name and a real domain before any branding spend.
 - [ ] Optional: delete the now-unreferenced legacy components under `src/pages/`.
+
+## Follow-up — 24 Nov 2026
+
+- Search input no longer lags: the controlled value is the raw keystrokes and
+  only filtering is debounced (`c87580f`).
+- All 118 upcoming events are pinned. The edge geocoder uses keyless `geomcp.au`
+  G-NAF for street addresses and a Geoapify key (stored as a GitHub secret and
+  synced by the deploy workflow) for venue-name-only cases; weak partial hits
+  such as “Fortress Melbourne → Fortress Road” are rejected (`2cb2480`,
+  `1bcb576`, `9b1b56c`, `38cedb5`, `e8fb6be`).
+- Business view map coverage counts use exact head counts rather than a capped
+  1,000-row download, and match the map's own upcoming/approved filter.
+- Added Humanitix host source `Cellar Door at The Farm Yarra Valley`; its
+  `Uncorked | Open Mic at Cellar Door` event is approved and pinned.
+- Imported JSON-LD addresses no longer repeat the venue name and state in
+  `full_address`; the venue stays in `place_name`, which the geocoder tries as
+  a separate candidate. All 48 Deno and 80 Vitest tests pass (`cc8d948`).
