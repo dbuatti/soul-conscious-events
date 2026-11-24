@@ -27,15 +27,15 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 // second a few hundred addresses will not fit in one invocation. So each run
 // spends a fixed budget, writes what it finds, and reports what is left. Running
 // it again picks up exactly where it stopped.
-const TIME_BUDGET_MS = 100_000;
-const DEFAULT_BATCH = 60;
-const MAX_BATCH = 300;
+const TIME_BUDGET_MS = 110_000;
+const DEFAULT_BATCH = 120;
+const MAX_BATCH = 500;
 
 // The rate limit is one request per second, not one request in flight at a
-// time. Nominatim's own latency is well over a second, so a purely sequential
+// time. Photon's own latency is well over a second, so a purely sequential
 // loop leaves most of the budget idle waiting on the network. Several requests
 // stay in flight while leaving one second apart.
-const CONCURRENCY = 4;
+const CONCURRENCY = 8;
 
 /** Space out requests without serialising them: each caller reserves its slot. */
 const createRateGate = (intervalMs: number) => {
