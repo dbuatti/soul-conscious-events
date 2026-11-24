@@ -241,18 +241,22 @@ const BusinessView = () => {
         .from('events')
         .select('id', { count: 'exact', head: true })
         .eq('is_deleted', false);
-    const upcomingFilter = `end_date.gte.${today},event_date.gte.${today}`;
+    // Match MapPage exactly: it plots future event dates and needs an address
+    // or venue name to plot. A past start date with a future recurring end is
+    // not a map pin, so counting it here only inflates the denominator.
+    const mappableFilter = 'full_address.not.is.null,place_name.not.is.null';
 
     const [liveRes, upcomingRes, next7Res, pendingRes, importedRes, mappedRes, runsRes, batchesRes, visitsRes] =
       await Promise.allSettled([
         eventCounts().eq('approval_status', 'approved'),
-        eventCounts().eq('approval_status', 'approved').or(upcomingFilter),
+        eventCounts().eq('approval_status', 'approved').or(mappableFilter).gte('event_date', today),
         eventCounts().eq('approval_status', 'approved').gte('event_date', today).lte('event_date', in7),
         eventCounts().eq('approval_status', 'pending'),
         eventCounts().eq('approval_status', 'approved').not('source_id', 'is', null),
         eventCounts()
           .eq('approval_status', 'approved')
-          .or(upcomingFilter)
+          .or(mappableFilter)
+          .gte('event_date', today)
           .not('latitude', 'is', null)
           .not('longitude', 'is', null),
         supabase
