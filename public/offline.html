@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#B34629" />
+  <title>Offline | SoulFlow</title>
+  <style>
+    :root { --bg: #FAF7F2; --fg: #2E2620; --primary: #B5462A; --muted: #6B5F55; --card: #FFFFFF; --border: #E8DFD3; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #12100E; --fg: #EDE6DC; --primary: #E07856; --muted: #A99C8F; --card: #1C1917; --border: #2A2521; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(40rem 22rem at 12% 0%, rgba(179,70,42,.14), transparent 65%), var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      padding: 2.5rem 1.75rem;
+      max-width: 24rem;
+      width: 100%;
+      box-shadow: 0 24px 48px -20px rgba(46,38,32,.28);
+    }
+    svg { width: 56px; height: 56px; margin-bottom: 1.25rem; }
+    h1 { font-size: 1.75rem; line-height: 1.1; margin-bottom: .75rem; letter-spacing: -.02em; }
+    p { color: var(--muted); font-size: .95rem; line-height: 1.6; margin-bottom: 1.75rem; }
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--primary);
+      color: #fff;
+      border: 0;
+      border-radius: 999px;
+      padding: .8rem 1.75rem;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .hint { margin-top: 1.25rem; margin-bottom: 0; font-size: .8rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <svg viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="18" r="9" fill="#B34629" />
+      <circle cx="16" cy="18" r="13.5" fill="none" stroke="#C99A3F" stroke-width="1.5" stroke-dasharray="2 3.2" />
+      <rect x="0" y="22" width="32" height="10" fill="var(--card)" />
+      <path d="M3 22.5h26" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" />
+    </svg>
+    <h1>You're offline</h1>
+    <p>The connection dropped, but your next soulful gathering is still out there. Reconnect to keep exploring.</p>
+    <button onclick="location.reload()">Try again</button>
+    <p class="hint">Once you're back online, SoulFlow picks up right where you left off.</p>
+  </div>
+</body>
+</html>

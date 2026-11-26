@@ -26,7 +26,7 @@ const categoryBadgeColor = (eventType?: string | null) =>
   categoryColours[eventType || 'Other'] ?? categoryColours.Other;
 
 const iconButton =
-  "h-9 w-9 rounded-full bg-background/90 dark:bg-black/60 backdrop-blur text-foreground shadow-sm hover:bg-background flex items-center justify-center transition-colors";
+  "h-10 w-10 sm:h-9 sm:w-9 rounded-full bg-background/90 dark:bg-black/60 backdrop-blur text-foreground shadow-sm hover:bg-background flex items-center justify-center transition-colors";
 
 interface EventCardV2Props {
   event: Event;
@@ -111,6 +111,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           src={event.image_url || undefined}
           alt={event.event_name}
           className="w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.04]"
+          sizes="(max-width: 640px) calc(100vw - 1rem), (max-width: 1024px) 50vw, 33vw"
         />
 
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/45 to-transparent pointer-events-none" />
@@ -127,7 +128,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             <Share2 className="h-4 w-4" />
           </button>
           <div onClick={(e) => e.stopPropagation()}>
-            <BookmarkButton eventId={event.id} size="icon" className="h-9 w-9 rounded-full shadow-sm bg-background/90 dark:bg-black/60 backdrop-blur" />
+            <BookmarkButton eventId={event.id} size="icon" className="h-10 w-10 sm:h-9 sm:w-9 rounded-full shadow-sm bg-background/90 dark:bg-black/60 backdrop-blur" />
           </div>
         </div>
 
@@ -151,7 +152,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         )}
       </div>
 
-      <div className="p-5 flex flex-col flex-grow gap-3">
+      <div className="p-4 sm:p-5 flex flex-col flex-grow gap-3">
         {(relativeDay || isRecurring || isMultiDayEvent || isNew) && (
           <div className="flex flex-wrap gap-1.5 -mb-0.5">
             {relativeDay && (

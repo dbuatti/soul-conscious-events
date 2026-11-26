@@ -44,7 +44,7 @@ const Footer = () => {
 
   return (
     <footer className="w-full night-band mt-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-safe">
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 lg:gap-12">
           <div className="space-y-5 max-w-sm">
             <Link to="/" className="inline-flex items-center gap-2.5">
@@ -67,9 +67,9 @@ const Footer = () => {
           {linkGroups.map((group) => (
             <div key={group.title} className="space-y-4">
               <h3 className="text-xs font-sans font-semibold uppercase tracking-[0.2em] text-ink-foreground/50">{group.title}</h3>
-              <nav className="flex flex-col gap-2.5" aria-label={group.title}>
+              <nav className="flex flex-col gap-1.5" aria-label={group.title}>
                 {group.links.map((link) => (
-                  <Link key={link.to} to={link.to} className="text-sm text-ink-foreground/80 hover:text-ink-foreground transition-colors w-fit">
+                  <Link key={link.to} to={link.to} className="text-sm py-1.5 text-ink-foreground/80 hover:text-ink-foreground transition-colors w-fit">
                     {link.label}
                   </Link>
                 ))}

@@ -3,6 +3,7 @@
   "short_name": "SoulFlow",
   "description": "Discover soulful gatherings, workshops, meditations, sound baths, and conscious events across Australia.",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#fdfbf7",
   "theme_color": "#B34629",

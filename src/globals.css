@@ -80,10 +80,31 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Stop iOS from inflating text in landscape after rotation */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   * {
     @apply border-border;
+  }
+
+  /* No double-tap-to-zoom delay on controls; pinch zoom stays available */
+  button, a, [role="button"], input, textarea, select, label {
+    touch-action: manipulation;
+  }
+
+  /* Kill the grey flash on tap (focus-visible outlines still show for keyboards) */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS Safari zooms the page when a focused field is under 16px.
+     Force 16px on touch devices only — desktop keeps the design's type scale. */
+  @supports (-webkit-touch-callout: none) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
   }
 
   body {
@@ -181,6 +202,47 @@
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Safe-area helpers (notched iPhones / home indicator).
+     env() resolves to 0 without viewport-fit=cover, which index.html now sets. */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+  }
+  .bottom-safe {
+    bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  /* Drawer height that tracks the *visible* viewport on iOS (dvh) with a
+     vh fallback for older browsers. */
+  .h-drawer {
+    height: 94vh;
+  }
+  @supports (height: 100dvh) {
+    .h-drawer {
+      height: 94dvh;
+    }
+  }
+
+  /* Auth pages: full-height without the iOS URL-bar overflow. */
+  .min-h-auth {
+    min-height: calc(100vh - 120px);
+  }
+  @supports (height: 100dvh) {
+    .min-h-auth {
+      min-height: calc(100dvh - 120px);
+    }
+  }
+}
+
+/* Installed PWA: stop the whole-page rubber band / pull-to-refresh
+   fighting the app's own scrolling. */
+@media (display-mode: standalone) {
+  body {
+    overscroll-behavior-y: none;
   }
 }
 

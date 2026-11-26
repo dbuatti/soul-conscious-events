@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { buildSrcSet, proxyImageUrl, RESPONSIVE_WIDTHS } from '@/lib/image-proxy';
 
 interface ResilientImageProps {
   src?: string | null;
@@ -10,12 +11,20 @@ interface ResilientImageProps {
   width?: number;
   height?: number;
   priority?: boolean;
+  /** `sizes` attribute for responsive srcset (how wide the image renders). */
+  sizes?: string;
+  /** Custom srcset width ladder (defaults to 400/800/1200). */
+  widths?: number[];
 }
 
 /**
- * An  that gracefully falls back to a coloured, category-themed SVG
- * placeholder when the external source fails (expired Eventbrite URLs,
- * 404s, CORS, etc.). Never shows a broken-image icon to the visitor.
+ * An <img> that:
+ *  1. serves responsive, WebP-compressed variants through an image proxy
+ *     (see src/lib/image-proxy.ts) so phones never download 2000px JPEGs;
+ *  2. falls back to the ORIGINAL url if the proxy fails;
+ *  3. falls back to a coloured, category-themed SVG placeholder when the
+ *     external source itself fails (expired Eventbrite URLs, 404s, CORS…).
+ * It never shows a broken-image icon to the visitor.
  */
 export const ResilientImage: React.FC<ResilientImageProps> = ({
   src,
@@ -25,14 +34,29 @@ export const ResilientImage: React.FC<ResilientImageProps> = ({
   width,
   height,
   priority = false,
+  sizes,
+  widths = RESPONSIVE_WIDTHS,
 }) => {
   const [error, setError] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [useOriginal, setUseOriginal] = useState(false);
+
+  // Reset the fallback chain whenever the source changes (e.g. an edit).
+  useEffect(() => {
+    setError(false);
+    setLoaded(false);
+    setUseOriginal(false);
+  }, [src]);
 
   const handleError = useCallback(() => {
+    if (!useOriginal) {
+      // Proxy failed — retry with the untouched original URL.
+      setUseOriginal(true);
+      return;
+    }
     setError(true);
     setLoaded(true);
-  }, []);
+  }, [useOriginal]);
 
   const handleLoad = useCallback(() => {
     setLoaded(true);
@@ -74,9 +98,13 @@ export const ResilientImage: React.FC<ResilientImageProps> = ({
     );
   }
 
+  const proxied = !useOriginal;
+
   return (
     <img
-      src={src || ''}
+      src={proxied ? proxyImageUrl(src || '', 800) : src || ''}
+      srcSet={proxied ? buildSrcSet(src || '', widths) : undefined}
+      sizes={sizes}
       alt={alt}
       width={width}
       height={height}

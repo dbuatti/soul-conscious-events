@@ -9,6 +9,8 @@ import { SessionContextProvider, useSession } from "@/components/SessionContextP
 import { supabase } from "@/integrations/supabase/client";
 import ScrollToTop from "./components/ScrollToTop";
 import HeaderV2 from "./components/v2/HeaderV2";
+import MobileTabBar from "./components/v2/MobileTabBar";
+import InstallPrompt from "./components/InstallPrompt";
 import Footer from "./components/Footer";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import ScrollProgress from "./components/ScrollProgress";
@@ -82,11 +84,13 @@ const LayoutV2 = () => {
       </a>
       <ScrollProgress />
       <HeaderV2 />
-      <main id="main-content" tabIndex={-1} className="flex-grow w-full px-2 flex flex-col items-center pt-4 sm:pt-6 pb-8 outline-none">
+      <main id="main-content" tabIndex={-1} className="flex-grow w-full px-2 flex flex-col items-center pt-4 sm:pt-6 pb-24 md:pb-8 outline-none">
         <Outlet />
       </main>
       <Footer />
       <ScrollToTopButton />
+      <MobileTabBar />
+      <InstallPrompt />
     </div>
   );
 };

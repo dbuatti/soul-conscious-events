@@ -273,6 +273,7 @@ const EventDetailPage: React.FC = () => {
               src={event.image_url || undefined}
               alt={event.event_name}
               className="w-full h-full object-cover"
+              sizes="(max-width: 1024px) 100vw, 58vw"
               priority
             />
           </div>

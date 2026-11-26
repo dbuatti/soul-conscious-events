@@ -72,7 +72,7 @@ const HeaderV2 = () => {
   const initials = (user?.user_metadata?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase();
 
   return (
-    <header className="w-full sticky top-0 z-50 floating-nav">
+    <header className="w-full sticky top-0 z-50 floating-nav pt-safe">
       <div className="mx-auto w-full max-w-6xl flex items-center justify-between gap-4 px-4 sm:px-6 h-16">
         <Link to="/" className="flex items-center gap-2.5 group" aria-label="SoulFlow home">
           <SoulFlowMark className="h-8 w-8 transition-transform duration-500 group-hover:-translate-y-0.5" />

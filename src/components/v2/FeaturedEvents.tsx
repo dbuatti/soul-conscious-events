@@ -57,7 +57,7 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
       </div>
 
       {/* Swipeable horizontal carousel with scroll snap */}
-      <div className="relative overflow-x-auto scroll-snap-x -mx-4 sm:-mx-6 pb-2 no-scrollbar touch-scroll">
+      <div className="group relative overflow-x-auto scroll-snap-x -mx-4 sm:-mx-6 pb-2 no-scrollbar touch-scroll">
         <div
           className="flex gap-4 sm:gap-6 px-4 sm:px-6 scroll-snap-items"
           data-scroll-container
@@ -84,6 +84,7 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
                     src={event.image_url || undefined}
                     alt={event.event_name}
                     className="w-full h-full object-cover"
+                    sizes="(max-width: 640px) 280px, 340px"
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
@@ -139,8 +140,8 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
           })}
         </div>
 
-        {/* Scroll hint for mobile */}
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background/90 to-transparent flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity group">
+        {/* Scroll hint: always visible on touch, hover-revealed on desktop */}
+        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background/90 to-transparent flex items-center justify-center pointer-events-none opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Scroll to see more →</span>
         </div>
       </div>

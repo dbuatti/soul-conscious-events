@@ -2,9 +2,10 @@
 // Provides offline caching for core pages and assets.
 // Bump CACHE_NAME on every deployment to invalidate old cached assets.
 
-const CACHE_NAME = 'soulflow-v2';
+const CACHE_NAME = 'soulflow-v3';
 const STATIC_ASSETS = [
   '/',
+  '/offline.html',
   '/manifest.json',
   '/favicon.ico',
   '/soulflow-logo.png',
@@ -30,9 +31,19 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: cache-first for static assets, network-first for API calls.
+// Fetch: network-first for pages and API calls, cache-first for static assets.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Navigations: network-first so the SPA shell stays fresh, falling back to
+  // the cached shell and finally the branded offline page.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match('/').then((cached) => cached || caches.match('/offline.html')))
+    );
+    return;
+  }
 
   // Cache-first for same-origin static assets.
   if (url.origin === self.location.origin && url.pathname.startsWith('/')) {

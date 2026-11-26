@@ -47,6 +47,7 @@ import { formatPrice, getGoogleCalendarUrl, downloadIcalFile, getBaseEventId } f
 import { useIsMobile } from '@/hooks/use-mobile';
 import { openInMaps } from '@/lib/utils';
 import EventCardFallback from '@/components/EventCardFallback';
+import { ResilientImage } from '@/components/v2/ResilientImage';
 
 // Leaflet is heavy and only needed when an event with coordinates is shown.
 const LeafletMap = lazy(() => import('@/components/v2/LeafletMap'));
@@ -180,7 +181,13 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       <div className="relative flex-shrink-0">
         {event.image_url ? (
           <div className="w-full h-[200px] sm:h-[300px] overflow-hidden bg-secondary/20">
-            <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover image-fade-in" loading="lazy" />
+            <ResilientImage
+              src={event.image_url}
+              alt={event.event_name}
+              className="image-fade-in"
+              sizes="(max-width: 640px) 100vw, 720px"
+              priority
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
           </div>
         ) : (
@@ -413,7 +420,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="h-[94vh] rounded-t-[2.5rem] border-none shadow-2xl">
+        <DrawerContent className="h-drawer rounded-t-[2.5rem] border-none shadow-2xl">
           <div className="flex items-center justify-between px-5 pt-1 pb-1 flex-shrink-0">
             <div className="w-8" />
             <DrawerClose asChild>

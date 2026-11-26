@@ -38,7 +38,7 @@ const ScrollToTopButton: React.FC = () => {
       onClick={scrollToTop}
       aria-label="Scroll to top"
       className={cn(
-        "fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 rounded-full shadow-lg transition-all duration-500 transform hover:scale-110 bg-card/90 backdrop-blur-md border-border",
+        "fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 rounded-full shadow-lg transition-all duration-500 transform hover:scale-110 bg-card/90 backdrop-blur-md border-border",
         hasMobileTicketBar && "max-lg:hidden",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
       )}

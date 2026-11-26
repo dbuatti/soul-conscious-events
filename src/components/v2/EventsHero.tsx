@@ -2,6 +2,7 @@ import { format, isToday, parseISO } from 'date-fns';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { ResilientImage } from '@/components/v2/ResilientImage';
 import { Event } from '@/types/event';
 
 // Keep these in the site's remit. "Music" used to be here but live music is
@@ -39,11 +40,11 @@ const EventsHero = ({
   comingUp,
   onViewDetails,
 }: EventsHeroProps) => (
-  <section className="hero-glow relative overflow-hidden rounded-[2rem] px-5 py-10 sm:px-12 sm:py-14 mb-6 animate-in fade-in duration-700 lg:grid lg:grid-cols-[1fr_20rem] lg:gap-12 lg:items-center">
+  <section className="hero-glow relative overflow-hidden rounded-[2rem] px-5 py-8 sm:px-12 sm:py-14 mb-6 animate-in fade-in duration-700 lg:grid lg:grid-cols-[1fr_20rem] lg:gap-12 lg:items-center">
     <div>
       <div className="max-w-3xl">
         <p className="eyebrow mb-4">Conscious events across Australia</p>
-        <h1 className="text-[2.6rem] leading-[1.02] sm:text-6xl xl:text-[4.25rem] font-heading font-semibold text-foreground">
+        <h1 className="text-[clamp(2.1rem,9vw,2.6rem)] leading-[1.04] sm:text-6xl xl:text-[4.25rem] font-heading font-semibold text-foreground">
           Find your people.
           <br />
           <span className="italic font-medium text-primary">Soulful gatherings</span> near you.
@@ -85,7 +86,7 @@ const EventsHero = ({
                 onClick={() => onToggleQuickFilter(qf.value)}
                 aria-pressed={active}
                 className={cn(
-                  "whitespace-nowrap px-4 h-9 rounded-full text-sm font-medium transition-all border",
+                  "whitespace-nowrap px-4 h-10 sm:h-9 rounded-full text-sm font-medium transition-all border",
                   active
                     ? "bg-foreground border-foreground text-background"
                     : "bg-card/70 border-border/80 text-foreground/80 hover:border-primary/50 hover:text-primary"
@@ -120,7 +121,12 @@ const EventsHero = ({
                   className="group w-full flex items-center gap-3 rounded-2xl bg-card/80 backdrop-blur border border-border/60 p-2.5 pr-4 text-left shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
                 >
                   <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
-                    {event.image_url && <img src={event.image_url} alt={event.event_name} className="h-full w-full object-cover" loading="lazy" />}
+                    <ResilientImage
+                      src={event.image_url || undefined}
+                      alt={event.event_name}
+                      sizes="64px"
+                      widths={[128, 256]}
+                    />
                   </span>
                   <span className="min-w-0">
                     <span className="block text-[11px] font-semibold uppercase tracking-wider text-primary">

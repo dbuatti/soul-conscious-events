@@ -32,7 +32,7 @@ const LoginV2 = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-center min-h-[calc(100vh-120px)] px-4 py-12 gap-16 max-w-6xl mx-auto">
+    <div className="flex flex-col lg:flex-row items-center justify-center min-h-auth px-4 py-12 gap-16 max-w-6xl mx-auto">
       <SEO 
         title="Login & Sign Up | SoulFlow Australia"
         description="Sign in or create a free account on SoulFlow to bookmark events, submit your own conscious gatherings, and manage your listings."

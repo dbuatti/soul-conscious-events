@@ -74,6 +74,20 @@ const EventsListV2 = () => {
     return () => clearTimeout(timer);
   }, [rawSearchTerm]);
 
+  // Compact search in the sticky toolbar: only while the hero search box is
+  // scrolled out of view (the hero owns the search UI at the top of the page).
+  const heroRef = React.useRef<HTMLDivElement>(null);
+  const [heroSearchVisible, setHeroSearchVisible] = useState(true);
+  useEffect(() => {
+    if (!heroRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeroSearchVisible(entry.isIntersecting),
+      { rootMargin: '-64px 0px 0px 0px' } // account for the sticky header
+    );
+    observer.observe(heroRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const { filters, setFilters, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm);
 
   // Deduplicate recurring series for the list view: keep only the next upcoming instance per series.
@@ -228,16 +242,18 @@ const EventsListV2 = () => {
         description="Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, sound baths, and conscious gatherings."
       />
 
-      <EventsHero
-        searchTerm={rawSearchTerm}
-        onSearchTermChange={setRawSearchTerm}
-        selectedCategories={filters.category}
-        onToggleQuickFilter={toggleQuickFilter}
-        showNextWeekCount={!loading && !eventsQuery.isError}
-        nextWeekCount={nextWeekCount}
-        comingUp={comingUp}
-        onViewDetails={handleViewDetails}
-      />
+      <div ref={heroRef}>
+        <EventsHero
+          searchTerm={rawSearchTerm}
+          onSearchTermChange={setRawSearchTerm}
+          selectedCategories={filters.category}
+          onToggleQuickFilter={toggleQuickFilter}
+          showNextWeekCount={!loading && !eventsQuery.isError}
+          nextWeekCount={nextWeekCount}
+          comingUp={comingUp}
+          onViewDetails={handleViewDetails}
+        />
+      </div>
 
       {!loading && featuredEvents.length > 0 && (
         <FeaturedEvents events={featuredEvents} onViewDetails={handleViewDetails} />
@@ -260,6 +276,8 @@ const EventsListV2 = () => {
         onClearFilters={handleClearFilters}
         shownCount={paginationSource.length}
         totalCount={totalCount}
+        showCompactSearch={!heroSearchVisible}
+        onSearchTermChange={setRawSearchTerm}
       />
 
       {loading ? (

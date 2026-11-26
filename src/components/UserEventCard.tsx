@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { ResilientImage } from '@/components/v2/ResilientImage';
 import EventDetailDialog from './EventDetailDialog';
 import { getBaseEventId, formatPrice } from '@/utils/event-utils';
 import { Event } from '@/types/event';
@@ -80,11 +81,11 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
       <Card className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 overflow-hidden">
         {event.image_url && (
           <div className="relative w-full aspect-video overflow-hidden">
-            <img
+            <ResilientImage
               src={event.image_url}
               alt={event.event_name}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
+              className="transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           </div>
