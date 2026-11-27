@@ -20,8 +20,9 @@ const EventSchema: React.FC<EventSchemaProps> = ({ event }) => {
     '@type': 'Event',
     name: event.event_name,
     description: event.description,
-    startDate: format(startDate, "yyyy-MM-dd'T'HH:mm:ssXXX"),
-    endDate: endDate ? format(endDate, "yyyy-MM-dd'T'HH:mm:ssXXX") : undefined,
+    // Date-only (no bogus time) keeps Google from shifting the day across time zones.
+    startDate: format(startDate, 'yyyy-MM-dd'),
+    endDate: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     location: {

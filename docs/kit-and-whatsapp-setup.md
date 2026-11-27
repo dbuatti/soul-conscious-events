@@ -19,6 +19,7 @@ Keep the two audiences separate:
 
 - **No em dashes** in any email subject or body. Use commas, full stops or plain hyphens instead.
 - **No Kit branding or odd address** in the footer. The mailing address is set to `SoulFlow, Melbourne, VIC 3000, Australia`; the custom templates avoid the free Kit footer.
+- Branded Kit-importable template: `docs/kit-email-template.html` (header wordmark, footer, `{{ content }}` and `{{ unsubscribe_url }}`). Populated daily drafts: `docs/daily-email-YYYY-MM-DD.html` built by `scripts/build-daily-email.mjs`.
 - **From name:** `SoulFlow` with reply-to `soulconsciousevents@gmail.com`.
 
 1. Sign in to Kit with `soulconsciousevents@gmail.com`.

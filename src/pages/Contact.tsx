@@ -149,7 +149,12 @@ const Contact = () => {
           <Mail className="h-8 w-8 text-primary" />
         </div>
         <p className="text-lg font-medium text-muted-foreground">For direct inquiries, reach us at:</p>
-        <p className="text-3xl font-semibold text-foreground font-heading">daniele.buatti@gmail.com</p>
+        <a
+          href="mailto:daniele.buatti@gmail.com"
+          className="text-3xl font-semibold text-foreground font-heading hover:text-primary transition-colors break-all"
+        >
+          daniele.buatti@gmail.com
+        </a>
       </div>
     </div>
   );
