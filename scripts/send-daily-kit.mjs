@@ -117,6 +117,15 @@ function dayLabel(dateStr) {
   return formatDate(dateStr);
 }
 
+function groupLabel(dateStr) {
+  if (isToday(dateStr)) return 'Tonight';
+  if (isTomorrow(dateStr)) return 'Tomorrow';
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay();
+  if (day === 0 || day === 6) return 'This weekend';
+  return 'Coming up';
+}
+
 function fetchWithRetry(url, options, retries = 3) {
   return (async () => {
     for (let i = 0; i < retries; i++) {
@@ -130,10 +139,23 @@ function fetchWithRetry(url, options, retries = 3) {
 
 // --- Build rich HTML email ---
 function buildHtml(events) {
-  const eventCards = events.map(e => {
+  // Group events by section (Tonight / Tomorrow / This weekend / Coming up)
+  const sections = [];
+  let currentSection = null;
+  for (const e of events) {
+    const sec = groupLabel(e.event_date);
+    if (sec !== currentSection) {
+      sections.push({ label: sec, events: [e] });
+      currentSection = sec;
+    } else {
+      sections[sections.length - 1].events.push(e);
+    }
+  }
+
+  const renderCard = (e) => {
     const img = e.image_url
-      ? `<img src="${escapeHtml(e.image_url)}" alt="${escapeHtml(e.event_name)}" width="560" style="width:100%;max-width:560px;height:auto;border-radius:12px;display:block;margin:0 0 12px 0;" />`
-      : `<div style="width:100%;max-width:560px;height:120px;border-radius:12px;background:linear-gradient(135deg,#fde9e3,#e8c89a);display:flex;align-items:center;justify-content:center;margin:0 0 12px 0;"><span style="font-size:32px;">✨</span></div>`;
+      ? `<img src="${escapeHtml(e.image_url)}" alt="${escapeHtml(e.event_name)}" width="560" class="sf-event-img" style="width:100%;max-width:560px;height:auto;border-radius:12px;display:block;margin:0 0 12px 0;" />`
+      : `<div class="sf-event-img" style="width:100%;max-width:560px;height:120px;border-radius:12px;background:linear-gradient(135deg,#fde9e3,#e8c89a);display:flex;align-items:center;justify-content:center;margin:0 0 12px 0;"><span style="font-size:32px;">✨</span></div>`;
     const dateLine = `${dayLabel(e.event_date)}${e.event_time ? ' · ' + escapeHtml(e.event_time) : ''}`;
     const venue = escapeHtml(e.place_name || e.location || '');
     const price = e.price ? escapeHtml(cleanPrice(e.price)) : 'See details';
@@ -142,8 +164,8 @@ function buildHtml(events) {
     const detailsUrl = `${SITE_URL}/events/${e.id}`;
     const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.event_name)}&dates=${e.event_date.replace(/-/g,'')}/${e.event_date.replace(/-/g,'')}&details=${encodeURIComponent((e.description||'').slice(0,200))}&location=${encodeURIComponent(e.place_name || e.location || '')}`;
     return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;border:1px solid #e8e1d8;border-radius:16px;overflow:hidden;background:#ffffff;">
-  <tr><td style="padding:16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="sf-card" style="margin:0 0 20px 0;border:1px solid #e8e1d8;border-radius:16px;overflow:hidden;background:#ffffff;">
+  <tr><td class="sf-card-cell" style="padding:16px;">
     ${img}
     ${e.event_type ? `<p style="margin:0 0 6px 0;"><span style="display:inline-block;padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:#b34629;background:#fde9e3;border-radius:999px;">${escapeHtml(e.event_type)}</span></p>` : ''}
     <h2 style="margin:0 0 6px 0;font-size:20px;font-weight:700;color:#3a3430;line-height:1.2;">${escapeHtml(e.event_name)}</h2>
@@ -153,20 +175,38 @@ function buildHtml(events) {
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 0 0;">
       <tr>
         <td style="border-radius:999px;background:#b34629;">
-          <a href="${escapeHtml(bookingUrl)}" style="display:inline-block;padding:10px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;">Book now</a>
+          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:inline-block;padding:10px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;">Book now</a>
         </td>
         <td style="width:10px;"></td>
         <td>
-          <a href="${escapeHtml(detailsUrl)}" style="display:inline-block;padding:10px 18px;font-size:14px;font-weight:600;color:#b34629;text-decoration:none;border:1px solid #b34629;border-radius:999px;">Details</a>
+          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:inline-block;padding:10px 18px;font-size:14px;font-weight:600;color:#b34629;text-decoration:none;border:1px solid #b34629;border-radius:999px;">Details</a>
         </td>
       </tr>
     </table>
     <p style="margin:6px 0 0 0;font-size:11px;"><a href="${escapeHtml(calUrl)}" style="color:#8a7f75;text-decoration:none;">📅 Add to calendar</a></p>
   </td></tr>
 </table>`;
-  }).join('\n');
+  };
+
+  const sectionBlocks = sections.map(sec => `
+    <tr><td style="padding:8px 24px 4px 24px;">
+      <p style="margin:0 0 8px 0;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#b34629;border-bottom:2px solid #fde9e3;padding-bottom:4px;">${escapeHtml(sec.label)}</p>
+    </td></tr>
+    <tr><td style="padding:0 24px 8px 24px;">
+      ${sec.events.map(renderCard).join('\n')}
+    </td></tr>`).join('\n');
+
+  const eventCards = sectionBlocks;
 
   return `
+<style>
+  @media only screen and (max-width:600px) {
+    .sf-event-img { width:100% !important; height:auto !important; }
+    .sf-card { border-radius:12px !important; }
+    .sf-card-cell { padding:12px !important; }
+    .sf-btn { display:block !important; width:100% !important; text-align:center !important; margin:4px 0 !important; }
+  }
+</style>
 <div style="background:#f5efe6;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <img src="${SITE_URL}/social-preview.jpeg" alt="SoulFlow Melbourne" width="600" style="max-width:600px;width:100%;height:auto;display:block;margin:0 auto 0 auto;border-radius:20px 20px 0 0;" />
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border-radius:0 0 20px 20px;overflow:hidden;">
@@ -191,7 +231,8 @@ function buildHtml(events) {
     </td></tr>
     <tr><td style="padding:16px 24px 28px 24px;text-align:center;border-top:1px solid #e8e1d8;">
       <p style="margin:0 0 8px 0;font-size:13px;color:#8a7f75;">Discover more at <a href="${SITE_URL}" style="color:#b34629;text-decoration:none;font-weight:600;">soulflowau.vercel.app</a></p>
-      <p style="margin:0;font-size:11px;color:#b0a89e;"><a href="{{ unsubscribe_url }}" style="color:#b0a89e;text-decoration:underline;">Unsubscribe</a> · SoulFlow, Melbourne, VIC 3000, Australia</p>
+      <p style="margin:0 0 8px 0;font-size:12px;color:#8a7f75;">Not your thing? <a href="{{ unsubscribe_url }}" style="color:#b34629;text-decoration:none;font-weight:600;border:1px solid #e8e1d8;padding:6px 14px;border-radius:999px;display:inline-block;margin-top:4px;">Unsubscribe in one click</a></p>
+      <p style="margin:0;font-size:11px;color:#b0a89e;">SoulFlow, Melbourne, VIC 3000, Australia</p>
     </td></tr>
   </table>
 </div>`;
@@ -255,11 +296,13 @@ async function main() {
   if (res.ok) {
     console.log(`Created broadcast ${json.broadcast.id}, template=${json.broadcast.email_template?.name}, status=${json.broadcast.status}, send_at=${sendAt}, subscribers=${subscriberCount}`);
     logStatus('success', { broadcastId: json.broadcast.id, subject, sendAt, eventCount: events.length, subscriberCount });
+    try { const ap = path.join(ROOT, 'docs', 'ALERT.md'); if (fs.existsSync(ap)) fs.unlinkSync(ap); } catch (e) {}
   } else {
     console.error('FAILED:', JSON.stringify(json));
     logStatus('send_failed', { error: JSON.stringify(json), subject });
+    try { fs.writeFileSync(path.join(ROOT, 'docs', 'ALERT.md'), `# ⚠️ SEND FAILED\\n\\nTime: ${new Date().toISOString()}\\nSubject: ${subject}\\nError: ${JSON.stringify(json)}\\n`); } catch (e) {}
     process.exit(1);
   }
 }
 
-main().catch(e => { console.error(e); logStatus('fatal', { error: e.message }); process.exit(1); });
+main().catch(e => { console.error(e); logStatus('fatal', { error: e.message }); try { fs.writeFileSync(path.join(ROOT, 'docs', 'ALERT.md'), `# ⚠️ FATAL ERROR\\n\\nTime: ${new Date().toISOString()}\\nError: ${e.message}\\n`); } catch (err) {} process.exit(1); });
