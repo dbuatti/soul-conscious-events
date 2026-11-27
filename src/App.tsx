@@ -38,6 +38,7 @@ const LoginV2 = lazy(() => import("./pages/v2/LoginV2"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const LinkInBio = lazy(() => import("./pages/LinkInBio"));
 const CityGuide = lazy(() => import("./pages/CityGuide"));
+const Subscribe = lazy(() => import("./pages/Subscribe"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -114,6 +115,7 @@ const App = () => (
             <Routes>
               {/* Standalone link-in-bio page — the destination of the Instagram bio link. */}
               <Route path="/link" element={<LinkInBio />} />
+              <Route path="/subscribe" element={<Subscribe />} />
 
               {/* V2 Prototype Routes */}
               <Route element={<LayoutV2 />}>
