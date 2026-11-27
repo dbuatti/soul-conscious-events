@@ -17,11 +17,15 @@ Keep the two audiences separate:
 
 **Status (27 Nov 2026):** dedicated SoulFlow Kit account created with `soulconsciousevents@gmail.com`, email confirmed, Creator trial cancelled and account downgraded to the **Free plan** (no card entered, no charge). Default sending time set to 9am Australia/Melbourne. Test subscriber `daniele.buatti@gmail.com` added and a real welcome broadcast was sent successfully; Gmail initially filed it in Spam, so it was marked **Report not spam** and is now in the Inbox. A reusable **“Melbourne Weekly Picks”** email template has been saved in Kit.
 
+- **No em dashes** in any email subject or body. Use commas, full stops or plain hyphens instead.
+- **No Kit branding or odd address** in the footer. The mailing address is set to `SoulFlow, Melbourne, VIC 3000, Australia`; the custom templates avoid the free Kit footer.
+- **From name:** `SoulFlow` with reply-to `soulconsciousevents@gmail.com`.
+
 1. Sign in to Kit with `soulconsciousevents@gmail.com`.
-2. Use the free plan. Create a **SoulFlow** brand/audience, separate from the personal business.
-3. Enable double opt-in and set a confirmation email that says “SoulFlow weekly picks — Melbourne”.
-4. Create a welcome email with three links: `/melbourne`, `/map`, and “Submit an event”.
-5. Create a reusable weekly broadcast template with five event cards (name, day/time, venue, one booking link each).
+2. Use the free plan. This is a dedicated SoulFlow audience, separate from the personal business.
+3. Keep double opt-in in mind when importing: only import people who opted into SoulFlow.
+4. Reusable templates: **Melbourne Weekly Picks** and **Melbourne Daily Picks**.
+5. A daily OpenChamber task prepares a review-only draft at `docs/daily-email-YYYY-MM-DD.md` each morning at 08:00 Melbourne. Nothing is sent automatically.
 6. Export subscribers from SoulFlow: `/admin/panel?tab=newsletter` → **Export CSV** → filter city = Melbourne.
 7. Import only people who explicitly opted into SoulFlow weekly picks. Never import purchased or scraped lists.
 
@@ -29,13 +33,12 @@ Keep the two audiences separate:
 
 1. In the SoulFlow-dedicated Chrome profile, create a **SoulFlow Melbourne** WhatsApp Channel.
 2. Use the soulconsciousevents number/identity if available; do not mix it with your personal business number.
-3. Post once a week, manually: “Five soulful things to do in Melbourne this week → [soulflow link]”.
-4. Link the channel from Instagram bio/Stories and from `/link`.
-5. Do not use Whapi/Maytapi/SendOnTime-style automation on a personal number — it risks a ban.
+3. Post once a week manually: "Five soulful things to do in Melbourne this week. Link: [soulflow link]".
+4. Because you do not want this attached to your personal number, park this until a dedicated phone number is available. No paid gateway or personal-number automation.
 
 ## First test group
 
-Ask 5–10 people (including yourself) to:
+Ask 5 to 10 people (including yourself) to:
 
 1. Open `https://soulflowau.vercel.app/melbourne`.
 2. Sign up for weekly picks with a Melbourne email.
