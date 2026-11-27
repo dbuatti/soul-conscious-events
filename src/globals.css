@@ -183,12 +183,23 @@
       hsl(var(--secondary) / 0.55);
   }
 
+  /* Warm band used behind the footer and host CTA. Light mode: sun-washed
+     sand with terracotta glows; dark mode keeps the original night palette. */
   .night-band {
+    --ink-foreground: 20 22% 14%;
+    background:
+      radial-gradient(40rem 20rem at 85% 0%, hsl(var(--primary) / 0.14), transparent 70%),
+      radial-gradient(30rem 18rem at 0% 100%, hsl(var(--accent) / 0.16), transparent 70%),
+      hsl(var(--secondary));
+    color: hsl(var(--ink-foreground));
+  }
+
+  .dark .night-band {
+    --ink-foreground: 34 30% 92%;
     background:
       radial-gradient(40rem 20rem at 85% 0%, hsl(var(--primary) / 0.35), transparent 70%),
       radial-gradient(30rem 18rem at 0% 100%, hsl(var(--accent) / 0.18), transparent 70%),
       hsl(var(--ink));
-    color: hsl(var(--ink-foreground));
   }
 
   .eyebrow {

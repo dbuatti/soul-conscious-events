@@ -14,6 +14,7 @@ const Footer = () => {
       title: 'Discover',
       links: [
         { to: '/', label: 'All events' },
+        { to: '/cities', label: 'All cities' },
         { to: '/melbourne', label: 'Melbourne events' },
         { to: '/sydney', label: 'Sydney events' },
         { to: '/brisbane', label: 'Brisbane events' },
@@ -51,7 +52,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 lg:gap-12">
           <div className="space-y-5 max-w-sm">
             <Link to="/" className="inline-flex items-center gap-2.5">
-              <SoulFlowMark className="h-9 w-9 [&_rect]:fill-ink [&_path]:stroke-ink-foreground/70" />
+              <SoulFlowMark className="h-9 w-9 [&_rect]:fill-secondary [&_path]:stroke-ink-foreground/70" />
               <span className="text-3xl font-semibold font-heading text-ink-foreground">SoulFlow</span>
             </Link>
             <p className="text-sm leading-relaxed text-ink-foreground/70">

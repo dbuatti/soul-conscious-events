@@ -26,7 +26,7 @@ const categoryBadgeColor = (eventType?: string | null) =>
   categoryColours[eventType || 'Other'] ?? categoryColours.Other;
 
 const iconButton =
-  "h-10 w-10 sm:h-9 sm:w-9 rounded-full bg-background/90 dark:bg-black/60 backdrop-blur text-foreground shadow-sm hover:bg-background flex items-center justify-center transition-colors";
+  "h-10 w-10 sm:h-9 sm:w-9 rounded-full bg-background/90 backdrop-blur text-foreground shadow-sm hover:bg-background flex items-center justify-center transition-colors";
 
 interface EventCardV2Props {
   event: Event;
@@ -114,10 +114,10 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           sizes="(max-width: 640px) calc(100vw - 1rem), (max-width: 1024px) 50vw, 33vw"
         />
 
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/45 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-foreground/25 to-transparent pointer-events-none" />
 
         {/* Calendar tile */}
-        <div className="absolute top-3 left-3 z-20 flex flex-col items-center justify-center w-14 rounded-xl bg-background/95 dark:bg-black/70 backdrop-blur shadow-sm py-1.5 leading-none">
+        <div className="absolute top-3 left-3 z-20 flex flex-col items-center justify-center w-14 rounded-xl bg-background/95 backdrop-blur shadow-sm py-1.5 leading-none">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{format(eventDate, 'EEE')}</span>
           <span className="font-heading text-2xl font-semibold text-foreground mt-0.5">{format(eventDate, 'd')}</span>
           <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-0.5">{format(eventDate, 'MMM')}</span>
@@ -128,7 +128,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             <Share2 className="h-4 w-4" />
           </button>
           <div onClick={(e) => e.stopPropagation()}>
-            <BookmarkButton eventId={event.id} size="icon" className="h-10 w-10 sm:h-9 sm:w-9 rounded-full shadow-sm bg-background/90 dark:bg-black/60 backdrop-blur" />
+            <BookmarkButton eventId={event.id} size="icon" className="h-10 w-10 sm:h-9 sm:w-9 rounded-full shadow-sm bg-background/90 backdrop-blur" />
           </div>
         </div>
 

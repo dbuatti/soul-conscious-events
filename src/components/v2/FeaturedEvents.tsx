@@ -87,9 +87,9 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
                     sizes="(max-width: 640px) 280px, 340px"
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" />
 
-                  <div className="absolute top-3 left-3 z-20 flex flex-col items-center justify-center w-14 rounded-xl bg-background/90 dark:bg-black/70 backdrop-blur shadow-sm py-1 leading-none">
+                  <div className="absolute top-3 left-3 z-20 flex flex-col items-center justify-center w-14 rounded-xl bg-background/90 backdrop-blur shadow-sm py-1 leading-none">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{format(eventDate, 'EEE')}</span>
                     <span className="font-heading text-2xl font-semibold text-foreground mt-0.5">{format(eventDate, 'd')}</span>
                   </div>

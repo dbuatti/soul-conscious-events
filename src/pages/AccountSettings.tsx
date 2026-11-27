@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, User as UserIcon, SunMoon } from 'lucide-react';
+import { Loader2, User as UserIcon, SunMoon, LayoutDashboard, Bookmark, CalendarCheck, PlusCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -26,6 +27,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
 import { functionErrorMessage } from '@/lib/function-errors';
+import EventInsights from '@/components/EventInsights';
 
 const formSchema = z.object({
   firstName: z.string().optional().or(z.literal('')),
@@ -45,6 +47,7 @@ type AccountSettingsFormValues = z.infer<typeof formSchema>;
 const AccountSettings = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [section, setSection] = useState<'overview' | 'profile' | 'appearance'>('overview');
 
   const form = useForm<AccountSettingsFormValues>({
     resolver: zodResolver(formSchema),
@@ -156,10 +159,63 @@ const AccountSettings = () => {
         title="Account Settings | SoulFlow Australia"
         description="Manage your SoulFlow profile, update your personal information, and customize your appearance settings."
       />
-      <PageHeader eyebrow="Account" title="Settings" description="Your profile details and appearance preferences." />
+      <PageHeader
+        eyebrow="Your space"
+        title="Your account."
+        description="Everything about your listings, your saves and your profile — in one place."
+      />
 
-      <div className="max-w-2xl mx-auto space-y-8">
-        <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
+      {/* Section switcher keeps the hub compact on phones (no long single scroll). */}
+      <div className="flex gap-2 mb-8 overflow-x-auto no-scrollbar -mx-1 px-1" role="tablist" aria-label="Account sections">
+        {([
+          { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+          { id: 'profile', label: 'Profile', icon: UserIcon },
+          { id: 'appearance', label: 'Appearance', icon: SunMoon },
+        ] as const).map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={section === id}
+            onClick={() => setSection(id)}
+            className={`flex items-center gap-2 whitespace-nowrap rounded-full px-5 h-11 text-sm font-semibold transition-colors ${
+              section === id ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-secondary/60 text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Icon className="h-4 w-4" /> {label}
+          </button>
+        ))}
+      </div>
+
+      {section === 'overview' && (
+        <div className="space-y-8">
+          {/* Quick links to the rest of the personal cluster. */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { to: '/submit-event', label: 'List an event', icon: PlusCircle, hint: 'Add a new gathering' },
+              { to: '/my-events', label: 'My listings', icon: CalendarCheck, hint: 'Manage what you host' },
+              { to: '/my-bookmarks', label: 'Saved events', icon: Bookmark, hint: 'Your bookmarked gatherings' },
+            ].map(({ to, label, icon: Icon, hint }) => (
+              <Link key={to} to={to} className="organic-card organic-card-hover group flex flex-col gap-2 rounded-[1.5rem] p-5">
+                <span className="flex items-center justify-between">
+                  <Icon className="h-5 w-5 text-primary" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5" />
+                </span>
+                <span className="font-heading text-lg font-semibold text-foreground">{label}</span>
+                <span className="text-xs text-muted-foreground">{hint}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-heading font-semibold text-foreground mb-5">Event insights</h2>
+            <EventInsights />
+          </div>
+        </div>
+      )}
+
+      {section !== 'overview' && <div className="max-w-2xl mx-auto space-y-8">
+        {section === 'profile' && <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
           <CardHeader className="px-0 pt-0">
             <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
               <UserIcon className="mr-3 h-8 w-8 text-primary" /> General Info
@@ -281,9 +337,9 @@ const AccountSettings = () => {
               </form>
             </Form>
           </CardContent>
-        </Card>
+        </Card>}
 
-        <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
+        {section === 'appearance' && <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
           <CardHeader className="px-0 pt-0">
             <CardTitle className="text-3xl font-bold text-primary flex items-center font-heading">
               <SunMoon className="mr-3 h-8 w-8 text-primary" /> Appearance
@@ -293,8 +349,8 @@ const AccountSettings = () => {
             <p className="text-lg font-medium">Toggle between light and dark mode:</p>
             <ThemeToggle />
           </CardContent>
-        </Card>
-      </div>
+        </Card>}
+      </div>}
     </div>
   );
 };

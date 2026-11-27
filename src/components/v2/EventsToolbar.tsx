@@ -55,7 +55,7 @@ const EventsToolbar = ({
   showCompactSearch = false,
   onSearchTermChange,
 }: EventsToolbarProps) => (
-  <div className="sticky top-[calc(4rem_+_env(safe-area-inset-top))] z-30 -mx-2 sm:-mx-4 px-2 sm:px-4 py-2.5 sm:py-3 mb-6 bg-background/85 backdrop-blur-xl border-b border-border/50">
+  <div className="sticky top-0 z-30 -mx-2 sm:-mx-4 px-2 sm:px-4 py-2.5 sm:py-3 mb-6 bg-background/85 backdrop-blur-xl border-b border-border/50">
     {showCompactSearch && onSearchTermChange && (
       <div className="relative mb-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />

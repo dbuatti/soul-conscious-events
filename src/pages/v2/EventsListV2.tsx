@@ -101,7 +101,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     if (!heroRef.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => setHeroSearchVisible(entry.isIntersecting),
-      { rootMargin: '-64px 0px 0px 0px' } // account for the sticky header
+      { rootMargin: '-64px 0px 0px 0px' } // account for the sticky filter toolbar
     );
     observer.observe(heroRef.current);
     return () => observer.disconnect();

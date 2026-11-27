@@ -1,11 +1,14 @@
 import React from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import EventsListV2 from '@/pages/v2/EventsListV2';
 import { getCityGuide } from '@/lib/cities';
 
 const CityGuide: React.FC = () => {
-  const { city } = useParams<{ city: string }>();
-  const guide = getCityGuide(city);
+  // City routes are top-level slugs (`/melbourne`, `/sydney`, …), so the slug
+  // comes from the pathname rather than a `:city` route param.
+  const { pathname } = useLocation();
+  const slug = pathname.split('/').filter(Boolean)[0];
+  const guide = getCityGuide(slug);
 
   if (!guide) return <Navigate to="/" replace />;
 

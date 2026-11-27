@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Map as MapIcon, Bookmark, Plus } from 'lucide-react';
+import { Home, Map as MapIcon, Bookmark, Plus, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSession } from '@/components/SessionContextProvider';
 
 /**
  * Native-feel bottom navigation for phones. Hidden on desktop (md+) where the
@@ -15,12 +16,15 @@ const tabs = [
 
 const MobileTabBar = () => {
   const location = useLocation();
+  const { user } = useSession();
 
   // Event detail pages have the fixed booking bar; the login page is a
   // focused flow. Keep the tab bar out of the way on both.
   if (location.pathname.startsWith('/events/') || location.pathname === '/login') {
     return null;
   }
+
+  const initials = (user?.user_metadata?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase();
 
   return (
     <nav
@@ -55,6 +59,24 @@ const MobileTabBar = () => {
               <Plus className="h-4 w-4" strokeWidth={2.5} />
             </span>
             List event
+          </NavLink>
+        </li>
+        <li className="flex-1">
+          <NavLink
+            to="/account-settings"
+            className={({ isActive }) => cn(
+              'flex flex-col items-center justify-center gap-1 min-h-[3rem] rounded-2xl text-[10px] font-semibold tracking-wide transition-colors',
+              isActive ? 'text-primary' : 'text-muted-foreground'
+            )}
+          >
+            {user ? (
+              <span className="flex items-center justify-center h-6 w-6 rounded-full bg-secondary text-primary text-[10px] font-semibold">
+                {initials}
+              </span>
+            ) : (
+              <User className="h-5 w-5" strokeWidth={2.2} />
+            )}
+            Account
           </NavLink>
         </li>
       </ul>

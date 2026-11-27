@@ -6,7 +6,7 @@ import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+  <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true}>
     <ErrorBoundary>
       <App />
     </ErrorBoundary>

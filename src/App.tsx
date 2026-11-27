@@ -32,12 +32,14 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const MyEvents = lazy(() => import("./pages/MyEvents"));
 const MyBookmarks = lazy(() => import("./pages/MyBookmarks"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+// /dashboard was folded into the Account hub; keep the old URL working.
+const DashboardRedirect = () => <Navigate to="/account-settings" replace />;
 const EventsListV2 = lazy(() => import("./pages/v2/EventsListV2"));
 const LoginV2 = lazy(() => import("./pages/v2/LoginV2"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const LinkInBio = lazy(() => import("./pages/LinkInBio"));
 const CityGuide = lazy(() => import("./pages/CityGuide"));
+const CitiesPage = lazy(() => import("./pages/CitiesPage"));
 const Subscribe = lazy(() => import("./pages/Subscribe"));
 
 const queryClient = new QueryClient({
@@ -120,6 +122,7 @@ const App = () => (
               {/* V2 Prototype Routes */}
               <Route element={<LayoutV2 />}>
                 <Route path="/" element={<EventsListV2 signupCity="melbourne" signupSource="homepage" />} />
+                <Route path="/cities" element={<CitiesPage />} />
                 {CITY_GUIDES.map((city) => (
                   <Route key={city.slug} path={`/${city.slug}`} element={<CityGuide />} />
                 ))}
@@ -141,7 +144,7 @@ const App = () => (
                   <Route path="/my-events" element={<MyEvents />} />
                   <Route path="/my-bookmarks" element={<MyBookmarks />} />
                   <Route path="/account-settings" element={<AccountSettings />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<DashboardRedirect />} />
                   <Route path="/edit-event/:id" element={<EventEditPage />} />
                   <Route path="/duplicate-event/:id" element={<EventEditPage />} />
                 </Route>

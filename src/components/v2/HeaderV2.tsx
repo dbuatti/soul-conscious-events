@@ -1,8 +1,9 @@
 import { Link, NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Menu, LogOut, UserCog, CalendarCheck, Bookmark, LogIn, Plus, Settings, Info, Home, LayoutDashboard, Map as MapIcon, Mail, Workflow } from 'lucide-react';
+import { Menu, LogOut, UserCog, CalendarCheck, LogIn, Plus, Info, LayoutDashboard, MapPin, Mail, Workflow } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -25,6 +26,7 @@ export const SoulFlowMark = ({ className }: { className?: string }) => (
 
 const desktopLinks = [
   { to: '/', label: 'Events', end: true },
+  { to: '/cities', label: 'Cities' },
   { to: '/map', label: 'Map' },
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
@@ -52,18 +54,16 @@ const HeaderV2 = () => {
     }
   };
 
+  // Mobile menu only carries what the fixed bottom bar does NOT: Events, Map,
+  // Saved and Account/List are already one tap away down there.
   const menuItems = user ? [
-    { to: '/', label: 'Events', icon: Home },
-    { to: '/map', label: 'Map', icon: MapIcon },
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/cities', label: 'City guides', icon: MapPin },
     { to: '/my-events', label: 'My listings', icon: CalendarCheck },
-    { to: '/my-bookmarks', label: 'Saved events', icon: Bookmark },
-    { to: '/account-settings', label: 'Settings', icon: Settings },
+    { to: '/account-settings', label: 'My account', icon: LayoutDashboard },
     { to: '/about', label: 'About', icon: Info },
     { to: '/contact', label: 'Contact', icon: Mail },
   ] : [
-    { to: '/', label: 'Events', icon: Home },
-    { to: '/map', label: 'Map', icon: MapIcon },
+    { to: '/cities', label: 'City guides', icon: MapPin },
     { to: '/about', label: 'About', icon: Info },
     { to: '/contact', label: 'Contact', icon: Mail },
     { to: '/login', label: 'Sign in / Sign up', icon: LogIn },
@@ -72,7 +72,7 @@ const HeaderV2 = () => {
   const initials = (user?.user_metadata?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase();
 
   return (
-    <header className="w-full sticky top-0 z-50 floating-nav pt-safe">
+    <header className="w-full relative z-50 floating-nav pt-safe">
       <div className="mx-auto w-full max-w-6xl flex items-center justify-between gap-4 px-4 sm:px-6 h-16">
         <Link to="/" className="flex items-center gap-2.5 group" aria-label="SoulFlow home">
           <SoulFlowMark className="h-8 w-8 transition-transform duration-500 group-hover:-translate-y-0.5" />
@@ -107,7 +107,11 @@ const HeaderV2 = () => {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild className="rounded-full h-10 px-4 sm:px-5 shadow-sm shadow-primary/20 font-semibold">
+          <span className="hidden md:inline-flex">
+            <ThemeToggle />
+          </span>
+
+          <Button asChild className="hidden md:inline-flex rounded-full h-10 px-4 sm:px-5 shadow-sm shadow-primary/20 font-semibold">
             <Link to="/submit-event" onClick={handleCreateEventClick}>
               <Plus className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">List your event</span>
