@@ -172,13 +172,13 @@ function buildHtml(events) {
     <p style="margin:0 0 4px 0;font-size:14px;color:#b34629;font-weight:600;">${dateLine}</p>
     <p style="margin:0 0 4px 0;font-size:13px;color:#8a7f75;">${venue}${price ? ' · ' + price : ''}</p>
     ${desc ? `<p style="margin:8px 0 12px 0;font-size:14px;color:#5a534d;line-height:1.5;">${desc}</p>` : ''}
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;table-layout:fixed;">
       <tr>
-        <td class="sf-btn-cell" style="padding-right:6px;">
-          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:inline-block;background:#b34629;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px;line-height:1;white-space:nowrap;">Book now</a>
+        <td width="50%" align="center" class="sf-btn-cell" style="padding:0 4px;">
+          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:block;box-sizing:border-box;width:100%;max-width:180px;background:#b34629;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 0;border-radius:999px;line-height:1;text-align:center;">Book now</a>
         </td>
-        <td class="sf-btn-cell" style="padding-left:6px;">
-          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:inline-block;color:#b34629;font-size:14px;font-weight:700;text-decoration:none;padding:12px 16px;border:1px solid #b34629;border-radius:999px;line-height:1;white-space:nowrap;">Details</a>
+        <td width="50%" align="center" class="sf-btn-cell" style="padding:0 4px;">
+          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:block;box-sizing:border-box;width:100%;max-width:180px;color:#b34629;font-size:14px;font-weight:700;text-decoration:none;padding:12px 0;border:1px solid #b34629;border-radius:999px;line-height:1;text-align:center;">Details</a>
         </td>
       </tr>
     </table>
@@ -203,7 +203,7 @@ function buildHtml(events) {
     .sf-event-img { width:100% !important; height:auto !important; }
     .sf-card { border-radius:12px !important; }
     .sf-card-cell { padding:12px !important; }
-    .sf-btn { display:block !important; width:100% !important; text-align:center !important; margin:4px 0 !important; }
+    .sf-btn { display:block !important; width:100% !important; max-width:100% !important; text-align:center !important; margin:4px 0 !important; padding:12px 0 !important; box-sizing:border-box !important; }
     .sf-btn-cell { display:block !important; width:100% !important; margin:4px 0 0 0 !important; padding:0 !important; }
   }
 </style>
