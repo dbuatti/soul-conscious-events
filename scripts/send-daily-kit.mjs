@@ -68,6 +68,16 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
+function cleanPrice(p) {
+  // Round messy prices like "$27.78" to "$28" for readability.
+  const m = String(p).match(/\$?\s*([\d.]+)/);
+  if (!m) return p;
+  const n = parseFloat(m[1]);
+  if (isNaN(n)) return p;
+  const rounded = Math.round(n);
+  return String(p).includes('$') ? `$${rounded}` : `${rounded}`;
+}
+
 function escapeHtml(s) {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -77,13 +87,14 @@ function buildHtml(events) {
   const eventCards = events.map(e => {
     const img = e.image_url
       ? `<img src="${escapeHtml(e.image_url)}" alt="${escapeHtml(e.event_name)}" width="560" style="width:100%;max-width:560px;height:auto;border-radius:12px;display:block;margin:0 0 12px 0;" />`
-      : '';
+      : `<div style="width:100%;max-width:560px;height:120px;border-radius:12px;background:linear-gradient(135deg,#fde9e3,#e8c89a);display:flex;align-items:center;justify-content:center;margin:0 0 12px 0;"><span style="font-size:32px;">✨</span></div>`;
     const dateLine = `${formatDate(e.event_date)}${e.event_time ? ' · ' + escapeHtml(e.event_time) : ''}`;
     const venue = escapeHtml(e.place_name || e.location || '');
-    const price = e.price ? escapeHtml(e.price) : 'See details';
+    const price = e.price ? escapeHtml(cleanPrice(e.price)) : 'See details';
     const desc = e.description ? escapeHtml(e.description.slice(0, 160)) + (e.description.length > 160 ? '…' : '') : '';
     const bookingUrl = e.ticket_link || `${siteUrl}/events/${e.id}`;
     const detailsUrl = `${siteUrl}/events/${e.id}`;
+    const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.event_name)}&dates=${e.event_date.replace(/-/g,'')}/${e.event_date.replace(/-/g,'')}&details=${encodeURIComponent((e.description||'').slice(0,200))}&location=${encodeURIComponent(e.place_name || e.location || '')}`;
     return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;border:1px solid #e8e1d8;border-radius:16px;overflow:hidden;background:#ffffff;">
   <tr><td style="padding:16px;">
@@ -104,6 +115,7 @@ function buildHtml(events) {
         </td>
       </tr>
     </table>
+    <p style="margin:6px 0 0 0;font-size:11px;"><a href="${escapeHtml(calUrl)}" style="color:#8a7f75;text-decoration:none;">📅 Add to calendar</a></p>
   </td></tr>
 </table>`;
   }).join('\n');
@@ -112,6 +124,9 @@ function buildHtml(events) {
   return `
 <div style="background:#f5efe6;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;">
+    <tr><td style="padding:0;">
+      <img src="https://soulflowau.vercel.app/social-preview.jpeg" alt="SoulFlow" width="600" style="width:100%;max-width:600px;height:auto;display:block;" />
+    </td></tr>
     <tr><td style="padding:0;">
       <div style="background:linear-gradient(135deg,#b34629 0%,#d4833a 50%,#e8c89a 100%);padding:32px 24px 28px 24px;text-align:center;">
         <p style="margin:0 0 6px 0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#fff7f0;font-weight:700;opacity:0.9;">SoulFlow Melbourne</p>
