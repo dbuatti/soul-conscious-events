@@ -172,10 +172,16 @@ function buildHtml(events) {
     <p style="margin:0 0 4px 0;font-size:14px;color:#b34629;font-weight:600;">${dateLine}</p>
     <p style="margin:0 0 4px 0;font-size:13px;color:#8a7f75;">${venue}${price ? ' · ' + price : ''}</p>
     ${desc ? `<p style="margin:8px 0 12px 0;font-size:14px;color:#5a534d;line-height:1.5;">${desc}</p>` : ''}
-    <div style="margin-top:12px;">
-      <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:inline-block;background:#b34629;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 24px;border-radius:999px;line-height:1;">Book now</a>
-      <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:inline-block;color:#b34629;font-size:14px;font-weight:700;text-decoration:none;padding:12px 20px;border:1px solid #b34629;border-radius:999px;line-height:1;margin-left:8px;">Details</a>
-    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+      <tr>
+        <td class="sf-btn-cell" style="padding-right:6px;">
+          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:inline-block;background:#b34629;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px;line-height:1;white-space:nowrap;">Book now</a>
+        </td>
+        <td class="sf-btn-cell" style="padding-left:6px;">
+          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:inline-block;color:#b34629;font-size:14px;font-weight:700;text-decoration:none;padding:12px 16px;border:1px solid #b34629;border-radius:999px;line-height:1;white-space:nowrap;">Details</a>
+        </td>
+      </tr>
+    </table>
     <p style="margin:6px 0 0 0;font-size:11px;"><a href="${escapeHtml(calUrl)}" style="color:#8a7f75;text-decoration:none;">📅 Add to calendar</a></p>
   </td></tr>
 </table>`;
@@ -198,7 +204,7 @@ function buildHtml(events) {
     .sf-card { border-radius:12px !important; }
     .sf-card-cell { padding:12px !important; }
     .sf-btn { display:block !important; width:100% !important; text-align:center !important; margin:4px 0 !important; }
-    .sf-btn-cell { display:block !important; width:100% !important; margin:4px 0 0 0 !important; }
+    .sf-btn-cell { display:block !important; width:100% !important; margin:4px 0 0 0 !important; padding:0 !important; }
   }
 </style>
 <div style="background:transparent;padding:24px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
