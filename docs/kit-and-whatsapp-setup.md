@@ -15,7 +15,7 @@ Keep the two audiences separate:
 
 ## Kit setup
 
-**Status (27 Nov 2026):** dedicated SoulFlow Kit account created with `soulconsciousevents@gmail.com`, email confirmed, Creator trial cancelled and account downgraded to the **Free plan** (no card entered, no charge). Default sending time set to 9am Australia/Melbourne. Test subscriber `daniele.buatti@gmail.com` added and a real welcome broadcast was sent successfully.
+**Status (27 Nov 2026):** dedicated SoulFlow Kit account created with `soulconsciousevents@gmail.com`, email confirmed, Creator trial cancelled and account downgraded to the **Free plan** (no card entered, no charge). Default sending time set to 9am Australia/Melbourne. Test subscriber `daniele.buatti@gmail.com` added and a real welcome broadcast was sent successfully; Gmail initially filed it in Spam, so it was marked **Report not spam** and is now in the Inbox. A reusable **“Melbourne Weekly Picks”** email template has been saved in Kit.
 
 1. Sign in to Kit with `soulconsciousevents@gmail.com`.
 2. Use the free plan. Create a **SoulFlow** brand/audience, separate from the personal business.
