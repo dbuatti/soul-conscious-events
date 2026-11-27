@@ -5,6 +5,12 @@ import SEO from '@/components/SEO';
 const Subscribe: React.FC = () => {
   return (
     <div className="w-full max-w-2xl mx-auto px-4 py-12 sm:py-16">
+      <a
+        href="/melbourne"
+        className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground mb-6"
+      >
+        ← Back to Melbourne events
+      </a>
       <SEO
         title="Subscribe to SoulFlow daily picks | Melbourne"
         description="Get five hand-picked conscious events in Melbourne delivered to your inbox every morning at 9am. Free, no spam, unsubscribe any time."

@@ -89,10 +89,10 @@ function buildHtml(events) {
   <tr><td style="padding:16px;">
     ${img}
     ${e.event_type ? `<p style="margin:0 0 6px 0;"><span style="display:inline-block;padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:#b34629;background:#fde9e3;border-radius:999px;">${escapeHtml(e.event_type)}</span></p>` : ''}
-    <h2 style="margin:0 0 6px 0;font-size:20px;font-weight:700;color:#2a2420;line-height:1.2;">${escapeHtml(e.event_name)}</h2>
+    <h2 style="margin:0 0 6px 0;font-size:20px;font-weight:700;color:#3a3430;line-height:1.2;">${escapeHtml(e.event_name)}</h2>
     <p style="margin:0 0 4px 0;font-size:14px;color:#b34629;font-weight:600;">${dateLine}</p>
-    <p style="margin:0 0 4px 0;font-size:13px;color:#6b625a;">${venue}${price ? ' · ' + price : ''}</p>
-    ${desc ? `<p style="margin:8px 0 12px 0;font-size:14px;color:#4a433d;line-height:1.5;">${desc}</p>` : ''}
+    <p style="margin:0 0 4px 0;font-size:13px;color:#8a7f75;">${venue}${price ? ' · ' + price : ''}</p>
+    ${desc ? `<p style="margin:8px 0 12px 0;font-size:14px;color:#5a534d;line-height:1.5;">${desc}</p>` : ''}
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 0 0;">
       <tr>
         <td style="border-radius:999px;background:#b34629;">
@@ -120,17 +120,17 @@ function buildHtml(events) {
       </div>
     </td></tr>
     <tr><td style="padding:24px 24px 8px 24px;text-align:center;">
-      <p style="margin:0 0 20px 0;font-size:14px;color:#6b625a;line-height:1.5;">No noise, no spam. Just five good things happening in Melbourne.</p>
+      <p style="margin:0 0 20px 0;font-size:14px;color:#8a7f75;line-height:1.5;">No noise, no spam. Just five good things happening in Melbourne.</p>
     </td></tr>
     <tr><td style="padding:0 24px 8px 24px;">
       ${eventCards}
     </td></tr>
     <tr><td style="padding:8px 24px 16px 24px;text-align:center;">
-      <a href="${siteUrl}/melbourne" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:700;color:#ffffff;background:#2a2420;text-decoration:none;border-radius:999px;">See all Melbourne events</a>
+      <a href="${siteUrl}/melbourne" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:700;color:#ffffff;background:#3a3430;text-decoration:none;border-radius:999px;">See all Melbourne events</a>
     </td></tr>
     <tr><td style="padding:16px 24px 28px 24px;text-align:center;border-top:1px solid #e8e1d8;">
-      <p style="margin:0 0 8px 0;font-size:13px;color:#6b625a;">Discover more at <a href="${siteUrl}" style="color:#b34629;text-decoration:none;font-weight:600;">soulflowau.vercel.app</a></p>
-      <p style="margin:0;font-size:11px;color:#9a9188;"><a href="{{ unsubscribe_url }}" style="color:#9a9188;text-decoration:underline;">Unsubscribe</a> · SoulFlow, Melbourne, VIC 3000, Australia</p>
+      <p style="margin:0 0 8px 0;font-size:13px;color:#8a7f75;">Discover more at <a href="${siteUrl}" style="color:#b34629;text-decoration:none;font-weight:600;">soulflowau.vercel.app</a></p>
+      <p style="margin:0;font-size:11px;color:#b0a89e;"><a href="{{ unsubscribe_url }}" style="color:#b0a89e;text-decoration:underline;">Unsubscribe</a> · SoulFlow, Melbourne, VIC 3000, Australia</p>
     </td></tr>
   </table>
 </div>`;
