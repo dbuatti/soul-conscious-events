@@ -174,12 +174,12 @@ function buildHtml(events) {
     ${desc ? `<p style="margin:8px 0 12px 0;font-size:14px;color:#5a534d;line-height:1.5;">${desc}</p>` : ''}
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 0 0;">
       <tr>
-        <td valign="middle" align="center" style="border-radius:999px;background:#b34629;vertical-align:middle;">
-          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:inline-block;padding:10px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;line-height:1.2;text-align:center;vertical-align:middle;">Book now</a>
+        <td align="center" valign="middle" style="border-radius:999px;background:#b34629;padding:0;">
+          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:block;padding:12px 24px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;line-height:1;text-align:center;">Book now</a>
         </td>
         <td style="width:10px;"></td>
-        <td valign="middle" align="center" style="vertical-align:middle;">
-          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:inline-block;padding:10px 18px;font-size:14px;font-weight:600;color:#b34629;text-decoration:none;border:1px solid #b34629;border-radius:999px;line-height:1.2;text-align:center;vertical-align:middle;">Details</a>
+        <td align="center" valign="middle" style="border-radius:999px;border:1px solid #b34629;padding:0;">
+          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:block;padding:12px 20px;font-size:14px;font-weight:600;color:#b34629;text-decoration:none;border-radius:999px;line-height:1;text-align:center;">Details</a>
         </td>
       </tr>
     </table>
@@ -215,9 +215,9 @@ function buildHtml(events) {
     .sf-dark-accent { color:#e8935a !important; }
   }
 </style>
-<div class="sf-dark-bg" style="background:#f5efe6;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <img src="${SITE_URL}/social-preview.jpeg" alt="SoulFlow Melbourne" width="600" style="max-width:600px;width:100%;height:auto;display:block;margin:0 auto 0 auto;border-radius:20px 20px 0 0;" />
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border-radius:0 0 20px 20px;overflow:hidden;">
+<div style="background:transparent;padding:24px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <img src="${SITE_URL}/social-preview.jpeg" alt="SoulFlow Melbourne" width="600" style="max-width:600px;width:100%;height:auto;display:block;margin:0 auto;border-radius:20px 20px 0 0;" />
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border:1px solid #e8e1d8;border-top:none;border-radius:0 0 20px 20px;overflow:hidden;">
     <tr><td style="padding:0;">
       <div style="background:linear-gradient(135deg,#b34629 0%,#d4833a 50%,#e8c89a 100%);padding:28px 24px 24px 24px;text-align:center;">
         <p style="margin:0 0 6px 0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#fff7f0;font-weight:700;opacity:0.9;">SoulFlow Melbourne</p>
@@ -232,7 +232,7 @@ function buildHtml(events) {
       ${eventCards}
     </td></tr>
     <tr><td style="padding:8px 24px 16px 24px;text-align:center;">
-      <a href="${SITE_URL}/melbourne" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:700;color:#ffffff;background:#3a3430;text-decoration:none;border-radius:999px;">See all Melbourne events</a>
+      <a href="${SITE_URL}/melbourne" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:700;color:#ffffff;background:#3a3430;text-decoration:none;border-radius:999px;line-height:1;text-align:center;">See all Melbourne events</a>
     </td></tr>
     <tr><td style="padding:0 24px 16px 24px;text-align:center;">
       <p style="margin:0;font-size:12px;color:#8a7f75;">Know someone who'd love this? <a href="mailto:?subject=Five%20soulful%20things%20in%20Melbourne%20today&body=Check%20out%20SoulFlow%3A%20https%3A%2F%2Fsoulflowau.vercel.app%2Fmelbourne" style="color:#b34629;text-decoration:none;font-weight:600;">Forward this email</a></p>
