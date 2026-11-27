@@ -52,27 +52,27 @@ const EventsHero = ({
   ),
   description = 'Sound baths, breathwork, ecstatic dance, kirtan, circles and workshops, gathered in one calm place.',
 }: EventsHeroProps) => (
-  <section className="hero-glow relative overflow-hidden rounded-[2rem] px-5 py-8 sm:px-12 sm:py-14 mb-6 animate-in fade-in duration-700 lg:grid lg:grid-cols-[1fr_20rem] lg:gap-12 lg:items-center">
+  <section className="hero-glow relative overflow-hidden rounded-[2rem] px-5 py-6 sm:px-10 sm:py-10 mb-8 animate-in fade-in duration-700 lg:grid lg:grid-cols-[1fr_20rem] lg:gap-12 lg:items-center">
     <div>
       <div className="max-w-3xl">
-        <p className="eyebrow mb-4">{eyebrow}</p>
-        <h1 className="text-[clamp(2.1rem,9vw,2.6rem)] leading-[1.04] sm:text-6xl xl:text-[4.25rem] font-heading font-semibold text-foreground">
+        <p className="eyebrow mb-3">{eyebrow}</p>
+        <h1 className="text-[clamp(2rem,8vw,2.4rem)] leading-[1.04] sm:text-5xl xl:text-[3.5rem] font-heading font-semibold text-foreground">
           {title}
         </h1>
-        <p className="mt-5 text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
+        <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
           {description}
         </p>
       </div>
 
-      <div className="mt-8 max-w-2xl">
+      <div className="mt-6 max-w-2xl">
         <div className="relative">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+          <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Search events, venues or suburbs"
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
             aria-label="Search events"
-            className="h-14 pl-14 pr-12 rounded-full border-border/80 bg-card text-base shadow-[0_10px_30px_-12px_hsl(20_40%_25%/0.25)] focus-visible:ring-primary"
+            className="h-12 sm:h-14 pl-12 sm:pl-14 pr-12 rounded-full border-border/80 bg-card text-base shadow-[0_10px_30px_-12px_hsl(20_40%_25%/0.25)] focus-visible:ring-primary"
           />
           {searchTerm && (
             <button
@@ -86,7 +86,7 @@ const EventsHero = ({
           )}
         </div>
 
-        <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
+        <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
           {QUICK_FILTERS.map((qf) => {
             const active = selectedCategories.includes(qf.value);
             return (
@@ -96,7 +96,7 @@ const EventsHero = ({
                 onClick={() => onToggleQuickFilter(qf.value)}
                 aria-pressed={active}
                 className={cn(
-                  "whitespace-nowrap px-4 h-10 sm:h-9 rounded-full text-sm font-medium transition-all border",
+                  "whitespace-nowrap px-4 h-9 rounded-full text-sm font-medium transition-all border",
                   active
                     ? "bg-foreground border-foreground text-background"
                     : "bg-card/70 border-border/80 text-foreground/80 hover:border-primary/50 hover:text-primary"
@@ -110,8 +110,8 @@ const EventsHero = ({
       </div>
 
       {showNextWeekCount && (
-        <p className="mt-8 text-sm text-muted-foreground">
-          <span className="font-heading text-2xl font-semibold text-foreground mr-1.5">{nextWeekCount}</span>
+        <p className="mt-5 text-sm text-muted-foreground">
+          <span className="font-heading text-xl font-semibold text-foreground mr-1.5">{nextWeekCount}</span>
           gatherings in the next 7 days
         </p>
       )}

@@ -159,11 +159,11 @@
 
 @layer components {
   .organic-card {
-    @apply bg-card border border-border/70 shadow-[0_1px_2px_hsl(20_30%_20%/0.04),0_8px_24px_-12px_hsl(20_30%_20%/0.12)] transition-[box-shadow,transform,border-color] duration-300;
+    @apply bg-card border border-border/50 shadow-[0_1px_2px_hsl(20_30%_20%/0.03),0_6px_18px_-12px_hsl(20_30%_20%/0.10)] transition-[box-shadow,transform,border-color] duration-300;
   }
 
   .organic-card-hover {
-    @apply hover:shadow-[0_2px_4px_hsl(20_30%_20%/0.05),0_24px_48px_-20px_hsl(20_40%_25%/0.28)] hover:-translate-y-0.5 hover:border-primary/25;
+    @apply hover:shadow-[0_2px_4px_hsl(20_30%_20%/0.04),0_18px_36px_-20px_hsl(20_40%_25%/0.20)] hover:-translate-y-0.5 hover:border-primary/25;
   }
 
   .floating-nav {

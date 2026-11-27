@@ -267,7 +267,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   }, [loading]);
 
   return (
-    <div className="w-full max-w-6xl px-2 sm:px-4">
+    <div className="w-full max-w-7xl px-3 sm:px-6">
       <SEO
         title={seoTitle || 'SoulFlow | Discover Soulful Events in Australia'}
         description={seoDescription || 'Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, sound baths, and conscious gatherings.'}
@@ -290,10 +290,6 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
           description={cityDescription}
         />
       </div>
-
-      {!loading && featuredEvents.length > 0 && (
-        <FeaturedEvents events={featuredEvents} onViewDetails={handleViewDetails} />
-      )}
 
       <EventsToolbar
         filters={filters}
@@ -348,6 +344,12 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
                 <NoSearchResultsEmptyState />
               ) : (
                 <NoEventsEmptyState />
+              )}
+
+              {displayedEvents.length > 0 && featuredEvents.length > 0 && (
+                <div className="mt-14">
+                  <FeaturedEvents events={featuredEvents} onViewDetails={handleViewDetails} />
+                </div>
               )}
 
               {hasMore && displayedEvents.length > 0 && (

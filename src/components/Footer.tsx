@@ -48,7 +48,7 @@ const Footer = () => {
 
   return (
     <footer className="w-full night-band mt-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-safe">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-safe">
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 lg:gap-12">
           <div className="space-y-5 max-w-sm">
             <Link to="/" className="inline-flex items-center gap-2.5">

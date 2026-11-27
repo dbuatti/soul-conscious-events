@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Users, Leaf, Mic, Waves, Wrench, HelpCircle, Map as MapIcon } from 'lucide-react';
+import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Users, Leaf, Mic, Waves, Wrench, HelpCircle, Map as MapIcon, SlidersHorizontal } from 'lucide-react';
 import { v2EventCategories, v2PriceOptions, v2States, v2DateOptions } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -60,6 +60,15 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
   const [stateSearchTerm, setStateSearchTerm] = useState('');
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Count active filters for the compact mobile "Filters" trigger.
+  const activeFilterCount =
+    (currentFilters.date !== 'All Upcoming' ? 1 : 0) +
+    currentFilters.category.length +
+    currentFilters.venue.length +
+    currentFilters.price.length +
+    currentFilters.state.length;
 
   const handleSingleSelectChange = (filterType: 'date', value: string) => {
     onFilterChange({ ...currentFilters, [filterType]: value });
@@ -178,9 +187,32 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
   const buttonClasses = "flex items-center gap-1.5 rounded-full pl-4 pr-3 h-10 sm:h-9 bg-card border-border/80 hover:border-primary/40 hover:bg-card transition-colors text-sm font-medium whitespace-nowrap shrink-0";
 
   return (
-    <div className="flex items-center justify-between gap-2 sm:gap-3 w-full">
-      {/* Phone: one swipeable row. sm+: wraps as before. */}
-      <div className="flex items-center gap-2 min-w-0 flex-1 flex-nowrap overflow-x-auto no-scrollbar -my-1 py-1 sm:flex-wrap sm:overflow-visible">
+    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 w-full">
+      {/* Phone: a single "Filters" button expands the dropdowns below, so the
+          sticky bar stays one line. sm+: all filters sit in one wrapping row. */}
+      <button
+        type="button"
+        onClick={() => setMobileFiltersOpen((open) => !open)}
+        aria-expanded={mobileFiltersOpen}
+        className={cn(
+          'order-1 flex items-center gap-1.5 rounded-full pl-4 pr-3 h-10 sm:hidden bg-card border text-sm font-medium whitespace-nowrap shrink-0',
+          activeFilterCount > 0 ? 'border-primary/50 text-primary' : 'border-border/80 hover:border-primary/40',
+        )}
+      >
+        <SlidersHorizontal className="h-4 w-4" />
+        Filters
+        {activeFilterCount > 0 && (
+          <span className="flex items-center justify-center h-5 min-w-5 rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+            {activeFilterCount}
+          </span>
+        )}
+        <ChevronDown className={cn('h-4 w-4 opacity-50 transition-transform', mobileFiltersOpen && 'rotate-180')} />
+      </button>
+
+      <div className={cn(
+        'order-3 gap-2 min-w-0 items-center -my-1 py-1 w-full sm:w-auto sm:flex sm:flex-1 sm:flex-wrap sm:overflow-visible',
+        mobileFiltersOpen ? 'flex flex-wrap' : 'hidden',
+      )}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>
@@ -238,7 +270,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
         </DropdownMenu>
       </div>
 
-      <div className="flex items-center bg-card border border-border/80 p-1 rounded-full shrink-0">
+      <div className="order-2 sm:order-none flex items-center bg-card border border-border/80 p-1 rounded-full shrink-0">
         <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && onViewModeChange(value)}>
           <ToggleGroupItem value="list" className="rounded-full h-8 sm:h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="List View" aria-label="List view">
             <List className="h-3.5 w-3.5" />

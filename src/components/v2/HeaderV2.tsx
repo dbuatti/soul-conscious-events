@@ -73,7 +73,7 @@ const HeaderV2 = () => {
 
   return (
     <header className="w-full relative z-50 floating-nav pt-safe">
-      <div className="mx-auto w-full max-w-6xl flex items-center justify-between gap-4 px-4 sm:px-6 h-16">
+      <div className="mx-auto w-full max-w-7xl flex items-center justify-between gap-4 px-4 sm:px-6 h-16">
         <Link to="/" className="flex items-center gap-2.5 group" aria-label="SoulFlow home">
           <SoulFlowMark className="h-8 w-8 transition-transform duration-500 group-hover:-translate-y-0.5" />
           <span className="flex flex-col">
