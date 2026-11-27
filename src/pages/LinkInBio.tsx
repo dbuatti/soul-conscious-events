@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, MapPin, CalendarDays, PlusCircle, Mail, Compass, ArrowRight } from 'lucide-react';
 import SEO from '@/components/SEO';
+import WeeklyPicksSignup from '@/components/WeeklyPicksSignup';
+import { CITY_GUIDES } from '@/lib/cities';
 
 const LOGO_URL =
   'https://tbyjdhxpbfvqsrzzdjwi.supabase.co/storage/v1/object/public/ig-weekly-slides/2026-10-07/logo-trans.png';
@@ -62,6 +64,20 @@ const LinkInBio: React.FC = () => {
             );
           })}
         </div>
+
+        <div className="mt-8 flex flex-wrap justify-center gap-2" aria-label="City guides">
+          {CITY_GUIDES.map((city) => (
+            <Link
+              key={city.slug}
+              to={`/${city.slug}`}
+              className="rounded-full border border-border bg-card/70 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+            >
+              {city.name}
+            </Link>
+          ))}
+        </div>
+
+        <WeeklyPicksSignup defaultCity="melbourne" source="link-in-bio" className="mt-8 text-left" />
 
         <p className="mt-10 text-center text-xs text-muted-foreground">
           Made with care for the Australian conscious community.

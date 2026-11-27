@@ -14,6 +14,9 @@ const Footer = () => {
       title: 'Discover',
       links: [
         { to: '/', label: 'All events' },
+        { to: '/melbourne', label: 'Melbourne events' },
+        { to: '/sydney', label: 'Sydney events' },
+        { to: '/brisbane', label: 'Brisbane events' },
         { to: '/map', label: 'Event map' },
         user
           ? { to: '/my-bookmarks', label: 'Saved events' }

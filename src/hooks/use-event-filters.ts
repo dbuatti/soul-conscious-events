@@ -22,28 +22,35 @@ const searchScore = (event: Event, term: string): number => {
   return 0;
 };
 
-export const useEventFilters = (allEvents: Event[], defaultState?: string | null, externalSearchTerm?: string) => {
+export const useEventFilters = (
+  allEvents: Event[],
+  defaultState?: string | null,
+  externalSearchTerm?: string,
+  stateOverride?: string,
+) => {
+  const preferredState = stateOverride || defaultState;
   const [internalSearchTerm, setInternalSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterDropdownsV2Props['currentFilters']>({
     date: 'All Upcoming',
     category: [],
     venue: [],
     price: [],
-    state: defaultState ? [defaultState] : [],
+    state: preferredState ? [preferredState] : [],
   });
 
   // Use externally-provided search term (debounced) when available, otherwise internal state.
   const searchTerm = externalSearchTerm ?? internalSearchTerm;
 
-  // Re-apply the preference if the user changes it in Settings and navigates
-  // back without a full reload. Manual changes in this session are left alone
-  // until the preference itself changes.
+  // Re-apply the saved preference if it changes in Settings. City guides pin
+  // their own state instead, so a user's home preference cannot move them to
+  // another city's page.
   useEffect(() => {
+    if (stateOverride) return;
     setFilters((current) => ({
       ...current,
       state: defaultState ? [defaultState] : [],
     }));
-  }, [defaultState]);
+  }, [defaultState, stateOverride]);
 
   const filteredEvents = useMemo(() => {
     const now = new Date();

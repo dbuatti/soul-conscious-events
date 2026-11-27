@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Share2, Edit, Trash2, Copy, Repeat, X, CalendarPlus, ChevronDown, Check, Navigation } from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, LinkIcon, Info, User, Edit, Trash2, Copy, Repeat, X, CalendarPlus, ChevronDown, Check, Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getBookingTarget } from '@/utils/booking';
 import { useSession } from '@/components/SessionContextProvider';
@@ -48,6 +48,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { openInMaps } from '@/lib/utils';
 import EventCardFallback from '@/components/EventCardFallback';
 import { ResilientImage } from '@/components/v2/ResilientImage';
+import ShareEventButton from '@/components/ShareEventButton';
 
 // Leaflet is heavy and only needed when an event with coordinates is shown.
 const LeafletMap = lazy(() => import('@/components/v2/LeafletMap'));
@@ -118,33 +119,6 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
       setTimeout(() => setCopiedAddress(false), 2000);
     } catch (err) {
       toast.error('Failed to copy address.');
-    }
-  };
-
-  const handleShare = async () => {
-    if (!event) return;
-    const baseId = getBaseEventId(event.id);
-    const shareData = {
-      title: event.event_name,
-      text: `Check out this soulful event: ${event.event_name}`,
-      url: `${window.location.origin}/events/${baseId}`,
-    };
-
-    if (navigator.share && navigator.canShare?.(shareData)) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') {
-          toast.error('Failed to share.');
-        }
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareData.url);
-        toast.success('Link copied to clipboard!');
-      } catch (err) {
-        toast.error('Failed to copy link.');
-      }
     }
   };
 
@@ -398,9 +372,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
         <div onClick={(e) => e.stopPropagation()}>
           <BookmarkButton eventId={event.id} size="icon" className="rounded-full h-11 w-11 bg-secondary" />
         </div>
-        <Button variant="secondary" size="icon" className="rounded-full h-11 w-11 shrink-0" onClick={handleShare} aria-label="Share event">
-          <Share2 className="h-4 w-4" />
-        </Button>
+        <ShareEventButton event={event} iconOnly className="rounded-full h-11 w-11 shrink-0 bg-secondary" />
         <Button variant="ghost" className="rounded-full h-11 px-4 text-sm hidden sm:inline-flex" onClick={() => { onClose(); navigate(`/events/${getBaseEventId(event.id)}`); }}>
           Full page
         </Button>

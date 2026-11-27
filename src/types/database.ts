@@ -42,6 +42,15 @@ export interface PageVisitLog {
   logged_at?: string;
 }
 
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  city: string;
+  source: string;
+  created_at: string;
+  unsubscribed_at?: string | null;
+}
+
 export interface EventSource {
   id: string;
   url: string;

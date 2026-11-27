@@ -15,6 +15,7 @@ import EventImports from '@/components/admin/EventImports';
 import WeeklySlides from '@/components/admin/WeeklySlides';
 import InstagramInsights from '@/components/admin/InstagramInsights';
 import ByHeartDashboard from '@/components/admin/ByHeartDashboard';
+import NewsletterSubscribers from '@/components/admin/NewsletterSubscribers';
 import PageHeader from '@/components/v2/PageHeader';
 import SEO from '@/components/SEO';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -54,7 +55,7 @@ export interface UserProfile {
 
 const ADMIN_TABS = [
   'imports', 'slides', 'insights', 'events', 'venues',
-  'submissions', 'analytics', 'users', 'ai-logs', 'by-heart',
+  'submissions', 'analytics', 'newsletter', 'users', 'ai-logs', 'by-heart',
 ] as const;
 
 const AdminPanel = () => {
@@ -206,7 +207,7 @@ const AdminPanel = () => {
       </div>
 
       <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
-        <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-10 bg-secondary/50 p-1 rounded-2xl mb-8">
+        <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-6 bg-secondary/50 p-1 rounded-2xl mb-8">
           <TabsTrigger value="imports" className="rounded-xl flex items-center gap-2">
             <Inbox className="h-3.5 w-3.5" /> Imports
           </TabsTrigger>
@@ -222,6 +223,9 @@ const AdminPanel = () => {
           </TabsTrigger>
           <TabsTrigger value="submissions" className="rounded-xl">Contact</TabsTrigger>
           <TabsTrigger value="analytics" className="rounded-xl">Analytics</TabsTrigger>
+          <TabsTrigger value="newsletter" className="rounded-xl flex items-center gap-2">
+            <Mail className="h-3.5 w-3.5" /> Weekly picks
+          </TabsTrigger>
           <TabsTrigger value="users" className="rounded-xl">Users</TabsTrigger>
           <TabsTrigger value="ai-logs" className="rounded-xl flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5" /> AI Logs
@@ -307,6 +311,10 @@ const AdminPanel = () => {
         
         <TabsContent value="analytics" className="mt-0">
           <AnalyticsDashboard />
+        </TabsContent>
+
+        <TabsContent value="newsletter" className="mt-0">
+          <NewsletterSubscribers />
         </TabsContent>
 
         <TabsContent value="ai-logs" className="mt-0">

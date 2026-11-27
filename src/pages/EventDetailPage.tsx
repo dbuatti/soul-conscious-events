@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isSameDay } from 'date-fns';
-import { MapPin, Clock, Ticket, User, Share2, Edit, Trash2, Copy, ArrowLeft, ArrowRight, CalendarPlus, Download, Repeat, ExternalLink } from 'lucide-react';
+import { MapPin, Clock, Ticket, User, Edit, Trash2, Copy, ArrowLeft, ArrowRight, CalendarPlus, Download, Repeat, ExternalLink } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
 import { useEvents } from '@/hooks/use-events';
 import {
@@ -29,6 +29,7 @@ import EventCardV2 from '@/components/v2/EventCardV2';
 import LocationPicker from '@/components/v2/LocationPicker';
 import MapPreview from '@/components/v2/MapPreview';
 import EventSchema from '@/components/v2/EventSchema';
+import ShareEventButton from '@/components/ShareEventButton';
 
 
 const EventDetailPage: React.FC = () => {
@@ -171,7 +172,6 @@ const EventDetailPage: React.FC = () => {
     : format(startDate, 'MMM d, yyyy');
 
   const isMultiDay = !!endDate && !isSameDay(startDate, endDate);
-  const shareUrl = `${window.location.origin}/events/${getBaseEventId(event.id)}`;
   const booking = getBookingTarget(event);
 
   const handleBookingClick = () => {
@@ -198,15 +198,6 @@ const EventDetailPage: React.FC = () => {
 
   const handleViewDetails = (relatedEvent: Event) => {
     navigate(`/events/${getBaseEventId(relatedEvent.id)}`);
-  };
-
-  const handleShare = async () => {
-    const shareData = { title: event.event_name, text: `Check out ${event.event_name} on SoulFlow`, url: shareUrl };
-    if (navigator.share && navigator.canShare?.(shareData)) {
-      try { await navigator.share(shareData); } catch { /* dismissed */ }
-      return;
-    }
-    navigator.clipboard.writeText(shareUrl).then(() => toast.success('Link copied!'));
   };
 
   const detailRow = (Icon: React.ElementType, title: React.ReactNode, sub?: React.ReactNode) => (
@@ -380,9 +371,7 @@ const EventDetailPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-2.5">
               <BookmarkButton eventId={event.id} size="default" className="h-11 rounded-full bg-secondary hover:bg-secondary/70 border-none" />
-              <Button variant="secondary" onClick={handleShare} className="h-11 rounded-full">
-                <Share2 className="mr-2 h-4 w-4" /> Share
-              </Button>
+              <ShareEventButton event={event} label="Share kit" className="h-11 rounded-full" />
               <Button variant="ghost" asChild className="h-10 rounded-full text-sm text-muted-foreground hover:text-foreground">
                 <a href={getGoogleCalendarUrl(event)} target="_blank" rel="noopener noreferrer">
                   <CalendarPlus className="mr-2 h-4 w-4" /> Google Cal

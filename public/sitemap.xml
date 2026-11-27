@@ -18,6 +18,60 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://soulflowau.vercel.app/melbourne</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://soulflowau.vercel.app/sydney</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://soulflowau.vercel.app/brisbane</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://soulflowau.vercel.app/perth</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://soulflowau.vercel.app/adelaide</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://soulflowau.vercel.app/hobart</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://soulflowau.vercel.app/canberra</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://soulflowau.vercel.app/darwin</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://soulflowau.vercel.app/link</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://soulflowau.vercel.app/submit-event</loc>
     <lastmod>2026-11-22</lastmod>
     <changefreq>weekly</changefreq>

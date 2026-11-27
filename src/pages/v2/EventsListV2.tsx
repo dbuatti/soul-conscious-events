@@ -28,6 +28,7 @@ import { expandRecurringEvents, getAvailableVenues, getBaseEventId } from '@/uti
 import { useEventFilters } from '@/hooks/use-event-filters';
 import { useDeleteEvent, useEvents, useFavouriteVenues, useToggleFavouriteVenue } from '@/hooks/use-events';
 import SEO from '@/components/SEO';
+import WeeklyPicksSignup from '@/components/WeeklyPicksSignup';
 
 // Heavy, view-specific code is split out so it only loads when its view is opened.
 const AdvancedEventCalendar = lazy(() => import('@/components/AdvancedEventCalendar'));
@@ -41,7 +42,25 @@ const ViewLoadingFallback = () => (
 
 const EVENTS_PER_LOAD = 8;
 
-const EventsListV2 = () => {
+interface EventsListV2Props {
+  initialState?: string;
+  cityName?: string;
+  cityDescription?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  signupCity?: string;
+  signupSource?: string;
+}
+
+const EventsListV2: React.FC<EventsListV2Props> = ({
+  initialState,
+  cityName,
+  cityDescription,
+  seoTitle,
+  seoDescription,
+  signupCity,
+  signupSource,
+}) => {
   const { user, defaultState } = useSession();
   const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -88,7 +107,7 @@ const EventsListV2 = () => {
     return () => observer.disconnect();
   }, []);
 
-  const { filters, setFilters, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm);
+  const { filters, setFilters, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm, initialState);
 
   // Deduplicate recurring series for the list view: keep only the next upcoming instance per series.
   // Calendar and map views still receive the full filteredEvents so all instances are visible.
@@ -160,7 +179,7 @@ const EventsListV2 = () => {
 
   const handleClearFilters = () => {
     setRawSearchTerm('');
-    setFilters({ date: 'All Upcoming', category: [], venue: [], price: [], state: [] });
+    setFilters({ date: 'All Upcoming', category: [], venue: [], price: [], state: initialState ? [initialState] : [] });
   };
 
   const removeFilter = (type: keyof typeof filters, value?: string) => {
@@ -187,7 +206,7 @@ const EventsListV2 = () => {
   const selectedDayEvents = filteredEvents.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
   // The input shows rawSearchTerm so keystrokes appear immediately; only the
   // filtering hook uses the debounced value.
-  const hasActiveFilters = rawSearchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.length > 0;
+  const hasActiveFilters = rawSearchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.some((state) => state !== initialState);
 
   const comingUp = useMemo(() => listSource.slice(0, 3), [listSource]);
 
@@ -222,7 +241,7 @@ const EventsListV2 = () => {
     ...filters.state.map((v) => ({
       type: 'state' as const,
       value: v,
-      label: v === defaultState ? `${v} · your default` : v,
+      label: v === defaultState && !initialState ? `${v} · your default` : v,
     })),
   ];
 
@@ -238,8 +257,8 @@ const EventsListV2 = () => {
   return (
     <div className="w-full max-w-6xl px-2 sm:px-4">
       <SEO
-        title="SoulFlow | Discover Soulful Events in Australia"
-        description="Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, sound baths, and conscious gatherings."
+        title={seoTitle || 'SoulFlow | Discover Soulful Events in Australia'}
+        description={seoDescription || 'Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, sound baths, and conscious gatherings.'}
       />
 
       <div ref={heroRef}>
@@ -252,6 +271,11 @@ const EventsListV2 = () => {
           nextWeekCount={nextWeekCount}
           comingUp={comingUp}
           onViewDetails={handleViewDetails}
+          eyebrow={cityName ? `${cityName} · conscious events` : undefined}
+          title={cityName ? (
+            <>Conscious events in <span className="italic font-medium text-primary">{cityName}</span>.</>
+          ) : undefined}
+          description={cityDescription}
         />
       </div>
 
@@ -375,6 +399,14 @@ const EventsListV2 = () => {
             </div>
           )}
         </>
+      )}
+
+      {signupCity && (
+        <WeeklyPicksSignup
+          defaultCity={signupCity}
+          source={signupSource}
+          className="mt-16"
+        />
       )}
 
       {!loading && <HostCTA hasUser={!!user} />}

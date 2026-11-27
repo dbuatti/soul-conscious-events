@@ -26,12 +26,14 @@ interface EventAnalytics {
   total_views: number;
   total_ticket_clicks: number;
   total_discount_copies: number;
+  total_shares: number;
 }
 
 interface PageAnalytics {
   page_path: string;
   total_visits: number;
   total_add_event_clicks: number;
+  total_newsletter_signups: number;
 }
 
 const AnalyticsDashboard: React.FC = () => {
@@ -110,6 +112,7 @@ const AnalyticsDashboard: React.FC = () => {
           total_views: 0,
           total_ticket_clicks: 0,
           total_discount_copies: 0,
+          total_shares: 0,
         };
       }
 
@@ -117,6 +120,8 @@ const AnalyticsDashboard: React.FC = () => {
         aggregatedData[eventId].total_views++;
       } else if (log.log_type === 'ticket_click') {
         aggregatedData[eventId].total_ticket_clicks++;
+      } else if (['share', 'copy_event_link', 'copy_event_caption', 'copy_organiser_caption'].includes(log.log_type)) {
+        aggregatedData[eventId].total_shares++;
       }
     });
 
@@ -131,6 +136,7 @@ const AnalyticsDashboard: React.FC = () => {
           total_views: 0,
           total_ticket_clicks: 0,
           total_discount_copies: 1,
+          total_shares: 0,
         };
       }
     });
@@ -181,13 +187,16 @@ const AnalyticsDashboard: React.FC = () => {
           page_path: pagePath,
           total_visits: 0,
           total_add_event_clicks: 0,
+          total_newsletter_signups: 0,
         };
       }
 
-      if (log.action_type === 'visit') {
+      if (log.action_type === 'visit' || log.action_type?.startsWith('visit:')) {
         aggregatedData[pagePath].total_visits++;
       } else if (log.action_type === 'click_add_event_button') {
         aggregatedData[pagePath].total_add_event_clicks++;
+      } else if (log.action_type === 'newsletter_signup') {
+        aggregatedData[pagePath].total_newsletter_signups++;
       }
     });
 
@@ -239,13 +248,14 @@ const AnalyticsDashboard: React.FC = () => {
 
     // Event Analytics
     if (eventAnalyticsData.length > 0) {
-      const eventHeaders = ['Event ID', 'Event Name', 'Total Views', 'Total Ticket Clicks', 'Total Discount Copies'];
+      const eventHeaders = ['Event ID', 'Event Name', 'Total Views', 'Total Ticket Clicks', 'Total Discount Copies', 'Total Shares'];
       const eventRows = eventAnalyticsData.map(row => [
         row.event_id,
         `"${row.event_name.replace(/"/g, '""')}"`,
         row.total_views,
         row.total_ticket_clicks,
         row.total_discount_copies,
+        row.total_shares,
       ]);
       csvContent += 'Event Analytics\n';
       csvContent += [eventHeaders.join(','), ...eventRows.map(e => e.join(','))].join('\n');
@@ -254,11 +264,12 @@ const AnalyticsDashboard: React.FC = () => {
 
     // Page Analytics
     if (pageAnalyticsData.length > 0) {
-      const pageHeaders = ['Page Path', 'Total Visits', 'Total Add Event Clicks'];
+      const pageHeaders = ['Page Path', 'Total Visits', 'Total Add Event Clicks', 'Total Newsletter Signups'];
       const pageRows = pageAnalyticsData.map(row => [
         `"${row.page_path.replace(/"/g, '""')}"`,
         row.total_visits,
         row.total_add_event_clicks,
+        row.total_newsletter_signups,
       ]);
       csvContent += 'Page Analytics\n';
       csvContent += [pageHeaders.join(','), ...pageRows.map(e => e.join(','))].join('\n');
@@ -390,6 +401,7 @@ const AnalyticsDashboard: React.FC = () => {
                 <TableHead className="text-foreground">Total Views</TableHead>
                 <TableHead className="text-foreground">Ticket Clicks</TableHead>
                 <TableHead className="text-foreground">Discount Copies</TableHead>
+                <TableHead className="text-foreground">Shares / Link Copies</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -399,6 +411,7 @@ const AnalyticsDashboard: React.FC = () => {
                   <TableCell className="text-foreground">{data.total_views}</TableCell>
                   <TableCell className="text-foreground">{data.total_ticket_clicks}</TableCell>
                   <TableCell className="text-foreground">{data.total_discount_copies}</TableCell>
+                  <TableCell className="text-foreground">{data.total_shares}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -430,6 +443,7 @@ const AnalyticsDashboard: React.FC = () => {
                 <TableHead className="text-foreground">Page Path</TableHead>
                 <TableHead className="text-foreground">Total Visits</TableHead>
                 <TableHead className="text-foreground">"Add Event" Clicks</TableHead>
+                <TableHead className="text-foreground">Newsletter Signups</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -438,6 +452,7 @@ const AnalyticsDashboard: React.FC = () => {
                   <TableCell className="font-medium text-foreground">{data.page_path}</TableCell>
                   <TableCell className="text-foreground">{data.total_visits}</TableCell>
                   <TableCell className="text-foreground">{data.total_add_event_clicks}</TableCell>
+                  <TableCell className="text-foreground">{data.total_newsletter_signups}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

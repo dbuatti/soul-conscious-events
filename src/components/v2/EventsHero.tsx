@@ -24,6 +24,9 @@ interface EventsHeroProps {
   nextWeekCount: number;
   comingUp: Event[];
   onViewDetails: (event: Event) => void;
+  eyebrow?: string;
+  title?: React.ReactNode;
+  description?: string;
 }
 
 /**
@@ -39,18 +42,25 @@ const EventsHero = ({
   nextWeekCount,
   comingUp,
   onViewDetails,
+  eyebrow = 'Conscious events across Australia',
+  title = (
+    <>
+      Find your people.
+      <br />
+      <span className="italic font-medium text-primary">Soulful gatherings</span> near you.
+    </>
+  ),
+  description = 'Sound baths, breathwork, ecstatic dance, kirtan, circles and workshops, gathered in one calm place.',
 }: EventsHeroProps) => (
   <section className="hero-glow relative overflow-hidden rounded-[2rem] px-5 py-8 sm:px-12 sm:py-14 mb-6 animate-in fade-in duration-700 lg:grid lg:grid-cols-[1fr_20rem] lg:gap-12 lg:items-center">
     <div>
       <div className="max-w-3xl">
-        <p className="eyebrow mb-4">Conscious events across Australia</p>
+        <p className="eyebrow mb-4">{eyebrow}</p>
         <h1 className="text-[clamp(2.1rem,9vw,2.6rem)] leading-[1.04] sm:text-6xl xl:text-[4.25rem] font-heading font-semibold text-foreground">
-          Find your people.
-          <br />
-          <span className="italic font-medium text-primary">Soulful gatherings</span> near you.
+          {title}
         </h1>
         <p className="mt-5 text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
-          Sound baths, breathwork, ecstatic dance, kirtan, circles and workshops, gathered in one calm place.
+          {description}
         </p>
       </div>
 

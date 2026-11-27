@@ -14,6 +14,8 @@ import InstallPrompt from "./components/InstallPrompt";
 import Footer from "./components/Footer";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import ScrollProgress from "./components/ScrollProgress";
+import { CITY_GUIDES } from "@/lib/cities";
+import { getVisitActionType } from "@/lib/growth";
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
@@ -35,6 +37,7 @@ const EventsListV2 = lazy(() => import("./pages/v2/EventsListV2"));
 const LoginV2 = lazy(() => import("./pages/v2/LoginV2"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const LinkInBio = lazy(() => import("./pages/LinkInBio"));
+const CityGuide = lazy(() => import("./pages/CityGuide"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,11 +71,11 @@ const LayoutV2 = () => {
       const { error } = await supabase.from('page_visit_logs').insert([{
         user_id: user?.id || null,
         page_path: location.pathname,
-        action_type: 'visit',
+        action_type: getVisitActionType(location.search),
       }]);
       if (error) console.error('Error logging page view:', error);
     })();
-  }, [location.pathname, user?.id]);
+  }, [location.pathname, location.search, user?.id]);
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-background">
@@ -114,7 +117,10 @@ const App = () => (
 
               {/* V2 Prototype Routes */}
               <Route element={<LayoutV2 />}>
-                <Route path="/" element={<EventsListV2 />} />
+                <Route path="/" element={<EventsListV2 signupCity="melbourne" signupSource="homepage" />} />
+                {CITY_GUIDES.map((city) => (
+                  <Route key={city.slug} path={`/${city.slug}`} element={<CityGuide />} />
+                ))}
                 <Route path="/login" element={<LoginV2 />} />
                 {/* The events insert policy is auth.uid() = user_id, so a guest
                     can never save a submission. Gate the form up front rather
