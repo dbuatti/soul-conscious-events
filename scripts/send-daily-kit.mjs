@@ -164,7 +164,7 @@ function buildHtml(events) {
     const detailsUrl = `${SITE_URL}/events/${e.id}`;
     const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.event_name)}&dates=${e.event_date.replace(/-/g,'')}/${e.event_date.replace(/-/g,'')}&details=${encodeURIComponent((e.description||'').slice(0,200))}&location=${encodeURIComponent(e.place_name || e.location || '')}`;
     return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="sf-card" style="margin:0 0 20px 0;border:1px solid #e8e1d8;border-radius:16px;overflow:hidden;background:#ffffff;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="sf-card sf-dark-card" style="margin:0 0 20px 0;border:1px solid #e8e1d8;border-radius:16px;overflow:hidden;background:#ffffff;">
   <tr><td class="sf-card-cell" style="padding:16px;">
     ${img}
     ${e.event_type ? `<p style="margin:0 0 6px 0;"><span style="display:inline-block;padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:#b34629;background:#fde9e3;border-radius:999px;">${escapeHtml(e.event_type)}</span></p>` : ''}
@@ -174,12 +174,12 @@ function buildHtml(events) {
     ${desc ? `<p style="margin:8px 0 12px 0;font-size:14px;color:#5a534d;line-height:1.5;">${desc}</p>` : ''}
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 0 0;">
       <tr>
-        <td style="border-radius:999px;background:#b34629;">
-          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:inline-block;padding:10px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;">Book now</a>
+        <td valign="middle" align="center" style="border-radius:999px;background:#b34629;vertical-align:middle;">
+          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:inline-block;padding:10px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;line-height:1.2;text-align:center;vertical-align:middle;">Book now</a>
         </td>
         <td style="width:10px;"></td>
-        <td>
-          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:inline-block;padding:10px 18px;font-size:14px;font-weight:600;color:#b34629;text-decoration:none;border:1px solid #b34629;border-radius:999px;">Details</a>
+        <td valign="middle" align="center" style="vertical-align:middle;">
+          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:inline-block;padding:10px 18px;font-size:14px;font-weight:600;color:#b34629;text-decoration:none;border:1px solid #b34629;border-radius:999px;line-height:1.2;text-align:center;vertical-align:middle;">Details</a>
         </td>
       </tr>
     </table>
@@ -206,8 +206,16 @@ function buildHtml(events) {
     .sf-card-cell { padding:12px !important; }
     .sf-btn { display:block !important; width:100% !important; text-align:center !important; margin:4px 0 !important; }
   }
+  @media (prefers-color-scheme: dark) {
+    .sf-dark-bg { background-color:#1c1a18 !important; }
+    .sf-dark-card { background-color:#2a2622 !important; border-color:#3a3632 !important; }
+    .sf-dark-text { color:#e8e1d8 !important; }
+    .sf-dark-muted { color:#a09890 !important; }
+    .sf-dark-heading { color:#f5efe6 !important; }
+    .sf-dark-accent { color:#e8935a !important; }
+  }
 </style>
-<div style="background:#f5efe6;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div class="sf-dark-bg" style="background:#f5efe6;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <img src="${SITE_URL}/social-preview.jpeg" alt="SoulFlow Melbourne" width="600" style="max-width:600px;width:100%;height:auto;display:block;margin:0 auto 0 auto;border-radius:20px 20px 0 0;" />
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border-radius:0 0 20px 20px;overflow:hidden;">
     <tr><td style="padding:0;">
@@ -264,7 +272,9 @@ async function main() {
   console.log(`Found ${events.length} events (earliest to latest).`);
 
   const topEvent = events[0];
-  const subject = `SoulFlow Melbourne: ${events.length} picks for ${new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short' })} (incl. ${topEvent.event_name})`;
+  const hasTonight = events.some(e => isToday(e.event_date));
+  const urgency = hasTonight ? 'tonight' : 'today';
+  const subject = `SoulFlow Melbourne: ${events.length} soulful picks for ${urgency}`;
   const previewText = `${topEvent.event_name} and ${events.length - 1} more soulful things to do in Melbourne today.`;
   const content = buildHtml(events);
 
