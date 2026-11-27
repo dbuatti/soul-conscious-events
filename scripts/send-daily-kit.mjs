@@ -172,17 +172,10 @@ function buildHtml(events) {
     <p style="margin:0 0 4px 0;font-size:14px;color:#b34629;font-weight:600;">${dateLine}</p>
     <p style="margin:0 0 4px 0;font-size:13px;color:#8a7f75;">${venue}${price ? ' · ' + price : ''}</p>
     ${desc ? `<p style="margin:8px 0 12px 0;font-size:14px;color:#5a534d;line-height:1.5;">${desc}</p>` : ''}
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 0 0;">
-      <tr>
-        <td align="center" valign="middle" style="border-radius:999px;background:#b34629;padding:0;">
-          <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:block;padding:12px 24px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;line-height:1;text-align:center;">Book now</a>
-        </td>
-        <td style="width:10px;"></td>
-        <td align="center" valign="middle" style="border-radius:999px;border:1px solid #b34629;padding:0;">
-          <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:block;padding:12px 20px;font-size:14px;font-weight:600;color:#b34629;text-decoration:none;border-radius:999px;line-height:1;text-align:center;">Details</a>
-        </td>
-      </tr>
-    </table>
+    <div style="margin-top:12px;">
+      <a href="${escapeHtml(bookingUrl)}" class="sf-btn" style="display:inline-block;background:#b34629;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 24px;border-radius:999px;line-height:1;">Book now</a>
+      <a href="${escapeHtml(detailsUrl)}" class="sf-btn" style="display:inline-block;color:#b34629;font-size:14px;font-weight:700;text-decoration:none;padding:12px 20px;border:1px solid #b34629;border-radius:999px;line-height:1;margin-left:8px;">Details</a>
+    </div>
     <p style="margin:6px 0 0 0;font-size:11px;"><a href="${escapeHtml(calUrl)}" style="color:#8a7f75;text-decoration:none;">📅 Add to calendar</a></p>
   </td></tr>
 </table>`;
@@ -205,14 +198,7 @@ function buildHtml(events) {
     .sf-card { border-radius:12px !important; }
     .sf-card-cell { padding:12px !important; }
     .sf-btn { display:block !important; width:100% !important; text-align:center !important; margin:4px 0 !important; }
-  }
-  @media (prefers-color-scheme: dark) {
-    .sf-dark-bg { background-color:#1c1a18 !important; }
-    .sf-dark-card { background-color:#2a2622 !important; border-color:#3a3632 !important; }
-    .sf-dark-text { color:#e8e1d8 !important; }
-    .sf-dark-muted { color:#a09890 !important; }
-    .sf-dark-heading { color:#f5efe6 !important; }
-    .sf-dark-accent { color:#e8935a !important; }
+    .sf-btn-cell { display:block !important; width:100% !important; margin:4px 0 0 0 !important; }
   }
 </style>
 <div style="background:transparent;padding:24px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
