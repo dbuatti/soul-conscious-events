@@ -143,6 +143,9 @@ function buildHtml(events) {
     <tr><td style="padding:8px 24px 16px 24px;text-align:center;">
       <a href="${siteUrl}/melbourne" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:700;color:#ffffff;background:#3a3430;text-decoration:none;border-radius:999px;">See all Melbourne events</a>
     </td></tr>
+    <tr><td style="padding:0 24px 16px 24px;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#8a7f75;">Know someone who'd love this? <a href="mailto:?subject=Five%20soulful%20things%20in%20Melbourne%20today&body=Check%20out%20SoulFlow%3A%20https%3A%2F%2Fsoulflowau.vercel.app%2Fmelbourne" style="color:#b34629;text-decoration:none;font-weight:600;">Forward this email</a></p>
+    </td></tr>
     <tr><td style="padding:16px 24px 28px 24px;text-align:center;border-top:1px solid #e8e1d8;">
       <p style="margin:0 0 8px 0;font-size:13px;color:#8a7f75;">Discover more at <a href="${siteUrl}" style="color:#b34629;text-decoration:none;font-weight:600;">soulflowau.vercel.app</a></p>
       <p style="margin:0;font-size:11px;color:#b0a89e;"><a href="{{ unsubscribe_url }}" style="color:#b0a89e;text-decoration:underline;">Unsubscribe</a> · SoulFlow, Melbourne, VIC 3000, Australia</p>
@@ -180,7 +183,16 @@ async function main() {
     send_at: sendAt,
   };
 
-  const res = await fetch('https://api.kit.com/v4/broadcasts', {
+  async function fetchWithRetry(url, options, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      const r = await fetch(url, options);
+      if (r.ok || r.status < 500) return r;
+      if (i < retries - 1) await new Promise(x => setTimeout(x, 2000 * (i + 1)));
+    }
+    return fetch(url, options);
+  }
+
+  const res = await fetchWithRetry('https://api.kit.com/v4/broadcasts', {
     method: 'POST',
     headers: { 'X-Kit-Api-Key': KIT_API_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
