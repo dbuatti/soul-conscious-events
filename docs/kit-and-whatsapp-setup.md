@@ -15,6 +15,8 @@ Keep the two audiences separate:
 
 ## Kit setup
 
+**Status (27 Nov 2026):** dedicated SoulFlow Kit account created with `soulconsciousevents@gmail.com`, email confirmed, Creator trial cancelled and account downgraded to the **Free plan** (no card entered, no charge).
+
 1. Sign in to Kit with `soulconsciousevents@gmail.com`.
 2. Use the free plan. Create a **SoulFlow** brand/audience, separate from the personal business.
 3. Enable double opt-in and set a confirmation email that says “SoulFlow weekly picks — Melbourne”.
