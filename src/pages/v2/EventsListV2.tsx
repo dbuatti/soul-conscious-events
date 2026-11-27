@@ -254,6 +254,18 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     </div>
   );
 
+  // Scroll to a hash anchor (e.g. #weekly-picks) once content has loaded, so
+  // shared trial links land on the signup box instead of the top of the page.
+  useEffect(() => {
+    if (loading) return;
+    const hash = window.location.hash;
+    if (!hash) return;
+    const el = document.getElementById(hash.slice(1));
+    if (el) {
+      requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
+  }, [loading]);
+
   return (
     <div className="w-full max-w-6xl px-2 sm:px-4">
       <SEO

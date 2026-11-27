@@ -62,7 +62,7 @@ const WeeklyPicksSignup: React.FC<WeeklyPicksSignupProps> = ({
 
   if (isSubscribed) {
     return (
-      <div className={`organic-card rounded-[2rem] p-6 sm:p-8 text-center ${className || ''}`} role="status">
+      <div id="weekly-picks" className={`organic-card rounded-[2rem] p-6 sm:p-8 text-center scroll-mt-24 ${className || ''}`} role="status">
         <CheckCircle2 className="h-10 w-10 text-primary mx-auto mb-3" />
         <h2 className="text-2xl font-heading font-semibold text-foreground">You’re on the list.</h2>
         <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
@@ -76,7 +76,7 @@ const WeeklyPicksSignup: React.FC<WeeklyPicksSignupProps> = ({
   }
 
   return (
-    <section className={`organic-card rounded-[2rem] p-6 sm:p-8 ${className || ''}`} aria-labelledby="weekly-picks-title">
+    <section id="weekly-picks" className={`organic-card rounded-[2rem] p-6 sm:p-8 scroll-mt-24 ${className || ''}`} aria-labelledby="weekly-picks-title">
       <div className="flex items-start gap-4">
         <span className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Mail className="h-5 w-5" />
