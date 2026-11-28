@@ -220,7 +220,7 @@ const EventEditPage: React.FC = () => {
 
   if (!currentEvent) {
     return (
-      <div className="w-full max-w-6xl px-4 text-center py-20">
+      <div className="w-full max-w-6xl px-4 text-center py-12">
         <p className="text-muted-foreground">Event not found.</p>
       </div>
     );
@@ -229,7 +229,7 @@ const EventEditPage: React.FC = () => {
   const canEdit = isDuplicating || isAdmin || (!!user && user.id === currentEvent.user_id);
   if (!canEdit) {
     return (
-      <div className="w-full max-w-6xl px-4 text-center py-20">
+      <div className="w-full max-w-6xl px-4 text-center py-12">
         <p className="text-muted-foreground">You don't have permission to edit this event.</p>
       </div>
     );
@@ -238,12 +238,12 @@ const EventEditPage: React.FC = () => {
   return (
     <div className="w-full max-w-6xl px-4">
       <div className="mb-12 text-center">
-        <h2 className="text-5xl font-semibold text-foreground font-heading tracking-tight">
+        <h2 className="text-3xl sm:text-4xl font-semibold text-foreground font-heading tracking-tight">
           {isDuplicating ? 'Duplicate Event' : 'Edit Event'}
         </h2>
       </div>
 
-      <div className="bg-card p-8 sm:p-12 rounded-[2rem] shadow-xl border border-border organic-card">
+      <div className="bg-card p-6 sm:p-8 rounded-[1.5rem] shadow-md border border-border organic-card">
         <EventForm
           form={form}
           onSubmit={onSubmit}
