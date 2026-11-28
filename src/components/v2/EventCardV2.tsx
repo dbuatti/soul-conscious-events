@@ -8,7 +8,7 @@ import BookmarkButton from '@/components/BookmarkButton';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { ResilientImage } from '@/components/v2/ResilientImage';
-import { formatPrice, getBaseEventId } from '@/utils/event-utils';
+import { formatPriceShort, getBaseEventId } from '@/utils/event-utils';
 
 // Category colour system used across cards, map pins and the legend.
 const categoryColours: Record<string, string> = {
@@ -59,7 +59,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   const lowerPrice = event.price?.toLowerCase() ?? '';
   const isFree = lowerPrice.includes('free');
   const isDonation = lowerPrice.includes('donation');
-  const priceLabel = event.price ? formatPrice(event.price) : null;
+  const priceLabel = event.price ? formatPriceShort(event.price) : null;
 
   const baseId = getBaseEventId(event.id);
   const badgeColor = categoryBadgeColor(event.event_type);

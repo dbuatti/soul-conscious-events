@@ -146,6 +146,24 @@ export const formatPrice = (price?: string | null) => {
 };
 
 /**
+ * Compact price for cards: imported ticket prices include booking fees with
+ * cents ("$54.26–$255.43"), which reads as machine output in a list. Rounds
+ * plain dollar amounts and ranges to whole dollars ("$54–$255"). Anything
+ * that isn't a simple amount or range (e.g. "$20 / $15 concession") is left
+ * as formatPrice would show it. Use formatPrice for the exact figure.
+ */
+export const formatPriceShort = (price?: string | null) => {
+  const full = formatPrice(price);
+  const match = full.match(/^\$(\d+(?:\.\d{1,2})?)(?:\s*[–-]\s*\$?(\d+(?:\.\d{1,2})?))?$/);
+  if (!match) return full;
+  const dollars = (amount: string) => `$${Math.round(parseFloat(amount))}`;
+  const low = dollars(match[1]);
+  if (!match[2]) return low === '$0' ? 'Free' : low;
+  const high = dollars(match[2]);
+  return low === high ? low : `${low}–${high}`;
+};
+
+/**
  * Extracts the base UUID from an event ID.
  * Standard UUIDs have 4 hyphens (5 parts). 
  * Recurring instances append a date suffix (e.g., UUID-20231027).

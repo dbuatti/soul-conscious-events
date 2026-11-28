@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   expandRecurringEvents,
   formatPrice,
+  formatPriceShort,
   generateRecurringInstances,
   getAvailableVenues,
   getBaseEventId,
@@ -237,5 +238,20 @@ describe("groupEventsByTimeBucket", () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].label).toBe("Later in January");
     expect(groups[0].events).toHaveLength(2);
+  });
+});
+
+describe("formatPriceShort", () => {
+  it("rounds imported fee-inclusive prices to whole dollars", () => {
+    expect(formatPriceShort("$47.89")).toBe("$48");
+    expect(formatPriceShort("$54.26–$255.43")).toBe("$54–$255");
+    expect(formatPriceShort("27.78 - 59.54")).toBe("$28–$60");
+  });
+  it("keeps free, whole and non-numeric prices readable", () => {
+    expect(formatPriceShort("Free")).toBe("Free");
+    expect(formatPriceShort("$0.00")).toBe("Free");
+    expect(formatPriceShort("$40")).toBe("$40");
+    expect(formatPriceShort("$20 / $15 concession")).toBe("$20 / $15 concession");
+    expect(formatPriceShort("$49.60–$49.90")).toBe("$50");
   });
 });

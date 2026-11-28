@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { format, parseISO, isSameDay, isToday, addDays, startOfToday } from 'date-fns';
+import { format, parseISO, isSameDay, addDays, startOfToday } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Database } from 'lucide-react';
@@ -262,19 +262,30 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
 
   const comingUp = useMemo(() => listSource.slice(0, 3), [listSource]);
 
-  // Featured events: upcoming events with images, prioritising today's events
+  // Featured events: a discovery strip of events in the coming week that are
+  // NOT already on screen, with an image, one per category where possible so
+  // the strip shows range instead of repeating the first cards of the list.
   const featuredEvents = useMemo(() => {
-    const withImages = listSource.filter((e) => e.image_url);
-    return withImages
-      .sort((a, b) => {
-        const aToday = isToday(parseISO(a.event_date));
-        const bToday = isToday(parseISO(b.event_date));
-        if (aToday && !bToday) return -1;
-        if (!aToday && bToday) return 1;
-        return a.event_date.localeCompare(b.event_date);
-      })
-      .slice(0, 3);
-  }, [listSource]);
+    const shown = new Set(displayedEvents.map((e) => getBaseEventId(e.id)));
+    const weekOut = addDays(startOfToday(), 8);
+    const candidates = listSource.filter(
+      (e) => e.image_url && !shown.has(getBaseEventId(e.id)) && parseISO(e.event_date) < weekOut,
+    );
+    const picks: Event[] = [];
+    const seenTypes = new Set<string>();
+    for (const e of candidates) {
+      const type = e.event_type || 'Other';
+      if (seenTypes.has(type)) continue;
+      seenTypes.add(type);
+      picks.push(e);
+      if (picks.length === 3) return picks;
+    }
+    for (const e of candidates) {
+      if (picks.length === 3) break;
+      if (!picks.includes(e)) picks.push(e);
+    }
+    return picks;
+  }, [listSource, displayedEvents]);
 
   const nextWeekCount = useMemo(() => {
     const today = startOfToday();

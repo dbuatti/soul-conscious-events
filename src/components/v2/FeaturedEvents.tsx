@@ -1,7 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { format, parseISO, isToday } from 'date-fns';
-import { ArrowRight, Play, MapPin, Clock } from 'lucide-react';
+import { Play, MapPin, Clock } from 'lucide-react';
 import { Event } from '@/types/event';
 import { ResilientImage } from '@/components/v2/ResilientImage';
 import { cn } from '@/lib/utils';
@@ -26,16 +25,8 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
   events,
   onViewDetails,
 }) => {
-  // Show up to 3 featured events, prioritising today's events
-  const featured = events
-    .sort((a, b) => {
-      const aToday = isToday(parseISO(a.event_date));
-      const bToday = isToday(parseISO(b.event_date));
-      if (aToday && !bToday) return -1;
-      if (!aToday && bToday) return 1;
-      return a.event_date.localeCompare(b.event_date);
-    })
-    .slice(0, 3);
+  // The caller picks and orders the events (see EventsListV2).
+  const featured = events.slice(0, 3);
 
   if (featured.length === 0) return null;
 
@@ -45,15 +36,10 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
         <div className="flex items-center gap-2">
           <div className="w-2 h-8 rounded-full bg-primary" />
           <h2 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight">
-            Featured this week
+            Also on this week
           </h2>
         </div>
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-        >
-          See all events <ArrowRight className="h-4 w-4" />
-        </Link>
+        <span className="text-xs text-muted-foreground">Swipe for more</span>
       </div>
 
       {/* Swipeable horizontal carousel with scroll snap */}
