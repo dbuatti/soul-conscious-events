@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Map as MapIcon, Bookmark, Plus, User } from 'lucide-react';
+import { Home, Bookmark, Plus, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/components/SessionContextProvider';
 
@@ -10,7 +10,6 @@ import { useSession } from '@/components/SessionContextProvider';
  */
 const tabs = [
   { to: '/', label: 'Events', icon: Home, end: true },
-  { to: '/?view=map', label: 'Map', icon: MapIcon },
   { to: '/my-bookmarks', label: 'Saved', icon: Bookmark },
 ];
 

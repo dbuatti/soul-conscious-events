@@ -47,10 +47,10 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="w-full night-band mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-safe">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 lg:gap-12">
-          <div className="space-y-5 max-w-sm">
+    <footer className="w-full night-band mt-8 sm:mt-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-safe">
+        <div className="grid grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-x-6 gap-y-8 lg:gap-12">
+          <div className="col-span-2 lg:col-span-1 space-y-4 sm:space-y-5 max-w-sm">
             <Link to="/" className="inline-flex items-center gap-2.5">
               <SoulFlowMark className="h-9 w-9 [&_rect]:fill-secondary [&_path]:stroke-ink-foreground/70" />
               <span className="text-3xl font-semibold font-heading text-ink-foreground">SoulFlow</span>
@@ -69,9 +69,9 @@ const Footer = () => {
           </div>
 
           {linkGroups.map((group) => (
-            <div key={group.title} className="space-y-4">
+            <div key={group.title} className="space-y-3 sm:space-y-4">
               <h3 className="text-xs font-sans font-semibold uppercase tracking-[0.2em] text-ink-foreground/50">{group.title}</h3>
-              <nav className="flex flex-col gap-1.5" aria-label={group.title}>
+              <nav className="flex flex-col gap-0.5 sm:gap-1.5" aria-label={group.title}>
                 {group.links.map((link) => (
                   <Link key={link.to} to={link.to} className="text-sm py-1.5 text-ink-foreground/80 hover:text-ink-foreground transition-colors w-fit">
                     {link.label}
@@ -82,9 +82,9 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="mt-14 pt-8 border-t border-ink-foreground/10 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center text-xs text-ink-foreground/50">
+        <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-ink-foreground/10 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center text-xs text-ink-foreground/50">
           <p>&copy; {currentYear} SoulFlow. All rights reserved.</p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <a
               href="https://www.instagram.com/soulflowau"
               target="_blank"

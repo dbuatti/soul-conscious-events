@@ -81,7 +81,7 @@ const LayoutV2 = () => {
       </a>
       <ScrollProgress />
       <HeaderV2 />
-      <main id="main-content" tabIndex={-1} className="flex-grow w-full px-2 flex flex-col items-center pt-4 sm:pt-6 pb-24 md:pb-8 outline-none">
+      <main id="main-content" tabIndex={-1} className="flex-grow w-full px-2 flex flex-col items-center pt-4 sm:pt-6 pb-8 outline-none">
         <Outlet />
       </main>
       <Footer />

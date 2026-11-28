@@ -13,6 +13,8 @@ interface EventDayGroupsProps {
   /** Full-width block (e.g. the weekly-picks signup) placed after the Nth card. */
   interstitial?: ReactNode;
   interstitialAfter?: number;
+  /** All cards are on one chosen day, so hide their date. */
+  hideDate?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ const EventDayGroups = ({
   extraCountMap,
   interstitial,
   interstitialAfter = 3,
+  hideDate = false,
 }: EventDayGroupsProps) => {
   const dayGroups = useMemo(() => groupEventsByTimeBucket(events), [events]);
   // Position of the card the interstitial follows, counted across all groups.
@@ -59,6 +62,7 @@ const EventDayGroups = ({
                     onDelete={onDelete}
                     onViewDetails={onViewDetails}
                     additionalDatesCount={extraCountMap[getBaseEventId(event.id)] || 0}
+                    hideDate={hideDate}
                   />
                   {interstitial && seen === insertAt && <div className="col-span-full my-2">{interstitial}</div>}
                 </Fragment>

@@ -74,8 +74,9 @@ Deployment: `.github/workflows/deploy-edge-functions.yml` deploys every function
 
 ### Views
 
-Three view modes on the home page toggled in `EventsListV2`:
-- **List** — paginated `EventCardV2` grid (8 per load).
+View modes on the home page, switched by `ViewModeToggle` (end of the state-chip row) and kept in `?view=`:
+- **Compact list** (default, no `?view`) — `EventCardCompact` rows (8 per load). Cards drop their date when the date wheel is on a single day.
+- **Cards** (`?view=list`) — paginated `EventCardV2` grid (8 per load).
 - **Calendar** — `AdvancedEventCalendar` + day-specific event list.
 - **Map** — `LeafletMap` (react-leaflet) plotting events by geocoded address.
 

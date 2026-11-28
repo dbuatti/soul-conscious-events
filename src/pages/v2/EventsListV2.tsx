@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { format, parseISO, isSameDay, addDays, startOfToday } from 'date-fns';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,6 +22,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import EventsHero from '@/components/v2/EventsHero';
 import FeaturedEvents from '@/components/v2/FeaturedEvents';
 import EventsToolbar from '@/components/v2/EventsToolbar';
+import ViewModeToggle, { type ViewMode } from '@/components/v2/ViewModeToggle';
 import EventDayGroups from '@/components/v2/EventDayGroups';
 import HostCTA from '@/components/v2/HostCTA';
 import { NoEventsEmptyState, NoSearchResultsEmptyState, NoCalendarEventsEmptyState } from '@/components/v2/EmptyState';
@@ -58,6 +59,12 @@ interface EventsListV2Props {
   signupSource?: string;
 }
 
+const VIEW_MODES: ViewMode[] = ['list', 'compact', 'calendar', 'map'];
+const viewFromSearch = (search: string): ViewMode => {
+  const v = new URLSearchParams(search).get('view') as ViewMode | null;
+  return v && VIEW_MODES.includes(v) ? v : 'compact';
+};
+
 const EventsListV2: React.FC<EventsListV2Props> = ({
   initialState,
   cityName,
@@ -76,11 +83,8 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
 
   const location = useLocation();
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState<'list' | 'compact' | 'calendar' | 'map'>(() => {
-    const v = new URLSearchParams(window.location.search).get('view');
-    if (v === 'compact' || v === 'calendar' || v === 'map') return v as 'compact' | 'calendar' | 'map';
-    return 'list';
-  });
+  // Compact list is the default; ?view=list|calendar|map picks another view.
+  const [viewMode, setViewMode] = useState<ViewMode>(() => viewFromSearch(window.location.search));
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
 
@@ -152,10 +156,16 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     return set;
   }, [allEvents, filters.state, debouncedSearchTerm]);
 
+  // Follow ?view= when it changes while this page is open (links such as /map
+  // or the header's "Events" link), not only on first load.
+  useEffect(() => {
+    setViewMode(viewFromSearch(location.search));
+  }, [location.search]);
+
   // Keep the view mode in the URL so /map can redirect here with ?view=map.
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (viewMode === 'list') params.delete('view');
+    if (viewMode === 'compact') params.delete('view');
     else params.set('view', viewMode);
     const next = `${location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
     if (next !== `${location.pathname}${location.search}`) {
@@ -249,10 +259,14 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   // On phones the signup sat ~7,000px down, below every card. In the list
   // view it now follows the third event; elsewhere it stays at the bottom.
   // Only one copy renders, so #weekly-picks links still find it.
-  const inlineSignup = !!signupCity && isMobile && viewMode === 'list' && !loading && !eventsQuery.isError && displayedEvents.length > 0;
+  const inlineSignup = !!signupCity && isMobile && (viewMode === 'list' || viewMode === 'compact') && !loading && !eventsQuery.isError && displayedEvents.length > 0;
   const signupBlock = signupCity ? (
     <WeeklyPicksSignup defaultCity={signupCity} source={inlineSignup ? `${signupSource ?? 'website'}-inline` : signupSource} />
   ) : null;
+
+  // A specific day is picked in the date wheel: every card shows that day,
+  // so the cards can drop their own date.
+  const isSingleDay = /^\d{4}-\d{2}-\d{2}$/.test(filters.date);
 
   const comingUp = useMemo(() => listSource.slice(0, 3), [listSource]);
 
@@ -345,11 +359,13 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
           onChange={(v) => setFilters({ ...filters, date: v === 'all' ? 'All Upcoming' : v })}
           eventDates={eventDates}
         />
-        <div className="mt-2">
+        <div className="mt-2 flex items-center gap-2">
           <StateChips
+            className="flex-1 min-w-0"
             value={filters.state}
             onChange={(states) => setFilters({ ...filters, state: states })}
           />
+          <ViewModeToggle value={viewMode} onChange={setViewMode} className="mb-1" />
         </div>
       </div>
 
@@ -396,6 +412,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
                   onViewDetails={handleViewDetails}
                   extraCountMap={extraCountMap}
                   interstitial={inlineSignup ? signupBlock : undefined}
+                  hideDate={isSingleDay}
                 />
               ) : hasActiveFilters && rawSearchTerm !== '' ? (
                 <NoSearchResultsEmptyState />
@@ -422,14 +439,17 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
           ) : viewMode === 'compact' ? (
             <section aria-label="Upcoming events" className="space-y-2.5">
               {displayedEvents.length > 0 ? (
-                displayedEvents.map((event) => (
-                  <EventCardCompact
-                    key={event.id}
-                    event={event}
-                    onDelete={handleDelete}
-                    onViewDetails={handleViewDetails}
-                    additionalDatesCount={extraCountMap[getBaseEventId(event.id)] || 0}
-                  />
+                displayedEvents.map((event, i) => (
+                  <Fragment key={event.id}>
+                    <EventCardCompact
+                      event={event}
+                      onDelete={handleDelete}
+                      onViewDetails={handleViewDetails}
+                      additionalDatesCount={extraCountMap[getBaseEventId(event.id)] || 0}
+                      hideDate={isSingleDay}
+                    />
+                    {inlineSignup && i === Math.min(2, displayedEvents.length - 1) && <div className="py-3">{signupBlock}</div>}
+                  </Fragment>
                 ))
               ) : hasActiveFilters && rawSearchTerm !== '' ? (
                 <NoSearchResultsEmptyState />

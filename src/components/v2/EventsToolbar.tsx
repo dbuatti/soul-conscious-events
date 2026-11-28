@@ -35,7 +35,11 @@ const EventsToolbar = ({
   showCompactSearch = false,
   onSearchTermChange,
   showFilters = true,
-}: EventsToolbarProps) => (
+}: EventsToolbarProps) => {
+  // With the filter dropdowns hidden, the bar only exists to hold the compact
+  // search once the hero search has scrolled away.
+  if (!showFilters && !(showCompactSearch && onSearchTermChange)) return null;
+  return (
   <div className="sticky top-0 z-30 -mx-2 sm:-mx-4 px-2 sm:px-4 py-2.5 sm:py-3 mb-6 bg-background/85 backdrop-blur-xl border-b border-border/50">
     {showCompactSearch && onSearchTermChange && (
       <div className="relative mb-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
@@ -59,6 +63,7 @@ const EventsToolbar = ({
         )}
       </div>
     )}
+    {showFilters && (
     <FilterDropdownsV2
       currentFilters={filters}
       onFilterChange={onFilterChange}
@@ -70,8 +75,10 @@ const EventsToolbar = ({
       onViewModeChange={onViewModeChange}
       showFilters={showFilters}
     />
+    )}
 
   </div>
-);
+  );
+};
 
 export default EventsToolbar;

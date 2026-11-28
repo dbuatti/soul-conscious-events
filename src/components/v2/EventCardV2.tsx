@@ -34,6 +34,8 @@ interface EventCardV2Props {
   /** Omit to hide the delete control (e.g. read-only views like bookmarks). */
   onDelete?: (eventId: string, e: React.MouseEvent) => void;
   additionalDatesCount?: number;
+  /** Hide the calendar tile (e.g. when the list is already filtered to one day). */
+  hideDate?: boolean;
 }
 
 const EventCardV2: React.FC<EventCardV2Props> = ({
@@ -41,6 +43,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
   onDelete,
   onViewDetails,
   additionalDatesCount = 0,
+  hideDate = false,
 }) => {
   const { user, isAdmin } = useSession();
   const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
@@ -117,11 +120,13 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-foreground/25 to-transparent pointer-events-none" />
 
         {/* Calendar tile */}
+        {!hideDate && (
         <div className="absolute top-2.5 left-2.5 z-20 flex flex-col items-center justify-center w-12 rounded-lg bg-background/95 backdrop-blur shadow-sm py-1 leading-none">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{format(eventDate, 'EEE')}</span>
           <span className="font-heading text-2xl font-semibold text-foreground mt-0.5">{format(eventDate, 'd')}</span>
           <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-0.5">{format(eventDate, 'MMM')}</span>
         </div>
+        )}
 
         <div className="absolute top-3 right-3 z-20 flex gap-2">
           <button type="button" onClick={handleNativeShare} className={iconButton} aria-label={`Share ${event.event_name}`}>
