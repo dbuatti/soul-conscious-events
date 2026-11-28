@@ -4,6 +4,9 @@
  * Instagram, Messenger etc. (which don't run JavaScript) preview the real
  * event instead of the generic homepage card. See src/lib/share-meta.ts.
  *
+ * Imports use .js extensions: the package is ESM and Vercel runs the
+ * compiled files with Node, which does not resolve extensionless imports.
+ *
  * Routed from vercel.json. On any failure it redirects to the same URL with
  * ?spa=1, which vercel.json serves as the plain SPA, so a page never breaks.
  */
@@ -17,8 +20,8 @@ import {
   injectPageMeta,
   type PageMeta,
   type ShareableEvent,
-} from '../src/lib/share-meta';
-import { CITY_GUIDES } from '../src/lib/cities';
+} from '../src/lib/share-meta.js';
+import { CITY_GUIDES } from '../src/lib/cities.js';
 
 // Public values (the same ones shipped in the browser bundle). Reads go
 // through Row Level Security as the anonymous role.
