@@ -21,7 +21,7 @@ import { Event } from '@/types/event';
 import { useLocation, useNavigate } from 'react-router-dom';
 import EventsHero from '@/components/v2/EventsHero';
 import FeaturedEvents from '@/components/v2/FeaturedEvents';
-import EventsToolbar, { type FilterBadge } from '@/components/v2/EventsToolbar';
+import EventsToolbar from '@/components/v2/EventsToolbar';
 import EventDayGroups from '@/components/v2/EventDayGroups';
 import HostCTA from '@/components/v2/HostCTA';
 import { NoEventsEmptyState, NoSearchResultsEmptyState, NoCalendarEventsEmptyState } from '@/components/v2/EmptyState';
@@ -34,6 +34,7 @@ import { useEventFilters } from '@/hooks/use-event-filters';
 import { useDeleteEvent, useEvents, useFavouriteVenues, useToggleFavouriteVenue } from '@/hooks/use-events';
 import SEO from '@/components/SEO';
 import WeeklyPicksSignup from '@/components/WeeklyPicksSignup';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Heavy, view-specific code is split out so it only loads when its view is opened.
 const AdvancedEventCalendar = lazy(() => import('@/components/AdvancedEventCalendar'));
@@ -67,6 +68,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   signupSource,
 }) => {
   const { user, defaultState } = useSession();
+  const isMobile = useIsMobile();
   const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -133,7 +135,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     return () => observer.disconnect();
   }, []);
 
-  const { filters, setFilters, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm, initialState);
+  const { filters, setFilters, filteredEvents } = useEventFilters(allEvents, defaultState, debouncedSearchTerm, initialState);
   const eventDates = useMemo(() => {
     const stateFilter = filters.state;
     const term = debouncedSearchTerm.trim().toLowerCase();
@@ -229,22 +231,6 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     setIsEventDetailDialogOpen(true);
   };
 
-  const handleClearFilters = () => {
-    setRawSearchTerm('');
-    setFilters({ date: 'All Upcoming', category: [], venue: [], price: [], state: initialState ? [initialState] : [] });
-  };
-
-  const removeFilter = (type: keyof typeof filters, value?: string) => {
-    if (type === 'date') {
-      setFilters({ ...filters, date: 'All Upcoming' });
-    } else if (Array.isArray(filters[type])) {
-      setFilters({
-        ...filters,
-        [type]: (filters[type] as string[]).filter(v => v !== value)
-      });
-    }
-  };
-
   const toggleQuickFilter = (category: string) => {
     const isSelected = filters.category.includes(category);
     setFilters({
@@ -259,6 +245,14 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   // The input shows rawSearchTerm so keystrokes appear immediately; only the
   // filtering hook uses the debounced value.
   const hasActiveFilters = rawSearchTerm !== '' || filters.date !== 'All Upcoming' || filters.category.length > 0 || filters.venue.length > 0 || filters.price.length > 0 || filters.state.some((state) => state !== initialState);
+
+  // On phones the signup sat ~7,000px down, below every card. In the list
+  // view it now follows the third event; elsewhere it stays at the bottom.
+  // Only one copy renders, so #weekly-picks links still find it.
+  const inlineSignup = !!signupCity && isMobile && viewMode === 'list' && !loading && !eventsQuery.isError && displayedEvents.length > 0;
+  const signupBlock = signupCity ? (
+    <WeeklyPicksSignup defaultCity={signupCity} source={inlineSignup ? `${signupSource ?? 'website'}-inline` : signupSource} />
+  ) : null;
 
   const comingUp = useMemo(() => listSource.slice(0, 3), [listSource]);
 
@@ -296,26 +290,6 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     }).length;
   }, [listSource]);
 
-  const dateBadgeLabel = (() => {
-    if (filters.date === 'All Upcoming') return null;
-    if (/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
-      try {
-        return format(parseISO(filters.date), 'EEE d MMM');
-      } catch { return filters.date; }
-    }
-    return filters.date;
-  })();
-  const filterBadges: FilterBadge[] = [
-    ...(dateBadgeLabel ? [{ type: 'date' as const, label: dateBadgeLabel }] : []),
-    ...filters.category.map((v) => ({ type: 'category' as const, value: v, label: v })),
-    ...filters.venue.map((v) => ({ type: 'venue' as const, value: v, label: v })),
-    ...filters.price.map((v) => ({ type: 'price' as const, value: v, label: v })),
-    ...filters.state.map((v) => ({
-      type: 'state' as const,
-      value: v,
-      label: v === defaultState && !initialState ? `${v} · your default` : v,
-    })),
-  ];
 
   const statusPanel = (Icon: React.ElementType, title: string, message: React.ReactNode, action: React.ReactNode) => (
     <div className="py-16 sm:py-24 px-6 organic-card rounded-[2rem] text-center">
@@ -336,7 +310,9 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     if (el) {
       requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     }
-  }, [loading]);
+    // Re-run when the signup moves inline on phones (useIsMobile settles
+    // after the first render), so #weekly-picks lands on its final spot.
+  }, [loading, inlineSignup]);
 
   return (
     <div className="w-full max-w-7xl px-3 sm:px-6">
@@ -386,14 +362,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
         isUserLoggedIn={!!user}
         viewMode={viewMode}
         onViewModeChange={(mode) => setViewMode(mode)}
-        hasActiveFilters={hasActiveFilters}
         searchTerm={rawSearchTerm}
-        onClearSearch={() => setRawSearchTerm('')}
-        badges={filterBadges}
-        onRemoveBadge={removeFilter}
-        onClearFilters={handleClearFilters}
-        shownCount={paginationSource.length}
-        totalCount={totalCount}
         showCompactSearch={!heroSearchVisible}
         onSearchTermChange={setRawSearchTerm}
         showFilters={false}
@@ -426,6 +395,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
                   onDelete={handleDelete}
                   onViewDetails={handleViewDetails}
                   extraCountMap={extraCountMap}
+                  interstitial={inlineSignup ? signupBlock : undefined}
                 />
               ) : hasActiveFilters && rawSearchTerm !== '' ? (
                 <NoSearchResultsEmptyState />
@@ -529,13 +499,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
         </>
       )}
 
-      {signupCity && (
-        <WeeklyPicksSignup
-          defaultCity={signupCity}
-          source={signupSource}
-          className="mt-16"
-        />
-      )}
+      {signupCity && !inlineSignup && <div className="mt-16">{signupBlock}</div>}
 
       {!loading && <HostCTA hasUser={!!user} />}
 
