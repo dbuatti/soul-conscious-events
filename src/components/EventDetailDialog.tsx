@@ -59,22 +59,40 @@ interface EventDetailDialogProps {
   onClose: () => void;
 }
 
-const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, onClose }) => {
+const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event: listEvent, isOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, isAdmin } = useSession();
   const isMobile = useIsMobile();
+  // List cards use a reduced field set, so fetch the full row on open to get
+  // details (description, address, schedule, discount code) the cards omit.
+  const [event, setEvent] = useState<Event | null>(listEvent);
 
   useEffect(() => {
-    if (!isOpen || !event) return;
+    if (listEvent && (!event || event.id !== listEvent.id)) setEvent(listEvent);
+  }, [listEvent, event?.id]);
+
+  useEffect(() => {
+    if (!isOpen || !listEvent) return;
     (async () => {
-      const { error } = await supabase.from('event_analytics_logs').insert([{
-        event_id: getBaseEventId(event.id),
+      const baseId = getBaseEventId(listEvent.id);
+      const { data, error } = await supabase.from('events').select('*').eq('id', baseId).maybeSingle();
+      if (error) {
+        console.error('Error fetching event details:', error);
+        return;
+      }
+      if (data) {
+        // Keep the clicked date for recurring instances, but take every other
+        // field (including description) from the full row.
+        setEvent({ ...(data as Event), ...(listEvent.id !== baseId ? { id: listEvent.id, event_date: listEvent.event_date } : {}) });
+      }
+      const { error: logError } = await supabase.from('event_analytics_logs').insert([{
+        event_id: baseId,
         user_id: user?.id || null,
         log_type: 'view',
       }]);
-      if (error) console.error('Error logging dialog view:', error);
+      if (logError) console.error('Error logging dialog view:', logError);
     })();
-  }, [isOpen, event, user?.id]);
+  }, [isOpen, listEvent, user?.id]);
 
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
