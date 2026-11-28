@@ -291,14 +291,23 @@ const EventDetailPage: React.FC = () => {
             </section>
           )}
 
-          {event.description && (
-            <section>
-              <h2 className="text-2xl font-semibold font-heading text-foreground mb-4">About this gathering</h2>
+          <section>
+            <h2 className="text-2xl font-semibold font-heading text-foreground mb-4">About this gathering</h2>
+            {event.description ? (
               <p className="text-[1.0625rem] leading-[1.8] text-foreground/80 whitespace-pre-wrap max-w-prose">
                 {event.description}
               </p>
-            </section>
-          )}
+            ) : (
+              <p className="text-[1.0625rem] leading-[1.8] text-muted-foreground max-w-prose">
+                No description has been added for this event yet.{' '}
+                {booking.href ? (
+                  <>Check the <a href={booking.href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">organiser's page</a> for full details.</>
+                ) : (
+                  <>Check the organiser's page for full details.</>
+                )}
+              </p>
+            )}
+          </section>
 
           {event.event_days && event.event_days.length > 0 && (
             <section>

@@ -314,14 +314,23 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event: listEvent,
           </div>
         </section>
 
-        {event.description && (
-          <section className="space-y-2">
-            <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">About this event</h3>
+        <section className="space-y-2">
+          <h3 className="font-sans text-[11px] uppercase font-semibold tracking-[0.18em] text-muted-foreground">About this event</h3>
+          {event.description ? (
             <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
               {event.description}
             </p>
-          </section>
-        )}
+          ) : (
+            <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+              No description has been added for this event yet.{' '}
+              {booking.href ? (
+                <>Check the <a href={booking.href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">organiser's page</a> for full details.</>
+              ) : (
+                <>Check the organiser's page for full details.</>
+              )}
+            </p>
+          )}
+        </section>
 
         <button
           onClick={() => { onClose(); navigate(`/events/${getBaseEventId(event.id)}`); }}
