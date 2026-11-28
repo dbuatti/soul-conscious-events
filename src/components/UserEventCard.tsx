@@ -133,26 +133,26 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
         </CardContent>
         <CardFooter className="px-4 pb-4 sm:px-5 sm:pb-5 pt-2">
           <div className="flex justify-end w-full space-x-1 sm:space-x-2">
-            <Button variant="outline" size="icon" onClick={handleViewDetails} title="View Details" className="h-8 w-8">
+            <Button variant="outline" size="icon" onClick={handleViewDetails} title="View Details" aria-label="View Details" className="h-8 w-8">
               <ExternalLink className="h-3.5 w-3.5 sm:h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" onClick={handleShare} title="Share Event" className="h-8 w-8">
+            <Button variant="outline" size="icon" onClick={handleShare} title="Share Event" aria-label="Share Event" className="h-8 w-8">
               <Share2 className="h-3.5 w-3.5 sm:h-4 w-4" />
             </Button>
             <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }}>
-              <Button variant="outline" size="icon" title="Edit Event" className="h-8 w-8">
+              <Button variant="outline" size="icon" title="Edit Event" aria-label="Edit Event" className="h-8 w-8">
                 <Edit className="h-3.5 w-3.5 sm:h-4 w-4" />
               </Button>
             </Link>
             {/* New Duplicate Button */}
             <Link to={`/duplicate-event/${event.id}`} state={{ from: location.pathname }}>
-              <Button variant="outline" size="icon" title="Duplicate Event" className="h-8 w-8">
+              <Button variant="outline" size="icon" title="Duplicate Event" aria-label="Duplicate Event" className="h-8 w-8">
                 <Copy className="h-3.5 w-3.5 sm:h-4 w-4" />
               </Button>
             </Link>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon" title="Delete Event" className="h-8 w-8">
+                <Button variant="destructive" size="icon" title="Delete Event" aria-label="Delete Event" className="h-8 w-8">
                   <Trash2 className="h-3.5 w-3.5 sm:h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>

@@ -19,7 +19,7 @@ const DevTaskCard: React.FC<DevTaskCardProps> = ({ task, onTaskUpdated }) => {
       <Card className="bg-card shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-primary">
         <CardHeader className="flex flex-row items-start justify-between pb-2">
           <CardTitle className="text-lg font-semibold text-foreground">{task.title}</CardTitle>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditDialogOpen(true)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditDialogOpen(true)} aria-label="Edit task">
             <Edit className="h-4 w-4" />
           </Button>
         </CardHeader>

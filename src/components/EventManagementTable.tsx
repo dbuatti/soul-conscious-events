@@ -330,22 +330,22 @@ const EventManagementTable = () => {
                   </TableCell>
                   <TableCell className="text-right flex justify-end space-x-2">
                     {event.is_deleted ? (
-                      <Button variant="outline" size="sm" title="Restore Event" onClick={() => handleRestore(event.id)}>
+                      <Button variant="outline" size="sm" title="Restore Event" aria-label="Restore Event" onClick={() => handleRestore(event.id)}>
                         <RefreshCw className="h-4 w-4" />
                       </Button>
                     ) : (
                       <>
-                        <Button variant="outline" size="sm" title="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
+                        <Button variant="outline" size="sm" title="View Event" aria-label="View Event" className="transition-all duration-300 ease-in-out transform hover:scale-105" onClick={() => handleViewDetails(event)}>
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                         <Link to={`/edit-event/${getBaseEventId(event.id)}`} onClick={(e) => e.stopPropagation()}>
-                          <Button variant="outline" size="sm" title="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                          <Button variant="outline" size="sm" title="Edit Event" aria-label="Edit Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                             <Edit className="h-4 w-4" />
                           </Button>
                         </Link>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm" title="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                            <Button variant="destructive" size="sm" title="Delete Event" aria-label="Delete Event" className="transition-all duration-300 ease-in-out transform hover:scale-105">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>

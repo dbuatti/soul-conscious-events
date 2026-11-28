@@ -171,7 +171,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />} Save location
           </Button>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon" className="rounded-full">
+            <Button variant="outline" size="icon" className="rounded-full" aria-label="Close">
               <X className="h-4 w-4" />
             </Button>
           </DialogTrigger>

@@ -104,7 +104,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                 className="focus-visible:ring-primary"
               />
               {localSearchTerm !== '' && (
-                <Button variant="ghost" size="icon" onClick={() => handleClearIndividual('search')} className="h-8 w-8">
+                <Button variant="ghost" size="icon" onClick={() => handleClearIndividual('search')} className="h-8 w-8" aria-label="Clear search">
                   <X className="h-4 w-4" />
                 </Button>
               )}
@@ -133,7 +133,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                 </SelectContent>
               </Select>
               {localEventType !== 'All' && (
-                <Button variant="ghost" size="icon" onClick={() => handleClearIndividual('eventType')} className="h-8 w-8">
+                <Button variant="ghost" size="icon" onClick={() => handleClearIndividual('eventType')} className="h-8 w-8" aria-label="Clear event type">
                   <X className="h-4 w-4" />
                 </Button>
               )}
@@ -162,7 +162,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                 </SelectContent>
               </Select>
               {localGeographicalState !== 'All' && (
-                <Button variant="ghost" size="icon" onClick={() => handleClearIndividual('state')} className="h-8 w-8">
+                <Button variant="ghost" size="icon" onClick={() => handleClearIndividual('state')} className="h-8 w-8" aria-label="Clear state">
                   <X className="h-4 w-4" />
                 </Button>
               )}
@@ -190,7 +190,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                 </SelectContent>
               </Select>
               {localDateFilter !== 'All Upcoming' && (
-                <Button variant="ghost" size="icon" onClick={() => handleClearIndividual('dateFilter')} className="h-8 w-8">
+                <Button variant="ghost" size="icon" onClick={() => handleClearIndividual('dateFilter')} className="h-8 w-8" aria-label="Clear date filter">
                   <X className="h-4 w-4" />
                 </Button>
               )}

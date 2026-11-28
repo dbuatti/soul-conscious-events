@@ -132,7 +132,7 @@ const EventCardList: React.FC<EventCardListProps> = ({
             {isCreatorOrAdmin && (
               <>
                 <Link to={`/edit-event/${baseId}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="outline" size="icon" title="Edit Event" aria-label="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                     <Edit className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
                   </Button>
                 </Link>

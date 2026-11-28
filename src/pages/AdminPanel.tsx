@@ -378,18 +378,18 @@ const AdminPanel = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" title="Edit User" onClick={() => handleEditUser(profile)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
+                          <Button variant="ghost" size="icon" title="Edit User" aria-label="Edit User" onClick={() => handleEditUser(profile)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Resend Confirmation" onClick={() => handleResendConfirmation(profile.id, profile.email)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
+                          <Button variant="ghost" size="icon" title="Resend Confirmation" aria-label="Resend Confirmation" onClick={() => handleResendConfirmation(profile.id, profile.email)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
                             <RefreshCw className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Reset Password" onClick={() => handleResetPassword(profile.id)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
+                          <Button variant="ghost" size="icon" title="Reset Password" aria-label="Reset Password" onClick={() => handleResetPassword(profile.id)} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary">
                             <Key className="h-4 w-4" />
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" title="Delete User" className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive">
+                              <Button variant="ghost" size="icon" title="Delete User" aria-label="Delete User" className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </AlertDialogTrigger>
