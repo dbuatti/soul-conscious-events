@@ -55,14 +55,14 @@ const DateWheel: React.FC<DateWheelProps> = ({ value, onChange, days = 14, class
             aria-selected={active}
             onClick={() => onChange(chip.key)}
             className={cn(
-              'shrink-0 flex flex-col items-center justify-center min-w-[64px] h-14 rounded-xl border text-xs font-semibold transition-colors',
+              'shrink-0 flex flex-col items-center justify-center min-w-[76px] h-14 rounded-xl border text-xs font-semibold transition-colors',
               active
                 ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                 : 'bg-card border-border/70 text-foreground hover:border-primary/40 hover:text-primary',
             )}
           >
-            <span className="text-[11px] uppercase tracking-wider leading-none">{chip.label}</span>
-            <span className={cn('text-[10px] mt-1 leading-none', active ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
+            <span className="text-[10px] uppercase tracking-wide leading-none">{chip.label}</span>
+            <span className={cn('text-[9px] mt-1.5 leading-none', active ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
               {chip.sub}
             </span>
           </button>
