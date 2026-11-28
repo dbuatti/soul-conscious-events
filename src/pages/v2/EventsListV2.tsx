@@ -21,7 +21,6 @@ import { Event } from '@/types/event';
 import { useLocation, useNavigate } from 'react-router-dom';
 import EventsHero from '@/components/v2/EventsHero';
 import FeaturedEvents from '@/components/v2/FeaturedEvents';
-import EventsToolbar from '@/components/v2/EventsToolbar';
 import ViewModeToggle, { type ViewMode } from '@/components/v2/ViewModeToggle';
 import EventDayGroups from '@/components/v2/EventDayGroups';
 import HostCTA from '@/components/v2/HostCTA';
@@ -29,10 +28,10 @@ import { NoEventsEmptyState, NoSearchResultsEmptyState, NoCalendarEventsEmptySta
 import DateWheel from '@/components/v2/DateWheel';
 import StateChips from '@/components/v2/StateChips';
 import { useSession } from '@/components/SessionContextProvider';
-import { expandRecurringEvents, getAvailableVenues, getBaseEventId } from '@/utils/event-utils';
+import { expandRecurringEvents, getBaseEventId } from '@/utils/event-utils';
 import { logSearch, logUiAction } from '@/lib/analytics';
 import { useEventFilters } from '@/hooks/use-event-filters';
-import { useDeleteEvent, useEvents, useFavouriteVenues, useToggleFavouriteVenue } from '@/hooks/use-events';
+import { useDeleteEvent, useEvents } from '@/hooks/use-events';
 import SEO from '@/components/SEO';
 import WeeklyPicksSignup from '@/components/WeeklyPicksSignup';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -94,14 +93,11 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
 
   const eventsQuery = useEvents();
   const deleteEvent = useDeleteEvent();
-  const toggleFavouriteVenue = useToggleFavouriteVenue(user?.id);
-  const { data: favouriteVenues = [] } = useFavouriteVenues(user?.id);
 
   const allEvents = useMemo(() => expandRecurringEvents(eventsQuery.data ?? []), [eventsQuery.data]);
   // Dates that actually have events for the currently selected state/search,
   // so the date wheel only marks days that will show results.
 
-  const availableVenues = useMemo(() => getAvailableVenues(eventsQuery.data ?? []), [eventsQuery.data]);
 
   const loading = eventsQuery.isLoading;
 
@@ -124,20 +120,6 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   useEffect(() => {
     void logUiAction(`view_mode:${viewMode}`, user?.id ?? null);
   }, [viewMode, user?.id]);
-
-  // Compact search in the sticky toolbar: only while the hero search box is
-  // scrolled out of view (the hero owns the search UI at the top of the page).
-  const heroRef = React.useRef<HTMLDivElement>(null);
-  const [heroSearchVisible, setHeroSearchVisible] = useState(true);
-  useEffect(() => {
-    if (!heroRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setHeroSearchVisible(entry.isIntersecting),
-      { rootMargin: '-64px 0px 0px 0px' } // account for the sticky filter toolbar
-    );
-    observer.observe(heroRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   const { filters, setFilters, filteredEvents } = useEventFilters(allEvents, defaultState, debouncedSearchTerm, initialState);
   const eventDates = useMemo(() => {
@@ -207,17 +189,6 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     setOffset(prevOffset => prevOffset + nextEvents.length);
     setHasMore(paginationSource.length > offset + nextEvents.length);
     setLoadingMore(false);
-  };
-
-  const handleToggleFavouriteVenue = (placeName: string, isFavourited: boolean) => {
-    if (!user) {
-      toast.info('Please log in to favourite venues.');
-      return;
-    }
-    toggleFavouriteVenue.mutate(
-      { placeName, isFavourited },
-      { onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update favourites.') },
-    );
   };
 
   const handleDelete = (eventId: string, e: React.MouseEvent) => {
@@ -335,7 +306,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
         description={seoDescription || 'Connect with events that nourish your mind, body, and spirit across Australia. Find workshops, meditations, sound baths, and conscious gatherings.'}
       />
 
-      <div ref={heroRef}>
+      <div>
         <EventsHero
           searchTerm={rawSearchTerm}
           onSearchTermChange={setRawSearchTerm}
@@ -368,21 +339,6 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
           <ViewModeToggle value={viewMode} onChange={setViewMode} className="mb-1" />
         </div>
       </div>
-
-      <EventsToolbar
-        filters={filters}
-        onFilterChange={setFilters}
-        availableVenues={availableVenues}
-        favouriteVenues={favouriteVenues}
-        onToggleFavouriteVenue={handleToggleFavouriteVenue}
-        isUserLoggedIn={!!user}
-        viewMode={viewMode}
-        onViewModeChange={(mode) => setViewMode(mode)}
-        searchTerm={rawSearchTerm}
-        showCompactSearch={!heroSearchVisible}
-        onSearchTermChange={setRawSearchTerm}
-        showFilters={false}
-      />
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6" aria-busy="true" aria-label="Loading events">
