@@ -251,6 +251,10 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
             <List className="h-3.5 w-3.5" />
             <span className="hidden sm:inline text-xs font-semibold">List</span>
           </ToggleGroupItem>
+          <ToggleGroupItem value="compact" className="rounded-full h-8 sm:h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="Compact View" aria-label="Compact view">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline text-xs font-semibold">Compact</span>
+          </ToggleGroupItem>
           <ToggleGroupItem value="calendar" className="rounded-full h-8 sm:h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="Calendar View" aria-label="Calendar view">
             <CalendarDays className="h-3.5 w-3.5" />
             <span className="hidden sm:inline text-xs font-semibold">Calendar</span>
