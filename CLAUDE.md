@@ -66,6 +66,10 @@ All written in Deno TypeScript. Key functions:
 
 - `import-events` — the event importer. Reads the admin-managed `event_sources` list (organiser pages, venue "what's on" pages, public `.ics` calendars), extracts events from schema.org JSON-LD or iCal (Gemini only as a capped fallback), skips anything already known by `external_id`/`ticket_link` (including rejected/deleted events), and inserts the rest with `approval_status = 'pending'`. Parsing lives in `_shared/event-import.ts` (pure, unit-tested); fetching obeys robots.txt and blocks private hosts. Admins review imports in the admin panel's **Imports** tab (`src/components/admin/EventImports.tsx`). `.github/workflows/import-events.yml` runs it daily, fetching the service-role key with `SUPABASE_ACCESS_TOKEN`.
 
+### Link previews (`api/page-meta.ts`)
+
+A Vercel function (not a Supabase one). `vercel.json` routes `/events/:id` and the city guides (`/melbourne`, …) through it; it reads the event via the public REST API and writes the real title, description, image and Event JSON-LD into `index.html`, so links shared to WhatsApp/Instagram/Messenger (which don't run JS) preview the actual event. Pure helpers live in `src/lib/share-meta.ts` (import-free so the function can bundle it; unit-tested). On any error it 307s to the same URL with `?spa=1`, which `vercel.json` serves as the plain SPA. When adding a city to `src/lib/cities.ts`, also add its slug to the city rewrite in `vercel.json`.
+
 Deployment: `.github/workflows/deploy-edge-functions.yml` deploys every function on push to `main` that touches `supabase/functions/**` (needs the `SUPABASE_ACCESS_TOKEN` repo secret). `cron-ping` is deployed with `--no-verify-jwt`; all others require a JWT. Migrations are **not** auto-applied — run them manually.
 
 ### Views
