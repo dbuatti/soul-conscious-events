@@ -30,22 +30,21 @@ export const getDeviceType = (): DeviceType => {
   return 'desktop';
 };
 
+/** Keys match the `page_visit_logs` columns added in migration 0016. Any key
+ *  without a matching column makes PostgREST reject the whole insert. */
 export interface UtmAttribution {
-  source?: string;
-  medium?: string;
-  campaign?: string;
-  content?: string;
-  term?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
 }
 
 export const getUtmAttribution = (search = typeof window !== 'undefined' ? window.location.search : ''): UtmAttribution => {
   const params = new URLSearchParams(search);
+  const read = (key: string) => params.get(key)?.trim().slice(0, 120) || undefined;
   return {
-    source: params.get('utm_source')?.trim() || undefined,
-    medium: params.get('utm_medium')?.trim() || undefined,
-    campaign: params.get('utm_campaign')?.trim() || undefined,
-    content: params.get('utm_content')?.trim() || undefined,
-    term: params.get('utm_term')?.trim() || undefined,
+    utm_source: read('utm_source'),
+    utm_medium: read('utm_medium'),
+    utm_campaign: read('utm_campaign'),
   };
 };
 
