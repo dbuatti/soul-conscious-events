@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import EventCardV2 from '@/components/v2/EventCardV2';
+import EventCardCompact from '@/components/v2/EventCardCompact';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -73,9 +74,9 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
 
   const location = useLocation();
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>(() => {
+  const [viewMode, setViewMode] = useState<'list' | 'compact' | 'calendar' | 'map'>(() => {
     const v = new URLSearchParams(window.location.search).get('view');
-    if (v === 'calendar' || v === 'map') return v as 'calendar' | 'map';
+    if (v === 'compact' || v === 'calendar' || v === 'map') return v as 'compact' | 'calendar' | 'map';
     return 'list';
   });
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -91,7 +92,9 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   const { data: favouriteVenues = [] } = useFavouriteVenues(user?.id);
 
   const allEvents = useMemo(() => expandRecurringEvents(eventsQuery.data ?? []), [eventsQuery.data]);
-  const eventDates = useMemo(() => new Set(allEvents.map((e) => e.event_date)), [allEvents]);
+  // Dates that actually have events for the currently selected state/search,
+  // so the date wheel only marks days that will show results.
+
   const availableVenues = useMemo(() => getAvailableVenues(eventsQuery.data ?? []), [eventsQuery.data]);
 
   const loading = eventsQuery.isLoading;
@@ -131,6 +134,21 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   }, []);
 
   const { filters, setFilters, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm, initialState);
+  const eventDates = useMemo(() => {
+    const stateFilter = filters.state;
+    const term = debouncedSearchTerm.trim().toLowerCase();
+    const set = new Set<string>();
+    for (const e of allEvents) {
+      if (stateFilter.length > 0 && !stateFilter.includes(e.geographical_state || '')) continue;
+      if (term) {
+        const name = e.event_name.toLowerCase();
+        const place = (e.place_name || '').toLowerCase();
+        if (!name.includes(term) && !place.includes(term)) continue;
+      }
+      set.add(e.event_date);
+    }
+    return set;
+  }, [allEvents, filters.state, debouncedSearchTerm]);
 
   // Keep the view mode in the URL so /map can redirect here with ?view=map.
   useEffect(() => {
@@ -162,7 +180,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   }, [filteredEvents]);
 
   // Pagination source switches between deduplicated (list) and full (calendar/map)
-  const paginationSource = viewMode === 'list' ? listSource : filteredEvents;
+  const paginationSource = viewMode === 'list' || viewMode === 'compact' ? listSource : filteredEvents;
 
   useEffect(() => {
     setDisplayedEvents(paginationSource.slice(0, EVENTS_PER_LOAD));
@@ -322,7 +340,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
           onSearchTermChange={setRawSearchTerm}
           selectedCategories={filters.category}
           onToggleQuickFilter={toggleQuickFilter}
-          showNextWeekCount={!loading && !eventsQuery.isError}
+          showNextWeekCount={!loading && !eventsQuery.isError && filters.date === 'All Upcoming'}
           nextWeekCount={nextWeekCount}
           comingUp={comingUp}
           onViewDetails={handleViewDetails}
@@ -340,15 +358,12 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
           onChange={(v) => setFilters({ ...filters, date: v === 'all' ? 'All Upcoming' : v })}
           eventDates={eventDates}
         />
-        {/* Archived: location (state) chip filter. Re-enable by setting ARCHIVE_FILTERS=false. */}
-        {false && (
-          <div className="mt-2">
-            <StateChips
-              value={filters.state}
-              onChange={(states) => setFilters({ ...filters, state: states })}
-            />
-          </div>
-        )}
+        <div className="mt-2">
+          <StateChips
+            value={filters.state}
+            onChange={(states) => setFilters({ ...filters, state: states })}
+          />
+        </div>
       </div>
 
       {/* Archived: secondary filter dropdowns (category, venue, price, state). Re-enable if needed. */}
@@ -418,6 +433,33 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
               {hasMore && displayedEvents.length > 0 && (
                 <div className="flex flex-col items-center gap-2 mt-12">
                   <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="rounded-full h-12 px-8 font-semibold bg-card">
+                    {loadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Show more events
+                  </Button>
+                  <span className="text-xs text-muted-foreground">Showing {displayedEvents.length} of {paginationSource.length}</span>
+                </div>
+              )}
+            </section>
+          ) : viewMode === 'compact' ? (
+            <section aria-label="Upcoming events" className="space-y-2.5">
+              {displayedEvents.length > 0 ? (
+                displayedEvents.map((event) => (
+                  <EventCardCompact
+                    key={event.id}
+                    event={event}
+                    onDelete={handleDelete}
+                    onViewDetails={handleViewDetails}
+                    additionalDatesCount={extraCountMap[getBaseEventId(event.id)] || 0}
+                  />
+                ))
+              ) : hasActiveFilters && rawSearchTerm !== '' ? (
+                <NoSearchResultsEmptyState />
+              ) : (
+                <NoEventsEmptyState />
+              )}
+              {hasMore && displayedEvents.length > 0 && (
+                <div className="flex flex-col items-center gap-2 mt-6">
+                  <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className="rounded-full h-11 px-8 font-semibold bg-card">
                     {loadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     Show more events
                   </Button>

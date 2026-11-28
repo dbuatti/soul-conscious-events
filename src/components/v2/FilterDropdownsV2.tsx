@@ -28,8 +28,8 @@ export interface FilterDropdownsV2Props {
   favouriteVenues: string[];
   onToggleFavouriteVenue: (placeName: string, isFavourited: boolean) => void;
   isUserLoggedIn: boolean;
-  viewMode: 'list' | 'calendar' | 'map';
-  onViewModeChange: (mode: 'list' | 'calendar' | 'map') => void;
+  viewMode: 'list' | 'compact' | 'calendar' | 'map';
+  onViewModeChange: (mode: 'list' | 'compact' | 'calendar' | 'map') => void;
 }
 
 // Keys must match `v2EventCategories` (src/lib/constants.ts) or the icon is dropped.
@@ -246,7 +246,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
       </div>
 
       <div className="order-2 sm:order-none flex items-center bg-card border border-border/80 p-1 rounded-full shrink-0">
-        <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'calendar' | 'map') => value && onViewModeChange(value)}>
+        <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'compact' | 'calendar' | 'map') => value && onViewModeChange(value)}>
           <ToggleGroupItem value="list" className="rounded-full h-8 sm:h-7 px-2.5 sm:px-3 gap-1.5 data-[state=on]:bg-foreground data-[state=on]:text-background" title="List View" aria-label="List view">
             <List className="h-3.5 w-3.5" />
             <span className="hidden sm:inline text-xs font-semibold">List</span>
