@@ -40,7 +40,7 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
   if (featured.length === 0) return null;
 
   return (
-    <section className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <section className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="w-2 h-8 rounded-full bg-primary" />
@@ -71,7 +71,7 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
               <article
                 key={event.id}
                 className={cn(
-                  'relative flex-shrink-0 w-[280px] sm:w-[340px] rounded-[2rem] overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] group scroll-snap-start',
+                  'relative flex-shrink-0 w-[280px] sm:w-[340px] rounded-[1.25rem] overflow-hidden shadow-[0_12px_24px_-8px_rgba(0,0,0,0.12)] group scroll-snap-start',
                   isEventToday && 'ring-3 ring-primary/20'
                 )}
                 onClick={() => onViewDetails(event)}
@@ -89,7 +89,7 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({
 
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" />
 
-                  <div className="absolute top-3 left-3 z-20 flex flex-col items-center justify-center w-14 rounded-xl bg-background/90 backdrop-blur shadow-sm py-1 leading-none">
+                  <div className="absolute top-3 left-3 z-20 flex flex-col items-center justify-center w-12 rounded-lg bg-background/90 backdrop-blur shadow-sm py-1 leading-none">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{format(eventDate, 'EEE')}</span>
                     <span className="font-heading text-2xl font-semibold text-foreground mt-0.5">{format(eventDate, 'd')}</span>
                   </div>
