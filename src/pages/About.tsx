@@ -18,15 +18,15 @@ const About = () => {
         description="SoulFlow was born from a simple desire: to find and share the moments that make us feel truly alive."
       />
 
-      <div className="space-y-12 mb-16">
-        <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
+      <div className="space-y-8 mb-12">
+        <Card className="organic-card rounded-[1.5rem] p-6 sm:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <div className="inline-flex items-center justify-center h-16 w-16 rounded-3xl bg-primary/10 mb-2">
                 <Compass className="h-8 w-8 text-primary" />
               </div>
-              <h2 className="text-4xl font-bold text-foreground font-heading">The Vision</h2>
-              <div className="text-foreground leading-relaxed space-y-4 text-lg">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground font-heading">The Vision</h2>
+              <div className="text-foreground leading-relaxed space-y-3 text-base">
                 <p>
                   I created SoulFlow as a sanctuary for heart-centred events across Australia. My hope is for this to become a living, breathing hub for intentional connection—a space where you can discover gatherings that feel aligned, heartfelt, and authentic.
                 </p>
@@ -35,9 +35,9 @@ const About = () => {
                 </p>
               </div>
             </div>
-            <div className="bg-secondary/30 rounded-[1.75rem] p-8 border border-border/50">
-              <h3 className="text-2xl font-bold mb-8 font-heading text-center">Your Journey Starts Here</h3>
-              <div className="grid grid-cols-1 gap-8">
+            <div className="bg-secondary/30 rounded-[1.25rem] p-6 border border-border/50">
+              <h3 className="text-xl font-bold mb-6 font-heading text-center">Your Journey Starts Here</h3>
+              <div className="grid grid-cols-1 gap-5">
                 <div className="flex gap-4">
                   <Search className="h-6 w-6 text-primary flex-shrink-0" />
                   <p className="text-muted-foreground"><span className="font-black text-foreground">Discover the Unseen.</span> Browse a curated collection of soulful gatherings, from deep sound journeys to intimate community circles.</p>
@@ -55,9 +55,9 @@ const About = () => {
           </div>
         </Card>
 
-        <Card className="organic-card rounded-[2rem] p-8 sm:p-12">
+        <Card className="organic-card rounded-[1.5rem] p-6 sm:p-8">
           <CardHeader className="text-center mb-8">
-            <CardTitle className="text-4xl font-bold text-primary flex items-center justify-center font-heading">
+            <CardTitle className="text-2xl sm:text-3xl font-bold text-primary flex items-center justify-center font-heading">
               <Heart className="mr-3 h-10 w-10 text-primary" /> SoulFlow x HeartBeats
             </CardTitle>
           </CardHeader>
@@ -65,12 +65,12 @@ const About = () => {
             <img
               src="/heartbeats-logo.png"
               alt="HeartBeats Logo"
-              className="h-32 w-auto mb-8 object-contain rounded-2xl"
+              className="h-24 w-auto mb-6 object-contain rounded-xl"
             />
-            <p className="text-xl mb-8 leading-relaxed">
+            <p className="text-base mb-6 leading-relaxed">
               We are proud to collaborate with <span className="font-bold">HeartBeats</span>—a collective dedicated to celebrating expression, music, growth, and connection. If you’re promoting your event on Instagram, tag <span className="font-black text-primary">@heartbeatslive</span>. They love amplifying community events that align with the spirit of conscious gathering.
             </p>
-            <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-10 py-8 text-xl font-black shadow-xl transition-transform hover:scale-105">
+            <Button asChild className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-full px-8 py-4 text-base font-bold shadow-lg transition-transform hover:scale-105">
               <a href="https://www.instagram.com/heartbeatslive" target="_blank" rel="noopener noreferrer">
                 Follow the Vibration
               </a>
@@ -78,13 +78,13 @@ const About = () => {
           </CardContent>
         </Card>
 
-        <Card className="organic-card rounded-[2rem] p-8 sm:p-12 bg-secondary/30 border-dashed">
+        <Card className="organic-card rounded-[1.5rem] p-6 sm:p-8 bg-secondary/30 border-dashed">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-foreground flex items-center font-heading">
+            <CardTitle className="text-2xl font-bold text-foreground flex items-center font-heading">
               <MessageSquare className="mr-3 h-8 w-8 text-accent" /> A Co-Created Space
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-foreground leading-relaxed space-y-6 text-lg">
+          <CardContent className="text-foreground leading-relaxed space-y-4 text-base">
             <p>
               SoulFlow is currently a prototype—a project I’m building and learning from in real-time. Your feedback is the compass that helps this platform grow and evolve.
             </p>
@@ -94,8 +94,8 @@ const About = () => {
                 Contact page
               </Link>. Every message helps us build a better home for the community.
             </p>
-            <div className="pt-8 text-center">
-              <p className="font-heading text-3xl text-primary font-bold italic">Warmly, Daniele</p>
+            <div className="pt-6 text-center">
+              <p className="font-heading text-2xl text-primary font-bold italic">Warmly, Daniele</p>
             </div>
           </CardContent>
         </Card>
