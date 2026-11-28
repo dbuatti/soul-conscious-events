@@ -473,12 +473,16 @@ const EventDetailPage: React.FC = () => {
         </div>
       )}
 
-      <LocationPicker
-        event={event}
-        onLocationSaved={(lat, lng) => {
-          setEvent((prev) => prev ? { ...prev, latitude: lat, longitude: lng } : prev);
-        }}
-      />
+      {isCreatorOrAdmin && (
+        <div className="mb-24 lg:mb-8">
+          <LocationPicker
+            event={event}
+            onLocationSaved={(lat, lng) => {
+              setEvent((prev) => prev ? { ...prev, latitude: lat, longitude: lng } : prev);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

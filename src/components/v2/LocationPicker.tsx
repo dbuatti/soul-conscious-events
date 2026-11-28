@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Event } from '@/types/event';
 import { supabase } from '@/integrations/supabase/client';
-import { useSession } from '@/components/SessionContextProvider';
+import { getBaseEventId } from '@/utils/event-utils';
 import { toast } from 'sonner';
-import { X, MapPin, Loader2 } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -18,109 +19,83 @@ import {
 interface LocationPickerProps {
   event: Event;
   onLocationSaved: (lat: number, lng: number) => void;
-  open?: boolean;
 }
 
-const LocationPicker: React.FC<LocationPickerProps> = ({
-  event,
-  onLocationSaved,
-  open,
-}) => {
-  const { user } = useSession();
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+const AUSTRALIA_CENTRE: L.LatLngTuple = [-25.2744, 133.7751];
+
+/**
+ * "Pin location on map" button + dialog for the event's owner or an admin.
+ * Closed until clicked; the caller decides who may see it.
+ */
+const LocationPicker: React.FC<LocationPickerProps> = ({ event, onLocationSaved }) => {
+  const [open, setOpen] = useState(false);
   const [lat, setLat] = useState<number | null>(event.latitude ?? null);
   const [lng, setLng] = useState<number | null>(event.longitude ?? null);
   const [saving, setSaving] = useState(false);
+  const [mapEl, setMapEl] = useState<HTMLDivElement | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
-  // Initialise map when dialog opens
+  // Reset the draft to the saved position whenever the dialog opens.
   useEffect(() => {
-    if (!open || !mapRef.current || mapInstanceRef.current) return;
+    if (open) {
+      setLat(event.latitude ?? null);
+      setLng(event.longitude ?? null);
+    }
+  }, [open, event.latitude, event.longitude]);
 
-    const startLat = lat ?? -25.2744;
-    const startLng = lng ?? 133.7751;
-
-    const map = L.map(mapRef.current, {
-      center: [startLat, startLng],
-      zoom: lat && lng ? 15 : 4,
+  // Build the map once the dialog's map container is mounted.
+  useEffect(() => {
+    if (!open || !mapEl) return;
+    const hasPin = event.latitude != null && event.longitude != null;
+    const map = L.map(mapEl, {
+      center: hasPin ? [event.latitude!, event.longitude!] : AUSTRALIA_CENTRE,
+      zoom: hasPin ? 15 : 4,
       scrollWheelZoom: false,
-      dragging: true,
-      touchZoom: true,
-      zoomControl: true,
     });
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
-    mapInstanceRef.current = map;
-
-    // Add or move marker
-    if (markerRef.current) {
-      map.removeLayer(markerRef.current);
-    }
-
-    if (lat && lng) {
-      const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-      markerRef.current = marker;
-
-      marker.on('dragend', (e) => {
-        const pos = e.target.getLatLng();
-        setLat(pos.lat);
-        setLng(pos.lng);
-      });
-
-      map.on('click', (e: L.LeafletMouseEvent) => {
-        if (markerRef.current) {
-          map.removeLayer(markerRef.current);
-        }
-        const newMarker = L.marker([e.latlng.lat, e.latlng.lng], {
-          draggable: true,
-        }).addTo(map);
-        markerRef.current = newMarker;
-        newMarker.on('dragend', (ev) => {
-          const p = ev.target.getLatLng();
+    const placeMarker = (pos: L.LatLngExpression) => {
+      if (markerRef.current) {
+        markerRef.current.setLatLng(pos);
+      } else {
+        markerRef.current = L.marker(pos, { draggable: true }).addTo(map);
+        markerRef.current.on('dragend', (e) => {
+          const p = (e.target as L.Marker).getLatLng();
           setLat(p.lat);
           setLng(p.lng);
         });
-        setLat(e.latlng.lat);
-        setLng(e.latlng.lng);
-      });
-    }
-
-    // Give Leaflet a frame to lay out
-    setTimeout(() => map.invalidateSize(), 100);
-
-    return () => {
-      mapInstanceRef.current?.remove();
-      mapInstanceRef.current = null;
-      clusterCleanup();
+      }
     };
-  }, [open, lat, lng]);
+    if (hasPin) placeMarker([event.latitude!, event.longitude!]);
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      placeMarker(e.latlng);
+      setLat(e.latlng.lat);
+      setLng(e.latlng.lng);
+    });
 
-  const clusterCleanup = () => {
-    markerRef.current = null;
-  };
+    // The dialog animates in; let Leaflet measure the final size.
+    const t = window.setTimeout(() => map.invalidateSize(), 150);
+    return () => {
+      window.clearTimeout(t);
+      map.remove();
+      markerRef.current = null;
+    };
+  }, [open, mapEl, event.latitude, event.longitude]);
 
   const handleSave = async () => {
-    if (!lat || !lng) return;
-    if (!user) {
-      toast.error('Please sign in to save a location.');
-      return;
-    }
-
+    if (lat == null || lng == null) return;
     setSaving(true);
     try {
       const { error } = await supabase
         .from('events')
-        .update({ latitude: lat, longitude: lng })
-        .eq('id', event.id);
-
+        .update({ latitude: lat, longitude: lng, geocode_failed_at: null })
+        .eq('id', getBaseEventId(event.id));
       if (error) throw error;
-
       toast.success('Location pinned on the map!');
       onLocationSaved(lat, lng);
+      setOpen(false);
     } catch (err) {
       console.error('Error saving location:', err);
       toast.error('Failed to save location.');
@@ -129,52 +104,37 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   };
 
-  const isOpen = open ?? true;
-
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={!user}
-          className="flex items-center gap-2"
-        >
+        <Button variant="outline" size="sm" className="rounded-full gap-2">
           <MapPin className="h-3.5 w-3.5" />
-          {event.latitude && event.longitude ? 'Edit location on map' : 'Pin location on map'}
+          {event.latitude != null && event.longitude != null ? 'Edit location on map' : 'Pin location on map'}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] p-0">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5">
           <DialogTitle>Set map location</DialogTitle>
           <DialogDescription>
-            Click on the map to place a pin, or drag the existing pin. This helps people find your event on the SoulFlow map.
+            Tap the map to place a pin, or drag the existing pin. This puts the event on the SoulFlow map.
           </DialogDescription>
         </DialogHeader>
-        <div className="h-[400px]">
-          <div ref={mapRef} className="w-full h-full" />
+        <div className="h-[360px]">
+          <div ref={setMapEl} className="w-full h-full" />
         </div>
-        <div className="p-4 border-t border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3 text-sm">
-            <span className="font-medium text-foreground">
-              {lat?.toFixed(4) ?? '—'}, {lng?.toFixed(4) ?? '—'}
-            </span>
-            {!user && (
-              <span className="text-xs text-muted-foreground">Sign in to save</span>
-            )}
-          </div>
-          <Button
-            onClick={handleSave}
-            disabled={saving || !lat || !lng || !user}
-            className="rounded-full"
-          >
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />} Save location
-          </Button>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="icon" className="rounded-full" aria-label="Close">
-              <X className="h-4 w-4" />
+        <div className="px-5 pb-5 flex items-center justify-between gap-3">
+          <span className="text-sm font-medium text-muted-foreground tabular-nums">
+            {lat != null && lng != null ? `${lat.toFixed(4)}, ${lng.toFixed(4)}` : 'No pin yet'}
+          </span>
+          <div className="flex gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" className="rounded-full">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleSave} disabled={saving || lat == null || lng == null} className="rounded-full">
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
+              Save location
             </Button>
-          </DialogTrigger>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
