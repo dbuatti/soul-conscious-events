@@ -6,16 +6,6 @@
     }
   },
   "rewrites": [
-    {
-      "source": "/events/:id",
-      "missing": [{ "type": "query", "key": "spa" }],
-      "destination": "/api/page-meta?type=event&id=:id"
-    },
-    {
-      "source": "/:slug(melbourne|sydney|brisbane|perth|adelaide|hobart|canberra|darwin)",
-      "missing": [{ "type": "query", "key": "spa" }],
-      "destination": "/api/page-meta?type=city&slug=:slug"
-    },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
