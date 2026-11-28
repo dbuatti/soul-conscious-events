@@ -27,7 +27,7 @@ export const SoulFlowMark = ({ className }: { className?: string }) => (
 const desktopLinks = [
   { to: '/', label: 'Events', end: true },
   { to: '/cities', label: 'Cities' },
-  { to: '/map', label: 'Map' },
+  { to: '/?view=map', label: 'Map' },
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
 ];

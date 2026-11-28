@@ -17,12 +17,15 @@ import {
 import EventCardV2 from '@/components/v2/EventCardV2';
 import EventDetailDialog from '@/components/EventDetailDialog';
 import { Event } from '@/types/event';
+import { useLocation, useNavigate } from 'react-router-dom';
 import EventsHero from '@/components/v2/EventsHero';
 import FeaturedEvents from '@/components/v2/FeaturedEvents';
 import EventsToolbar, { type FilterBadge } from '@/components/v2/EventsToolbar';
 import EventDayGroups from '@/components/v2/EventDayGroups';
 import HostCTA from '@/components/v2/HostCTA';
 import { NoEventsEmptyState, NoSearchResultsEmptyState, NoCalendarEventsEmptyState } from '@/components/v2/EmptyState';
+import DateWheel from '@/components/v2/DateWheel';
+import StateChips from '@/components/v2/StateChips';
 import { useSession } from '@/components/SessionContextProvider';
 import { expandRecurringEvents, getAvailableVenues, getBaseEventId } from '@/utils/event-utils';
 import { useEventFilters } from '@/hooks/use-event-filters';
@@ -67,8 +70,15 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
 
-  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>(() => {
+    const v = new URLSearchParams(window.location.search).get('view');
+    if (v === 'calendar' || v === 'map') return v as 'calendar' | 'map';
+    return 'list';
+  });
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [filtersHidden, setFiltersHidden] = useState(false);
   const [selectedDay, setSelectedDay] = useState(new Date());
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -96,6 +106,16 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   // Compact search in the sticky toolbar: only while the hero search box is
   // scrolled out of view (the hero owns the search UI at the top of the page).
   const heroRef = React.useRef<HTMLDivElement>(null);
+  const lastScrollY = React.useRef(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setFiltersHidden(y > 120 && y > lastScrollY.current);
+      lastScrollY.current = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const [heroSearchVisible, setHeroSearchVisible] = useState(true);
   useEffect(() => {
     if (!heroRef.current) return;
@@ -108,6 +128,17 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   }, []);
 
   const { filters, setFilters, filteredEvents, totalCount } = useEventFilters(allEvents, defaultState, debouncedSearchTerm, initialState);
+
+  // Keep the view mode in the URL so /map can redirect here with ?view=map.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (viewMode === 'list') params.delete('view');
+    else params.set('view', viewMode);
+    const next = `${location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    if (next !== `${location.pathname}${location.search}`) {
+      navigate(next, { replace: true });
+    }
+  }, [viewMode]);
 
   // Deduplicate recurring series for the list view: keep only the next upcoming instance per series.
   // Calendar and map views still receive the full filteredEvents so all instances are visible.
@@ -233,8 +264,17 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     }).length;
   }, [listSource]);
 
+  const dateBadgeLabel = (() => {
+    if (filters.date === 'All Upcoming') return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
+      try {
+        return format(parseISO(filters.date), 'EEE d MMM');
+      } catch { return filters.date; }
+    }
+    return filters.date;
+  })();
   const filterBadges: FilterBadge[] = [
-    ...(filters.date !== 'All Upcoming' ? [{ type: 'date' as const, label: filters.date }] : []),
+    ...(dateBadgeLabel ? [{ type: 'date' as const, label: dateBadgeLabel }] : []),
     ...filters.category.map((v) => ({ type: 'category' as const, value: v, label: v })),
     ...filters.venue.map((v) => ({ type: 'venue' as const, value: v, label: v })),
     ...filters.price.map((v) => ({ type: 'price' as const, value: v, label: v })),
@@ -289,6 +329,21 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
           ) : undefined}
           description={cityDescription}
         />
+      </div>
+
+      <div
+        className={`sticky top-16 z-20 -mx-2 sm:-mx-4 px-2 sm:px-4 py-2 mb-3 bg-background/90 backdrop-blur-xl border-b border-border/40 transition-transform duration-300 ${filtersHidden ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}
+      >
+        <DateWheel
+          value={filters.date === 'All Upcoming' ? 'all' : filters.date}
+          onChange={(v) => setFilters({ ...filters, date: v === 'all' ? 'All Upcoming' : v })}
+        />
+        <div className="mt-2">
+          <StateChips
+            value={filters.state}
+            onChange={(states) => setFilters({ ...filters, state: states })}
+          />
+        </div>
       </div>
 
       <EventsToolbar

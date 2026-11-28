@@ -22,7 +22,6 @@ const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 const Contact = lazy(() => import("./pages/Contact"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const AdminBusiness = lazy(() => import("./pages/admin/BusinessView"));
-const MapPage = lazy(() => import("./pages/MapPage"));
 const EventEditPage = lazy(() => import("./pages/EventEditPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
 const About = lazy(() => import("./pages/About"));
@@ -137,7 +136,7 @@ const App = () => (
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/events/:id" element={<EventDetailPage />} />
-                <Route path="/map" element={<MapPage />} />
+                <Route path="/map" element={<Navigate to="/?view=map" replace />} />
                 
                 {/* Protected V2 Routes */}
                 <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>

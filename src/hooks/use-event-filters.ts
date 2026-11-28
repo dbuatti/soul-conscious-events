@@ -64,6 +64,11 @@ export const useEventFilters = (
       const eventDate = parseISO(event.event_date);
 
       // 2. Date Filter
+      // A specific ISO date (YYYY-MM-DD) coming from the date wheel filters to
+      // that single day; everything else falls through to the named presets.
+      if (/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
+        if (!isSameDay(eventDate, parseISO(filters.date))) return false;
+      } else {
       switch (filters.date) {
         case 'Today': 
           if (!isToday(eventDate)) return false; 
@@ -98,6 +103,7 @@ export const useEventFilters = (
         case 'All Upcoming':
           if (isPast(eventDate) && !isToday(eventDate)) return false;
           break;
+      }
       }
 
       // 3. Category Filter

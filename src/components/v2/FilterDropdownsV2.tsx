@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Search, Star, List, CalendarDays, Music, Sparkles, Users, Leaf, Mic, Waves, Wrench, HelpCircle, Map as MapIcon, SlidersHorizontal } from 'lucide-react';
-import { v2EventCategories, v2PriceOptions, v2States, v2DateOptions } from '@/lib/v2/constants';
+import { v2EventCategories, v2PriceOptions, v2States } from '@/lib/v2/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -64,15 +64,10 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
 
   // Count active filters for the compact mobile "Filters" trigger.
   const activeFilterCount =
-    (currentFilters.date !== 'All Upcoming' ? 1 : 0) +
     currentFilters.category.length +
     currentFilters.venue.length +
     currentFilters.price.length +
     currentFilters.state.length;
-
-  const handleSingleSelectChange = (filterType: 'date', value: string) => {
-    onFilterChange({ ...currentFilters, [filterType]: value });
-  };
 
   const handleMultiSelectChange = (filterType: 'category' | 'venue' | 'price' | 'state', value: string) => {
     const currentValues = currentFilters[filterType];
@@ -213,26 +208,6 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
         'order-3 gap-2 min-w-0 items-center -my-1 py-1 w-full sm:w-auto sm:flex sm:flex-1 sm:flex-wrap sm:overflow-visible',
         mobileFiltersOpen ? 'flex flex-wrap' : 'hidden',
       )}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className={buttonClasses}>
-              {getTriggerText('date', 'Date')} <ChevronDown className="h-4 w-4 opacity-50" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-48 p-2 glass rounded-2xl shadow-2xl border-white/20">
-            {v2DateOptions.map((option) => (
-              <DropdownMenuCheckboxItem
-                key={option}
-                checked={currentFilters.date === option}
-                onCheckedChange={() => handleSingleSelectChange('date', option)}
-                className="rounded-lg"
-              >
-                {option}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className={buttonClasses}>

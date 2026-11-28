@@ -10,7 +10,7 @@ import { useSession } from '@/components/SessionContextProvider';
  */
 const tabs = [
   { to: '/', label: 'Events', icon: Home, end: true },
-  { to: '/map', label: 'Map', icon: MapIcon },
+  { to: '/?view=map', label: 'Map', icon: MapIcon },
   { to: '/my-bookmarks', label: 'Saved', icon: Bookmark },
 ];
 

@@ -18,7 +18,7 @@ const Footer = () => {
         { to: '/melbourne', label: 'Melbourne events' },
         { to: '/sydney', label: 'Sydney events' },
         { to: '/brisbane', label: 'Brisbane events' },
-        { to: '/map', label: 'Event map' },
+        { to: '/?view=map', label: 'Event map' },
         user
           ? { to: '/my-bookmarks', label: 'Saved events' }
           : { to: '/login', label: 'Sign in to save events' },
