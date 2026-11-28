@@ -40,7 +40,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedEmail,
     console.warn('[ProtectedRoute] User not authenticated, redirecting to login');
     // Survives an OAuth round-trip, which drops React Router state entirely.
     rememberReturnTo(location.pathname + location.search);
-    toast.error(message ?? 'You need to be logged in to access this page.');
+    // A sign-in prompt, not an error: the login page explains the rest.
+    toast(message ?? 'Please sign in to continue.');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

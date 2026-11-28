@@ -5,13 +5,27 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
 import { consumeReturnTo, getRedirectUrl } from '@/lib/utils';
-import { Bookmark, CalendarCheck, PlusCircle } from 'lucide-react';
+import { Bookmark, CalendarCheck, PlusCircle, Link2, Wand2, Send } from 'lucide-react';
 import SEO from '@/components/SEO';
 
 const LoginV2 = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoading } = useSession();
+  const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '';
+  // Organisers bounced here from "List your event" get host-specific copy.
+  const isHost = fromPath.startsWith('/submit-event');
+  const perks = isHost
+    ? [
+        { icon: Link2, title: 'Paste a link or flyer', text: 'Humanitix, Eventbrite, Instagram post or flyer text — anything works.' },
+        { icon: Wand2, title: 'We fill in the details', text: 'Date, time, venue, price and cover image, ready for you to check.' },
+        { icon: Send, title: 'Publish & share', text: 'Your event appears in the guide and on the map, with a share kit for your audience.' },
+      ]
+    : [
+        { icon: Bookmark, title: 'Save events', text: 'Bookmark gatherings you love and build your own soulful calendar.' },
+        { icon: PlusCircle, title: 'List your own events', text: 'Share your workshops, circles and gatherings with people nearby — free.' },
+        { icon: CalendarCheck, title: 'Manage with ease', text: 'Keep your listings up to date from one place.' },
+      ];
 
   // ProtectedRoute stores where the visitor was heading in state.from. Sending
   // everyone to "/" instead dumped people who had been bounced here mid-task --
@@ -32,55 +46,42 @@ const LoginV2 = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-center min-h-auth px-4 py-12 gap-16 max-w-6xl mx-auto">
+    <div className="flex flex-col-reverse lg:flex-row items-center justify-center min-h-auth px-4 py-8 sm:py-12 gap-10 lg:gap-16 max-w-6xl mx-auto">
       <SEO 
         title="Login & Sign Up | SoulFlow Australia"
         description="Sign in or create a free account on SoulFlow to bookmark events, submit your own conscious gatherings, and manage your listings."
       />
       <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
         <div className="space-y-4">
-          <h1 className="text-5xl font-semibold font-heading tracking-tight text-foreground leading-tight">
-            Your Soulful <br />
-            <span className="text-primary italic font-normal">Journey Awaits</span>
+          <h1 className="text-4xl sm:text-5xl font-semibold font-heading tracking-tight text-foreground leading-tight">
+            {isHost ? (
+              <>List your event <br /><span className="text-primary italic font-normal">free, in a few steps</span></>
+            ) : (
+              <>Your soulful <br /><span className="text-primary italic font-normal">journey awaits</span></>
+            )}
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Create an account to unlock the full SoulFlow experience and connect with the community.
+            {isHost
+              ? 'Sign in or create a free account and you’ll go straight to your event form.'
+              : 'A free account lets you save events and list your own gatherings.'}
           </p>
         </div>
-
         <div className="space-y-6">
-          <div className="flex items-start gap-4">
-            <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Bookmark className="h-5 w-5 text-primary" />
+          {perks.map(({ icon: Icon, title, text }) => (
+            <div key={title} className="flex items-start gap-4">
+              <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Icon className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">{title}</h3>
+                <p className="text-muted-foreground text-sm">{text}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-lg">Personalized Bookmarks</h3>
-              <p className="text-muted-foreground text-sm">Save events you're interested in and build your own soulful calendar.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <PlusCircle className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg">Share Your Magic</h3>
-              <p className="text-muted-foreground text-sm">Submit your own workshops, circles, or gatherings to reach a wider audience.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <CalendarCheck className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg">Manage with Ease</h3>
-              <p className="text-muted-foreground text-sm">Keep your event listings up to date with our simple management tools.</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
-
-      <div className="w-full max-w-md organic-card p-8 sm:p-10 rounded-[1.75rem] shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000">
-        <h2 className="text-3xl font-bold text-foreground text-center mb-8 font-heading">Sign In</h2>
+      <div className="w-full max-w-md organic-card p-6 sm:p-10 rounded-[1.75rem] shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000">
+        <h2 className="text-3xl font-bold text-foreground text-center mb-6 font-heading">{isHost ? 'Sign in to list your event' : 'Sign in'}</h2>
         <Auth
           supabaseClient={supabase}
           providers={['google']}
