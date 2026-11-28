@@ -283,10 +283,10 @@ const SubmitEvent = () => {
         description="Free, and it takes under a minute. Paste your Instagram caption, your flyer text, a booking link — or anything else you've already written — and we'll fill in the rest for you to review."
       />
 
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 gap-6">
         <AiParsingSection onAiParseComplete={handleAiParseComplete} />
 
-        <div className="bg-card p-8 sm:p-12 rounded-[2rem] shadow-xl border border-border organic-card">
+        <div className="bg-card p-6 sm:p-8 rounded-[1.5rem] shadow-md border border-border organic-card">
           <EventForm
             form={form}
             onSubmit={onSubmit}
