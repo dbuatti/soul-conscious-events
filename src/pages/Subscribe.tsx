@@ -13,16 +13,16 @@ const Subscribe: React.FC = () => {
       </a>
       <SEO
         title="Subscribe to SoulFlow daily picks | Melbourne"
-        description="Get five hand-picked conscious events in Melbourne delivered to your inbox every morning at 9am. Free, no spam, unsubscribe any time."
+        description="Get every conscious event happening today in Melbourne, delivered to your inbox each morning at 9am. Up to 10 events with direct booking links. Free, no spam, unsubscribe any time."
       />
 
       <div className="text-center mb-8">
         <p className="eyebrow mb-3">SoulFlow Melbourne</p>
         <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground">
-          Five soulful things to do, every morning.
+          Everything soulful on today, every morning.
         </h1>
         <p className="mt-4 text-base text-muted-foreground max-w-md mx-auto">
-          A short daily email with five hand-picked conscious events in Melbourne, with direct booking links. Free, no noise, unsubscribe any time.
+          A short daily email with every conscious event happening today in Melbourne, up to 10 with direct booking links and a link to the full list online. Free, no noise, unsubscribe any time.
         </p>
       </div>
 

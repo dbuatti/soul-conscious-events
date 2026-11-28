@@ -1,9 +1,10 @@
 {
-  "timestamp": "2026-11-27T12:33:07.514Z",
+  "timestamp": "2026-11-28T12:28:06.739Z",
   "status": "success",
-  "broadcastId": 27319303,
-  "subject": "SoulFlow Melbourne: 5 soulful picks for tonight",
-  "sendAt": "2026-11-27T12:33:05.113Z",
-  "eventCount": 5,
+  "broadcastId": 27336519,
+  "subject": "SoulFlow Melbourne: everything on today",
+  "sendAt": "2026-11-28T12:28:04.882Z",
+  "eventCount": 10,
+  "hiddenCount": 2,
   "subscriberCount": 0
 }

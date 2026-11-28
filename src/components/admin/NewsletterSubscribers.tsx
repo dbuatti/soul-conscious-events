@@ -86,9 +86,9 @@ const NewsletterSubscribers: React.FC = () => {
     <div className="w-full">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-3xl font-heading font-semibold text-foreground">Weekly picks subscribers</h2>
+          <h2 className="text-3xl font-heading font-semibold text-foreground">Daily picks subscribers</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Export this list into Kit (or your email platform) to send the weekly city guide.
+            Export this list into Kit (or your email platform) to send the daily city guide.
           </p>
         </div>
         <Button variant="outline" onClick={exportCsv} className="rounded-full w-fit">
@@ -144,7 +144,7 @@ const NewsletterSubscribers: React.FC = () => {
         <div className="organic-card rounded-2xl py-16 text-center">
           <Mail className="h-10 w-10 text-primary/30 mx-auto mb-4" />
           <p className="font-semibold text-foreground">No subscribers yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">Share the homepage or a city guide to start collecting weekly-picks signups.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Share the homepage or a city guide to start collecting daily-picks signups.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">

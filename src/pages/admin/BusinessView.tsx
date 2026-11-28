@@ -636,10 +636,10 @@ const BusinessView = () => {
                   <TableCell className="font-medium">Featured listing</TableCell>
                   <TableCell>$15–30 / week</TableCell>
                   <TableCell><span className="text-amber-700">Parked</span></TableCell>
-                  <TableCell>Only after Analytics shows real traffic. Pin at the top of a category or state, or in weekly picks. No billing exists.</TableCell>
+                  <TableCell>Only after Analytics shows real traffic. Pin at the top of a category or state, or in daily picks. No billing exists.</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Weekly picks email</TableCell>
+                  <TableCell className="font-medium">Daily picks email</TableCell>
                   <TableCell>Free</TableCell>
                   <TableCell><span className="text-amber-700">Parked</span></TableCell>
                   <TableCell>Kit signup once there is an audience. Used to promote your own events, not to sell access.</TableCell>

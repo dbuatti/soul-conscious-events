@@ -224,7 +224,7 @@ const AdminPanel = () => {
           <TabsTrigger value="submissions" className="rounded-xl">Contact</TabsTrigger>
           <TabsTrigger value="analytics" className="rounded-xl">Analytics</TabsTrigger>
           <TabsTrigger value="newsletter" className="rounded-xl flex items-center gap-2">
-            <Mail className="h-3.5 w-3.5" /> Weekly picks
+            <Mail className="h-3.5 w-3.5" /> Daily picks
           </TabsTrigger>
           <TabsTrigger value="users" className="rounded-xl">Users</TabsTrigger>
           <TabsTrigger value="ai-logs" className="rounded-xl flex items-center gap-2">

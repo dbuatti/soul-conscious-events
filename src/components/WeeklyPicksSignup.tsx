@@ -43,7 +43,7 @@ const WeeklyPicksSignup: React.FC<WeeklyPicksSignupProps> = ({
     try {
       await subscribeToWeeklyPicks(email, city, source);
       setIsSubscribed(true);
-      toast.success('You’re on the weekly picks list!');
+      toast.success('You’re on the daily picks list!');
 
       void supabase.from('page_visit_logs').insert([{
         user_id: null,
@@ -82,12 +82,12 @@ const WeeklyPicksSignup: React.FC<WeeklyPicksSignupProps> = ({
           <Mail className="h-5 w-5" />
         </span>
         <div>
-          <p className="eyebrow mb-2">A little inspiration, weekly</p>
+          <p className="eyebrow mb-2">A little inspiration, every morning</p>
           <h2 id="weekly-picks-title" className="text-2xl sm:text-3xl font-heading font-semibold text-foreground">
-            The weekly five
+            Today's picks
           </h2>
           <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-xl">
-            Five hand-picked conscious events near you, delivered once a week. No noise, no spam.
+            Every conscious event on today in your city, delivered each morning at 9am. Up to 10 events, with a link to the full list online. No noise, no spam.
           </p>
         </div>
       </div>

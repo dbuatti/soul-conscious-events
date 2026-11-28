@@ -63,24 +63,49 @@ async function syncSubscribers() {
   return emails.length;
 }
 
-// --- Fetch upcoming approved VIC events, sorted earliest to latest ---
+const MAX_EVENTS = 10;
+
+// --- Melbourne-local "today", so the daily email matches what readers see ---
+function melbourneToday() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Melbourne' }).format(new Date());
+}
+
+// 9am Melbourne expressed as a UTC instant, handling AEST (+10) and AEDT (+11).
+function nextMelbourneNineAm() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Australia/Melbourne', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  }).formatToParts(now);
+  const get = (t) => Number(parts.find(p => p.type === t)?.value);
+  // Interpret Melbourne wall-clock as if UTC, then convert by its current offset.
+  const wallAsUtc = Date.UTC(get('year'), get('month') - 1, get('day'), 9, 0, 0);
+  const melbourneNowAsUtc = Date.UTC(get('year'), get('month') - 1, get('day'),
+    get('hour') === 24 ? 0 : get('hour'), get('minute'), get('second'));
+  const offsetMs = melbourneNowAsUtc - now.getTime();
+  let target = new Date(wallAsUtc - offsetMs);
+  if (target.getTime() < Date.now() - 60_000) target = new Date(target.getTime() + 24 * 60 * 60 * 1000);
+  return target;
+}
+
+// --- Fetch every approved VIC event happening today, earliest first ---
 async function fetchEvents() {
   const key = SUPABASE_SERVICE_KEY || SUPABASE_ANON_KEY;
-  const today = new Date().toISOString().slice(0, 10);
-  const url = `${SUPABASE_URL}/rest/v1/events?select=id,event_name,event_date,event_time,location,place_name,description,price,ticket_link,image_url,event_type&approval_status=eq.approved&is_deleted=eq.false&geographical_state=eq.VIC&event_date=gte.${today}&order=event_date.asc,event_time.asc&limit=30`;
+  const today = melbourneToday();
+  const url = `${SUPABASE_URL}/rest/v1/events?select=id,event_name,event_date,event_time,location,place_name,description,price,ticket_link,image_url,event_type&approval_status=eq.approved&is_deleted=eq.false&geographical_state=eq.VIC&event_date=eq.${today}&order=event_time.asc&limit=200`;
   const res = await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
   if (!res.ok) throw new Error(`Events fetch failed: ${res.status} ${await res.text()}`);
   const rows = await res.json();
-  // Sort by date then time, pick top 5, preferring events with images/descriptions/ticket links.
+  // All of today's events, soonest first; prefer richer listings on ties.
   const sorted = rows
     .map(e => ({ e, score: (e.image_url ? 2 : 0) + (e.description ? 1 : 0) + (e.ticket_link ? 1 : 0) }))
     .sort((a, b) => {
-      const da = new Date(a.e.event_date + 'T' + (a.e.event_time || '00:00'));
-      const db = new Date(b.e.event_date + 'T' + (b.e.event_time || '00:00'));
+      const da = new Date(a.e.event_date + 'T' + (a.e.event_time || '99:99'));
+      const db = new Date(b.e.event_date + 'T' + (b.e.event_time || '99:99'));
       if (da - db !== 0) return da - db;
       return b.score - a.score;
     });
-  return sorted.slice(0, 5).map(s => s.e);
+  return sorted.map(s => s.e);
 }
 
 // --- Helpers ---
@@ -103,27 +128,17 @@ function escapeHtml(s) {
 }
 
 function isToday(dateStr) {
-  return dateStr === new Date().toISOString().slice(0, 10);
-}
-
-function isTomorrow(dateStr) {
-  const t = new Date(); t.setDate(t.getDate() + 1);
-  return dateStr === t.toISOString().slice(0, 10);
+  return dateStr === melbourneToday();
 }
 
 function dayLabel(dateStr) {
-  if (isToday(dateStr)) return 'Tonight';
-  if (isTomorrow(dateStr)) return 'Tomorrow';
+  if (isToday(dateStr)) return 'Today';
   return formatDate(dateStr);
 }
 
 function groupLabel(dateStr) {
-  if (isToday(dateStr)) return 'Tonight';
-  if (isTomorrow(dateStr)) return 'Tomorrow';
-  const d = new Date(dateStr + 'T00:00:00');
-  const day = d.getDay();
-  if (day === 0 || day === 6) return 'This weekend';
-  return 'Coming up';
+  if (isToday(dateStr)) return 'Today in Melbourne';
+  return formatDate(dateStr);
 }
 
 function fetchWithRetry(url, options, retries = 3) {
@@ -138,8 +153,8 @@ function fetchWithRetry(url, options, retries = 3) {
 }
 
 // --- Build rich HTML email ---
-function buildHtml(events) {
-  // Group events by section (Tonight / Tomorrow / This weekend / Coming up)
+function buildHtml(events, hiddenCount = 0) {
+  // All of today's events in one section, capped at MAX_EVENTS.
   const sections = [];
   let currentSection = null;
   for (const e of events) {
@@ -213,21 +228,25 @@ function buildHtml(events) {
     <tr><td style="padding:0;">
       <div style="background:linear-gradient(135deg,#b34629 0%,#d4833a 50%,#e8c89a 100%);padding:28px 24px 24px 24px;text-align:center;">
         <p style="margin:0 0 6px 0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#fff7f0;font-weight:700;opacity:0.9;">SoulFlow Melbourne</p>
-        <h1 style="margin:0 0 8px 0;font-size:26px;font-weight:700;color:#ffffff;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,0.15);">Five soulful things to do today</h1>
-        <p style="margin:0;font-size:15px;color:#fff7f0;line-height:1.5;opacity:0.95;">Hand-picked conscious events, with direct booking links.</p>
+        <h1 style="margin:0 0 8px 0;font-size:26px;font-weight:700;color:#ffffff;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,0.15);">Everything soulful on today</h1>
+        <p style="margin:0;font-size:15px;color:#fff7f0;line-height:1.5;opacity:0.95;">All conscious events happening in Melbourne today, with direct booking links.</p>
       </div>
     </td></tr>
     <tr><td style="padding:20px 24px 8px 24px;text-align:center;">
-      <p style="margin:0 0 20px 0;font-size:14px;color:#8a7f75;line-height:1.5;">No noise, no spam. Just five good things happening in Melbourne.</p>
+      <p style="margin:0 0 20px 0;font-size:14px;color:#8a7f75;line-height:1.5;">No noise, no spam. Just everything good happening in Melbourne today.</p>
     </td></tr>
     <tr><td style="padding:0 24px 8px 24px;">
       ${eventCards}
     </td></tr>
+    ${hiddenCount > 0 ? `
     <tr><td style="padding:8px 24px 16px 24px;text-align:center;">
-      <a href="${SITE_URL}/melbourne" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:700;color:#ffffff;background:#3a3430;text-decoration:none;border-radius:999px;line-height:1;text-align:center;">See all Melbourne events</a>
+      <p style="margin:0 0 12px 0;font-size:14px;color:#5a534d;line-height:1.5;"><strong>And ${hiddenCount} more${hiddenCount === 1 ? '' : ' events'} today.</strong> We have to stop at ${MAX_EVENTS} in an email, but you will find every event, with times, prices and booking links, on the SoulFlow website.</p>
+    </td></tr>` : ''}
+    <tr><td style="padding:8px 24px 16px 24px;text-align:center;">
+      <a href="${SITE_URL}/melbourne" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:700;color:#ffffff;background:#3a3430;text-decoration:none;border-radius:999px;line-height:1;text-align:center;">See all events on the website</a>
     </td></tr>
     <tr><td style="padding:0 24px 16px 24px;text-align:center;">
-      <p style="margin:0;font-size:12px;color:#8a7f75;">Know someone who'd love this? <a href="mailto:?subject=Five%20soulful%20things%20in%20Melbourne%20today&body=Check%20out%20SoulFlow%3A%20https%3A%2F%2Fsoulflowau.vercel.app%2Fmelbourne" style="color:#b34629;text-decoration:none;font-weight:600;">Forward this email</a></p>
+      <p style="margin:0;font-size:12px;color:#8a7f75;">Know someone who'd love this? <a href="mailto:?subject=Soulful%20things%20in%20Melbourne%20today&body=Check%20out%20SoulFlow%3A%20https%3A%2F%2Fsoulflowau.vercel.app%2Fmelbourne" style="color:#b34629;text-decoration:none;font-weight:600;">Forward this email</a></p>
     </td></tr>
     <tr><td style="padding:16px 24px 28px 24px;text-align:center;border-top:1px solid #e8e1d8;">
       <p style="margin:0 0 8px 0;font-size:13px;color:#8a7f75;">Discover more at <a href="${SITE_URL}" style="color:#b34629;text-decoration:none;font-weight:600;">soulflowau.vercel.app</a></p>
@@ -261,20 +280,19 @@ async function main() {
     logStatus('no_events');
     process.exit(1);
   }
-  console.log(`Found ${events.length} events (earliest to latest).`);
+  console.log(`Found ${events.length} events happening today (Melbourne time).`);
 
-  const topEvent = events[0];
-  const hasTonight = events.some(e => isToday(e.event_date));
-  const urgency = hasTonight ? 'tonight' : 'today';
-  const subject = `SoulFlow Melbourne: ${events.length} soulful picks for ${urgency}`;
-  const previewText = `${topEvent.event_name} and ${events.length - 1} more soulful things to do in Melbourne today.`;
-  const content = buildHtml(events);
+  const hiddenCount = Math.max(0, events.length - MAX_EVENTS);
+  const picks = events.slice(0, MAX_EVENTS);
+  const topEvent = picks[0];
+  const subject = `SoulFlow Melbourne: everything on today`;
+  const previewText = hiddenCount > 0
+    ? `${picks.length} soulful things today, plus ${hiddenCount} more on the website.`
+    : `${topEvent.event_name} and ${picks.length - 1} more soulful things to do in Melbourne today.`;
+  const content = buildHtml(picks, hiddenCount);
 
-  const melbourneOffsetHours = 11;
-  const now = new Date();
-  const utcHour = 9 - melbourneOffsetHours;
-  const target = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), utcHour, 0, 0));
-  if (target.getTime() < Date.now() - 60_000) target.setUTCDate(target.getUTCDate() + 1);
+  // Work out "9am in Melbourne" properly across AEST/AEDT, without hardcoding an offset.
+  const target = nextMelbourneNineAm();
   const sendAt = process.env.SEND_NOW === '1' ? new Date().toISOString() : target.toISOString();
 
   const payload = {
@@ -282,7 +300,7 @@ async function main() {
     subject,
     preview_text: previewText,
     content,
-    description: 'Daily Melbourne picks',
+    description: 'All events happening today in Melbourne',
     public: false,
     published_at: new Date().toISOString(),
     send_at: sendAt,
@@ -296,8 +314,8 @@ async function main() {
   const json = await res.json();
   console.log('STATUS', res.status);
   if (res.ok) {
-    console.log(`Created broadcast ${json.broadcast.id}, template=${json.broadcast.email_template?.name}, status=${json.broadcast.status}, send_at=${sendAt}, subscribers=${subscriberCount}`);
-    logStatus('success', { broadcastId: json.broadcast.id, subject, sendAt, eventCount: events.length, subscriberCount });
+    console.log(`Created broadcast ${json.broadcast.id}, template=${json.broadcast.email_template?.name}, status=${json.broadcast.status}, send_at=${sendAt}, subscribers=${subscriberCount}, shown=${picks.length}, hidden=${hiddenCount}`);
+    logStatus('success', { broadcastId: json.broadcast.id, subject, sendAt, eventCount: picks.length, hiddenCount, subscriberCount });
     try { const ap = path.join(ROOT, 'docs', 'ALERT.md'); if (fs.existsSync(ap)) fs.unlinkSync(ap); } catch (e) {}
   } else {
     console.error('FAILED:', JSON.stringify(json));
