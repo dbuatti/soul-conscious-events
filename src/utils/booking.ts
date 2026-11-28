@@ -1,5 +1,5 @@
 import { Event } from '@/types/event';
-import { formatPrice } from '@/utils/event-utils';
+import { formatPriceShort } from '@/utils/event-utils';
 
 /**
  * How a visitor can actually secure a place at an event.
@@ -129,7 +129,7 @@ export const getBookingTarget = (event: BookableEvent): BookingTarget => {
     return {
       mode: 'link',
       href,
-      label: showPrice ? `Get tickets · ${formatPrice(price)}` : 'Get tickets',
+      label: showPrice ? `Get tickets · ${formatPriceShort(price)}` : 'Get tickets',
       external: true,
     };
   }

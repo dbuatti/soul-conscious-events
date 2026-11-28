@@ -13,9 +13,11 @@ interface BookmarkButtonProps {
   initialIsBookmarked?: boolean;
   className?: string;
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  /** Show a text label next to the icon (for wide buttons). */
+  showLabel?: boolean;
 }
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookmarked = false, className, size = 'icon' }) => {
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookmarked = false, className, size = 'icon', showLabel = false }) => {
   const { user, isLoading: isSessionLoading } = useSession();
   const [isBookmarked, setIsBookmarked] = useState(initialIsBookmarked);
   const [loading, setLoading] = useState(false);
@@ -102,6 +104,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
       title={isBookmarked ? "Remove from Bookmarks" : "Add to Bookmarks"}
     >
       <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-current")} />
+      {showLabel && <span className="ml-2 font-semibold">{isBookmarked ? 'Saved' : 'Save'}</span>}
     </Button>
   );
 };

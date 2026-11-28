@@ -126,7 +126,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
   const startDate = parseISO(event.event_date);
   const endDate = event.end_date ? parseISO(event.end_date) : null;
-  const dateDisplay = endDate && !isSameDay(startDate, endDate) ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}` : format(startDate, 'MMM d, yyyy');
+  const dateDisplay = endDate && !isSameDay(startDate, endDate) ? `${format(startDate, 'EEE d MMM')} – ${format(endDate, 'EEE d MMM yyyy')}` : format(startDate, 'EEE d MMM yyyy');
   const isCreatorOrAdmin = (!!user && user.id === event.user_id) || isAdmin;
   const booking = getBookingTarget(event);
 
@@ -237,6 +237,17 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                 )}
               </div>
             )}
+            {!event.full_address && event.place_name && (
+              <button
+                onClick={() => openInMaps([event.place_name, event.geographical_state].filter(Boolean).join(', '))}
+                className="flex items-start text-left text-foreground hover:text-primary transition-colors"
+              >
+                <MapPin className="mr-2 h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                <span className="font-bold text-sm leading-snug">
+                  {event.place_name}{event.geographical_state ? <span className="font-normal text-muted-foreground"> · {event.geographical_state}</span> : null}
+                </span>
+              </button>
+            )}
             {event.price && (
               <div className="flex items-center text-foreground">
                 <DollarSign className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
@@ -293,6 +304,13 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
             </p>
           </section>
         )}
+
+        <button
+          onClick={() => { onClose(); navigate(`/events/${getBaseEventId(event.id)}`); }}
+          className="sm:hidden inline-flex items-center gap-1 text-sm font-semibold text-primary"
+        >
+          See the full event page →
+        </button>
 
         {event.event_days && event.event_days.length > 0 && (
           <section className="space-y-3">

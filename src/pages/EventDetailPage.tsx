@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Event } from '@/types/event';
 import BookmarkButton from '@/components/BookmarkButton';
-import { getBaseEventId, formatPrice, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
+import { getBaseEventId, formatPrice, formatPriceShort, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
 import { getBookingTarget } from '@/utils/booking';
 import SEO from '@/components/SEO';
 import { logUiAction } from '@/lib/analytics';
@@ -288,9 +288,6 @@ const EventDetailPage: React.FC = () => {
             <section className="mb-8">
               <h2 className="text-xl font-semibold font-heading text-foreground mb-3">Where</h2>
               <MapPreview event={event} />
-              <p className="mt-3 text-sm text-muted-foreground text-center">
-                Pin this location on the map to help others find it.
-              </p>
             </section>
           )}
 
@@ -385,7 +382,7 @@ const EventDetailPage: React.FC = () => {
             )}
 
             <div className="grid grid-cols-2 gap-2.5">
-              <BookmarkButton eventId={event.id} size="default" className="h-11 rounded-full bg-secondary hover:bg-secondary/70 border-none" />
+              <BookmarkButton eventId={event.id} size="default" showLabel className="h-11 rounded-full bg-secondary hover:bg-secondary/70 border-none" />
               <ShareEventButton event={event} label="Share kit" className="h-11 rounded-full" />
               <Button variant="ghost" asChild className="h-10 rounded-full text-sm text-muted-foreground hover:text-foreground">
                 <a href={getGoogleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" onClick={() => void logUiAction('calendar_add:google', user?.id ?? null, `/events/${event.id}`)}>
@@ -464,11 +461,12 @@ const EventDetailPage: React.FC = () => {
       {booking.href && (
         <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/90 backdrop-blur-xl px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground truncate">{event.price ? formatPrice(event.price) : booking.mode === 'contact' ? 'Book direct' : 'Tickets'}</p>
+            <p className="text-sm font-semibold text-foreground truncate">{event.price ? formatPriceShort(event.price) : booking.mode === 'contact' ? 'Book direct' : 'Tickets'}</p>
             <p className="text-xs text-muted-foreground truncate">{format(startDate, 'EEE d MMM')}{event.event_time ? ` · ${event.event_time}` : ''}</p>
           </div>
           <Button onClick={handleBookingClick} className="rounded-full h-11 px-5 font-semibold shrink-0 max-w-[58%]">
-            <span className="truncate">{booking.label}</span>
+            {/* Price is already shown on the left of the bar. */}
+            <span className="truncate">{booking.label.split(' · ')[0]}</span>
           </Button>
         </div>
       )}
