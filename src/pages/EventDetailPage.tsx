@@ -259,7 +259,7 @@ const EventDetailPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         <div className="lg:col-span-7 space-y-10">
-          <div className="relative w-full aspect-[16/10] rounded-[1.75rem] overflow-hidden bg-secondary shadow-[0_30px_60px_-30px_hsl(20_40%_20%/0.45)]">
+          <div className="relative w-full aspect-[16/10] rounded-[1.25rem] overflow-hidden bg-secondary shadow-[0_20px_40px_-20px_hsl(20_40%_20%/0.35)]">
             <ResilientImage
               src={event.image_url || undefined}
               alt={event.event_name}
@@ -331,7 +331,7 @@ const EventDetailPage: React.FC = () => {
         </div>
 
         <aside className="lg:col-span-5">
-          <div className="organic-card rounded-[1.75rem] p-6 sm:p-7 space-y-6 lg:sticky lg:top-24">
+          <div className="organic-card rounded-[1.25rem] p-5 sm:p-6 space-y-5 lg:sticky lg:top-24">
             <div className="flex items-center gap-4">
               <div className="flex flex-col items-center justify-center w-16 h-[4.5rem] rounded-2xl bg-primary text-primary-foreground leading-none shrink-0">
                 <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">{format(startDate, 'MMM')}</span>
@@ -424,7 +424,7 @@ const EventDetailPage: React.FC = () => {
 
       {/* Related events */}
       {relatedEvents.length > 0 && (
-        <section className="mb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <section className="mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight">
               More like this
