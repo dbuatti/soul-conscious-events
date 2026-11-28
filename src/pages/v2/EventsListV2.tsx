@@ -79,7 +79,6 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     return 'list';
   });
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [filtersHidden, setFiltersHidden] = useState(false);
   const [selectedDay, setSelectedDay] = useState(new Date());
 
   const [isEventDetailDialogOpen, setIsEventDetailDialogOpen] = useState(false);
@@ -92,6 +91,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   const { data: favouriteVenues = [] } = useFavouriteVenues(user?.id);
 
   const allEvents = useMemo(() => expandRecurringEvents(eventsQuery.data ?? []), [eventsQuery.data]);
+  const eventDates = useMemo(() => new Set(allEvents.map((e) => e.event_date)), [allEvents]);
   const availableVenues = useMemo(() => getAvailableVenues(eventsQuery.data ?? []), [eventsQuery.data]);
 
   const loading = eventsQuery.isLoading;
@@ -119,16 +119,6 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
   // Compact search in the sticky toolbar: only while the hero search box is
   // scrolled out of view (the hero owns the search UI at the top of the page).
   const heroRef = React.useRef<HTMLDivElement>(null);
-  const lastScrollY = React.useRef(0);
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setFiltersHidden(y > 120 && y > lastScrollY.current);
-      lastScrollY.current = y;
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
   const [heroSearchVisible, setHeroSearchVisible] = useState(true);
   useEffect(() => {
     if (!heroRef.current) return;
@@ -344,21 +334,25 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
         />
       </div>
 
-      <div
-        className={`sticky top-16 z-20 -mx-2 sm:-mx-4 px-2 sm:px-4 py-2 mb-3 bg-background/90 backdrop-blur-xl border-b border-border/40 transition-transform duration-300 ${filtersHidden ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}
-      >
+      <div className="mb-3 py-2 border-b border-border/40">
         <DateWheel
           value={filters.date === 'All Upcoming' ? 'all' : filters.date}
           onChange={(v) => setFilters({ ...filters, date: v === 'all' ? 'All Upcoming' : v })}
+          eventDates={eventDates}
         />
-        <div className="mt-2">
-          <StateChips
-            value={filters.state}
-            onChange={(states) => setFilters({ ...filters, state: states })}
-          />
-        </div>
+        {/* Archived: location (state) chip filter. Re-enable by setting ARCHIVE_FILTERS=false. */}
+        {false && (
+          <div className="mt-2">
+            <StateChips
+              value={filters.state}
+              onChange={(states) => setFilters({ ...filters, state: states })}
+            />
+          </div>
+        )}
       </div>
 
+      {/* Archived: secondary filter dropdowns (category, venue, price, state). Re-enable if needed. */}
+      {false && (
       <EventsToolbar
         filters={filters}
         onFilterChange={setFilters}
@@ -379,6 +373,7 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
         showCompactSearch={!heroSearchVisible}
         onSearchTermChange={setRawSearchTerm}
       />
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6" aria-busy="true" aria-label="Loading events">

@@ -8,6 +8,8 @@ interface DateWheelProps {
   onChange: (value: string) => void;
   /** Number of days to show after "All". */
   days?: number;
+  /** Set of YYYY-MM-DD dates that have at least one event. Days without events are de-emphasised. */
+  eventDates?: Set<string>;
   className?: string;
 }
 
@@ -16,7 +18,7 @@ interface DateWheelProps {
  * upcoming event), then today and the next N days. Selecting a chip filters
  * the event list to that single day.
  */
-const DateWheel: React.FC<DateWheelProps> = ({ value, onChange, days = 14, className }) => {
+const DateWheel: React.FC<DateWheelProps> = ({ value, onChange, days = 14, eventDates, className }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const chips = useMemo(() => {
@@ -47,24 +49,31 @@ const DateWheel: React.FC<DateWheelProps> = ({ value, onChange, days = 14, class
     >
       {chips.map((chip) => {
         const active = value === chip.key;
+        const hasEvent = chip.key === 'all' || !eventDates || eventDates.has(chip.key);
         return (
           <button
             key={chip.key}
             type="button"
             role="tab"
             aria-selected={active}
-            onClick={() => onChange(chip.key)}
+            disabled={chip.key !== 'all' && !hasEvent}
+            onClick={() => hasEvent && onChange(chip.key)}
             className={cn(
               'shrink-0 flex flex-col items-center justify-center min-w-[76px] h-14 rounded-xl border text-xs font-semibold transition-colors',
               active
                 ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                : 'bg-card border-border/70 text-foreground hover:border-primary/40 hover:text-primary',
+                : hasEvent
+                  ? 'bg-card border-border/70 text-foreground hover:border-primary/40 hover:text-primary'
+                  : 'bg-card/40 border-border/40 text-muted-foreground/40 cursor-not-allowed',
             )}
           >
             <span className="text-[10px] uppercase tracking-wide leading-none">{chip.label}</span>
-            <span className={cn('text-[9px] mt-1.5 leading-none', active ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
+            <span className={cn('text-[9px] mt-1.5 leading-none', active ? 'text-primary-foreground/80' : hasEvent ? 'text-muted-foreground' : 'text-muted-foreground/40')}>
               {chip.sub}
             </span>
+            {hasEvent && chip.key !== 'all' && (
+              <span className={cn('mt-1 h-1 w-1 rounded-full', active ? 'bg-primary-foreground/80' : 'bg-primary/60')} aria-hidden="true" />
+            )}
           </button>
         );
       })}
