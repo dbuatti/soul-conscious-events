@@ -33,7 +33,7 @@
     --input: 32 22% 84%;
     --ring: 13 63% 44%;
 
-    --radius: 1.25rem;
+    --radius: 1rem;
 
     /* Extra brand tokens */
     --sage: 95 14% 42%;
@@ -159,7 +159,7 @@
 
 @layer components {
   .organic-card {
-    @apply bg-card border border-border/50 shadow-[0_1px_2px_hsl(20_30%_20%/0.03),0_6px_18px_-12px_hsl(20_30%_20%/0.10)] transition-[box-shadow,transform,border-color] duration-300;
+    @apply bg-card border border-border/50 shadow-[0_1px_2px_hsl(20_30%_20%/0.04),0_4px_12px_-8px_hsl(20_30%_20%/0.08)] transition-[box-shadow,transform,border-color] duration-300;
   }
 
   .organic-card-hover {

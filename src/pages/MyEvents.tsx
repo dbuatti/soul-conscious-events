@@ -15,6 +15,7 @@ const MyEvents: React.FC = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(6);
   const [loadFailed, setLoadFailed] = useState(false);
 
   const fetchMyEvents = useCallback(async () => {
@@ -38,6 +39,7 @@ const MyEvents: React.FC = () => {
     } else {
       const validEvents = (data || []).filter(event => event.id && event.id.length > 30);
       setEvents(validEvents as Event[]);
+      setVisibleCount(6);
       setLoadFailed(false);
     }
     setLoadingEvents(false);
@@ -109,31 +111,45 @@ const MyEvents: React.FC = () => {
         description="Edit, duplicate or remove the gatherings you've shared."
       />
 
-      <div className="flex justify-end mb-12">
+      <div className="flex justify-end mb-8">
         <Link to="/submit-event">
-          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-8 py-6 text-lg font-black shadow-xl transition-transform hover:scale-105">
-            <PlusCircle className="mr-2 h-6 w-6" /> Add New Event
+          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-full px-6 py-3 text-base font-bold shadow-md transition-transform hover:scale-105">
+            <PlusCircle className="mr-2 h-5 w-5" /> Add New Event
           </Button>
         </Link>
       </div>
 
       {events.length === 0 ? (
-        <div className="p-24 organic-card rounded-[2rem] text-center border-dashed border-primary/20">
-          <Frown className="h-24 w-24 text-primary/20 mx-auto mb-10" />
-          <h3 className="text-4xl font-heading font-bold text-foreground mb-6">No events yet</h3>
-          <p className="text-muted-foreground mb-12 text-xl max-w-sm mx-auto font-medium">You haven't submitted any events to SoulFlow yet.</p>
+        <div className="p-12 organic-card rounded-[1.5rem] text-center border-dashed border-primary/20">
+          <Frown className="h-16 w-16 text-primary/20 mx-auto mb-6" />
+          <h3 className="text-2xl font-heading font-bold text-foreground mb-4">No events yet</h3>
+          <p className="text-muted-foreground mb-8 text-base max-w-sm mx-auto">You haven't submitted any events to SoulFlow yet.</p>
           <Link to="/submit-event">
-            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-full px-8 py-4 text-base font-bold shadow-lg transition-transform hover:scale-105">
               Submit Your First Event
             </Button>
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {events.map((event) => (
-            <UserEventCard key={event.id} event={event} onEventDeleted={fetchMyEvents} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {events.slice(0, visibleCount).map((event) => (
+              <UserEventCard key={event.id} event={event} onEventDeleted={fetchMyEvents} />
+            ))}
+          </div>
+          {events.length > visibleCount && (
+            <div className="flex flex-col items-center gap-2 mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((c) => c + 6)}
+                className="rounded-full h-11 px-8 font-semibold bg-card"
+              >
+                Show more ({events.length - visibleCount} remaining)
+              </Button>
+              <span className="text-xs text-muted-foreground">Showing {Math.min(visibleCount, events.length)} of {events.length}</span>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

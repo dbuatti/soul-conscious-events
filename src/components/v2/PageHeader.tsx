@@ -11,7 +11,7 @@ interface PageHeaderProps {
 
 /** Shared warm page intro used across V2 content pages. */
 const PageHeader: React.FC<PageHeaderProps> = ({ eyebrow, title, description, actions, className }) => (
-  <header className={cn('hero-glow rounded-[2rem] px-6 py-10 sm:px-12 sm:py-14 mb-10 sm:mb-12', className)}>
+  <header className={cn('hero-glow rounded-[1.5rem] px-5 py-8 sm:px-10 sm:py-10 mb-8', className)}>
     <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
       <div className="max-w-2xl">
         {eyebrow && <p className="eyebrow mb-3">{eyebrow}</p>}

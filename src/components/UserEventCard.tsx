@@ -78,7 +78,7 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
 
   return (
     <>
-      <Card className="group flex flex-col justify-between shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 overflow-hidden">
+      <Card className="group flex flex-col justify-between shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300 overflow-hidden organic-card">
         {event.image_url && (
           <div className="relative w-full aspect-video overflow-hidden">
             <ResilientImage
@@ -128,31 +128,31 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
             </div>
           )}
         </CardHeader>
-        <CardContent className="p-3 pt-1 sm:p-4 sm:pt-2 space-y-1 sm:space-y-2">
+        <CardContent className="px-4 pb-3 sm:px-5 sm:pb-4 pt-0">
           {event.description && <p className="text-foreground leading-relaxed text-sm sm:text-base line-clamp-3">{event.description}</p>}
         </CardContent>
-        <CardFooter className="flex flex-col items-start pt-2 sm:pt-4">
+        <CardFooter className="px-4 pb-4 sm:px-5 sm:pb-5 pt-2">
           <div className="flex justify-end w-full space-x-1 sm:space-x-2">
-            <Button variant="outline" size="icon" onClick={handleViewDetails} title="View Details" className="h-7 w-7 sm:h-9 sm:w-9">
+            <Button variant="outline" size="icon" onClick={handleViewDetails} title="View Details" className="h-8 w-8">
               <ExternalLink className="h-3.5 w-3.5 sm:h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" onClick={handleShare} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9">
+            <Button variant="outline" size="icon" onClick={handleShare} title="Share Event" className="h-8 w-8">
               <Share2 className="h-3.5 w-3.5 sm:h-4 w-4" />
             </Button>
             <Link to={`/edit-event/${event.id}`} state={{ from: location.pathname }}>
-              <Button variant="outline" size="icon" title="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9">
+              <Button variant="outline" size="icon" title="Edit Event" className="h-8 w-8">
                 <Edit className="h-3.5 w-3.5 sm:h-4 w-4" />
               </Button>
             </Link>
             {/* New Duplicate Button */}
             <Link to={`/duplicate-event/${event.id}`} state={{ from: location.pathname }}>
-              <Button variant="outline" size="icon" title="Duplicate Event" className="h-7 w-7 sm:h-9 sm:w-9">
+              <Button variant="outline" size="icon" title="Duplicate Event" className="h-8 w-8">
                 <Copy className="h-3.5 w-3.5 sm:h-4 w-4" />
               </Button>
             </Link>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon" title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9">
+                <Button variant="destructive" size="icon" title="Delete Event" className="h-8 w-8">
                   <Trash2 className="h-3.5 w-3.5 sm:h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>

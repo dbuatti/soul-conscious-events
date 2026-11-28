@@ -35,6 +35,7 @@ const EventInsights: React.FC = () => {
   const [thisWeekViews, setThisWeekViews] = useState(0);
   const [lastWeekViews, setLastWeekViews] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(5);
   const [loadFailed, setLoadFailed] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -58,6 +59,7 @@ const EventInsights: React.FC = () => {
 
     const validEvents = (eventsData || []).filter(e => e.id && e.id.length > 30) as Event[];
     setEvents(validEvents);
+    setVisibleCount(5);
     if (validEvents.length === 0) { setLoading(false); return; }
 
     const eventIds = validEvents.map(e => e.id);
@@ -185,7 +187,7 @@ const EventInsights: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {events.map((event) => {
+        {events.slice(0, visibleCount).map((event) => {
           const m = metricsMap[event.id] || { views: 0, ticketClicks: 0, discountCopies: 0 };
           return (
             <div key={event.id} className="organic-card rounded-[1.5rem] p-5 sm:p-7">
@@ -234,6 +236,18 @@ const EventInsights: React.FC = () => {
           );
         })}
       </div>
+      {events.length > visibleCount && (
+        <div className="flex flex-col items-center gap-2 pt-2">
+          <Button
+            variant="outline"
+            onClick={() => setVisibleCount((c) => c + 5)}
+            className="rounded-full h-10 px-6 font-semibold bg-card"
+          >
+            Show more ({events.length - visibleCount} remaining)
+          </Button>
+          <span className="text-xs text-muted-foreground">Showing {Math.min(visibleCount, events.length)} of {events.length}</span>
+        </div>
+      )}
     </div>
   );
 };
