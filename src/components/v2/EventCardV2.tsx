@@ -117,7 +117,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-foreground/25 to-transparent pointer-events-none" />
 
         {/* Calendar tile */}
-        <div className="absolute top-3 left-3 z-20 flex flex-col items-center justify-center w-14 rounded-xl bg-background/95 backdrop-blur shadow-sm py-1.5 leading-none">
+        <div className="absolute top-2.5 left-2.5 z-20 flex flex-col items-center justify-center w-12 rounded-lg bg-background/95 backdrop-blur shadow-sm py-1 leading-none">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{format(eventDate, 'EEE')}</span>
           <span className="font-heading text-2xl font-semibold text-foreground mt-0.5">{format(eventDate, 'd')}</span>
           <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-0.5">{format(eventDate, 'MMM')}</span>
@@ -152,7 +152,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
         )}
       </div>
 
-      <div className="p-4 sm:p-5 flex flex-col flex-grow gap-3">
+      <div className="p-3.5 sm:p-4 flex flex-col flex-grow gap-2.5">
         {(relativeDay || isRecurring || isMultiDayEvent || isNew) && (
           <div className="flex flex-wrap gap-1.5 -mb-0.5">
             {relativeDay && (
@@ -181,7 +181,7 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
           </div>
         )}
 
-        <h3 className="text-[1.45rem] leading-[1.15] font-semibold text-foreground font-heading line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="text-lg leading-[1.15] font-semibold text-foreground font-heading line-clamp-2 group-hover:text-primary transition-colors">
           {event.event_name}
         </h3>
 
