@@ -126,7 +126,7 @@ const MapPage = () => {
         <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
           <Sparkles className="h-3 w-3 mr-2" /> Explore Nearby
         </div>
-        <h1 className="text-5xl sm:text-6xl font-semibold font-heading tracking-tight text-foreground">Event Map</h1>
+        <h1 className="text-3xl sm:text-5xl font-semibold font-heading tracking-tight text-foreground">Event Map</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
           Discover soulful gatherings vibrating in your local area.
         </p>
@@ -153,25 +153,25 @@ const MapPage = () => {
       </div>
 
       {loading ? (
-        <div className="w-full h-[600px] rounded-[3rem] bg-secondary/30 flex flex-col items-center justify-center border border-border">
+        <div className="w-full h-[500px] rounded-[1.5rem] bg-secondary/30 flex flex-col items-center justify-center border border-border">
           <Loader2 className="h-16 w-16 text-primary animate-spin mb-6" />
           <p className="text-2xl font-semibold font-heading text-foreground">
             {dbStatus === 'checking' ? 'Connecting to Database...' : 'Loading Map Data...'}
           </p>
         </div>
       ) : dbStatus === 'error' ? (
-        <div className="p-24 organic-card rounded-[4rem] text-center border-destructive/20 bg-destructive/5">
+        <div className="p-12 organic-card rounded-[1.5rem] text-center border-destructive/20 bg-destructive/5">
           <Database className="h-20 w-20 text-destructive/20 mx-auto mb-8" />
           <h3 className="text-3xl font-heading font-bold text-foreground mb-4">Connection Issue</h3>
           <p className="text-xl text-muted-foreground mb-8 max-w-md mx-auto">
             We're having trouble reaching the database. This could be a temporary network issue or a configuration problem.
           </p>
-          <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+          <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-full px-8 py-4 text-base font-bold shadow-lg transition-transform hover:scale-105">
             Try Again
           </Button>
         </div>
       ) : visibleEvents.length === 0 ? (
-        <div className="p-24 organic-card rounded-[4rem] text-center border-dashed border-primary/20">
+        <div className="p-12 organic-card rounded-[1.5rem] text-center border-dashed border-primary/20">
           <Frown className="h-20 w-20 text-primary/20 mx-auto mb-8" />
           <p className="text-2xl font-bold text-muted-foreground mb-8">
             {defaultState
@@ -184,7 +184,7 @@ const MapPage = () => {
             </Link>
           )}
           <Link to="/submit-event">
-            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-2xl px-12 py-8 text-xl font-black shadow-2xl transition-transform hover:scale-105">
+            <Button className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-full px-8 py-4 text-base font-bold shadow-lg transition-transform hover:scale-105">
               <PlusCircle className="mr-3 h-7 w-7" /> Add the First Event!
             </Button>
           </Link>
@@ -240,7 +240,7 @@ const MapPage = () => {
         </div>
       )}
 
-      <div className="mt-12 p-8 bg-secondary/30 rounded-[2.5rem] border border-border/50 text-center max-w-3xl mx-auto">
+      <div className="mt-8 p-5 bg-secondary/30 rounded-[1.5rem] border border-border/50 text-center max-w-3xl mx-auto">
         <p className="text-sm text-muted-foreground leading-relaxed">
           <span className="font-black text-foreground uppercase tracking-widest text-[10px] block mb-2">Note</span>
           This map uses OpenStreetMap data and Leaflet, providing a completely free and open-source experience for our community.

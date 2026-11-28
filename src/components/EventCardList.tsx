@@ -125,18 +125,18 @@ const EventCardList: React.FC<EventCardListProps> = ({
         </CardContent>
         <CardFooter className="flex flex-col items-start pt-2 sm:pt-4">
           <div className="flex justify-end w-full space-x-1 sm:space-x-2">
-            <BookmarkButton eventId={event.id} size="icon" className="h-7 w-7 sm:h-9 sm:w-9" />
-            <Button variant="outline" size="icon" onClick={(e) => onShare(event, e)} title="Share Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+            <BookmarkButton eventId={event.id} size="icon" className="h-8 w-8 sm:h-9 sm:w-9" />
+            <Button variant="outline" size="icon" onClick={(e) => onShare(event, e)} title="Share Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
               <Share2 className="h-3.5 w-3.5 sm:h-4 w-4" />
             </Button>
             {isCreatorOrAdmin && (
               <>
                 <Link to={`/edit-event/${baseId}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="icon" title="Edit Event" aria-label="Edit Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button variant="outline" size="icon" title="Edit Event" aria-label="Edit Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                     <Edit className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
                   </Button>
                 </Link>
-                <Button variant="destructive" size="icon" onClick={(e) => onDelete(baseId, e)} title="Delete Event" className="h-7 w-7 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button variant="destructive" size="icon" onClick={(e) => onDelete(baseId, e)} title="Delete Event" className="h-8 w-8 sm:h-9 sm:w-9 transition-all duration-300 ease-in-out transform hover:scale-105">
                   <Trash2 className="h-3.5 w-3.5 sm:h-3.5 w-3.5" />
                 </Button>
               </>

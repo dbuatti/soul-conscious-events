@@ -71,7 +71,7 @@ const EventsToolbar = ({
             type="button"
             onClick={() => onSearchTermChange('')}
             aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
           >
             <X className="h-4 w-4" />
           </button>
