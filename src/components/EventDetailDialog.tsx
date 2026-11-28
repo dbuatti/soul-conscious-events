@@ -277,7 +277,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
               
               {event.full_address && (
                 <Button variant="outline" size="sm" onClick={handleCopyAddress} className="rounded-full h-9 px-3.5 text-xs font-medium">
-                  {copiedAddress ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
+                  {copiedAddress ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600 dark:text-green-400" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
                   {copiedAddress ? 'Copied!' : 'Copy Address'}
                 </Button>
               )}
@@ -326,7 +326,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
                   <code className="text-xl font-semibold text-foreground tracking-wider">{event.discount_code}</code>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => handleCopyCode(event.discount_code!)} className="rounded-full min-w-[110px] h-9 text-xs font-medium">
-                  {copiedCode ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
+                  {copiedCode ? <Check className="mr-1.5 h-3.5 w-3.5 text-green-600 dark:text-green-400" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
                   {copiedCode ? 'Copied!' : 'Copy Code'}
                 </Button>
               </div>
@@ -334,7 +334,7 @@ const EventDetailDialog: React.FC<EventDetailDialogProps> = ({ event, isOpen, on
 
             {event.special_notes && (
               <div className="flex items-start bg-yellow-500/5 p-4 rounded-xl border border-yellow-500/20">
-                <Info className="mr-3 h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <Info className="mr-3 h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-foreground/80 italic leading-relaxed">{event.special_notes}</p>
               </div>
             )}

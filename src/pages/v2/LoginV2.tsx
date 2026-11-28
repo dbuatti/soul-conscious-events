@@ -4,12 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
+import { useTheme } from 'next-themes';
 import { consumeReturnTo, getRedirectUrl } from '@/lib/utils';
 import { Bookmark, CalendarCheck, PlusCircle } from 'lucide-react';
 import SEO from '@/components/SEO';
 
 const LoginV2 = () => {
   const navigate = useNavigate();
+  const { resolvedTheme } = useTheme();
   const location = useLocation();
   const { user, isLoading } = useSession();
 
@@ -79,7 +81,7 @@ const LoginV2 = () => {
         </div>
       </div>
 
-      <div className="w-full max-w-md glass-card p-8 sm:p-10 rounded-[1.75rem] shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000">
+      <div className="w-full max-w-md organic-card p-8 sm:p-10 rounded-[1.75rem] shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000">
         <h2 className="text-3xl font-bold text-foreground text-center mb-8 font-heading">Sign In</h2>
         <Auth
           supabaseClient={supabase}
@@ -108,7 +110,7 @@ const LoginV2 = () => {
               },
             },
           }}
-          theme="light"
+          theme={resolvedTheme === "dark" ? "dark" : "light"}
           redirectTo={getRedirectUrl()}
           localization={{
             variables: {
