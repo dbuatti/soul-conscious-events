@@ -29,6 +29,7 @@ interface EventsToolbarProps {
   /** Show the compact search row (hero search is scrolled out of view). */
   showCompactSearch?: boolean;
   onSearchTermChange?: (value: string) => void;
+  showFilters?: boolean;
 }
 
 /**
@@ -54,6 +55,7 @@ const EventsToolbar = ({
   totalCount,
   showCompactSearch = false,
   onSearchTermChange,
+  showFilters = true,
 }: EventsToolbarProps) => (
   <div className="sticky top-0 z-30 -mx-2 sm:-mx-4 px-2 sm:px-4 py-2.5 sm:py-3 mb-6 bg-background/85 backdrop-blur-xl border-b border-border/50">
     {showCompactSearch && onSearchTermChange && (
@@ -87,6 +89,7 @@ const EventsToolbar = ({
       isUserLoggedIn={isUserLoggedIn}
       viewMode={viewMode}
       onViewModeChange={onViewModeChange}
+      showFilters={showFilters}
     />
 
     {hasActiveFilters && (

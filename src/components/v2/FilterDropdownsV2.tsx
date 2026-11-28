@@ -30,6 +30,8 @@ export interface FilterDropdownsV2Props {
   isUserLoggedIn: boolean;
   viewMode: 'list' | 'compact' | 'calendar' | 'map';
   onViewModeChange: (mode: 'list' | 'compact' | 'calendar' | 'map') => void;
+  /** When false, hide the filter dropdowns but keep the view-mode switcher. */
+  showFilters?: boolean;
 }
 
 // Keys must match `v2EventCategories` (src/lib/constants.ts) or the icon is dropped.
@@ -56,6 +58,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
   isUserLoggedIn,
   viewMode,
   onViewModeChange,
+  showFilters = true,
 }) => {
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
@@ -185,6 +188,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 w-full">
       {/* Phone: a single "Filters" button expands the dropdowns below, so the
           sticky bar stays one line. sm+: all filters sit in one wrapping row. */}
+      {showFilters && (
       <button
         type="button"
         onClick={() => setMobileFiltersOpen((open) => !open)}
@@ -203,7 +207,9 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
         )}
         <ChevronDown className={cn('h-4 w-4 opacity-50 transition-transform', mobileFiltersOpen && 'rotate-180')} />
       </button>
+      )}
 
+      {showFilters && (
       <div className={cn(
         'order-3 gap-2 min-w-0 items-center -my-1 py-1 w-full sm:w-auto sm:flex sm:flex-1 sm:flex-wrap sm:overflow-visible',
         mobileFiltersOpen ? 'flex flex-wrap' : 'hidden',
@@ -244,6 +250,7 @@ const FilterDropdownsV2: React.FC<FilterDropdownsV2Props> = ({
           {renderMultiSelectDropdownContent('state', v2States, stateSearchTerm, setStateSearchTerm, 'Search states')}
         </DropdownMenu>
       </div>
+      )}
 
       <div className="order-2 sm:order-none flex items-center bg-card border border-border/80 p-1 rounded-full shrink-0">
         <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'list' | 'compact' | 'calendar' | 'map') => value && onViewModeChange(value)}>
