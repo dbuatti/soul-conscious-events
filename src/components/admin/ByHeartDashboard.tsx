@@ -274,7 +274,7 @@ const ByHeartDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div>
-                  <p className="font-semibold text-green-600 dark:text-green-400 mb-1">Pros</p>
+                  <p className="font-semibold text-green-600 mb-1">Pros</p>
                   <ul className="list-disc list-inside space-y-1 text-foreground">
                     <li>Minimal setup — one pianist, one room, mats, low light</li>
                     <li>Very low running cost (venue hire is the main expense)</li>
@@ -284,7 +284,7 @@ const ByHeartDashboard = () => {
                   </ul>
                 </div>
                 <div>
-                  <p className="font-semibold text-red-600 dark:text-red-400 mb-1">Cons</p>
+                  <p className="font-semibold text-red-600 mb-1">Cons</p>
                   <ul className="list-disc list-inside space-y-1 text-foreground">
                     <li>Single point of failure — one pianist, no redundancy</li>
                     <li>Niche; needs strong marketing to fill the room</li>
@@ -478,7 +478,7 @@ const ByHeartDashboard = () => {
               <Card key={label} className="organic-card rounded-[1.5rem]">
                 <CardContent className="pt-4">
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">{label}</p>
-                  <p className={cn('text-2xl font-bold font-heading', label === 'Projected profit' ? (projectedProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400') : 'text-primary')}>{val}</p>
+                  <p className={cn('text-2xl font-bold font-heading', label === 'Projected profit' ? (projectedProfit >= 0 ? 'text-green-600' : 'text-red-600') : 'text-primary')}>{val}</p>
                 </CardContent>
               </Card>
             ))}
@@ -509,7 +509,7 @@ const ByHeartDashboard = () => {
                           <TableCell className="text-sm">{Math.round(f * 100)}%</TableCell>
                           <TableCell className="text-right text-sm">{att}</TableCell>
                           <TableCell className="text-right text-sm">{money(rev)}</TableCell>
-                          <TableCell className={cn('text-right text-sm font-semibold', prof >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>{money(prof)}</TableCell>
+                          <TableCell className={cn('text-right text-sm font-semibold', prof >= 0 ? 'text-green-600' : 'text-red-600')}>{money(prof)}</TableCell>
                         </TableRow>
                       );
                     })}
@@ -540,7 +540,7 @@ const ByHeartDashboard = () => {
                         <TableCell className="text-right text-sm">{p.be} people</TableCell>
                         <TableCell className="text-right text-sm">{pct(p.fill)}</TableCell>
                         <TableCell className="text-sm">
-                          {p.price < 30 ? <span className="text-amber-600 dark:text-amber-400">Thin</span> : p.ok ? <span className="text-green-600 dark:text-green-400">Strong</span> : <span className="text-muted-foreground">Full room</span>}
+                          {p.price < 30 ? <span className="text-amber-600">Thin</span> : p.ok ? <span className="text-green-600">Strong</span> : <span className="text-muted-foreground">Full room</span>}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -609,7 +609,7 @@ const ByHeartDashboard = () => {
                   <div key={d.toISOString()} className={cn('flex items-center gap-3 rounded-xl px-3 py-2 text-sm', avoid ? 'bg-red-500/10' : 'bg-secondary/40')}>
                     <span className="font-semibold min-w-[9rem]">{format(d, 'EEE, d MMM yyyy')}</span>
                     <span className="text-muted-foreground">{slot}</span>
-                    {avoid && <span className="ml-auto text-xs font-semibold text-red-600 dark:text-red-400">Avoid — Melbourne away</span>}
+                    {avoid && <span className="ml-auto text-xs font-semibold text-red-600">Avoid — Melbourne away</span>}
                   </div>
                 ))}
               </div>

@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SessionContextProvider, useSession } from "@/components/SessionContextProvider";
-import { supabase } from "@/integrations/supabase/client";
 import ScrollToTop from "./components/ScrollToTop";
 import HeaderV2 from "./components/v2/HeaderV2";
 import MobileTabBar from "./components/v2/MobileTabBar";
@@ -15,7 +14,7 @@ import Footer from "./components/Footer";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import ScrollProgress from "./components/ScrollProgress";
 import { CITY_GUIDES } from "@/lib/cities";
-import { getVisitActionType } from "@/lib/growth";
+import { logPageVisit } from "@/lib/analytics";
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
@@ -69,14 +68,7 @@ const LayoutV2 = () => {
   const { user } = useSession();
 
   useEffect(() => {
-    (async () => {
-      const { error } = await supabase.from('page_visit_logs').insert([{
-        user_id: user?.id || null,
-        page_path: location.pathname,
-        action_type: getVisitActionType(location.search),
-      }]);
-      if (error) console.error('Error logging page view:', error);
-    })();
+    void logPageVisit(location.pathname, location.search, user?.id ?? null);
   }, [location.pathname, location.search, user?.id]);
 
   return (

@@ -80,7 +80,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-md dark:bg-sidebar-background dark:border-sidebar-border">
+      <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="text-foreground flex items-center">
             <FilterIcon className="mr-2 h-5 w-5" /> Filter Events
@@ -123,7 +123,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                     {localEventType === 'All' ? 'All Types' : localEventType || 'Select an event type'}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="dark:bg-card dark:border-border">
+                <SelectContent className="">
                   <SelectItem value="All">All Types</SelectItem>
                   {eventTypes.map((type) => (
                     <SelectItem key={type} value={type}>
@@ -152,7 +152,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                     {localGeographicalState === 'All' ? 'All States' : localGeographicalState || 'Select a state'}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="dark:bg-card dark:border-border">
+                <SelectContent className="">
                   <SelectItem value="All">All States</SelectItem>
                   {australianStates.map((state) => (
                     <SelectItem key={state} value={state}>
@@ -181,7 +181,7 @@ const FilterOverlay: React.FC<FilterOverlayProps> = ({
                     {localDateFilter === 'All Upcoming' ? 'All Upcoming' : localDateFilter || 'Select a date range'}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="dark:bg-card dark:border-border">
+                <SelectContent className="">
                   {dateFilterOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}

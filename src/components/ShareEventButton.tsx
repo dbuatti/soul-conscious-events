@@ -118,6 +118,16 @@ const ShareEventButton: React.FC<ShareEventButtonProps> = ({
         >
           <Copy className="mr-3 h-4 w-4 text-muted-foreground" /> Copy tracked link
         </DropdownMenuItem>
+        <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`${caption}\n${shareUrl}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => logAction('share_whatsapp')}
+          >
+            <MessageCircle className="mr-3 h-4 w-4 text-muted-foreground" /> Share on WhatsApp
+          </a>
+        </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => void copyText(caption, 'Event caption copied!', 'copy_event_caption')}
           className="rounded-xl cursor-pointer"

@@ -6,6 +6,7 @@ import { useSession } from '@/components/SessionContextProvider';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { isValidEventId, getBaseEventId } from '@/utils/event-utils';
+import { logUiAction } from '@/lib/analytics';
 
 interface BookmarkButtonProps {
   eventId: string;
@@ -67,6 +68,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
       if (!error) {
         setIsBookmarked(false);
         toast.success('Event unbookmarked!');
+        void logUiAction('bookmark_remove', user?.id ?? null);
       }
     } else {
       const { error } = await supabase
@@ -76,6 +78,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ eventId, initialIsBookm
       if (!error) {
         setIsBookmarked(true);
         toast.success('Event bookmarked!');
+        void logUiAction('bookmark_add', user?.id ?? null);
       }
     }
     

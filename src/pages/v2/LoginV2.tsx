@@ -4,14 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSession } from '@/components/SessionContextProvider';
-import { useTheme } from 'next-themes';
 import { consumeReturnTo, getRedirectUrl } from '@/lib/utils';
 import { Bookmark, CalendarCheck, PlusCircle } from 'lucide-react';
 import SEO from '@/components/SEO';
 
 const LoginV2 = () => {
   const navigate = useNavigate();
-  const { resolvedTheme } = useTheme();
   const location = useLocation();
   const { user, isLoading } = useSession();
 
@@ -110,7 +108,7 @@ const LoginV2 = () => {
               },
             },
           }}
-          theme={resolvedTheme === "dark" ? "dark" : "light"}
+          theme="light"
           redirectTo={getRedirectUrl()}
           localization={{
             variables: {

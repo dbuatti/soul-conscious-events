@@ -139,7 +139,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                   <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
+              <PopoverContent className="w-auto p-0">
                 <MonthYearPicker
                   date={currentMonth}
                   onDateChange={(date) => {
@@ -240,7 +240,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                             key={event.id + format(day, 'yyyy-MM-dd') + '-multi'}
                             className={cn(
                               "absolute py-1 min-h-[2.5rem] px-2",
-                              "bg-primary/20 text-primary-foreground dark:bg-primary/30 dark:text-primary-foreground hover:bg-primary/40",
+                              "bg-primary/20 text-primary-foreground hover:bg-primary/40",
                               "flex items-center justify-center text-xs font-medium cursor-pointer whitespace-normal",
                               roundingClasses,
                               "z-30"
@@ -286,7 +286,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                                 key={event.id + format(day, 'yyyy-MM-dd') + '-single'}
                                 className={cn(
                                   "w-full px-2 py-1 rounded-md min-h-[2rem]",
-                                  "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70 cursor-pointer",
+                                  "bg-secondary text-foreground hover:bg-secondary/70 cursor-pointer",
                                   "flex flex-col items-start justify-center text-xs font-medium whitespace-normal",
                                   "z-30"
                                 )}
@@ -300,7 +300,7 @@ const AdvancedEventCalendar: React.FC<AdvancedEventCalendarProps> = ({
                             <div
                               className={cn(
                                 "w-full px-2 py-1 rounded-md min-h-[2rem]",
-                                "bg-secondary text-foreground dark:bg-secondary dark:text-foreground hover:bg-secondary/70 cursor-pointer",
+                                "bg-secondary text-foreground hover:bg-secondary/70 cursor-pointer",
                                 "flex items-center justify-center text-xs font-medium whitespace-normal",
                                 "z-30"
                               )}

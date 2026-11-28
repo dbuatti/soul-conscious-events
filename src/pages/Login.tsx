@@ -26,7 +26,7 @@ const Login = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
-      <div className="w-full max-w-md bg-white p-4 rounded-xl shadow-lg border border-gray-200 dark:bg-card dark:border-border">
+      <div className="w-full max-w-md bg-white p-4 rounded-xl shadow-lg border border-gray-200">
         <h2 className="text-3xl font-bold text-foreground text-center mb-6">Sign In to SoulFlow (Old)</h2>
         <Auth
           supabaseClient={supabase}

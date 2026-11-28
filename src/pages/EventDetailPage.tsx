@@ -24,6 +24,7 @@ import BookmarkButton from '@/components/BookmarkButton';
 import { getBaseEventId, formatPrice, getGoogleCalendarUrl, downloadIcalFile } from '@/utils/event-utils';
 import { getBookingTarget } from '@/utils/booking';
 import SEO from '@/components/SEO';
+import { logUiAction } from '@/lib/analytics';
 import { ResilientImage } from '@/components/v2/ResilientImage';
 import EventCardV2 from '@/components/v2/EventCardV2';
 import LocationPicker from '@/components/v2/LocationPicker';
@@ -221,6 +222,20 @@ const EventDetailPage: React.FC = () => {
         type="article"
       />
       <EventSchema event={event} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'SoulFlow', item: 'https://soulflowau.vercel.app/' },
+              { '@type': 'ListItem', position: 2, name: event.event_type || 'Events', item: 'https://soulflowau.vercel.app/' },
+              { '@type': 'ListItem', position: 3, name: event.event_name, item: `https://soulflowau.vercel.app/events/${event.id}` },
+            ],
+          }),
+        }}
+      />
 
       <button
         type="button"
@@ -231,7 +246,7 @@ const EventDetailPage: React.FC = () => {
       </button>
 
       {event.latitude && event.longitude && (
-        <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 mb-6">
+        <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-700 mb-6">
           <MapPin className="h-3 w-3" aria-hidden="true" />
           On the map
         </div>
@@ -373,11 +388,11 @@ const EventDetailPage: React.FC = () => {
               <BookmarkButton eventId={event.id} size="default" className="h-11 rounded-full bg-secondary hover:bg-secondary/70 border-none" />
               <ShareEventButton event={event} label="Share kit" className="h-11 rounded-full" />
               <Button variant="ghost" asChild className="h-10 rounded-full text-sm text-muted-foreground hover:text-foreground">
-                <a href={getGoogleCalendarUrl(event)} target="_blank" rel="noopener noreferrer">
+                <a href={getGoogleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" onClick={() => void logUiAction('calendar_add:google', user?.id ?? null, `/events/${event.id}`)}>
                   <CalendarPlus className="mr-2 h-4 w-4" /> Google Cal
                 </a>
               </Button>
-              <Button variant="ghost" onClick={() => downloadIcalFile(event)} className="h-10 rounded-full text-sm text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" onClick={() => { downloadIcalFile(event); void logUiAction('calendar_add:ical', user?.id ?? null, `/events/${event.id}`); }} className="h-10 rounded-full text-sm text-muted-foreground hover:text-foreground">
                 <Download className="mr-2 h-4 w-4" /> Apple / Outlook
               </Button>
             </div>

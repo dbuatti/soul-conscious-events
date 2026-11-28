@@ -460,7 +460,7 @@ const BusinessView = () => {
               <Navigation className={cn('mr-2 h-3.5 w-3.5', geocoding && 'animate-spin')} />
               {geocoding ? 'Geocoding…' : 'Geocode now'}
             </Button>
-            {geoMessage && <p className="mt-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">{geoMessage}</p>}
+            {geoMessage && <p className="mt-2 text-xs font-medium text-emerald-700">{geoMessage}</p>}
             {geoError && <p className="mt-2 text-xs text-destructive">{geoError}</p>}
           </div>
         </div>
@@ -606,7 +606,7 @@ const BusinessView = () => {
               <p className="eyebrow mb-1">Monetisation · parked</p>
               <h3 className="font-heading text-xl font-semibold text-foreground">Paid tiers — for review, not live</h3>
             </div>
-            <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">
+            <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-700">
               Decision only
             </span>
           </div>
@@ -629,19 +629,19 @@ const BusinessView = () => {
                 <TableRow>
                   <TableCell className="font-medium">Standard listing</TableCell>
                   <TableCell>Free, always</TableCell>
-                  <TableCell><span className="text-emerald-700 dark:text-emerald-400">Live</span></TableCell>
+                  <TableCell><span className="text-emerald-700">Live</span></TableCell>
                   <TableCell>Baseline. Hosts publish themselves; bookings stay with them.</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Featured listing</TableCell>
                   <TableCell>$15–30 / week</TableCell>
-                  <TableCell><span className="text-amber-700 dark:text-amber-400">Parked</span></TableCell>
+                  <TableCell><span className="text-amber-700">Parked</span></TableCell>
                   <TableCell>Only after Analytics shows real traffic. Pin at the top of a category or state, or in weekly picks. No billing exists.</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Weekly picks email</TableCell>
                   <TableCell>Free</TableCell>
-                  <TableCell><span className="text-amber-700 dark:text-amber-400">Parked</span></TableCell>
+                  <TableCell><span className="text-amber-700">Parked</span></TableCell>
                   <TableCell>Kit signup once there is an audience. Used to promote your own events, not to sell access.</TableCell>
                 </TableRow>
                 <TableRow>

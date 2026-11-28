@@ -98,7 +98,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ isOpen, onClose, user, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] dark:bg-card dark:border-border">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
           <DialogDescription>

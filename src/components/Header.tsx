@@ -79,9 +79,9 @@ const Header = () => {
   const isAdminPage = location.pathname.startsWith('/old/admin') || location.pathname.startsWith('/old/dev-space') || location.pathname.startsWith('/old/map');
 
   return (
-    <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center dark:bg-background dark:border-gray-800">
+    <header className="w-full bg-white shadow-lg border-b border-gray-200 py-5 px-6 md:px-8 flex justify-center">
       <div className="w-full max-w-screen-lg flex justify-between items-center">
-        <Link to="/old" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors dark:text-primary dark:hover:text-primary/80">
+        <Link to="/old" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors">
           SoulFlow (Old)
         </Link>
         {isMobile ? (
@@ -92,7 +92,7 @@ const Header = () => {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6 dark:bg-sidebar-background dark:border-sidebar-border">
+            <SheetContent side="right" className="w-[250px] sm:w-[300px] p-6">
               <nav className="flex flex-col space-y-4 mt-8">
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.to}>
@@ -193,7 +193,7 @@ const Header = () => {
                     Admin <UserCog className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="dark:bg-card dark:border-border">
+                <DropdownMenuContent align="end" className="">
                   {adminNavItems.map((item) => (
                     <DropdownMenuItem key={item.to} asChild>
                       <Link to={item.to} className={cn("w-full", getButtonClass(item.to))}>

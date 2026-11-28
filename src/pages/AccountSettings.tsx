@@ -23,7 +23,6 @@ import { useSession } from '@/components/SessionContextProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { countries } from '@/lib/countries';
 import { australianStates } from '@/lib/constants';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import SEO from '@/components/SEO';
 import PageHeader from '@/components/v2/PageHeader';
 import { functionErrorMessage } from '@/lib/function-errors';
@@ -345,9 +344,8 @@ const AccountSettings = () => {
               <SunMoon className="mr-3 h-8 w-8 text-primary" /> Appearance
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-0 pb-0 flex items-center justify-between">
-            <p className="text-lg font-medium">Toggle between light and dark mode:</p>
-            <ThemeToggle />
+          <CardContent className="px-0 pb-0">
+            <p className="text-sm text-muted-foreground">Light theme is active. Dark mode has been removed for a consistent look.</p>
           </CardContent>
         </Card>}
       </div>}

@@ -28,6 +28,7 @@ import DateWheel from '@/components/v2/DateWheel';
 import StateChips from '@/components/v2/StateChips';
 import { useSession } from '@/components/SessionContextProvider';
 import { expandRecurringEvents, getAvailableVenues, getBaseEventId } from '@/utils/event-utils';
+import { logSearch, logUiAction } from '@/lib/analytics';
 import { useEventFilters } from '@/hooks/use-event-filters';
 import { useDeleteEvent, useEvents, useFavouriteVenues, useToggleFavouriteVenue } from '@/hooks/use-events';
 import SEO from '@/components/SEO';
@@ -102,6 +103,18 @@ const EventsListV2: React.FC<EventsListV2Props> = ({
     const timer = setTimeout(() => setDebouncedSearchTerm(rawSearchTerm), 300);
     return () => clearTimeout(timer);
   }, [rawSearchTerm]);
+
+  // Learn what people are actually looking for.
+  useEffect(() => {
+    if (debouncedSearchTerm.trim().length >= 2) {
+      void logSearch(debouncedSearchTerm, user?.id ?? null);
+    }
+  }, [debouncedSearchTerm, user?.id]);
+
+  // Track which view people use (list / calendar / map).
+  useEffect(() => {
+    void logUiAction(`view_mode:${viewMode}`, user?.id ?? null);
+  }, [viewMode, user?.id]);
 
   // Compact search in the sticky toolbar: only while the hero search box is
   // scrolled out of view (the hero owns the search UI at the top of the page).

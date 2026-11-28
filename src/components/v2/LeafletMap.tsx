@@ -259,7 +259,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
 
       {interactive && (
         <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-[1000] flex flex-col gap-2">
-          <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg flex items-center gap-3">
+          <div className="bg-white/90 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg flex items-center gap-3">
             {ready === 0 && total > 0 ? (
               <Loader2 className="h-4 w-4 text-primary animate-spin" />
             ) : missing > 0 ? (
@@ -278,7 +278,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
           </div>
 
           {total > 0 && ready > 0 && (
-            <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-border shadow-lg max-w-[190px] sm:max-w-none">
+            <div className="bg-white/90 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-border shadow-lg max-w-[190px] sm:max-w-none">
               <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Pins by category</p>
               <div className="flex flex-wrap gap-x-3 gap-y-1">
                 {[
@@ -309,7 +309,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
       )}
 
       {showWatermark && (
-        <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
+        <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] bg-white/90 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-border shadow-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
           Free Map Coverage via OpenStreetMap
         </div>
       )}

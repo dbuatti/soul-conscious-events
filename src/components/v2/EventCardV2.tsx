@@ -204,9 +204,9 @@ const EventCardV2: React.FC<EventCardV2Props> = ({
             {priceLabel && (
               <span className={cn(
                 "text-sm font-semibold truncate inline-flex items-center gap-1",
-                isFree ? "text-sage" : isDonation ? "text-amber-600 dark:text-amber-400" : "text-foreground"
+                isFree ? "text-sage" : isDonation ? "text-amber-600" : "text-foreground"
               )}>
-                {isDonation && <span className="h-3 w-3 text-amber-500 dark:text-amber-400" aria-hidden="true">♡</span>}
+                {isDonation && <span className="h-3 w-3 text-amber-500" aria-hidden="true">♡</span>}
                 {priceLabel}
               </span>
             )}

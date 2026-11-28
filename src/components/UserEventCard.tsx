@@ -156,7 +156,7 @@ const UserEventCard: React.FC<UserEventCardProps> = ({ event, onEventDeleted }) 
                   <Trash2 className="h-3.5 w-3.5 sm:h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="dark:bg-card dark:border-border">
+              <AlertDialogContent className="">
                 <AlertDialogHeader>
                   <AlertDialogTitle className="text-foreground">Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription className="text-muted-foreground">

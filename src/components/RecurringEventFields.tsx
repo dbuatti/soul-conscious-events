@@ -87,7 +87,7 @@ const RecurringEventFields: React.FC<RecurringEventFieldsProps> = ({ form }) => 
                   <SelectValue placeholder="Does this event repeat?" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent className="dark:bg-card dark:border-border">
+              <SelectContent className="">
                 <SelectItem value="NONE">Does not repeat</SelectItem>
                 {recurrenceOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
@@ -126,7 +126,7 @@ const RecurringEventFields: React.FC<RecurringEventFieldsProps> = ({ form }) => 
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={field.value instanceof Date ? field.value : undefined}

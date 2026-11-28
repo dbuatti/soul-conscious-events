@@ -37,7 +37,7 @@ const EventCardList: React.FC<EventCardListProps> = ({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
-          <Card key={i} className="shadow-lg rounded-lg border border-border dark:bg-card">
+          <Card key={i} className="shadow-lg rounded-lg border border-border">
             <div className="relative w-full aspect-video overflow-hidden">
               <Skeleton className="w-full h-full" />
             </div>
@@ -88,7 +88,7 @@ const EventCardList: React.FC<EventCardListProps> = ({
     const baseId = getBaseEventId(event.id);
 
     return (
-      <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden dark:bg-card dark:border-border" onClick={() => onViewDetails(event)}>
+      <Card key={event.id} className="group flex flex-col justify-between shadow-lg rounded-lg border border-border hover:shadow-xl transition-shadow duration-300 transform hover:scale-102 cursor-pointer overflow-hidden" onClick={() => onViewDetails(event)}>
         {event.image_url && (
           <div className="relative w-full aspect-video overflow-hidden">
             <img src={event.image_url} alt={event.event_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />

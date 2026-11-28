@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Menu, LogOut, UserCog, CalendarCheck, LogIn, Plus, Info, LayoutDashboard, MapPin, Mail, Workflow } from 'lucide-react';
 import { useSession } from '@/components/SessionContextProvider';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -107,10 +106,6 @@ const HeaderV2 = () => {
         </nav>
 
         <div className="flex items-center gap-2">
-          <span className="hidden md:inline-flex">
-            <ThemeToggle />
-          </span>
-
           <Button asChild className="hidden md:inline-flex rounded-full h-10 px-4 sm:px-5 shadow-sm shadow-primary/20 font-semibold">
             <Link to="/submit-event" onClick={handleCreateEventClick}>
               <Plus className="h-4 w-4 sm:mr-1.5" />

@@ -251,7 +251,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
                 </PopoverContent>
               </Popover>
@@ -297,7 +297,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border" align="start">
+                    <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -474,7 +474,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                       <SelectValue placeholder="Select a state" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="dark:bg-card dark:border-border">
+                  <SelectContent className="">
                     {australianStates.map((state) => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
@@ -688,7 +688,7 @@ const EventForm: React.FC<EventFormProps> = ({ form, onSubmit, isSubmitting, onB
                     <SelectValue placeholder="Select an event type" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="dark:bg-card dark:border-border">
+                <SelectContent className="">
                   {/* "All" is a filter token, not a real event type */}
                   {eventTypes.filter((type) => type !== 'All').map((type) => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>

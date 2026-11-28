@@ -349,7 +349,7 @@ const EventManagementTable = () => {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="dark:bg-card dark:border-border">
+                          <AlertDialogContent className="">
                             <AlertDialogHeader>
                               <AlertDialogTitle className="text-foreground">Are you sure?</AlertDialogTitle>
                               <AlertDialogDescription className="text-muted-foreground">
@@ -373,7 +373,7 @@ const EventManagementTable = () => {
       )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-card dark:border-border">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Event</DialogTitle>
             <DialogDescription>
@@ -417,7 +417,7 @@ const EventManagementTable = () => {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
+                        <PopoverContent className="w-auto p-0">
                           <Calendar
                             mode="single"
                             selected={field.value}
@@ -451,7 +451,7 @@ const EventManagementTable = () => {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
+                        <PopoverContent className="w-auto p-0">
                           <Calendar
                             key={field.name}
                             mode="single"
@@ -582,7 +582,7 @@ const EventManagementTable = () => {
                           <SelectValue placeholder="Select an event type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="dark:bg-card dark:border-border">
+                      <SelectContent className="">
                         {eventTypes.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
@@ -606,7 +606,7 @@ const EventManagementTable = () => {
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="dark:bg-card dark:border-border">
+                      <SelectContent className="">
                         {eventApprovalStatuses.map((status) => (
                           <SelectItem key={status} value={status}>
                             {status.charAt(0).toUpperCase() + status.slice(1)}

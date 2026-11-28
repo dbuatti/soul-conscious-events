@@ -39,6 +39,7 @@ interface PageAnalytics {
 const AnalyticsDashboard: React.FC = () => {
   const [eventAnalyticsData, setEventAnalyticsData] = useState<EventAnalytics[]>([]);
   const [pageAnalyticsData, setPageAnalyticsData] = useState<PageAnalytics[]>([]);
+  const [searchTerms, setSearchTerms] = useState<{ term: string; count: number }[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [loadingPages, setLoadingPages] = useState(true);
   const [startDate, setStartDate] = useState<Date | undefined>(subDays(new Date(), 30));
@@ -178,9 +179,16 @@ const AnalyticsDashboard: React.FC = () => {
     }
 
     const aggregatedData: { [key: string]: PageAnalytics } = {};
+    const searchTermCounts: { [key: string]: number } = {};
 
     logs.forEach((log: PageVisitLog) => {
       const pagePath = log.page_path as string;
+
+      if (log.action_type?.startsWith('search:')) {
+        const term = log.action_type.slice('search:'.length).trim().toLowerCase();
+        if (term) searchTermCounts[term] = (searchTermCounts[term] || 0) + 1;
+        return;
+      }
 
       if (!aggregatedData[pagePath]) {
         aggregatedData[pagePath] = {
@@ -199,6 +207,13 @@ const AnalyticsDashboard: React.FC = () => {
         aggregatedData[pagePath].total_newsletter_signups++;
       }
     });
+
+    setSearchTerms(
+      Object.entries(searchTermCounts)
+        .map(([term, count]) => ({ term, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20),
+    );
 
     let finalData = Object.values(aggregatedData);
 
@@ -306,7 +321,7 @@ const AnalyticsDashboard: React.FC = () => {
             <SelectTrigger className="w-full focus-visible:ring-primary">
               <SelectValue placeholder="Select time period" />
             </SelectTrigger>
-            <SelectContent className="dark:bg-card dark:border-border">
+            <SelectContent className="">
               <SelectItem value="last_7_days">Last 7 Days</SelectItem>
               <SelectItem value="last_30_days">Last 30 Days</SelectItem>
               <SelectItem value="all_time">All Time</SelectItem>
@@ -330,7 +345,7 @@ const AnalyticsDashboard: React.FC = () => {
                   {startDate ? format(startDate, 'PPP') : 'Pick start date'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
+              <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
                   selected={startDate}
@@ -352,7 +367,7 @@ const AnalyticsDashboard: React.FC = () => {
                   {endDate ? format(endDate, 'PPP') : 'Pick end date'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 dark:bg-card dark:border-border">
+              <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
                   selected={endDate}
@@ -453,6 +468,36 @@ const AnalyticsDashboard: React.FC = () => {
                   <TableCell className="text-foreground">{data.total_visits}</TableCell>
                   <TableCell className="text-foreground">{data.total_add_event_clicks}</TableCell>
                   <TableCell className="text-foreground">{data.total_newsletter_signups}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      <Separator className="my-8" />
+
+      <h3 className="text-2xl font-bold text-foreground mb-4 flex items-center">
+        <BarChart className="mr-2 h-6 w-6 text-primary" /> Top search terms
+      </h3>
+      {searchTerms.length === 0 ? (
+        <div className="p-6 bg-secondary rounded-lg border border-border text-center">
+          <p className="text-md font-semibold text-foreground">No search data yet.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table className="min-w-full bg-card border border-border rounded-lg shadow-lg">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-foreground">Search term</TableHead>
+                <TableHead className="text-foreground">Searches</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {searchTerms.map((row) => (
+                <TableRow key={row.term}>
+                  <TableCell className="font-medium text-foreground">{row.term}</TableCell>
+                  <TableCell className="text-foreground">{row.count}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

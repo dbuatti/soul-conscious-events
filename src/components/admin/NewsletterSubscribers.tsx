@@ -166,7 +166,7 @@ const NewsletterSubscribers: React.FC = () => {
                   <TableCell className="text-muted-foreground">{subscriber.source}</TableCell>
                   <TableCell>{format(new Date(subscriber.created_at), 'd MMM yyyy')}</TableCell>
                   <TableCell>
-                    <span className={subscriber.unsubscribed_at ? 'text-muted-foreground' : 'text-emerald-600 dark:text-emerald-400'}>
+                    <span className={subscriber.unsubscribed_at ? 'text-muted-foreground' : 'text-emerald-600'}>
                       {subscriber.unsubscribed_at ? 'Unsubscribed' : 'Active'}
                     </span>
                   </TableCell>

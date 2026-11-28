@@ -169,7 +169,7 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
               }}
               className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-3 dark:bg-secondary h-9">
+              <TabsList className="grid w-full grid-cols-3 h-9">
                 <TabsTrigger value="upload" className="text-xs"><Upload className="mr-1 h-3 w-3" /> Upload</TabsTrigger>
                 <TabsTrigger value="url" className="text-xs"><LinkIcon className="mr-1 h-3 w-3" /> URL</TabsTrigger>
                 <TabsTrigger value="defaults" className="text-xs"><Sparkles className="mr-1 h-3 w-3" /> Defaults</TabsTrigger>
@@ -269,7 +269,7 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({ form, currentImageU
             }}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3 dark:bg-secondary h-10">
+            <TabsList className="grid w-full grid-cols-3 h-10">
               <TabsTrigger value="upload" className="text-sm font-medium"><Upload className="mr-1.5 h-4 w-4" /> Upload</TabsTrigger>
               <TabsTrigger value="url" className="text-sm font-medium"><LinkIcon className="mr-1.5 h-4 w-4" /> URL</TabsTrigger>
               <TabsTrigger value="defaults" className="text-sm font-medium"><Sparkles className="mr-1.5 h-4 w-4" /> Defaults</TabsTrigger>
