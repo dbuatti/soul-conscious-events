@@ -68,9 +68,9 @@ const Contact = () => {
         description="Questions, ideas, a bug, or an event you think we should feature? Every message is read by a real person."
       />
 
-      <div className="max-w-2xl mx-auto organic-card p-8 sm:p-12 rounded-[2rem]">
+      <div className="max-w-2xl mx-auto organic-card p-6 sm:p-8 rounded-[1.5rem]">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
@@ -137,21 +137,21 @@ const Contact = () => {
               )}
             />
 
-            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full bg-primary hover:bg-primary/80 text-primary-foreground h-14 rounded-2xl text-lg font-black shadow-xl transition-transform hover:scale-105">
+            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full bg-primary hover:bg-primary/80 text-primary-foreground h-12 rounded-full text-base font-bold shadow-lg transition-transform hover:scale-105">
               {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
             </Button>
           </form>
         </Form>
       </div>
 
-      <div className="mt-20 text-center space-y-4">
+      <div className="mt-12 text-center space-y-3">
         <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-4">
           <Mail className="h-8 w-8 text-primary" />
         </div>
         <p className="text-lg font-medium text-muted-foreground">For direct inquiries, reach us at:</p>
         <a
           href="mailto:daniele.buatti@gmail.com"
-          className="text-3xl font-semibold text-foreground font-heading hover:text-primary transition-colors break-all"
+          className="text-xl sm:text-2xl font-semibold text-foreground font-heading hover:text-primary transition-colors break-all"
         >
           daniele.buatti@gmail.com
         </a>
