@@ -23,7 +23,7 @@ const CitiesPage: React.FC = () => (
         <li key={city.slug}>
           <Link
             to={`/${city.slug}`}
-            className="organic-card organic-card-hover group flex h-full flex-col gap-3 rounded-[1.75rem] p-6 sm:p-7"
+            className="organic-card organic-card-hover group flex h-full flex-col gap-2.5 rounded-[1.25rem] p-5 sm:p-6"
           >
             <div className="flex items-start justify-between gap-4">
               <span className="eyebrow flex items-center gap-1.5">
@@ -31,7 +31,7 @@ const CitiesPage: React.FC = () => (
               </span>
               <ArrowUpRight className="h-5 w-5 text-muted-foreground/50 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
             </div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-semibold text-foreground leading-tight">
+            <h2 className="font-heading text-xl sm:text-2xl font-semibold text-foreground leading-tight">
               {city.name}
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
