@@ -30,6 +30,8 @@ Keep the two audiences separate:
 6. Export subscribers from SoulFlow: `/admin/panel?tab=newsletter` → **Export CSV** → filter city = Melbourne.
 7. Import only people who explicitly opted into SoulFlow daily picks. Never import purchased or scraped lists.
 
+**Signup path verified 28 Nov 2026:** the `newsletter_subscribers` table was empty simply because nobody had signed up yet, not because of a bug. An anonymous insert through PostgREST with `Prefer: return=minimal` returns 201 and persists the row (the form uses exactly that call). `Prefer: return=representation` would return 401 by design, since anon has no SELECT grant. The first real website signup will flow into Kit on the next daily send via `syncSubscribers()`.
+
 ## WhatsApp Channel setup
 
 1. In the SoulFlow-dedicated Chrome profile, create a **SoulFlow Melbourne** WhatsApp Channel.
