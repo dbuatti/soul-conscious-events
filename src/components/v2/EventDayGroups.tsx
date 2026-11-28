@@ -25,7 +25,7 @@ const EventDayGroups = ({
   const dayGroups = useMemo(() => groupEventsByTimeBucket(events), [events]);
 
   return (
-    <div className="space-y-12 sm:space-y-16">
+    <div className="space-y-8 sm:space-y-10">
       {dayGroups.map((group) => (
         <div key={group.key}>
           <div className="flex items-baseline gap-3 mb-4 sm:mb-5">
@@ -39,7 +39,7 @@ const EventDayGroups = ({
             <span className="flex-1 h-px bg-border/70 translate-y-[-0.3rem]" />
             <span className="text-xs text-muted-foreground">{group.events.length} {group.events.length === 1 ? 'event' : 'events'}</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {group.events.map((event) => (
               <EventCardV2
                 key={event.id}
